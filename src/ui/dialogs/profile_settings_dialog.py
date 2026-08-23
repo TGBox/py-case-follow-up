@@ -397,10 +397,19 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.wiki_settings.sync_mode = self.sync_mode_combo.get()
         self.profile.wiki_settings.sync_on_startup = self.sync_startup_var.get()
 
-        # Update Shortcuts & Scoring
-        self.profile.shortcuts.new_case = self.hk_new.get().strip()
-        self.profile.shortcuts.export_dialog = self.hk_export.get().strip()
-        self.profile.shortcuts.wiki_search = self.hk_search.get().strip()
+        # Update Shortcuts & Scoring with conflict validation
+        hk_new_val = self.hk_new.get().strip()
+        hk_exp_val = self.hk_export.get().strip()
+        hk_search_val = self.hk_search.get().strip()
+
+        keys_list = [k for k in (hk_new_val, hk_exp_val, hk_search_val) if k]
+        if len(keys_list) != len(set(keys_list)):
+            self.status_lbl.configure(text="⚠️ Shortcut-Konflikt: Ein Hotkey darf nicht mehrfach zugewiesen werden!", text_color="red")
+            return
+
+        self.profile.shortcuts.new_case = hk_new_val
+        self.profile.shortcuts.export_dialog = hk_exp_val
+        self.profile.shortcuts.wiki_search = hk_search_val
 
         try:
             self.profile.scoring_matrix.vip_bonus_points = int(self.vip_bonus_entry.get().strip())

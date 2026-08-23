@@ -174,6 +174,9 @@ class SupportCockpitApp(ctk.CTk):
         export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=95)
         export_btn.pack(side="left", padx=3, pady=4)
 
+        backup_btn = ctk.CTkButton(menu_frame, text="📦 ZIP-Backup", command=self.open_zip_export_dialog, width=115)
+        backup_btn.pack(side="left", padx=3, pady=4)
+
         builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=105)
         builder_btn.pack(side="left", padx=3, pady=4)
 
@@ -523,6 +526,23 @@ class SupportCockpitApp(ctk.CTk):
         timer = threading.Timer(3600, update_timer)
         timer.daemon = True
         timer.start()
+
+    def open_zip_export_dialog(self):
+        from tkinter import filedialog
+        from pathlib import Path
+        from services.zip_backup_service import ZipBackupService
+
+        dest_file = filedialog.asksaveasfilename(
+            title="Komplett-Datensicherung als ZIP speichern",
+            defaultextension=".zip",
+            filetypes=[("ZIP-Archiv", "*.zip")],
+            initialfile="SupportCockpit_Backup.zip",
+            parent=self,
+        )
+        if dest_file:
+            res = ZipBackupService.export_backup_zip(self.storage_service, Path(dest_file))
+            mb_size = res["total_bytes"] / (1024 * 1024)
+            print(f"✅ ZIP-Backup exportiert: {res['file_count']} Dateien ({mb_size:.2f} MB)")
 
     def on_closing(self):
         logger.info("Saving application settings and profile before exit...")

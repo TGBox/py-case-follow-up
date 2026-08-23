@@ -116,7 +116,17 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(form_scroll, text="Aufgabengebiet / Notizen:").pack(anchor="w", pady=(4, 2))
         self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuständig für PVS-Schnittstellen...")
-        self.notes_entry.pack(fill="x", pady=(0, 15))
+        self.notes_entry.pack(fill="x", pady=(0, 10))
+
+        # Absence / Vacation settings
+        self.is_absent_var = ctk.BooleanVar(value=False)
+        self.chk_absent = ctk.CTkCheckBox(
+            form_scroll, text="⚠️ Kollege ist aktuell abwesend (Urlaub / Krankheit)", variable=self.is_absent_var
+        )
+        self.chk_absent.pack(anchor="w", pady=(5, 5))
+
+        self.absence_reason_entry = ctk.CTkEntry(form_scroll, placeholder_text="Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...")
+        self.absence_reason_entry.pack(fill="x", pady=(0, 15))
 
         self.err_lbl = ctk.CTkLabel(form_scroll, text="", text_color="red", anchor="w")
         self.err_lbl.pack(fill="x", pady=(0, 5))
@@ -207,6 +217,9 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
             self.mobile_entry.insert(0, col.mobile)
             self.notes_entry.delete(0, "end")
             self.notes_entry.insert(0, col.notes)
+            self.is_absent_var.set(col.is_absent)
+            self.absence_reason_entry.delete(0, "end")
+            self.absence_reason_entry.insert(0, col.absence_reason)
             self.delete_btn.configure(state="normal")
         else:
             self.form_header_lbl.configure(text="➕ Neuen Mitarbeiter anlegen")
@@ -217,6 +230,8 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
             self.email_entry.delete(0, "end")
             self.mobile_entry.delete(0, "end")
             self.notes_entry.delete(0, "end")
+            self.is_absent_var.set(False)
+            self.absence_reason_entry.delete(0, "end")
             self.delete_btn.configure(state="disabled")
 
         self.filter_and_render_list()
@@ -232,6 +247,8 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         email = self.email_entry.get().strip()
         mobile = self.mobile_entry.get().strip()
         notes = self.notes_entry.get().strip()
+        is_absent = self.is_absent_var.get()
+        absence_reason = self.absence_reason_entry.get().strip()
 
         col = Colleague(
             username=username,
@@ -241,6 +258,8 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
             email=email,
             mobile=mobile,
             notes=notes,
+            is_absent=is_absent,
+            absence_reason=absence_reason,
         )
 
         errs = col.validate()

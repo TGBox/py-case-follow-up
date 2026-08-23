@@ -252,6 +252,8 @@ class Colleague:
     mobile: str = ""
     notes: str = ""
     cases_path: str = ""
+    is_absent: bool = False
+    absence_reason: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -275,4 +277,6 @@ class Colleague:
             mobile=data.get("mobile", ""),
             notes=data.get("notes", ""),
             cases_path=data.get("cases_path", ""),
+            is_absent=data.get("is_absent", False),
+            absence_reason=data.get("absence_reason", ""),
         )

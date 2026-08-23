@@ -30,6 +30,15 @@ class CaseListWidget(ctk.CTkFrame):
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", lambda e: self.on_search_changed(self.search_entry.get()))
 
+        # Quick Filter Buttons Bar
+        qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
+        qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
+
+        ctk.CTkButton(qfilter_frame, text="Alle", width=50, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=85, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlagen", width=115, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🏢 Intern", width=70, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("is:internal")).pack(side="left", padx=2)
+
         # Header Info
         self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
         self.count_label.pack(fill="x", padx=15, pady=(0, 5))
@@ -37,6 +46,12 @@ class CaseListWidget(ctk.CTkFrame):
         # Scrollable Cases Container
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+    def apply_quick_filter(self, filter_token: str):
+        self.search_entry.delete(0, "end")
+        if filter_token:
+            self.search_entry.insert(0, filter_token)
+        self.on_search_changed(filter_token)
 
     def set_cases(self, cases: list[Case]):
         """Sets cases list sorted by score descending."""

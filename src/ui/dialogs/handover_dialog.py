@@ -96,6 +96,9 @@ class HandoverDialog(ctk.CTkToplevel):
         )
         self.person_entry.pack(side="right", fill="x", expand=True)
 
+        self.absence_warn_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11, weight="bold"))
+        self.absence_warn_lbl.pack(anchor="w", pady=(0, 4))
+
         # 4. Optional Note
         ctk.CTkLabel(main_frame, text="Notiz / Details zur Übergabe (optional):").pack(anchor="w", pady=(4, 2))
         self.note_entry = ctk.CTkEntry(
@@ -123,10 +126,19 @@ class HandoverDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     def on_colleague_selected(self, selected_text: str):
+        self.absence_warn_lbl.configure(text="")
         if selected_text and not selected_text.startswith("-"):
             name_part = selected_text.split(" (")[0]
             self.person_entry.delete(0, "end")
             self.person_entry.insert(0, name_part)
+
+            # Check absence
+            for c in self.colleagues:
+                if c.name == name_part:
+                    if c.is_absent:
+                        reason = f" ({c.absence_reason})" if c.absence_reason else ""
+                        self.absence_warn_lbl.configure(text=f"⚠️ ACHTUNG: {c.name} ist aktuell abwesend{reason}!", text_color="darkorange")
+                    break
 
             col = next((c for c in self.colleagues if c.name == name_part), None)
             if col and col.department:

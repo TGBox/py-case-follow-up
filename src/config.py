@@ -49,6 +49,14 @@ class AppConfig:
     custom_question_schemas_path: Path | None = None
     custom_export_templates_path: Path | None = None
     custom_wiki_db_path: Path | None = None
+    column_widths: dict[str, int] = field(
+        default_factory=lambda: {
+            "cockpit_left": 300,
+            "cockpit_center": 420,
+            "cockpit_right": 320,
+            "board_column": 280,
+        }
+    )
 
     def __post_init__(self):
         if isinstance(self.workspace_dir, str):
@@ -153,6 +161,7 @@ class AppConfig:
             "custom_question_schemas_path": str(self.custom_question_schemas_path) if self.custom_question_schemas_path else None,
             "custom_export_templates_path": str(self.custom_export_templates_path) if self.custom_export_templates_path else None,
             "custom_wiki_db_path": str(self.custom_wiki_db_path) if self.custom_wiki_db_path else None,
+            "column_widths": self.column_widths,
         }
         try:
             with open(config_file, "w", encoding="utf-8") as f:
@@ -175,6 +184,11 @@ class AppConfig:
                     data = json.load(f)
 
                 ws_dir = Path(data["workspace_dir"]) if data.get("workspace_dir") else get_default_workspace_dir()
+                col_widths = data.get("column_widths", {})
+                default_widths = {"cockpit_left": 300, "cockpit_center": 420, "cockpit_right": 320, "board_column": 280}
+                if isinstance(col_widths, dict):
+                    default_widths.update(col_widths)
+
                 return cls(
                     workspace_dir=ws_dir,
                     custom_cases_path=Path(data["custom_cases_path"]) if data.get("custom_cases_path") else None,
@@ -185,6 +199,7 @@ class AppConfig:
                     custom_question_schemas_path=Path(data["custom_question_schemas_path"]) if data.get("custom_question_schemas_path") else None,
                     custom_export_templates_path=Path(data["custom_export_templates_path"]) if data.get("custom_export_templates_path") else None,
                     custom_wiki_db_path=Path(data["custom_wiki_db_path"]) if data.get("custom_wiki_db_path") else None,
+                    column_widths=default_widths,
                 )
             except Exception as e:
                 logger.error(f"Error loading global user config: {e}")

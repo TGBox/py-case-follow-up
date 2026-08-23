@@ -224,6 +224,28 @@ class StorageService:
         atomic_save_json(self.config.customers_path, data)
 
     # --- Profile ---
+    @property
+    def profiles_dir(self) -> Path:
+        p_dir = self.config.data_dir / "profiles"
+        p_dir.mkdir(parents=True, exist_ok=True)
+        return p_dir
+
+    def list_profiles(self) -> list[str]:
+        """Lists available user profile usernames."""
+        curr_profile = self.load_profile()
+        profiles = [curr_profile.user.name]
+        if self.profiles_dir.exists():
+            for f in self.profiles_dir.glob("*.json"):
+                try:
+                    with open(f, "r", encoding="utf-8") as file:
+                        data = json.load(file)
+                    name = data.get("user", {}).get("name")
+                    if name and name not in profiles:
+                        profiles.append(name)
+                except Exception:
+                    pass
+        return profiles
+
     def load_profile(self) -> UserProfile:
         data = safe_read_json(
             self.config.app_profile_path,
@@ -234,8 +256,24 @@ class StorageService:
             return UserProfile.from_dict(data)
         return UserProfile()
 
+    def load_profile_by_name(self, profile_name: str) -> UserProfile:
+        """Loads UserProfile by user name from profiles_dir or falls back to active profile."""
+        safe_filename = "".join(c for c in profile_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+        target_path = self.profiles_dir / f"profile_{safe_filename}.json"
+
+        if target_path.exists():
+            data = safe_read_json(target_path, default_factory=dict)
+            if isinstance(data, dict):
+                return UserProfile.from_dict(data)
+        
+        return self.load_profile()
+
     def save_profile(self, profile: UserProfile) -> None:
         atomic_save_json(self.config.app_profile_path, profile.to_dict())
+        safe_filename = "".join(c for c in profile.user.name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+        if safe_filename:
+            target_path = self.profiles_dir / f"profile_{safe_filename}.json"
+            atomic_save_json(target_path, profile.to_dict())
 
     # --- Schemas ---
     def load_schemas(self) -> list[QuestionSchema]:

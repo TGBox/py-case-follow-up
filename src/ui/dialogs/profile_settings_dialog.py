@@ -55,7 +55,33 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.status_lbl.pack(side="left", padx=5)
 
     def setup_user_tab(self):
-        ctk.CTkLabel(self.tab_user, text="Benutzerinformationen", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        ctk.CTkLabel(self.tab_user, text="Mitarbeiter-Profil verwalten & wechseln", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        prof_frame = ctk.CTkFrame(self.tab_user, fg_color="transparent")
+        prof_frame.pack(fill="x", pady=(0, 15))
+
+        ctk.CTkLabel(prof_frame, text="Aktives Profil:").pack(side="left", padx=(0, 10))
+
+        profiles_list = self.storage_service.list_profiles()
+        self.profile_combo = ctk.CTkOptionMenu(
+            prof_frame,
+            values=profiles_list,
+            command=self.on_switch_profile,
+            width=220,
+        )
+        self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
+        self.profile_combo.pack(side="left", padx=(0, 10))
+
+        btn_new_prof = ctk.CTkButton(
+            prof_frame,
+            text="➕ Neues Profil anlegen",
+            command=self.open_create_profile_dialog,
+            fg_color="forestgreen",
+            width=160,
+        )
+        btn_new_prof.pack(side="left")
+
+        ctk.CTkLabel(self.tab_user, text="Benutzerinformationen (Aktives Profil)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
 
         ctk.CTkLabel(self.tab_user, text="Name / Anzeigename *:").pack(anchor="w", pady=(5, 2))
         self.user_name_entry = ctk.CTkEntry(self.tab_user, placeholder_text="Ihr Name")
@@ -77,6 +103,52 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
         self.user_mobile_entry.pack(fill="x", pady=(0, 10))
 
+    def open_create_profile_dialog(self):
+        dialog = ctk.CTkInputDialog(
+            text="Geben Sie den Namen des neuen Mitarbeiters ein:",
+            title="Neues Mitarbeiter-Profil anlegen",
+        )
+        name_input = dialog.get_input()
+        if name_input and name_input.strip():
+            new_name = name_input.strip()
+            from models.profile import UserInfo, UserProfile
+            new_profile = UserProfile(user=UserInfo(name=new_name))
+            self.storage_service.save_profile(new_profile)
+
+            # Refresh list & switch
+            self.profile = new_profile
+            profiles_list = self.storage_service.list_profiles()
+            self.profile_combo.configure(values=profiles_list)
+            self.profile_combo.set(new_name)
+            self.reload_user_fields()
+            self.status_lbl.configure(text=f"Profil '{new_name}' angelegt und aktiviert!")
+            if self.on_profile_updated:
+                self.on_profile_updated()
+
+    def on_switch_profile(self, selected_name: str):
+        self.profile = self.storage_service.load_profile_by_name(selected_name)
+        self.storage_service.save_profile(self.profile)
+        self.reload_user_fields()
+        self.status_lbl.configure(text=f"Profil auf '{selected_name}' gewechselt.")
+        if self.on_profile_updated:
+            self.on_profile_updated()
+
+    def reload_user_fields(self):
+        self.user_name_entry.delete(0, "end")
+        self.user_name_entry.insert(0, self.profile.user.name)
+
+        self.user_ext_entry.delete(0, "end")
+        self.user_ext_entry.insert(0, self.profile.user.extension)
+
+        self.user_email_entry.delete(0, "end")
+        self.user_email_entry.insert(0, self.profile.user.email)
+
+        self.user_mobile_entry.delete(0, "end")
+        self.user_mobile_entry.insert(0, self.profile.user.mobile)
+
+        self.theme_combo.set(self.profile.ui_settings.theme)
+        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+
     def setup_ui_tab(self):
         ctk.CTkLabel(self.tab_ui, text="Erscheinungsbild & Layout", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
@@ -91,7 +163,34 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             values=list(LAYOUT_DISPLAY.values())
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(fill="x", pady=(0, 15))
+        self.layout_combo.pack(fill="x", pady=(0, 20))
+
+        # Column widths reset section
+        ctk.CTkLabel(self.tab_ui, text="Spaltenbreiten & Ansichts-Layout", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        widths = self.profile.ui_settings.column_widths
+        w_str = f"Fall-Liste: {widths.get('ticket_list', 320)}px | Details: {widths.get('case_details', 580)}px | Zeitleiste: {widths.get('timeline_sidebar', 360)}px"
+        self.widths_label = ctk.CTkLabel(self.tab_ui, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+        self.widths_label.pack(anchor="w", pady=(0, 10))
+
+        btn_reset_widths = ctk.CTkButton(
+            self.tab_ui,
+            text="🔄 Spaltenbreiten auf Standard zurücksetzen",
+            command=self.on_reset_column_widths,
+            fg_color="gray30",
+            width=260,
+        )
+        btn_reset_widths.pack(anchor="w")
+
+    def on_reset_column_widths(self):
+        self.profile.ui_settings.reset_column_widths()
+        self.storage_service.save_profile(self.profile)
+        widths = self.profile.ui_settings.column_widths
+        w_str = f"Fall-Liste: {widths.get('ticket_list', 320)}px | Details: {widths.get('case_details', 580)}px | Zeitleiste: {widths.get('timeline_sidebar', 360)}px"
+        self.widths_label.configure(text=w_str)
+        self.status_lbl.configure(text="Spaltenbreiten auf Standard zurückgesetzt!")
+        if self.on_profile_updated:
+            self.on_profile_updated()
 
     def setup_paths_tab(self):
         from pathlib import Path

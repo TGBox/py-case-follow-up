@@ -202,3 +202,64 @@ def test_auto_archive_threshold_boundary(tmp_config: AppConfig):
     assert remaining[0].case_id == "T-RECENT"
     assert len(archived) == 1
     assert archived[0].case_id == "T-OLD"
+
+
+def test_german_date_formatting_and_parsing():
+    from utils.datetime_utils import format_german_date, format_german_datetime, parse_german_date
+
+    iso_str = "2026-08-23T16:30:00"
+    assert format_german_date(iso_str) == "23.08.2026"
+    assert format_german_datetime(iso_str) == "23.08.2026 16:30"
+    assert format_german_datetime(iso_str, include_seconds=True) == "23.08.2026 16:30:00"
+
+    parsed = parse_german_date("23.08.2026 16:30")
+    assert parsed == "2026-08-23T16:30:00"
+
+    parsed_date_only = parse_german_date("23.08.2026")
+    assert parsed_date_only == "2026-08-23T00:00:00"
+
+
+def test_column_width_persistence(tmp_path: Path):
+    config = AppConfig(workspace_dir=tmp_path)
+    config.column_widths = {"cockpit_left": 350, "cockpit_center": 500, "cockpit_right": 300, "board_column": 320}
+
+    # Save user config
+    config.save_user_config()
+
+    # Load back
+    loaded_config = AppConfig.load_user_config()
+    assert loaded_config.column_widths["cockpit_left"] == 350
+    assert loaded_config.column_widths["cockpit_center"] == 500
+    assert loaded_config.column_widths["board_column"] == 320
+
+
+def test_multi_user_profile_management(tmp_path: Path):
+    from models.profile import UserInfo, UserProfile
+    config = AppConfig(workspace_dir=tmp_path)
+    storage = StorageService(config)
+
+    # Save default profile
+    p1 = UserProfile(user=UserInfo(name="Anna Schmidt", email="anna@support.de"))
+    storage.save_profile(p1)
+
+    # Save second employee profile
+    p2 = UserProfile(user=UserInfo(name="Ben Becker", email="ben@support.de"))
+    storage.save_profile(p2)
+
+    profiles = storage.list_profiles()
+    assert "Anna Schmidt" in profiles or "Ben Becker" in profiles
+
+    loaded_p2 = storage.load_profile_by_name("Ben Becker")
+    assert loaded_p2.user.name == "Ben Becker"
+    assert loaded_p2.user.email == "ben@support.de"
+
+
+def test_reset_column_widths():
+    from models.profile import UserProfile
+    profile = UserProfile()
+    profile.ui_settings.column_widths = {"ticket_list": 500, "case_details": 900}
+    profile.ui_settings.reset_column_widths()
+
+    assert profile.ui_settings.column_widths["ticket_list"] == 320
+    assert profile.ui_settings.column_widths["case_details"] == 580
+    assert profile.ui_settings.column_widths["timeline_sidebar"] == 360

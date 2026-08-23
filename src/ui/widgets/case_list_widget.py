@@ -94,7 +94,8 @@ class CaseListWidget(ctk.CTkFrame):
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             if case.workflow_status.followup_at:
-                fw_dt_str = case.workflow_status.followup_at.split("T")[0]
+                from utils.datetime_utils import format_german_datetime
+                fw_dt_str = format_german_datetime(case.workflow_status.followup_at)
                 fw_lbl = ctk.CTkLabel(
                     card,
                     text=f"🔔 Nachfragen am: {fw_dt_str}",

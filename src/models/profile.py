@@ -36,6 +36,9 @@ class UISettings:
         }
     )
 
+    def reset_column_widths(self) -> None:
+        self.column_widths = {"ticket_list": 320, "case_details": 580, "timeline_sidebar": 360, "board_column": 280}
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "theme": self.theme,

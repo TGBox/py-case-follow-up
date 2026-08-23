@@ -209,19 +209,19 @@ class UserProfile:
 class Colleague:
     username: str = ""
     name: str = ""
+    department: str = "Support"
     extension: str = ""
     email: str = ""
     mobile: str = ""
+    notes: str = ""
     cases_path: str = ""
 
     def validate(self) -> list[str]:
         errors = []
         if not self.username.strip():
-            errors.append("Username is required.")
+            errors.append("Kürzel / Username ist erforderlich.")
         if not self.name.strip():
-            errors.append("Name is required.")
-        if not self.cases_path.strip():
-            errors.append("Cases path is required.")
+            errors.append("Name ist erforderlich.")
         return errors
 
     def to_dict(self) -> dict[str, Any]:
@@ -232,8 +232,10 @@ class Colleague:
         return cls(
             username=data.get("username", ""),
             name=data.get("name", ""),
+            department=data.get("department", "Support"),
             extension=data.get("extension", ""),
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),
+            notes=data.get("notes", ""),
             cases_path=data.get("cases_path", ""),
         )

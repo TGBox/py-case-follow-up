@@ -267,3 +267,30 @@ def test_reset_column_widths():
     assert profile.ui_settings.column_widths == DEFAULT_COLUMN_WIDTHS
     assert profile.ui_settings.column_widths["board_column"] == 280
     assert profile.ui_settings.column_widths["table_col_id"] == 120
+
+
+def test_colleague_crud_storage(tmp_path: Path):
+    from models.profile import Colleague
+    config = AppConfig(workspace_dir=tmp_path)
+    storage = StorageService(config)
+
+    c1 = Colleague(
+        username="mbecker",
+        name="Markus Becker",
+        department="Entwicklung",
+        extension="4022",
+        email="m.becker@praxis.de",
+        mobile="0171 99988877",
+        notes="Spezialist für PVS-Imports",
+    )
+
+    assert len(c1.validate()) == 0
+
+    storage.save_colleagues([c1])
+    loaded = storage.load_colleagues()
+
+    assert len(loaded) >= 1
+    found = next(c for c in loaded if c.username == "mbecker")
+    assert found.name == "Markus Becker"
+    assert found.department == "Entwicklung"
+    assert found.notes == "Spezialist für PVS-Imports"

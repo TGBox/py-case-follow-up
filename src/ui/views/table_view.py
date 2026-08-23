@@ -221,7 +221,7 @@ class TableView(ctk.CTkFrame):
             try:
                 w = self.tree.column(col_key, "width")
                 if isinstance(w, (int, float)):
-                    self.column_widths[col_key] = int(w)
+                    self.column_widths[col_key] = int(w) # type: ignore
             except Exception:
                 pass
 

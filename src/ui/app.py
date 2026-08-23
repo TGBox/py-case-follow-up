@@ -254,34 +254,37 @@ class SupportCockpitApp(ctk.CTk):
         self.on_case_updated(case)
 
     def open_handover_dialog_for_case(self, case: Case):
-        # Quick handover options
-        from enums import ACTOR_DISPLAY, get_actor_val_from_display, Channel
+        from ui.dialogs.handover_dialog import HandoverDialog
+        from enums import get_actor_display, Channel
         from models.case import TimelineEntry
         from utils.datetime_utils import now_iso
 
-        options = list(ACTOR_DISPLAY.values())
-        curr_display = ACTOR_DISPLAY.get(case.workflow_status.current_actor, case.workflow_status.current_actor)
-
-        dialog = ctk.CTkInputDialog(
-            text=f"Neue Zuständigkeit wählen (z. B. Entwicklung, Support, Technik):\n(Aktuell: {curr_display})",
-            title=f"👤 Zuständigkeit für {case.case_id} übergeben",
-        )
-        new_actor_str = dialog.get_input()
-        if new_actor_str and new_actor_str.strip():
+        def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
             prev_actor_val = case.workflow_status.current_actor
-            new_actor_val = get_actor_val_from_display(new_actor_str.strip())
-            if prev_actor_val != new_actor_val:
-                case.workflow_status.current_actor = new_actor_val
-                case.workflow_status.actor_since = now_iso()
-                entry = TimelineEntry(
-                    timestamp=now_iso(),
-                    author=self.profile.user.name,
-                    channel=Channel.INTERNAL_NOTE.value,
-                    note=f"Zuständigkeit übergeben an: {new_actor_str.strip()}",
-                    status_change=f"ZUSTÄNDIGKEIT: {prev_actor_val} -> {new_actor_val}",
-                )
-                case.timeline.append(entry)
-                self.on_case_updated(case)
+            case.workflow_status.current_actor = new_actor_val
+            case.workflow_status.actor_since = now_iso()
+
+            person_str = f" ({person})" if person else ""
+            note_str = f" | Details: {note}" if note else ""
+            note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
+            change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
+
+            entry = TimelineEntry(
+                timestamp=now_iso(),
+                author=self.profile.user.name,
+                channel=Channel.INTERNAL_NOTE.value,
+                note=note_text,
+                status_change=change_text,
+            )
+            case.timeline.append(entry)
+            self.on_case_updated(case)
+
+        HandoverDialog(
+            self,
+            case=case,
+            colleagues=self.colleagues,
+            on_handover_confirmed=on_confirmed,
+        )
 
     def on_search_changed(self, query: str):
         self.search_query = query

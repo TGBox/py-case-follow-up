@@ -46,3 +46,20 @@ def test_ui_service_workflow_integration(tmp_path: Path):
     assert len(remaining_cases) == 11
     assert len(archived_cases) == 1
     assert archived_cases[0].case_id == target_case.case_id
+
+
+def test_handover_dialog_formatting():
+    from enums import Actor, get_actor_display
+    from models.case import TimelineEntry
+    from utils.datetime_utils import now_iso
+
+    new_actor_val = Actor.DEVELOPMENT.value
+    channel = "Slacknachricht / Chat"
+    person = "Max Mustermann"
+    note = "Bitte um Prüfung"
+
+    person_str = f" ({person})" if person else ""
+    note_str = f" | Details: {note}" if note else ""
+    note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
+
+    assert "Zuständigkeit übergeben an: Entwicklung (Max Mustermann) via Slacknachricht / Chat | Details: Bitte um Prüfung" in note_text

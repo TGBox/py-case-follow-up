@@ -73,7 +73,7 @@ class TagManagementDialog(ctk.CTkToplevel):
             return
 
         for idx, tag in enumerate(self.profile.available_tags):
-            row = ctk.CTkFrame(self.tags_scroll, fg_color="gray20" if idx % 2 == 0 else "transparent")
+            row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
             row.pack(fill="x", pady=2, padx=5)
 
             ctk.CTkLabel(row, text=f"🏷️  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")

@@ -89,7 +89,7 @@ class CockpitView(ctk.CTkFrame):
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
         self.print_btn = ctk.CTkButton(
-            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=100, state="disabled", fg_color="gray30"
+            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=100, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         self.print_btn.pack(side="right", padx=5)
 
@@ -120,7 +120,7 @@ class CockpitView(ctk.CTkFrame):
         self.actor_combo.pack(side="right", padx=5, pady=4)
 
         self.add_note_btn = ctk.CTkButton(
-            self.info_bar, text="📝 Notiz / Ereignis", command=self.focus_timeline_note, width=120, fg_color="gray30", hover_color="gray40"
+            self.info_bar, text="📝 Notiz / Ereignis", command=self.focus_timeline_note, width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         self.add_note_btn.pack(side="right", padx=5, pady=4)
 

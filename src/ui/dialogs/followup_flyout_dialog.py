@@ -67,11 +67,11 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 act_row = ctk.CTkFrame(card, fg_color="transparent")
                 act_row.pack(fill="x", padx=10, pady=(0, 6))
 
-                ctk.CTkButton(act_row, text="+ 1 Tag verschieben", width=140, fg_color="gray30", hover_color="gray40", command=lambda c=case: self.snooze_case(c, 1)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row, text="+ 1 Woche verschieben", width=150, fg_color="gray30", hover_color="gray40", command=lambda c=case: self.snooze_case(c, 7)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row, text="+ 1 Tag verschieben", width=140, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_case(c, 1)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row, text="+ 1 Woche verschieben", width=150, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_case(c, 7)).pack(side="left", padx=2)
                 ctk.CTkButton(act_row, text="✓ Erledigt", width=90, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)).pack(side="right", padx=2)
 
-        btn_close = ctk.CTkButton(main_frame, text="Schließen", fg_color="gray40", command=self.destroy, width=100)
+        btn_close = ctk.CTkButton(main_frame, text="Schließen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.destroy, width=100)
         btn_close.pack(side="right")
 
     def select_case(self, case: Case):

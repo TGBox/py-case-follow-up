@@ -114,7 +114,8 @@ class KanbanCardWidget(ctk.CTkFrame):
             width=70,
             height=24,
             font=ctk.CTkFont(size=10),
-            fg_color="gray35",
+            fg_color=("gray75", "gray35"),
+            hover_color=("gray65", "gray45"),
         ).pack(side="left", padx=2)
 
         ctk.CTkButton(
@@ -220,8 +221,8 @@ class BoardView(ctk.CTkFrame):
                     width=28,
                     height=28,
                     command=lambda k=col_key: self.toggle_column_collapse(k),
-                    fg_color="gray35",
-                    hover_color="gray50",
+                    fg_color=("gray75", "gray35"),
+                    hover_color=("gray65", "gray50"),
                 )
                 btn_exp.pack(anchor="n", pady=8, padx=6)
 
@@ -258,8 +259,8 @@ class BoardView(ctk.CTkFrame):
                     height=24,
                     font=ctk.CTkFont(size=10),
                     command=lambda k=col_key: self.toggle_column_collapse(k),
-                    fg_color="gray35",
-                    hover_color="gray50",
+                    fg_color=("gray75", "gray35"),
+                    hover_color=("gray65", "gray50"),
                 )
                 btn_col.pack(side="right", padx=2)
 

@@ -105,7 +105,7 @@ class P2PDiffDialog(ctk.CTkToplevel):
             return
 
         for idx, item in enumerate(items):
-            row = ctk.CTkFrame(self.diff_scroll, fg_color="gray20" if idx % 2 == 0 else "transparent")
+            row = ctk.CTkFrame(self.diff_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
             row.pack(fill="x", pady=2, padx=5)
 
             # Checkbox

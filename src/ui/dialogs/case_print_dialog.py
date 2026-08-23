@@ -61,7 +61,7 @@ class CasePrintDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom")
 
-        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color="gray40", command=self.destroy, width=100).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.destroy, width=100).pack(side="left")
         ctk.CTkButton(btn_frame, text="🖨️ Im Browser öffnen & Drucken", fg_color="forestgreen", command=self.generate_and_open_html, width=220).pack(side="right")
 
     def generate_and_open_html(self):

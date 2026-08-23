@@ -20,13 +20,13 @@ class ToastNotification(ctk.CTkToplevel):
 
         self.geometry(f"{width}x{height}+{x}+{y}")
 
-        frame = ctk.CTkFrame(self, fg_color="gray20", border_width=2, border_color="dodgerblue", corner_radius=8)
+        frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), border_width=2, border_color="dodgerblue", corner_radius=8)
         frame.pack(fill="both", expand=True)
 
         lbl_title = ctk.CTkLabel(frame, text=title, font=ctk.CTkFont(size=13, weight="bold"), text_color="dodgerblue", anchor="w")
         lbl_title.pack(anchor="w", padx=12, pady=(8, 2))
 
-        lbl_msg = ctk.CTkLabel(frame, text=message, font=ctk.CTkFont(size=11), text_color="white", anchor="w")
+        lbl_msg = ctk.CTkLabel(frame, text=message, font=ctk.CTkFont(size=11), text_color=("gray10", "white"), anchor="w")
         lbl_msg.pack(anchor="w", padx=12, pady=(0, 8))
 
         self.after(duration_ms, self.safe_destroy)

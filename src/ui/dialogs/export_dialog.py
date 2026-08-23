@@ -74,7 +74,8 @@ class ExportDialog(ctk.CTkToplevel):
             text="🛠️ Vorlagen verwalten",
             command=self.on_open_template_manager,
             width=150,
-            fg_color="gray30"
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
         )
         btn_manage.pack(side="right", padx=(5, 0))
 

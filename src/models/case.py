@@ -76,6 +76,7 @@ class Classification:
     urgency_level: str = UrgencyLevel.GREEN
     calculated_score: float = 0.0
     deadline_callback: str = ""
+    tags: list[str] = field(default_factory=list)
 
     def validate(self) -> list[str]:
         errors = []
@@ -104,6 +105,7 @@ class Classification:
             urgency_level=data.get("urgency_level", UrgencyLevel.GREEN),
             calculated_score=float(data.get("calculated_score", 0.0)),
             deadline_callback=data.get("deadline_callback", ""),
+            tags=list(data.get("tags", [])),
         )
 
 

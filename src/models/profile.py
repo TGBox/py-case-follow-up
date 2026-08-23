@@ -161,6 +161,7 @@ class UserProfile:
     reminder_settings: ReminderSettings = field(default_factory=ReminderSettings)
     scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
+    available_tags: list[str] = field(default_factory=lambda: ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"])
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -170,10 +171,14 @@ class UserProfile:
             "reminder_settings": self.reminder_settings.to_dict(),
             "scoring_matrix": self.scoring_matrix.to_dict(),
             "wiki_settings": self.wiki_settings.to_dict(),
+            "available_tags": self.available_tags,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "UserProfile":
+        default_tags = ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"]
+        tags_raw = data.get("available_tags", default_tags)
+        tags = list(tags_raw) if isinstance(tags_raw, list) else default_tags
         return cls(
             user=UserInfo.from_dict(data.get("user", {})),
             ui_settings=UISettings.from_dict(data.get("ui_settings", {})),
@@ -181,6 +186,7 @@ class UserProfile:
             reminder_settings=ReminderSettings.from_dict(data.get("reminder_settings", {})),
             scoring_matrix=ScoringMatrix.from_dict(data.get("scoring_matrix", {})),
             wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
+            available_tags=tags,
         )
 
 

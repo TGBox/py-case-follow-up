@@ -1,4 +1,4 @@
-import pytest
+import pytest # type: ignore
 from pathlib import Path
 from src.config import AppConfig
 from src.services.storage_service import StorageService

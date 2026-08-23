@@ -18,6 +18,7 @@ from src.services.wiki_sync_service import WikiSyncService
 from src.services.export_service import ExportService
 from src.services.p2p_sync_service import P2PSyncService
 from src.services.search_service import SearchService
+from src.services.schema_service import SchemaService
 
 from src.ui.views.cockpit_view import CockpitView
 from src.ui.views.tab_view import TabView

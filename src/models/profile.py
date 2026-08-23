@@ -4,9 +4,24 @@ from enums import SyncMode, LayoutMode
 from utils.security import normalize_url
 
 
+DEFAULT_COLUMN_WIDTHS = {
+    "cockpit_left": 300,
+    "cockpit_center": 420,
+    "cockpit_right": 320,
+    "board_column": 280,
+    "table_col_id": 120,
+    "table_col_practice": 220,
+    "table_col_title": 280,
+    "table_col_actor": 130,
+    "table_col_followup": 150,
+    "table_col_score": 90,
+}
+
+
 @dataclass
 class UserInfo:
     name: str = "Support Agent"
+    department: str = "Support"
     extension: str = ""
     email: str = ""
     mobile: str = ""
@@ -18,6 +33,7 @@ class UserInfo:
     def from_dict(cls, data: dict[str, Any]) -> "UserInfo":
         return cls(
             name=data.get("name", "Support Agent"),
+            department=data.get("department", "Support"),
             extension=data.get("extension", ""),
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),
@@ -29,15 +45,11 @@ class UISettings:
     theme: str = "SYSTEM"
     default_layout: str = LayoutMode.COCKPIT
     column_widths: dict[str, int] = field(
-        default_factory=lambda: {
-            "ticket_list": 320,
-            "case_details": 580,
-            "timeline_sidebar": 360,
-        }
+        default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
 
     def reset_column_widths(self) -> None:
-        self.column_widths = {"ticket_list": 320, "case_details": 580, "timeline_sidebar": 360, "board_column": 280}
+        self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -49,7 +61,7 @@ class UISettings:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "UISettings":
         widths = data.get("column_widths", {})
-        default_widths = {"ticket_list": 320, "case_details": 580, "timeline_sidebar": 360}
+        default_widths = dict(DEFAULT_COLUMN_WIDTHS)
         if isinstance(widths, dict):
             default_widths.update({k: int(v) for k, v in widths.items() if isinstance(v, (int, float))})
         return cls(

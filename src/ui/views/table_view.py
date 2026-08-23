@@ -45,6 +45,11 @@ class TableView(ctk.CTkFrame):
     def set_schemas(self, schemas: list[QuestionSchema]):
         self.schemas = schemas
 
+    def get_col_w(self, key: str, default: int) -> int:
+        if self.app_config and hasattr(self.app_config, "column_widths"):
+            return self.app_config.column_widths.get(f"table_col_{key}", default)
+        return default
+
     def create_layout(self):
         self.grid_rowconfigure(0, weight=5)  # Top: Table
         self.grid_rowconfigure(1, weight=5)  # Bottom: Details
@@ -60,12 +65,12 @@ class TableView(ctk.CTkFrame):
 
         # Clickable header columns for sorting
         cols = [
-            ("case_id", "ID ⇅", 120),
-            ("practice", "Praxis / Kunde ⇅", 220),
-            ("title", "Titel / Betreff ⇅", 280),
-            ("actor", "Zuständigkeit ⇅", 130),
-            ("followup", "Wiedervorlage ⇅", 150),
-            ("score", "Score ⇅", 90),
+            ("case_id", "ID ⇅", self.get_col_w("id", 120)),
+            ("practice", "Praxis / Kunde ⇅", self.get_col_w("practice", 220)),
+            ("title", "Titel / Betreff ⇅", self.get_col_w("title", 280)),
+            ("actor", "Zuständigkeit ⇅", self.get_col_w("actor", 130)),
+            ("followup", "Wiedervorlage ⇅", self.get_col_w("followup", 150)),
+            ("score", "Score ⇅", self.get_col_w("score", 90)),
         ]
 
         for col_key, col_label, width in cols:
@@ -165,6 +170,13 @@ class TableView(ctk.CTkFrame):
 
         sorted_cases = sorted(self.cases, key=get_sort_key, reverse=self.sort_reverse)
 
+        w_id = self.get_col_w("id", 120)
+        w_pr = self.get_col_w("practice", 220)
+        w_tt = self.get_col_w("title", 280)
+        w_ac = self.get_col_w("actor", 130)
+        w_fw = self.get_col_w("followup", 150)
+        w_sc = self.get_col_w("score", 90)
+
         for c in sorted_cases:
             is_sel = self.selected_case and self.selected_case.case_id == c.case_id
             bg_color = ("gray75", "gray35") if is_sel else ("gray85", "gray20")
@@ -177,29 +189,29 @@ class TableView(ctk.CTkFrame):
             fw_str = format_german_datetime(c.workflow_status.followup_at) if c.workflow_status.followup_at else "-"
 
             # Columns
-            id_l = ctk.CTkLabel(row, text=c.case_id, width=120, font=ctk.CTkFont(weight="bold"), anchor="w")
+            id_l = ctk.CTkLabel(row, text=c.case_id, width=w_id, font=ctk.CTkFont(weight="bold"), anchor="w")
             id_l.pack(side="left", padx=2)
             id_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 
-            pr_l = ctk.CTkLabel(row, text=f"{c.customer.practice_name}{vip_str}", width=220, anchor="w")
+            pr_l = ctk.CTkLabel(row, text=f"{c.customer.practice_name}{vip_str}", width=w_pr, anchor="w")
             pr_l.pack(side="left", padx=2)
             pr_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 
-            tt_l = ctk.CTkLabel(row, text=c.classification.title, width=280, anchor="w")
+            tt_l = ctk.CTkLabel(row, text=c.classification.title, width=w_tt, anchor="w")
             tt_l.pack(side="left", padx=2)
             tt_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 
-            ac_l = ctk.CTkLabel(row, text=get_actor_display(c.workflow_status.current_actor), width=130, anchor="w")
+            ac_l = ctk.CTkLabel(row, text=get_actor_display(c.workflow_status.current_actor), width=w_ac, anchor="w")
             ac_l.pack(side="left", padx=2)
             ac_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 
-            fw_l = ctk.CTkLabel(row, text=fw_str, width=150, anchor="w")
+            fw_l = ctk.CTkLabel(row, text=fw_str, width=w_fw, anchor="w")
             fw_l.pack(side="left", padx=2)
             fw_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 
             score = c.classification.calculated_score
             sc_color = "firebrick" if score >= 100 else ("darkgoldenrod" if score >= 50 else "darkgreen")
-            sc_l = ctk.CTkLabel(row, text=f"{score:.0f}", width=90, font=ctk.CTkFont(weight="bold"), text_color=sc_color, anchor="w")
+            sc_l = ctk.CTkLabel(row, text=f"{score:.0f}", width=w_sc, font=ctk.CTkFont(weight="bold"), text_color=sc_color, anchor="w")
             sc_l.pack(side="left", padx=2)
             sc_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
 

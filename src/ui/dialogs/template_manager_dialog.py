@@ -246,11 +246,20 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         for w in self.scroll_frame.winfo_children():
             w.destroy()
 
-        if not self.templates:
+        from services.seed_service import SeedService
+        seed_templates = SeedService(self.storage_service).create_seed_templates()
+        saved_templates = self.storage_service.load_templates()
+
+        display_templates = list(self.templates)
+        for st in seed_templates:
+            if not any(t.template_id == st.template_id for t in display_templates):
+                display_templates.append(st)
+
+        if not display_templates:
             ctk.CTkLabel(self.scroll_frame, text="Keine Vorlagen vorhanden.", text_color="gray").pack(pady=20)
             return
 
-        for tmpl in self.templates:
+        for tmpl in display_templates:
             card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6)
             card.pack(fill="x", pady=5, padx=5)
 
@@ -263,16 +272,41 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             id_lbl.pack(side="left", padx=8)
 
+            btn_del = ctk.CTkButton(top_row, text="🗑️ Löschen", width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
+            btn_del.pack(side="right", padx=4)
+
             btn_edit = ctk.CTkButton(top_row, text="✏️ Bearbeiten", width=100, command=lambda t=tmpl: self.on_edit_template(t))
             btn_edit.pack(side="right", padx=4)
 
-            btn_del = ctk.CTkButton(top_row, text="🗑️ Löschen", width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
-            btn_del.pack(side="right", padx=4)
+            is_already_saved = any(
+                s.template_id == tmpl.template_id and s.template_string == tmpl.template_string and s.display_name == tmpl.display_name
+                for s in saved_templates
+            )
+
+            if is_already_saved:
+                btn_adopt = ctk.CTkButton(top_row, text="✓ In Realdaten enthalten", width=170, state="disabled", fg_color="gray40")
+            else:
+                btn_adopt = ctk.CTkButton(top_row, text="📥 Zu Realdaten übernehmen", width=180, fg_color="dodgerblue", command=lambda t=tmpl: self.on_adopt_template(t))
+            btn_adopt.pack(side="right", padx=4)
 
             desc_txt = tmpl.description or "Keine Beschreibung"
             req_txt = f"Pflichtfelder: {', '.join(tmpl.required_schema_fields)}" if tmpl.required_schema_fields else "Keine Pflichtfelder"
             sub_lbl = ctk.CTkLabel(card, text=f"{desc_txt}  •  {req_txt}", anchor="w", font=ctk.CTkFont(size=11), text_color=("gray30", "gray80"))
             sub_lbl.pack(fill="x", padx=10, pady=(0, 6))
+
+    def on_adopt_template(self, tmpl: ExportTemplate):
+        saved_templates = self.storage_service.load_templates()
+        idx = next((i for i, t in enumerate(saved_templates) if t.template_id == tmpl.template_id), -1)
+        if idx >= 0:
+            saved_templates[idx] = tmpl
+        else:
+            saved_templates.append(tmpl)
+
+        self.storage_service.save_templates(saved_templates)
+        self.templates = saved_templates
+        self.render_list()
+        if self.on_templates_updated:
+            self.on_templates_updated(self.templates)
 
     def on_add_template(self):
         EditTemplateDialog(self, None, self.schemas, self.export_service, self.save_template)

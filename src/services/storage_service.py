@@ -1,5 +1,6 @@
 import json
 import logging
+import shutil
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Callable
@@ -49,14 +50,31 @@ def atomic_save_json(target_path: Path, data: Any) -> None:
         raise e
 
 
-def safe_read_json(target_path: Path, default_factory: Callable[[], Any] | None = None) -> Any:
-    """Reads JSON from target path. If missing, returns default and saves it.
-    If corrupted, backs up corrupted file and returns default.
+def safe_read_json(
+    target_path: Path,
+    default_factory: Callable[[], Any] | None = None,
+    example_path: Path | None = None,
+) -> Any:
+    """Reads JSON from target path.
+    1. If target_path exists: read and return.
+    2. If target_path is missing:
+       a. Copy example_path if available.
+       b. Otherwise save and return default_factory() value.
+    3. If corrupted: backup corrupted file and try example_path or default.
     """
     if not target_path.exists():
-        default_val = default_factory() if default_factory else []
-        atomic_save_json(target_path, default_val)
-        return default_val
+        if example_path and example_path.exists():
+            try:
+                target_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(example_path, target_path)
+                logger.info(f"Initialized {target_path.name} from example template {example_path}")
+            except Exception as copy_err:
+                logger.error(f"Could not copy example file {example_path} to {target_path}: {copy_err}")
+
+        if not target_path.exists():
+            default_val = default_factory() if default_factory else []
+            atomic_save_json(target_path, default_val)
+            return default_val
 
     try:
         with open(target_path, "r", encoding="utf-8") as f:
@@ -71,7 +89,15 @@ def safe_read_json(target_path: Path, default_factory: Callable[[], Any] | None 
             logger.info(f"Renamed corrupted file to {corrupted_path}")
         except Exception as rename_err:
             logger.error(f"Could not rename corrupted file: {rename_err}")
-        
+
+        if example_path and example_path.exists():
+            try:
+                shutil.copy2(example_path, target_path)
+                with open(target_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+
         default_val = default_factory() if default_factory else []
         atomic_save_json(target_path, default_val)
         return default_val
@@ -85,7 +111,11 @@ class StorageService:
 
     # --- Cases & Archive ---
     def load_cases(self) -> list[Case]:
-        data = safe_read_json(self.config.cases_path, default_factory=list)
+        data = safe_read_json(
+            self.config.cases_path,
+            default_factory=list,
+            example_path=self.config.get_example_path("cases.json")
+        )
         if isinstance(data, list):
             return [Case.from_dict(item) for item in data if isinstance(item, dict)]
         return []
@@ -95,7 +125,11 @@ class StorageService:
         atomic_save_json(self.config.cases_path, data)
 
     def load_archive(self) -> list[Case]:
-        data = safe_read_json(self.config.archive_path, default_factory=list)
+        data = safe_read_json(
+            self.config.archive_path,
+            default_factory=list,
+            example_path=self.config.get_example_path("archive.json")
+        )
         if isinstance(data, list):
             return [Case.from_dict(item) for item in data if isinstance(item, dict)]
         return []
@@ -176,7 +210,11 @@ class StorageService:
 
     # --- Customers ---
     def load_customers(self) -> list[Customer]:
-        data = safe_read_json(self.config.customers_path, default_factory=list)
+        data = safe_read_json(
+            self.config.customers_path,
+            default_factory=list,
+            example_path=self.config.get_example_path("customers.json")
+        )
         if isinstance(data, list):
             return [Customer.from_dict(item) for item in data if isinstance(item, dict)]
         return []
@@ -187,7 +225,11 @@ class StorageService:
 
     # --- Profile ---
     def load_profile(self) -> UserProfile:
-        data = safe_read_json(self.config.app_profile_path, default_factory=dict)
+        data = safe_read_json(
+            self.config.app_profile_path,
+            default_factory=dict,
+            example_path=self.config.get_example_path("app_profile.json")
+        )
         if isinstance(data, dict):
             return UserProfile.from_dict(data)
         return UserProfile()
@@ -197,7 +239,11 @@ class StorageService:
 
     # --- Schemas ---
     def load_schemas(self) -> list[QuestionSchema]:
-        data = safe_read_json(self.config.question_schemas_path, default_factory=lambda: {"schemas": []})
+        data = safe_read_json(
+            self.config.question_schemas_path,
+            default_factory=lambda: {"schemas": []},
+            example_path=self.config.get_example_path("question_schemas.json")
+        )
         schemas_raw = data.get("schemas", []) if isinstance(data, dict) else []
         return [QuestionSchema.from_dict(s) for s in schemas_raw if isinstance(s, dict)]
 
@@ -207,7 +253,11 @@ class StorageService:
 
     # --- Templates ---
     def load_templates(self) -> list[ExportTemplate]:
-        data = safe_read_json(self.config.export_templates_path, default_factory=lambda: {"templates": []})
+        data = safe_read_json(
+            self.config.export_templates_path,
+            default_factory=lambda: {"templates": []},
+            example_path=self.config.get_example_path("export_templates.json")
+        )
         templates_raw = data.get("templates", []) if isinstance(data, dict) else []
         return [ExportTemplate.from_dict(t) for t in templates_raw if isinstance(t, dict)]
 
@@ -217,7 +267,11 @@ class StorageService:
 
     # --- Colleagues ---
     def load_colleagues(self) -> list[Colleague]:
-        data = safe_read_json(self.config.colleagues_path, default_factory=list)
+        data = safe_read_json(
+            self.config.colleagues_path,
+            default_factory=list,
+            example_path=self.config.get_example_path("colleagues.json")
+        )
         if isinstance(data, list):
             return [Colleague.from_dict(item) for item in data if isinstance(item, dict)]
         return []

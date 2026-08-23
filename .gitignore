@@ -1,5 +1,8 @@
 .venv
 venv
 __pycache__
-data
+data/
+*.log
+*.sqlite
+.pytest_cache/
 agent-todo.md

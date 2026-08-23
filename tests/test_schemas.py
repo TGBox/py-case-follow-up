@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 from enums import FieldType
 from models.schema import QuestionSchema, SchemaField
@@ -74,9 +75,9 @@ def test_schema_service_add_remove_move_fields():
     assert [f.field_id for f in s.fields] == ["f1", "f2", "f3"]
 
     # Toggle required
-    assert s.fields[0].required is False
+    assert not s.fields[0].required
     SchemaService.toggle_required(s, "f1")
-    assert s.fields[0].required is True
+    assert s.fields[0].required
 
     # Remove field
     SchemaService.remove_field(s, "f2")

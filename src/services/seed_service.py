@@ -631,6 +631,7 @@ class SeedService:
 
         # Update scoring on all cases
         for c in cases:
+            c.is_demo_data = True
             scoring_service.update_case_scoring(c)
 
         return cases

@@ -56,6 +56,7 @@ class UISettings:
     table_column_order: list[str] = field(
         default_factory=lambda: ["case_id", "practice", "title", "actor", "followup", "score"]
     )
+    show_demo_data: bool | None = None
 
     def reset_column_widths(self) -> None:
         self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
@@ -71,6 +72,7 @@ class UISettings:
             "board_collapsed": self.board_collapsed,
             "table_column_widths": self.table_column_widths,
             "table_column_order": self.table_column_order,
+            "show_demo_data": self.show_demo_data,
         }
 
     @classmethod
@@ -91,6 +93,10 @@ class UISettings:
         def_order = ["case_id", "practice", "title", "actor", "followup", "score"]
         t_order = list(data.get("table_column_order", def_order)) if isinstance(data.get("table_column_order"), list) else def_order
 
+        s_demo = data.get("show_demo_data")
+        if not isinstance(s_demo, bool):
+            s_demo = None
+
         return cls(
             theme=data.get("theme", "SYSTEM"),
             default_layout=data.get("default_layout", LayoutMode.COCKPIT),
@@ -98,6 +104,7 @@ class UISettings:
             board_collapsed=b_collapsed,
             table_column_widths=t_widths,
             table_column_order=t_order,
+            show_demo_data=s_demo,
         )
 
 

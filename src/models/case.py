@@ -168,11 +168,12 @@ class Case:
     missing_required_fields: list[str] = field(default_factory=list)
     attachment_directory: str = ""
     timeline: list[TimelineEntry] = field(default_factory=list)
+    is_demo_data: bool = False
 
     def validate(self) -> list[str]:
         errors = []
-        if not self.case_id.strip():
-            errors.append("case_id is required.")
+        if not self.case_id:
+            errors.append("Case ID cannot be empty.")
         if self.created_at:
             try:
                 parse_iso(self.created_at)
@@ -205,6 +206,7 @@ class Case:
             "missing_required_fields": self.missing_required_fields,
             "attachment_directory": self.attachment_directory,
             "timeline": [t.to_dict() for t in self.timeline],
+            "is_demo_data": self.is_demo_data,
         }
 
     @classmethod
@@ -224,4 +226,5 @@ class Case:
             missing_required_fields=list(data.get("missing_required_fields", [])),
             attachment_directory=data.get("attachment_directory", ""),
             timeline=timeline,
+            is_demo_data=bool(data.get("is_demo_data", False)),
         )

@@ -190,6 +190,15 @@ class SupportCockpitApp(ctk.CTk):
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=6, pady=4)
 
+        self.demo_toggle_btn = ctk.CTkButton(
+            menu_frame,
+            text="🧪 Beispieldaten: AN",
+            command=self.toggle_demo_data,
+            width=135,
+            fg_color="darkblue",
+        )
+        self.demo_toggle_btn.pack(side="right", padx=4, pady=4)
+
         self.user_btn = ctk.CTkButton(
             menu_frame,
             text=f"👤 {self.profile.user.name}",
@@ -200,6 +209,33 @@ class SupportCockpitApp(ctk.CTk):
             hover_color=("gray80", "gray25")
         )
         self.user_btn.pack(side="right", padx=6, pady=4)
+
+    def get_filtered_cases(self) -> list[Case]:
+        user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
+        has_user_cases = len(user_cases) > 0
+
+        if self.profile.ui_settings.show_demo_data is not None:
+            show_demo = self.profile.ui_settings.show_demo_data
+        else:
+            show_demo = not has_user_cases
+
+        if show_demo:
+            return self.cases
+        else:
+            return user_cases
+
+    def toggle_demo_data(self):
+        user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
+        has_user_cases = len(user_cases) > 0
+        if self.profile.ui_settings.show_demo_data is not None:
+            curr_show = self.profile.ui_settings.show_demo_data
+        else:
+            curr_show = not has_user_cases
+
+        new_show = not curr_show
+        self.profile.ui_settings.show_demo_data = new_show
+        self.storage_service.save_profile(self.profile)
+        self.refresh_views()
 
     def switch_layout(self, layout_name: str):
         if self.active_view:
@@ -222,12 +258,26 @@ class SupportCockpitApp(ctk.CTk):
         self.refresh_views()
 
     def refresh_views(self):
-        filtered_cases = SearchService.filter_cases(self.cases, self.search_query) if self.search_query else self.cases
+        active_cases = self.get_filtered_cases()
+        filtered_cases = SearchService.filter_cases(active_cases, self.search_query) if self.search_query else active_cases
         self.cockpit_view.set_schemas(self.schemas)
         self.cockpit_view.set_cases(filtered_cases)
         self.board_view.set_cases(filtered_cases)
         self.table_view.set_schemas(self.schemas)
         self.table_view.set_cases(filtered_cases)
+
+        user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
+        has_user_cases = len(user_cases) > 0
+        if self.profile.ui_settings.show_demo_data is not None:
+            show_demo = self.profile.ui_settings.show_demo_data
+        else:
+            show_demo = not has_user_cases
+
+        if hasattr(self, "demo_toggle_btn"):
+            if show_demo:
+                self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AN", fg_color="darkblue")
+            else:
+                self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AUS", fg_color="gray40")
 
     def switch_to_cockpit_view_for_case(self, case: Case):
         self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))

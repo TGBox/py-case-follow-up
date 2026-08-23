@@ -1,12 +1,18 @@
-(A) Kopfzeilen-Glocken-Badge (🔔) mit Zähler fälliger Wiedervorlagen & Deadlines implementieren +Sprint1 @ui
-(A) Hintergrund-Timer & Toast-Notifications für fällige Fristen umsetzen +Sprint1 @notifications
-(A) Erinnerungs-Flyout mit Schnell-Aktionen (+1 Tag, +1 Woche verschieben) +Sprint1 @ui
-(B) Drag & Drop Upload-Zone im Cockpit-Detailpanel für Dateianhänge +Sprint2 @attachments
-(B) Live-Dateivorschau im Cockpit für Bilder, PDFs und Textfiles +Sprint2 @attachments
-(B) OS-Integration zum Öffnen von Anhängen im System-Standardprogramm +Sprint2 @attachments
-(C) Neuer Hauptansichts-Reiter "📊 Auswertungen" im Hauptmenü hinzufügen +Sprint3 @dashboard
-(C) Kennzahlen & KPIs (Fall-Laufzeiten, Auslastung pro Abteilung) berechnen +Sprint3 @dashboard
-(C) Kunden- & Fehlercode-Ranking mit Diagramm-Vorschau umsetzen +Sprint3 @dashboard
-(D) E-Mail-Postfach Import (IMAP) für automatische Fallerstellung +Sprint4 @integrations
-(D) GitLab / Jira Webhook Integrator bei Fallübergabe an Entwicklung +Sprint4 @integrations
-(D) Direct-Linking von Support-Fällen mit BookStack-Wiki-Einträgen +Sprint4 @integrations
+(A) Kopfzeilen-Glocken-Badge (🔔) mit Zähler fälliger Wiedervorlagen & Deadlines implementieren +NewFeature @ui
+(A) Hintergrund-Timer & Toast-Notifications für fällige Fristen umsetzen +NewFeature @notifications
+(A) Erinnerungs-Flyout mit Schnell-Aktionen (+1 Tag, +1 Woche verschieben) +NewFeature @ui
+(A) Wiedervorlage Schnellauswahl-Buttons: "Morgen 08:00 Uhr", "Heute vor Mittag 11:30 Uhr" und "Heute nach Mittag 13:30 Uhr" +NewFeature @ui
+(A) Fortlaufende Ereignis-Protokollierung: Neue Notizen/Events zu einem Fall hinzufügen, ohne die Zuständigkeit zu wechseln +NewFeature @ui
+(B) Drag & Drop Upload-Zone im Cockpit-Detailpanel für Dateianhänge +NewFeature @attachments
+(B) Live-Dateivorschau im Cockpit für Bilder, PDFs und Textfiles +NewFeature @attachments
+(B) OS-Integration zum Öffnen von Anhängen im System-Standardprogramm +NewFeature @attachments
+(B) Schnellfilter-Buttons über der Fallliste ("🔥 Dringend", "🔔 Fällige Wiedervorlagen", "🏢 Intern") & gespeicherte Smart-Filter +NewFeature @search
+(B) Benutzerdefinierte Tastatur-Shortcuts im Profile-Einstellungen-Dialog konfigurierbar machen (inkl. Konfliktprüfung) +NewFeature @settings
+(B) Abwesenheits- & Urlaubs-Status für Mitarbeiter unterstützen (inkl. Warnhinweis bei Übergabe an abwesende Kollegen) +NewFeature @colleagues
+(C) Neuer Hauptansichts-Reiter "📊 Auswertungen" im Hauptmenü hinzufügen +NewFeature @dashboard
+(C) Kennzahlen & KPIs (Fall-Laufzeiten, Auslastung pro Abteilung) berechnen +NewFeature @dashboard
+(C) Kunden- & Fehlercode-Ranking mit Diagramm-Vorschau umsetzen +NewFeature @dashboard
+(C) Fall-Akte PDF/Druck-Export mit Auswahl-Dialog: Einzelne Timeline-Einträge, Notizen oder Felder vor dem Drucken abwählen können +NewFeature @export
+(D) E-Mail-Postfach Import (IMAP) für automatische Fallerstellung +NewFeature @integrations
+(D) GitLab / Jira Webhook Integrator bei Fallübergabe an Entwicklung +NewFeature @integrations
+(D) Direct-Linking von Support-Fällen mit BookStack-Wiki-Einträgen +NewFeature @integrations

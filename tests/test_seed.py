@@ -14,7 +14,7 @@ def test_seed_generation(tmp_path: Path):
     summary = seed_service.run_seed(force=True)
 
     assert summary["customers"] == 5
-    assert summary["cases"] == 8
+    assert summary["cases"] == 12
     assert summary["schemas"] == 3
     assert summary["templates"] == 4
 
@@ -27,7 +27,7 @@ def test_seed_generation(tmp_path: Path):
 
     # Check loaded data
     cases = storage.load_cases()
-    assert len(cases) == 8
+    assert len(cases) == 12
 
     # Test SQLite Wiki FTS5 query
     conn = sqlite3.connect(config.wiki_db_path)

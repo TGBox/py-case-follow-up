@@ -14,6 +14,7 @@ class SearchQuery:
     error: str | None = None
     deadline: str | None = None  # "<2h", "overdue"
     tag: str | None = None
+    reminder: str | None = None  # "due", "true", "false"
     free_text_terms: list[str] = field(default_factory=list)
 
 
@@ -44,9 +45,10 @@ def parse_search_query(query_str: str) -> SearchQuery:
                 query.deadline = val_lower
             elif key_lower in ("tag", "tags"):
                 query.tag = val_lower
+            elif key_lower in ("reminder", "followup", "wiedervorlage"):
+                query.reminder = val_lower
             else:
-                # Unknown key treat as free text
-                free_text_terms.append(token)
+                free_text_terms.append(val)
         else:
             free_text_terms.append(token)
 
@@ -110,8 +112,26 @@ class SearchService:
             if query.tag.lower() not in case_tags:
                 return False
 
-        # 7. Free text terms
+        # 7. Reminder / Followup Token
+        if query.reminder is not None:
+            if query.reminder in ("true", "set", "ja", "due"):
+                if not case.workflow_status.followup_at:
+                    return False
+                if query.reminder == "due":
+                    try:
+                        from utils.datetime_utils import parse_iso
+                        fw_dt = parse_iso(case.workflow_status.followup_at)
+                        if fw_dt > ref_now:
+                            return False
+                    except Exception:
+                        pass
+            elif query.reminder in ("false", "nein", "none"):
+                if case.workflow_status.followup_at:
+                    return False
+
+        # 8. Free text terms
         if query.free_text_terms:
+            form_vals = [str(v) for v in case.form_data.values()] if isinstance(case.form_data, dict) else []
             searchable_text = " ".join([
                 case.case_id,
                 case.classification.title,
@@ -120,7 +140,8 @@ class SearchService:
                 case.customer.practice_name,
                 case.customer.contact_person,
                 case.customer.phone,
-                " ".join(case.form_data.values() if isinstance(case.form_data, dict) else []),
+                case.workflow_status.followup_note,
+                " ".join(form_vals),
                 " ".join(t.note for t in case.timeline),
                 " ".join(t.author for t in case.timeline),
             ]).lower()

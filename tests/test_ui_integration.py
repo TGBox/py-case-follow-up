@@ -19,7 +19,7 @@ def test_ui_service_workflow_integration(tmp_path: Path):
     schemas = storage.load_schemas()
     templates = storage.load_templates()
 
-    assert len(cases) == 8
+    assert len(cases) == 12
     target_case = cases[0]
     schema = next(s for s in schemas if s.schema_id == target_case.classification.schema_id)
 
@@ -43,6 +43,6 @@ def test_ui_service_workflow_integration(tmp_path: Path):
     remaining_cases = storage.load_cases()
     archived_cases = storage.load_archive()
 
-    assert len(remaining_cases) == 7
+    assert len(remaining_cases) == 11
     assert len(archived_cases) == 1
     assert archived_cases[0].case_id == target_case.case_id

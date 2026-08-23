@@ -157,3 +157,48 @@ def test_template_crud_storage(tmp_config: AppConfig):
     found = next(t for t in loaded if t.template_id == "custom_test_tmpl")
     assert found.display_name == "Custom Test"
     assert found.required_schema_fields == ["billing_quarter"]
+
+
+from datetime import datetime, timedelta
+from utils.datetime_utils import format_iso
+
+
+def test_corrupt_json_file_recovery(tmp_path: Path):
+    corrupt_file = tmp_path / "corrupt_cases.json"
+    with open(corrupt_file, "w", encoding="utf-8") as f:
+        f.write("{ INVALID JSON DATA }}}")
+
+    data = safe_read_json(corrupt_file, default_factory=list)
+    assert data == []
+    # Verify backup file created
+    bak_files = [f for f in tmp_path.iterdir() if f.name.startswith("corrupt_cases.corrupted_")]
+    assert len(bak_files) == 1
+
+
+def test_auto_archive_threshold_boundary(tmp_config: AppConfig):
+    storage = StorageService(tmp_config)
+    now = datetime.now()
+
+    old_completed_case = Case(
+        case_id="T-OLD",
+        updated_at=format_iso(now - timedelta(days=31)),
+        workflow_status=WorkflowStatus(is_completed=True, is_archived=False)
+    )
+    recent_completed_case = Case(
+        case_id="T-RECENT",
+        updated_at=format_iso(now - timedelta(days=5)),
+        workflow_status=WorkflowStatus(is_completed=True, is_archived=False)
+    )
+
+    storage.save_cases([old_completed_case, recent_completed_case])
+
+    count = storage.auto_archive_completed_cases(threshold_days=30)
+    assert count == 1
+
+    remaining = storage.load_cases()
+    archived = storage.load_archive()
+
+    assert len(remaining) == 1
+    assert remaining[0].case_id == "T-RECENT"
+    assert len(archived) == 1
+    assert archived[0].case_id == "T-OLD"

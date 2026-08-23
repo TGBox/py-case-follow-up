@@ -6,3 +6,4 @@ data/
 *.sqlite
 .pytest_cache/
 agent-todo.md
+.vscode/

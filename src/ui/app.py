@@ -125,8 +125,9 @@ class SupportCockpitApp(ctk.CTk):
         if self.profile.wiki_settings.sync_on_startup:
             self.after(1000, lambda: self.wiki_service.sync_from_bookstack())
 
-        # Scoring Timer (every hour)
+        # Scoring Timer (every hour) & Followup Timer
         self.schedule_hourly_scoring()
+        self.after(2000, self.check_due_followups)
 
     def load_all_data(self):
         self.cases = self.storage_service.load_cases()
@@ -189,9 +190,19 @@ class SupportCockpitApp(ctk.CTk):
         help_btn = ctk.CTkButton(menu_frame, text="📖 Hilfe", command=self.open_help_dialog, width=90, fg_color="gray40")
         help_btn.pack(side="left", padx=3, pady=4)
 
-        # Right side: User & Theme Toggle
+        # Right side: User, Bell Badge & Theme Toggle
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=6, pady=4)
+
+        self.bell_btn = ctk.CTkButton(
+            menu_frame,
+            text="🔔 0",
+            command=self.open_followup_flyout,
+            width=65,
+            fg_color="gray30",
+            hover_color="darkred",
+        )
+        self.bell_btn.pack(side="right", padx=4, pady=4)
 
         self.demo_toggle_btn = ctk.CTkButton(
             menu_frame,
@@ -543,6 +554,66 @@ class SupportCockpitApp(ctk.CTk):
             res = ZipBackupService.export_backup_zip(self.storage_service, Path(dest_file))
             mb_size = res["total_bytes"] / (1024 * 1024)
             print(f"✅ ZIP-Backup exportiert: {res['file_count']} Dateien ({mb_size:.2f} MB)")
+
+    def check_due_followups(self):
+        from utils.datetime_utils import parse_german_date, parse_iso, get_local_now
+        from ui.widgets.toast_notification import ToastNotification
+        now = get_local_now()
+        due_cases = []
+
+        for c in self.get_filtered_cases():
+            if c.workflow_status.followup_at and not c.workflow_status.is_completed:
+                try:
+                    f_str = c.workflow_status.followup_at
+                    if "." in f_str:
+                        iso_str = parse_german_date(f_str)
+                        dt = parse_iso(iso_str)
+                    else:
+                        dt = parse_iso(f_str)
+                    if dt <= now:
+                        due_cases.append(c)
+                except Exception:
+                    pass
+
+        due_count = len(due_cases)
+        if due_count > 0:
+            self.bell_btn.configure(text=f"🔔 {due_count}", fg_color="darkred")
+            if not getattr(self, "_last_notified_due_count", 0) or due_count > self._last_notified_due_count:
+                top_case = due_cases[0]
+                ToastNotification(self, title=f"🔔 Wiedervorlage fällig ({due_count})", message=f"[{top_case.case_id}] {top_case.classification.title}")
+            self._last_notified_due_count = due_count
+        else:
+            self.bell_btn.configure(text="🔔 0", fg_color="gray30")
+            self._last_notified_due_count = 0
+
+        self.after(60000, self.check_due_followups)
+
+    def open_followup_flyout(self):
+        from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog
+        from utils.datetime_utils import parse_german_date, parse_iso, get_local_now
+        now = get_local_now()
+        due_cases = []
+
+        for c in self.get_filtered_cases():
+            if c.workflow_status.followup_at and not c.workflow_status.is_completed:
+                try:
+                    f_str = c.workflow_status.followup_at
+                    if "." in f_str:
+                        iso_str = parse_german_date(f_str)
+                        dt = parse_iso(iso_str)
+                    else:
+                        dt = parse_iso(f_str)
+                    if dt <= now:
+                        due_cases.append(c)
+                except Exception:
+                    pass
+
+        def on_refresh():
+            self.storage_service.save_cases(self.cases)
+            self.refresh_views()
+            self.check_due_followups()
+
+        FollowupFlyoutDialog(self, due_cases, on_case_selected=self.on_case_selected, on_refresh=on_refresh)
 
     def on_closing(self):
         logger.info("Saving application settings and profile before exit...")

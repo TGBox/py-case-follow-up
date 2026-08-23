@@ -108,13 +108,19 @@ class CalendarDialog(ctk.CTkToplevel):
             )
             self.min_menu.pack(side="left", padx=2)
 
-        # Presets Row
-        presets_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        presets_frame.pack(fill="x", pady=(5, 10))
+        # Presets Rows
+        presets_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")
+        presets_frame1.pack(fill="x", pady=(2, 2))
 
-        ctk.CTkButton(presets_frame, text="Heute", width=70, fg_color="gray30", command=self.set_today).pack(side="left", padx=2)
-        ctk.CTkButton(presets_frame, text="+ 1 Tag", width=70, fg_color="gray30", command=lambda: self.add_days(1)).pack(side="left", padx=2)
-        ctk.CTkButton(presets_frame, text="+ 1 Woche", width=80, fg_color="gray30", command=lambda: self.add_days(7)).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame1, text="Heute 11:30 (vor Mittag)", width=170, fg_color="gray30", hover_color="gray40", command=self.set_today_before_lunch).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame1, text="Heute 13:30 (nach Mittag)", width=170, fg_color="gray30", hover_color="gray40", command=self.set_today_after_lunch).pack(side="left", padx=2)
+
+        presets_frame2 = ctk.CTkFrame(main_frame, fg_color="transparent")
+        presets_frame2.pack(fill="x", pady=(2, 8))
+
+        ctk.CTkButton(presets_frame2, text="Morgen 08:00", width=110, fg_color="gray30", hover_color="gray40", command=self.set_tomorrow_8am).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame2, text="+ 1 Tag", width=110, fg_color="gray30", hover_color="gray40", command=lambda: self.add_days(1)).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame2, text="+ 1 Woche", width=110, fg_color="gray30", hover_color="gray40", command=lambda: self.add_days(7)).pack(side="left", padx=2)
 
         # Bottom Actions
         action_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -213,6 +219,36 @@ class CalendarDialog(ctk.CTkToplevel):
         self.selected_dt = now
         self.hour_var.set(f"{now.hour:02d}")
         self.minute_var.set(f"{now.minute:02d}")
+        self.render_calendar()
+
+    def set_today_before_lunch(self):
+        now = get_local_now()
+        self.current_year = now.year
+        self.current_month = now.month
+        self.selected_day = now.day
+        self.selected_dt = datetime(now.year, now.month, now.day, 11, 30)
+        self.hour_var.set("11")
+        self.minute_var.set("30")
+        self.render_calendar()
+
+    def set_today_after_lunch(self):
+        now = get_local_now()
+        self.current_year = now.year
+        self.current_month = now.month
+        self.selected_day = now.day
+        self.selected_dt = datetime(now.year, now.month, now.day, 13, 30)
+        self.hour_var.set("13")
+        self.minute_var.set("30")
+        self.render_calendar()
+
+    def set_tomorrow_8am(self):
+        tmw = get_local_now() + timedelta(days=1)
+        self.current_year = tmw.year
+        self.current_month = tmw.month
+        self.selected_day = tmw.day
+        self.selected_dt = datetime(tmw.year, tmw.month, tmw.day, 8, 0)
+        self.hour_var.set("08")
+        self.minute_var.set("00")
         self.render_calendar()
 
     def add_days(self, days: int):

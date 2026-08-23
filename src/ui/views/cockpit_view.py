@@ -114,6 +114,11 @@ class CockpitView(ctk.CTkFrame):
         )
         self.actor_combo.pack(side="right", padx=5, pady=4)
 
+        self.add_note_btn = ctk.CTkButton(
+            self.info_bar, text="📝 Notiz / Ereignis", command=self.focus_timeline_note, width=120, fg_color="gray30", hover_color="gray40"
+        )
+        self.add_note_btn.pack(side="right", padx=5, pady=4)
+
         self.followup_btn = ctk.CTkButton(
             self.info_bar, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=120, fg_color="darkblue"
         )
@@ -159,6 +164,10 @@ class CockpitView(ctk.CTkFrame):
     def focus_wiki_search(self):
         self.right_tabview.set("Wiki")
         self.wiki_widget.focus_search()
+
+    def focus_timeline_note(self):
+        self.right_tabview.set("Zeitleiste")
+        self.timeline_widget.note_textbox.focus_set()
 
     def on_select_case_from_list(self, case: Case):
         self.current_case = case

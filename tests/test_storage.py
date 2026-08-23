@@ -121,3 +121,39 @@ def test_custom_workspace_and_path_overrides(tmp_path: Path):
     loaded = storage.load_cases()
     assert len(loaded) == 1
     assert loaded[0].case_id == "T-999"
+
+
+def test_followup_data_serialization(tmp_config: AppConfig):
+    storage = StorageService(tmp_config)
+    case = Case(case_id="T-777")
+    case.workflow_status.followup_at = "2026-08-25T09:00:00"
+    case.workflow_status.followup_note = "Beim Entwickler nachfragen"
+
+    storage.save_cases([case])
+    loaded = storage.load_cases()
+
+    assert len(loaded) == 1
+    assert loaded[0].workflow_status.followup_at == "2026-08-25T09:00:00"
+    assert loaded[0].workflow_status.followup_note == "Beim Entwickler nachfragen"
+
+
+def test_template_crud_storage(tmp_config: AppConfig):
+    storage = StorageService(tmp_config)
+    from models.export_template import ExportTemplate
+    from enums import TargetType
+
+    tmpl = ExportTemplate(
+        template_id="custom_test_tmpl",
+        display_name="Custom Test",
+        target_type=TargetType.FILE_EXPORT.value,
+        required_schema_fields=["billing_quarter"],
+        template_string="Hello {{ form_data.billing_quarter }}"
+    )
+
+    storage.save_templates([tmpl])
+    loaded = storage.load_templates()
+
+    assert any(t.template_id == "custom_test_tmpl" for t in loaded)
+    found = next(t for t in loaded if t.template_id == "custom_test_tmpl")
+    assert found.display_name == "Custom Test"
+    assert found.required_schema_fields == ["billing_quarter"]

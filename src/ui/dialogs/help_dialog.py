@@ -193,6 +193,48 @@ Das **Support-Cockpit** speichert Arbeitsdaten getrennt von Programmdateien. Die
 - **Vorlagen im Repository (`data_examples/`)**: Werden beim ersten Start Vorlagendateien aus `data_examples/` in Ihren gewählten Datenordner kopiert.
 - **Leere Dateien**: Sollten weder Daten noch Vorlagen existieren, erzeugt die Anwendung automatisch neue, leere Datendateien, damit der Betrieb reibungslos startet.
 """
+    },
+    {
+        "id": "template_editor",
+        "title": "📄 Export-Vorlagen-Editor",
+        "category": "Export",
+        "content": """
+### 📄 Eigene Export-Vorlagen erstellen & anpassen
+
+Im **Export-Vorlagen-Editor** können Sie bestehende Übergabevorlagen anpassen oder völlig neue Exportformate definieren.
+
+#### Vorlagen-Manager öffnen
+- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠️ Vorlagen verwalten**.
+
+#### Vorlage konfigurieren
+1. **Name & ID**: Vergeben Sie eine eindeutige ID und einen lesbaren Anzeigenamen.
+2. **Ziel-Aktion**: Wählen Sie zwischen Zwischenablage-Text und Datei-Export.
+3. **Zugeordnete Formulare**: Aktivieren Sie die Häkchen bei den Formular-Schemas, für die die Vorlage angeboten werden soll.
+4. **Erforderliche Pflichtfelder**: Legen Sie fest, welche Felder im Fall ausgefüllt sein müssen, bevor exportiert werden darf.
+5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁️ Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!
+"""
+    },
+    {
+        "id": "handover_followup",
+        "title": "🔔 Zuständigkeitswechsel & Wiedervorlage",
+        "category": "Workflow",
+        "content": """
+### 🔔 Zuständigkeitswechsel & Wiedervorlage
+
+Behalten Sie stets den Überblick darüber, wann ein Fall an wen übergeben wurde und wann Sie beim Kollegen nachfragen müssen.
+
+#### 1. Automatische Übergabe-Protokollierung
+- Sobald Sie den **Zuständig (Akteur)** eines Falls ändern (z. B. von *Support* auf *Entwicklung*), erstellt das System automatisch einen präzisen Eintrag in der **Zeitleiste**:
+  - *Zeitstempel & Urheber*
+  - *Statusänderung: ZUSTÄNDIGKEIT: Support -> Entwicklung*
+  - *Hinweis: Zuständigkeit übergeben an: Entwicklung (vorher: Support)*
+
+#### 2. Wiedervorlage & Nachfrage-Erinnerung einplanen
+- Beim Wechsel der Zuständigkeit öffnet sich automatisch der Dialog **🔔 Wiedervorlage einplanen**.
+- Oder klicken Sie in den Falldetails jederzeit auf den Button **🔔 Wiedervorlage**.
+- Wählen Sie ein Schnell-Preset (`+ 1 Tag`, `+ 2 Tage`, `+ 1 Woche`) oder ein freies Datum mit Notiz.
+- Fälle mit aktiver Wiedervorlage werden in der Fallliste mit einem orangen **🔔 Nachfragen am: YYYY-MM-DD** Hinweis hervorgehoben!
+"""
     }
 ]
 

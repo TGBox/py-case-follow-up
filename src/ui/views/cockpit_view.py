@@ -91,7 +91,7 @@ class CockpitView(ctk.CTkFrame):
         self.info_label = ctk.CTkLabel(self.info_bar, text="", font=ctk.CTkFont(size=12), anchor="w")
         self.info_label.pack(side="left", padx=10, pady=6)
 
-        # Actor Selector & Complete Buttons
+        # Actor Selector, Followup & Action Buttons
         self.actor_combo = ctk.CTkOptionMenu(
             self.info_bar,
             values=list(ACTOR_DISPLAY.values()),
@@ -99,6 +99,11 @@ class CockpitView(ctk.CTkFrame):
             width=130,
         )
         self.actor_combo.pack(side="right", padx=5, pady=4)
+
+        self.followup_btn = ctk.CTkButton(
+            self.info_bar, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=120, fg_color="darkblue"
+        )
+        self.followup_btn.pack(side="right", padx=5, pady=4)
 
         self.complete_btn = ctk.CTkButton(
             self.info_bar, text="✓ Erledigt", command=self.on_toggle_complete, width=90, fg_color="green"
@@ -151,7 +156,8 @@ class CockpitView(ctk.CTkFrame):
 
         # Info bar text
         vip_str = " ★ VIP" if case.customer.is_vip else ""
-        info_str = f"Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str} | Ansprechpartner: {case.customer.contact_person}"
+        fw_str = f" | 🔔 Wiedervorlage: {case.workflow_status.followup_at.split('T')[0]}" if case.workflow_status.followup_at else ""
+        info_str = f"Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str} | Ansprechpartner: {case.customer.contact_person}{fw_str}"
         self.info_label.configure(text=info_str)
 
         self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
@@ -182,9 +188,45 @@ class CockpitView(ctk.CTkFrame):
 
     def on_actor_changed(self, new_actor_display: str):
         if self.current_case:
-            self.current_case.workflow_status.current_actor = get_actor_val_from_display(new_actor_display)
+            prev_actor_val = self.current_case.workflow_status.current_actor
+            new_actor_val = get_actor_val_from_display(new_actor_display)
+
+            if prev_actor_val != new_actor_val:
+                from utils.datetime_utils import now_iso
+                from models.case import TimelineEntry
+                from enums import Channel
+
+                self.current_case.workflow_status.current_actor = new_actor_val
+                self.current_case.workflow_status.actor_since = now_iso()
+
+                # Add timeline entry for handover
+                note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)} (vorher: {get_actor_display(prev_actor_val)})"
+                change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
+                entry = TimelineEntry(
+                    timestamp=now_iso(),
+                    author=self.author_name,
+                    channel=Channel.INTERNAL_NOTE.value,
+                    note=note_text,
+                    status_change=change_text,
+                )
+                self.current_case.timeline.append(entry)
+                self.timeline_widget.load_timeline(self.current_case.timeline)
+
+                self.on_click_save()
+                self.open_followup_dialog()
+
+    def open_followup_dialog(self):
+        if not self.current_case:
+            return
+        from ui.dialogs.followup_dialog import FollowupDialog
+        FollowupDialog(self, self.current_case, self.on_followup_set)
+
+    def on_followup_set(self, followup_at: str, followup_note: str):
+        if self.current_case:
+            self.current_case.workflow_status.followup_at = followup_at
+            self.current_case.workflow_status.followup_note = followup_note
             self.on_click_save()
-            self.on_click_save()
+            self.on_select_case_from_list(self.current_case)
 
     def on_toggle_complete(self):
         if self.current_case:

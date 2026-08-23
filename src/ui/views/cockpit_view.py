@@ -29,6 +29,7 @@ class CockpitView(ctk.CTkFrame):
         on_search_changed: Callable[[str], None],
         on_open_export_dialog: Callable[[Case], None],
         on_archive_case: Callable[[Case], None],
+        app_config: Any | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
@@ -40,17 +41,30 @@ class CockpitView(ctk.CTkFrame):
         self.on_search_changed = on_search_changed
         self.on_open_export_dialog = on_open_export_dialog
         self.on_archive_case = on_archive_case
+        self.app_config = app_config
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
 
         self.create_layout()
 
+    def apply_column_widths(self, widths: dict[str, int]):
+        w_left = widths.get("cockpit_left", 300)
+        w_center = widths.get("cockpit_center", 420)
+        w_right = widths.get("cockpit_right", 320)
+        self.grid_columnconfigure(0, weight=w_left, minsize=180)
+        self.grid_columnconfigure(1, weight=w_center, minsize=260)
+        self.grid_columnconfigure(2, weight=w_right, minsize=200)
+
     def create_layout(self):
-        # 3-Column Layout
-        self.grid_columnconfigure(0, weight=3)  # Left: List
-        self.grid_columnconfigure(1, weight=5)  # Center: Form
-        self.grid_columnconfigure(2, weight=4)  # Right: Sidebar
+        # 3-Column Layout with configurable weights
+        w_left = self.app_config.column_widths.get("cockpit_left", 300) if (self.app_config and hasattr(self.app_config, "column_widths")) else 300
+        w_center = self.app_config.column_widths.get("cockpit_center", 420) if (self.app_config and hasattr(self.app_config, "column_widths")) else 420
+        w_right = self.app_config.column_widths.get("cockpit_right", 320) if (self.app_config and hasattr(self.app_config, "column_widths")) else 320
+
+        self.grid_columnconfigure(0, weight=w_left, minsize=180)
+        self.grid_columnconfigure(1, weight=w_center, minsize=260)
+        self.grid_columnconfigure(2, weight=w_right, minsize=200)
         self.grid_rowconfigure(0, weight=1)
 
         # 1. Left Column: Case List
@@ -154,9 +168,9 @@ class CockpitView(ctk.CTkFrame):
         self.export_btn.configure(state="normal")
         self.save_btn.configure(state="normal")
 
-        # Info bar text
+        from utils.datetime_utils import format_german_datetime
         vip_str = " ★ VIP" if case.customer.is_vip else ""
-        fw_str = f" | 🔔 Wiedervorlage: {case.workflow_status.followup_at.split('T')[0]}" if case.workflow_status.followup_at else ""
+        fw_str = f" | 🔔 Wiedervorlage: {format_german_datetime(case.workflow_status.followup_at)}" if case.workflow_status.followup_at else ""
         info_str = f"Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str} | Ansprechpartner: {case.customer.contact_person}{fw_str}"
         self.info_label.configure(text=info_str)
 

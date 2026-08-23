@@ -1,8 +1,9 @@
-from datetime import datetime, timedelta
-from typing import Callable
 import customtkinter as ctk
+from datetime import timedelta
+from typing import Callable
 from models.case import Case
-from utils.datetime_utils import now_iso
+from ui.widgets.date_picker import DatePickerWidget
+from utils.datetime_utils import format_german_date, parse_german_date, get_local_now
 
 
 class FollowupDialog(ctk.CTkToplevel):
@@ -17,7 +18,7 @@ class FollowupDialog(ctk.CTkToplevel):
         self.on_followup_set = on_followup_set
 
         self.title("🔔 Wiedervorlage & Nachfrage-Erinnerung")
-        self.geometry("520x420")
+        self.geometry("520x430")
         self.resizable(False, False)
 
         self.transient(parent)
@@ -54,18 +55,24 @@ class FollowupDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text="+ 3 Tage", width=90, command=lambda: self.set_preset_days(3)).pack(side="left", padx=3)
         ctk.CTkButton(btn_frame, text="+ 1 Woche", width=90, command=lambda: self.set_preset_days(7)).pack(side="left", padx=3)
 
-        # Custom Date Entry
-        ctk.CTkLabel(main_frame, text="Erinnerungs-Datum (YYYY-MM-DD):").pack(anchor="w", padx=10, pady=(15, 2))
-        self.date_entry = ctk.CTkEntry(main_frame, placeholder_text="YYYY-MM-DD")
-
+        # Custom Date Entry using DatePickerWidget
+        ctk.CTkLabel(main_frame, text="Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(anchor="w", padx=10, pady=(15, 2))
+        
         init_date = ""
         if self.case.workflow_status.followup_at:
-            init_date = self.case.workflow_status.followup_at.split("T")[0]
+            init_date = self.case.workflow_status.followup_at
         else:
-            init_date = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d")
+            target_dt = get_local_now() + timedelta(days=2)
+            init_date = format_german_date(target_dt) + " 09:00"
 
-        self.date_entry.insert(0, init_date)
-        self.date_entry.pack(fill="x", padx=10, pady=(0, 10))
+        self.date_picker = DatePickerWidget(
+            main_frame,
+            placeholder_text="TT.MM.JJJJ 09:00",
+            include_time=True,
+            initial_value=init_date,
+            width=260,
+        )
+        self.date_picker.pack(fill="x", padx=10, pady=(0, 10))
 
         # Note entry
         ctk.CTkLabel(main_frame, text="Notiz / Nachfrage-Grund (Optional):").pack(anchor="w", padx=10, pady=(5, 2))
@@ -104,17 +111,15 @@ class FollowupDialog(ctk.CTkToplevel):
         ).pack(side="left", padx=5)
 
     def set_preset_days(self, days: int):
-        target_dt = datetime.now() + timedelta(days=days)
-        self.date_entry.delete(0, "end")
-        self.date_entry.insert(0, target_dt.strftime("%Y-%m-%d"))
+        target_dt = get_local_now() + timedelta(days=days)
+        german_str = format_german_date(target_dt) + " 09:00"
+        self.date_picker.set_date(german_str)
 
     def on_save(self):
-        val = self.date_entry.get().strip()
+        iso_val = self.date_picker.get_iso()
         note = self.note_entry.get().strip()
-        if val:
-            if "T" not in val:
-                val += "T09:00:00"
-            self.on_followup_set(val, note)
+        if iso_val:
+            self.on_followup_set(iso_val, note)
         self.destroy()
 
     def on_clear(self):

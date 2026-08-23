@@ -143,9 +143,10 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.render_tags_checkboxes()
 
         # Callback deadline (optional)
-        ctk.CTkLabel(main_frame, text="Rückruf-Deadline (ISO, optional YYYY-MM-DDTHH:MM:SS):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.deadline_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. 2026-08-23T16:00:00", width=510)
-        self.deadline_entry.pack(anchor="w", pady=(0, 10))
+        ctk.CTkLabel(main_frame, text="Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        from ui.widgets.date_picker import DatePickerWidget
+        self.deadline_picker = DatePickerWidget(main_frame, placeholder_text="z. B. 23.08.2026 16:00", include_time=True, width=380)
+        self.deadline_picker.pack(anchor="w", pady=(0, 10))
 
         # Initial Timeline Note
         ctk.CTkLabel(main_frame, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
@@ -262,7 +263,7 @@ class NewCaseDialog(ctk.CTkToplevel):
             classification=Classification(
                 schema_id=schema_obj.schema_id,
                 title=title,
-                deadline_callback=self.deadline_entry.get().strip(),
+                deadline_callback=self.deadline_picker.get_iso(),
                 tags=selected_tags,
             ),
             workflow_status=WorkflowStatus(

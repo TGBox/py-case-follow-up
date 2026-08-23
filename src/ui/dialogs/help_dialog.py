@@ -35,6 +35,26 @@ In der oberen Menüleiste können Sie jederzeit zwischen 3 Ansichten umschalten:
 """
     },
     {
+        "id": "ui_customization",
+        "title": "📅 Datumsformate, Kalender & Spaltenbreiten",
+        "category": "Benutzeroberfläche",
+        "content": """
+### 📅 Datumsformatierung, Kalender-Picker & Spaltenbreiten
+
+#### 1. 📅 Deutsche Datumsformatierung
+- Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.
+
+#### 2. 🗓️ Interaktiver Kalender-Picker
+- Bei allen Datumseingaben (z. B. Wiedervorlage einplanen, Rückruf-Deadline festlegen) steht ein interaktiver Kalender-Dialog zur Verfügung.
+- Klicken Sie neben dem Eingabefeld auf **📅 Kalender**, um den Monatskalender zu öffnen und das gewünschte Datum bequem per Klick auszuwählen.
+- Schnellauswahl-Tasten für *Heute*, *+ 1 Tag* und *+ 1 Woche* beschleunigen die Eingabe.
+
+#### 3. 📐 Individuelle & dauerhafte Spaltenbreiten
+- Über den Button **📐 Spalten** in der oberen Menüleiste können Sie die Breiten der einzelnen Spalten im Cockpit (Fallliste, Details/Formular, Zeitleiste) sowie im Kanban-Board frei anpassen.
+- Ihre gewählten Breiten werden automatisch in der Benutzerkonfiguration (`user_config.json`) gespeichert und bleiben beim Neustart der Anwendung erhalten.
+"""
+    },
+    {
         "id": "praxis",
         "title": "🏥 Praxis- & Kundenverwaltung",
         "category": "Kunden",

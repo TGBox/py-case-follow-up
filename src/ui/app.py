@@ -90,6 +90,7 @@ class SupportCockpitApp(ctk.CTk):
             on_search_changed=self.on_search_changed,
             on_open_export_dialog=self.open_export_dialog,
             on_archive_case=self.on_archive_case,
+            app_config=self.app_config,
         )
         self.tab_view = TabView(self.container_frame, on_select_case=self.on_case_selected)
         self.split_view = SplitView(self.container_frame, on_case_selected=self.on_case_selected, on_search_changed=self.on_search_changed)
@@ -250,6 +251,7 @@ class SupportCockpitApp(ctk.CTk):
         self.load_all_data()
         self.profile = self.storage_service.load_profile()
         self.user_btn.configure(text=f"👤 {self.profile.user.name}")
+        self.cockpit_view.author_name = self.profile.user.name
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         self.refresh_views()

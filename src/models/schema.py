@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
-from src.enums import FieldType
+from enums import FieldType
 
 
 @dataclass
@@ -25,7 +25,7 @@ class SchemaField:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        res = {
+        res: dict[str, Any] = {
             "field_id": self.field_id,
             "label": self.label,
             "field_type": self.field_type,

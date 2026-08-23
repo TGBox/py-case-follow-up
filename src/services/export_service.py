@@ -1,11 +1,11 @@
 import logging
 from typing import Any
 from jinja2 import Template, Environment
-from src.models.case import Case
-from src.models.export_template import ExportTemplate
-from src.models.schema import QuestionSchema
-from src.services.schema_service import SchemaService
-from src.services.storage_service import StorageService
+from models.case import Case
+from models.export_template import ExportTemplate
+from models.schema import QuestionSchema
+from services.schema_service import SchemaService
+from services.storage_service import StorageService
 
 logger = logging.getLogger("SupportCockpit")
 

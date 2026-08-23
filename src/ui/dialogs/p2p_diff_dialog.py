@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from typing import Callable
-from src.models.profile import Colleague
-from src.models.case import Case
-from src.services.p2p_sync_service import P2PSyncService, CaseDiffItem
+from models.profile import Colleague
+from models.case import Case
+from services.p2p_sync_service import P2PSyncService, CaseDiffItem
 
 
 class P2PDiffDialog(ctk.CTkToplevel):

@@ -1,6 +1,6 @@
+from models.case import Case
 import customtkinter as ctk
 from typing import Callable
-from src.models.case import Case
 
 
 class TabView(ctk.CTkFrame):
@@ -25,7 +25,7 @@ class TabView(ctk.CTkFrame):
             widget.destroy()
 
         # Header row
-        h_frame = ctk.CTkFrame(self.scroll_frame, fg_color="gray30")
+        h_frame = ctk.CTkFrame(self.scroll_frame, fg_color=("gray75", "gray30"))
         h_frame.pack(fill="x", pady=2)
 
         ctk.CTkLabel(h_frame, text="ID", width=110, font=ctk.CTkFont(weight="bold")).pack(side="left")
@@ -35,7 +35,7 @@ class TabView(ctk.CTkFrame):
         ctk.CTkLabel(h_frame, text="Score", width=80, font=ctk.CTkFont(weight="bold")).pack(side="left")
 
         for c in cases:
-            row = ctk.CTkFrame(self.scroll_frame, fg_color="gray20", cursor="hand2")
+            row = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), cursor="hand2")
             row.pack(fill="x", pady=2)
             row.bind("<Button-1>", lambda e, case=c: self.on_select_case(case))
 

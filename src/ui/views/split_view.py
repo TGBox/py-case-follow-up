@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from typing import Callable
-from src.models.case import Case
-from src.ui.widgets.case_list_widget import CaseListWidget
+from models.case import Case
+from ui.widgets.case_list_widget import CaseListWidget
 
 
 class SplitView(ctk.CTkFrame):

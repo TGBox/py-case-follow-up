@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from pathlib import Path
 from tkinter import filedialog
-from src.models.case import Case
-from src.services.attachment_service import AttachmentService
+from models.case import Case
+from services.attachment_service import AttachmentService
 
 
 class AttachmentWidget(ctk.CTkFrame):
@@ -13,7 +13,8 @@ class AttachmentWidget(ctk.CTkFrame):
 
         self.create_widgets()
         # Bind Ctrl+V for clipboard image paste
-        self.bind_all("<Control-v>", self.on_clipboard_paste)
+        import tkinter as tk
+        tk.Misc.bind_all(self, "<Control-v>", self.on_clipboard_paste)
 
     def create_widgets(self):
         # Header
@@ -36,7 +37,7 @@ class AttachmentWidget(ctk.CTkFrame):
         add_file_btn = ctk.CTkButton(btn_frame, text="+ Datei hinzufügen...", command=self.on_add_file, width=150)
         add_file_btn.pack(side="left")
 
-        ctk.CTkLabel(btn_frame, text="💡 Tip: Strg+V fügt Screenshot als PNG ein", font=ctk.CTkFont(size=10), text_color="gray70").pack(side="right")
+        ctk.CTkLabel(btn_frame, text="💡 Tip: Strg+V fügt Screenshot als PNG ein", font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
 
     def load_attachments(self, case: Case | None):
         self.current_case = case
@@ -53,7 +54,7 @@ class AttachmentWidget(ctk.CTkFrame):
             return
 
         for f in files:
-            f_frame = ctk.CTkFrame(self.scroll_frame, fg_color="gray20")
+            f_frame = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"))
             f_frame.pack(fill="x", pady=2, padx=2)
 
             icon = "🖼️" if f.suffix.lower() in (".png", ".jpg", ".jpeg", ".bmp") else "📄"

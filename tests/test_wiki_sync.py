@@ -1,9 +1,9 @@
 import pytest
 from pathlib import Path
-from src.config import AppConfig
-from src.enums import SyncMode
-from src.models.profile import WikiSettings
-from src.services.wiki_sync_service import WikiSyncService
+from config import AppConfig
+from enums import SyncMode
+from models.profile import WikiSettings
+from services.wiki_sync_service import WikiSyncService
 
 
 class MockBookStackClient:

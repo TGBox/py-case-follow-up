@@ -1,10 +1,10 @@
 import pytest
 from pathlib import Path
-from src.config import AppConfig
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from src.models.profile import Colleague
-from src.services.storage_service import StorageService, atomic_save_json
-from src.services.p2p_sync_service import P2PSyncService
+from config import AppConfig
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
+from models.profile import Colleague
+from services.storage_service import StorageService, atomic_save_json
+from services.p2p_sync_service import P2PSyncService
 
 
 def test_p2p_diff_computation(tmp_path: Path):

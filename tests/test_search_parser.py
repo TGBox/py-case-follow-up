@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 import pytest
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from src.enums import UrgencyLevel, BoardColumn, Actor
-from src.services.search_service import SearchService, parse_search_query
-from src.utils.datetime_utils import format_iso
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from enums import UrgencyLevel, BoardColumn, Actor
+from services.search_service import SearchService, parse_search_query
+from utils.datetime_utils import format_iso
 
 
 def test_parse_search_query():

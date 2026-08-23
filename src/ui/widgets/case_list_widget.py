@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from typing import Callable
-from src.models.case import Case
-from src.enums import UrgencyLevel
+from models.case import Case
+from enums import UrgencyLevel
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -54,7 +54,7 @@ class CaseListWidget(ctk.CTkFrame):
 
         for case in self.cases:
             is_selected = case.case_id == self.selected_case_id
-            row_bg = "gray25" if is_selected else "gray15"
+            row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
 
             card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, cursor="hand2")
             card.pack(fill="x", pady=4, padx=4)
@@ -76,7 +76,7 @@ class CaseListWidget(ctk.CTkFrame):
             case_id_lbl.pack(side="left")
             case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            score_lbl = ctk.CTkLabel(top_row, text=f"Pts: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color="gray70")
+            score_lbl = ctk.CTkLabel(top_row, text=f"Pts: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             score_lbl.pack(side="right")
 
             # Practice Name
@@ -89,7 +89,7 @@ class CaseListWidget(ctk.CTkFrame):
 
             # Title & Actor
             sub_str = f"{case.classification.title} | Actor: {case.workflow_status.current_actor}"
-            sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color="gray70")
+            sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             sub_lbl.pack(fill="x", padx=12, pady=(0, 6))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 

@@ -2,10 +2,10 @@ import customtkinter as ctk
 from pathlib import Path
 from tkinter import filedialog
 from typing import Callable
-from src.models.case import Case
-from src.models.export_template import ExportTemplate
-from src.models.schema import QuestionSchema
-from src.services.export_service import ExportService
+from models.case import Case
+from models.export_template import ExportTemplate
+from models.schema import QuestionSchema
+from services.export_service import ExportService
 
 
 class ExportDialog(ctk.CTkToplevel):
@@ -179,7 +179,7 @@ class ExportDialog(ctk.CTkToplevel):
             if txt:
                 self.case.form_data[fid] = txt
         if self.schema:
-            from src.services.schema_service import SchemaService
+            from services.schema_service import SchemaService
             SchemaService.update_case_completion(self.case, self.schema)
         self.on_case_updated(self.case)
 

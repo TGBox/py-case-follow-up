@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
-from src.enums import UrgencyLevel, BoardColumn, Actor, Channel
-from src.utils.datetime_utils import parse_iso
+from enums import UrgencyLevel, BoardColumn, Actor, Channel
+from utils.datetime_utils import parse_iso
 
 
 @dataclass

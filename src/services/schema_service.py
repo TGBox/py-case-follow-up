@@ -1,8 +1,8 @@
 from typing import Any
-from src.models.schema import QuestionSchema, SchemaField
-from src.models.case import Case
-from src.enums import FieldType
-from src.services.storage_service import StorageService
+from models.schema import QuestionSchema, SchemaField
+from models.case import Case
+from enums import FieldType
+from services.storage_service import StorageService
 
 
 class SchemaService:

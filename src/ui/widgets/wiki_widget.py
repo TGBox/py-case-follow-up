@@ -1,6 +1,6 @@
 import customtkinter as ctk
 import webbrowser
-from src.services.wiki_sync_service import WikiSyncService
+from services.wiki_sync_service import WikiSyncService
 
 
 class WikiWidget(ctk.CTkFrame):
@@ -28,7 +28,7 @@ class WikiWidget(ctk.CTkFrame):
         self.search_entry.bind("<KeyRelease>", lambda e: self.on_search())
 
         # Status
-        self.status_label = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=11), text_color="gray70", anchor="w")
+        self.status_label = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), anchor="w")
         self.status_label.pack(fill="x", padx=15, pady=(0, 2))
 
         # Scrollable Results Container
@@ -55,7 +55,7 @@ class WikiWidget(ctk.CTkFrame):
             return
 
         for item in results:
-            card = ctk.CTkFrame(self.scroll_frame, fg_color="gray20", corner_radius=6, cursor="hand2")
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6, cursor="hand2")
             card.pack(fill="x", pady=4, padx=4)
 
             url = item.get("url", "")
@@ -67,7 +67,7 @@ class WikiWidget(ctk.CTkFrame):
             if url:
                 title_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
-            snip_lbl = ctk.CTkLabel(card, text=item.get("snippet", ""), anchor="w", justify="left", font=ctk.CTkFont(size=11), text_color="gray80", wraplength=280)
+            snip_lbl = ctk.CTkLabel(card, text=item.get("snippet", ""), anchor="w", justify="left", font=ctk.CTkFont(size=11), text_color=("gray30", "gray80"), wraplength=280)
             snip_lbl.pack(fill="x", padx=8, pady=(0, 6))
             if url:
                 snip_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))

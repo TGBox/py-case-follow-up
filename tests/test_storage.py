@@ -1,10 +1,10 @@
 import json
 import pytest
 from pathlib import Path
-from src.config import AppConfig
-from src.services.storage_service import StorageService, atomic_save_json, safe_read_json
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from src.enums import UrgencyLevel, BoardColumn, Actor
+from config import AppConfig
+from services.storage_service import StorageService, atomic_save_json, safe_read_json
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from enums import UrgencyLevel, BoardColumn, Actor
 
 
 @pytest.fixture

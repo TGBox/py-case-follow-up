@@ -1,9 +1,9 @@
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from src.models.case import Case
-from src.enums import Actor
-from src.utils.datetime_utils import hours_until_deadline, get_local_now
+from models.case import Case
+from enums import Actor
+from utils.datetime_utils import hours_until_deadline, get_local_now
 
 
 @dataclass

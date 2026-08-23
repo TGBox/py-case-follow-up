@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from typing import Callable
-from src.models.schema import QuestionSchema, SchemaField
-from src.enums import FieldType
-from src.services.schema_service import SchemaService
+from models.schema import QuestionSchema, SchemaField
+from enums import FieldType
+from services.schema_service import SchemaService
 
 
 class SchemaBuilderDialog(ctk.CTkToplevel):

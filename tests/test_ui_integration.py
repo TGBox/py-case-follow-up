@@ -1,11 +1,11 @@
 import pytest # type: ignore
 from pathlib import Path
-from src.config import AppConfig
-from src.services.storage_service import StorageService
-from src.services.seed_service import SeedService
-from src.services.export_service import ExportService
-from src.services.scoring_service import ScoringService
-from src.enums import UrgencyLevel
+from config import AppConfig
+from services.storage_service import StorageService
+from services.seed_service import SeedService
+from services.export_service import ExportService
+from services.scoring_service import ScoringService
+from enums import UrgencyLevel
 
 
 def test_ui_service_workflow_integration(tmp_path: Path):

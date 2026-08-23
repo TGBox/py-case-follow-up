@@ -1,8 +1,8 @@
 import customtkinter as ctk
 from typing import Callable
-from src.models.case import Case, TimelineEntry
-from src.enums import Channel
-from src.utils.datetime_utils import now_iso
+from models.case import Case, TimelineEntry
+from enums import Channel
+from utils.datetime_utils import now_iso
 
 
 class TimelineWidget(ctk.CTkFrame):
@@ -49,7 +49,7 @@ class TimelineWidget(ctk.CTkFrame):
             return
 
         for entry in reversed(self.timeline_entries):
-            card = ctk.CTkFrame(self.scroll_frame, fg_color="gray20", corner_radius=6)
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6)
             card.pack(fill="x", pady=4, padx=4)
 
             top_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -57,7 +57,7 @@ class TimelineWidget(ctk.CTkFrame):
 
             header_str = f"👤 {entry.author}  [{entry.channel}]"
             ctk.CTkLabel(top_row, text=header_str, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left")
-            ctk.CTkLabel(top_row, text=entry.timestamp, font=ctk.CTkFont(size=10), text_color="gray70").pack(side="right")
+            ctk.CTkLabel(top_row, text=entry.timestamp, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
 
             note_lbl = ctk.CTkLabel(card, text=entry.note, anchor="w", justify="left", font=ctk.CTkFont(size=12), wraplength=300)
             note_lbl.pack(fill="x", padx=10, pady=(0, 6))

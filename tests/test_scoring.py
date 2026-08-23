@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 import pytest
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from src.models.profile import ScoringMatrix
-from src.services.scoring_service import ScoringService
-from src.enums import UrgencyLevel
-from src.utils.datetime_utils import format_iso
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
+from models.profile import ScoringMatrix
+from services.scoring_service import ScoringService
+from enums import UrgencyLevel
+from utils.datetime_utils import format_iso
 
 
 @pytest.fixture

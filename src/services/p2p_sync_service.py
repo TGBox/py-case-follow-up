@@ -1,10 +1,10 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
-from src.models.case import Case
-from src.models.profile import Colleague
-from src.services.storage_service import StorageService, safe_read_json
-from src.utils.datetime_utils import parse_iso
+from models.case import Case
+from models.profile import Colleague
+from services.storage_service import StorageService, safe_read_json
+from utils.datetime_utils import parse_iso
 
 logger = logging.getLogger("SupportCockpit")
 

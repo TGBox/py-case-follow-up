@@ -1,5 +1,5 @@
-from src.models.customer import Customer, Contact
-from src.services.storage_service import StorageService
+from models.customer import Customer, Contact
+from services.storage_service import StorageService
 
 
 class CustomerService:

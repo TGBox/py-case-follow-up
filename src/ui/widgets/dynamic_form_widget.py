@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from typing import Any
-from src.models.schema import QuestionSchema
-from src.enums import FieldType
+from models.schema import QuestionSchema
+from enums import FieldType
 
 
 class DynamicFormWidget(ctk.CTkFrame):
@@ -42,7 +42,7 @@ class DynamicFormWidget(ctk.CTkFrame):
             val = form_data.get(f.field_id)
             is_missing = f.field_id in missing_fields
 
-            border_kwargs = {"border_color": "red", "border_width": 2} if is_missing else {}
+            border_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
 
             if f.field_type == FieldType.DROPDOWN:
                 options = f.options if f.options else [""]

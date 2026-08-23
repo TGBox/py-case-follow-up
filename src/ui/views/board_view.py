@@ -159,9 +159,13 @@ class BoardView(ctk.CTkFrame):
         self.create_board()
 
     def create_board(self):
+        col_w = 280
+        if self.app_config and hasattr(self.app_config, "column_widths"):
+            col_w = self.app_config.column_widths.get("board_column", 280)
+
         self.grid_rowconfigure(0, weight=1)
         for i in range(4):
-            self.grid_columnconfigure(i, weight=1, minsize=240)
+            self.grid_columnconfigure(i, weight=1, minsize=col_w)
 
         # 4 Columns
         self.col_headers: dict[str, ctk.CTkLabel] = {}

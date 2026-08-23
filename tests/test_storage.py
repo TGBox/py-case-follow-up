@@ -241,12 +241,12 @@ def test_multi_user_profile_management(tmp_path: Path):
     config = AppConfig(workspace_dir=tmp_path)
     storage = StorageService(config)
 
-    # Save default profile
-    p1 = UserProfile(user=UserInfo(name="Anna Schmidt", email="anna@support.de"))
+    # Save default profile with department
+    p1 = UserProfile(user=UserInfo(name="Anna Schmidt", department="Support Team", email="anna@support.de"))
     storage.save_profile(p1)
 
-    # Save second employee profile
-    p2 = UserProfile(user=UserInfo(name="Ben Becker", email="ben@support.de"))
+    # Save second employee profile with department
+    p2 = UserProfile(user=UserInfo(name="Ben Becker", department="Entwicklung", email="ben@support.de"))
     storage.save_profile(p2)
 
     profiles = storage.list_profiles()
@@ -254,15 +254,16 @@ def test_multi_user_profile_management(tmp_path: Path):
 
     loaded_p2 = storage.load_profile_by_name("Ben Becker")
     assert loaded_p2.user.name == "Ben Becker"
+    assert loaded_p2.user.department == "Entwicklung"
     assert loaded_p2.user.email == "ben@support.de"
 
 
 def test_reset_column_widths():
-    from models.profile import UserProfile
+    from models.profile import UserProfile, DEFAULT_COLUMN_WIDTHS
     profile = UserProfile()
-    profile.ui_settings.column_widths = {"ticket_list": 500, "case_details": 900}
+    profile.ui_settings.column_widths = {"table_col_id": 500, "board_column": 900}
     profile.ui_settings.reset_column_widths()
 
-    assert profile.ui_settings.column_widths["ticket_list"] == 320
-    assert profile.ui_settings.column_widths["case_details"] == 580
-    assert profile.ui_settings.column_widths["timeline_sidebar"] == 360
+    assert profile.ui_settings.column_widths == DEFAULT_COLUMN_WIDTHS
+    assert profile.ui_settings.column_widths["board_column"] == 280
+    assert profile.ui_settings.column_widths["table_col_id"] == 120

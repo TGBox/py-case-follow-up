@@ -88,6 +88,11 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.user_name_entry.insert(0, self.profile.user.name)
         self.user_name_entry.pack(fill="x", pady=(0, 10))
 
+        ctk.CTkLabel(self.tab_user, text="Abteilung / Department *:").pack(anchor="w", pady=(5, 2))
+        self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z. B. Support, Entwicklung, Technik")
+        self.user_dept_entry.insert(0, self.profile.user.department)
+        self.user_dept_entry.pack(fill="x", pady=(0, 10))
+
         ctk.CTkLabel(self.tab_user, text="Durchwahl / Extension:").pack(anchor="w", pady=(5, 2))
         self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z.B. 4012")
         self.user_ext_entry.insert(0, self.profile.user.extension)
@@ -137,6 +142,9 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.user_name_entry.delete(0, "end")
         self.user_name_entry.insert(0, self.profile.user.name)
 
+        self.user_dept_entry.delete(0, "end")
+        self.user_dept_entry.insert(0, self.profile.user.department)
+
         self.user_ext_entry.delete(0, "end")
         self.user_ext_entry.insert(0, self.profile.user.extension)
 
@@ -166,19 +174,23 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.layout_combo.pack(fill="x", pady=(0, 20))
 
         # Column widths reset section
-        ctk.CTkLabel(self.tab_ui, text="Spaltenbreiten & Ansichts-Layout", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        ctk.CTkLabel(self.tab_ui, text="Gespeicherte Spaltenbreiten (Profile-Level)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
         widths = self.profile.ui_settings.column_widths
-        w_str = f"Fall-Liste: {widths.get('ticket_list', 320)}px | Details: {widths.get('case_details', 580)}px | Zeitleiste: {widths.get('timeline_sidebar', 360)}px"
-        self.widths_label = ctk.CTkLabel(self.tab_ui, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
-        self.widths_label.pack(anchor="w", pady=(0, 10))
+        w_str = (
+            f"• Cockpit: Links {widths.get('cockpit_left', 300)}px | Mitte {widths.get('cockpit_center', 420)}px | Rechts {widths.get('cockpit_right', 320)}px\n"
+            f"• Kanban-Board: Mindestspaltenbreite {widths.get('board_column', 280)}px\n"
+            f"• Tabelle: ID {widths.get('table_col_id', 120)}px | Praxis {widths.get('table_col_practice', 220)}px | Titel {widths.get('table_col_title', 280)}px | Score {widths.get('table_col_score', 90)}px"
+        )
+        self.widths_label = ctk.CTkLabel(self.tab_ui, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
+        self.widths_label.pack(anchor="w", pady=(0, 12))
 
         btn_reset_widths = ctk.CTkButton(
             self.tab_ui,
-            text="🔄 Spaltenbreiten auf Standard zurücksetzen",
+            text="🔄 Alle Spaltenbreiten auf Standard zurücksetzen",
             command=self.on_reset_column_widths,
             fg_color="gray30",
-            width=260,
+            width=280,
         )
         btn_reset_widths.pack(anchor="w")
 
@@ -186,9 +198,13 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.ui_settings.reset_column_widths()
         self.storage_service.save_profile(self.profile)
         widths = self.profile.ui_settings.column_widths
-        w_str = f"Fall-Liste: {widths.get('ticket_list', 320)}px | Details: {widths.get('case_details', 580)}px | Zeitleiste: {widths.get('timeline_sidebar', 360)}px"
+        w_str = (
+            f"• Cockpit: Links {widths.get('cockpit_left', 300)}px | Mitte {widths.get('cockpit_center', 420)}px | Rechts {widths.get('cockpit_right', 320)}px\n"
+            f"• Kanban-Board: Mindestspaltenbreite {widths.get('board_column', 280)}px\n"
+            f"• Tabelle: ID {widths.get('table_col_id', 120)}px | Praxis {widths.get('table_col_practice', 220)}px | Titel {widths.get('table_col_title', 280)}px | Score {widths.get('table_col_score', 90)}px"
+        )
         self.widths_label.configure(text=w_str)
-        self.status_lbl.configure(text="Spaltenbreiten auf Standard zurückgesetzt!")
+        self.status_lbl.configure(text="Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!")
         if self.on_profile_updated:
             self.on_profile_updated()
 
@@ -332,6 +348,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         # Update User
         self.profile.user.name = name
+        self.profile.user.department = self.user_dept_entry.get().strip() or "Support"
         self.profile.user.extension = self.user_ext_entry.get().strip()
         self.profile.user.email = self.user_email_entry.get().strip()
         self.profile.user.mobile = self.user_mobile_entry.get().strip()

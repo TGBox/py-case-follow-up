@@ -51,3 +51,70 @@ class LayoutMode(StrEnum):
     COCKPIT = "COCKPIT"
     TAB_VIEW = "TAB_VIEW"
     SPLIT_VIEW = "SPLIT_VIEW"
+
+
+CHANNEL_DISPLAY = {
+    Channel.PHONE_INBOUND.value: "Telefon (Eingang)",
+    Channel.PHONE_OUTBOUND.value: "Telefon (Ausgang)",
+    Channel.EMAIL.value: "E-Mail",
+    Channel.DEV_TICKET.value: "Entwickler-Ticket",
+    Channel.INTERNAL_NOTE.value: "Interne Notiz",
+}
+
+ACTOR_DISPLAY = {
+    Actor.SUPPORT.value: "Support",
+    Actor.DEVELOPMENT.value: "Entwicklung",
+    Actor.TECH.value: "Technik",
+    Actor.CUSTOMER.value: "Kunde",
+}
+
+LAYOUT_DISPLAY = {
+    LayoutMode.COCKPIT.value: "Cockpit",
+    LayoutMode.TAB_VIEW.value: "Tab-Ansicht",
+    LayoutMode.SPLIT_VIEW.value: "Split-Ansicht",
+}
+
+BOARD_COLUMN_DISPLAY = {
+    BoardColumn.NEW.value: "Neu",
+    BoardColumn.ACTION_REQUIRED.value: "Aktion erforderlich",
+    BoardColumn.WAITING.value: "Warten auf Kunde",
+    BoardColumn.IN_PROGRESS.value: "In Bearbeitung",
+    BoardColumn.DONE.value: "Erledigt",
+}
+
+
+def get_channel_display(val: str) -> str:
+    return CHANNEL_DISPLAY.get(val, val)
+
+
+def get_actor_display(val: str) -> str:
+    return ACTOR_DISPLAY.get(val, val)
+
+
+def get_layout_display(val: str) -> str:
+    return LAYOUT_DISPLAY.get(val, val)
+
+
+def get_board_column_display(val: str) -> str:
+    return BOARD_COLUMN_DISPLAY.get(val, val)
+
+
+def get_actor_val_from_display(display: str) -> str:
+    for k, v in ACTOR_DISPLAY.items():
+        if v == display:
+            return k
+    return display
+
+
+def get_channel_val_from_display(display: str) -> str:
+    for k, v in CHANNEL_DISPLAY.items():
+        if v == display:
+            return k
+    return display
+
+
+def get_layout_val_from_display(display: str) -> str:
+    for k, v in LAYOUT_DISPLAY.items():
+        if v == display:
+            return k
+    return display

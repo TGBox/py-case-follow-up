@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from typing import Callable
 from models.case import Case
-from enums import UrgencyLevel
+from enums import UrgencyLevel, get_actor_display
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -88,7 +88,7 @@ class CaseListWidget(ctk.CTkFrame):
             prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Title & Actor
-            sub_str = f"{case.classification.title} | Actor: {case.workflow_status.current_actor}"
+            sub_str = f"{case.classification.title} | Zuständig: {get_actor_display(case.workflow_status.current_actor)}"
             sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))

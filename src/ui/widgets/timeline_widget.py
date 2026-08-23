@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from typing import Callable
 from models.case import Case, TimelineEntry
-from enums import Channel
+from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
 from utils.datetime_utils import now_iso
 
 
@@ -28,9 +28,8 @@ class TimelineWidget(ctk.CTkFrame):
 
         ctk.CTkLabel(input_frame, text="Neue Notiz hinzufügen:", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=5, pady=(5, 2))
 
-        channel_values = [c.value for c in Channel]
-        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=channel_values, width=180)
-        self.channel_combo.set(Channel.PHONE_INBOUND.value)
+        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=list(CHANNEL_DISPLAY.values()), width=200)
+        self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
         self.channel_combo.pack(anchor="w", padx=5, pady=(0, 5))
 
         self.note_textbox = ctk.CTkTextbox(input_frame, height=60)
@@ -55,7 +54,7 @@ class TimelineWidget(ctk.CTkFrame):
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x", padx=8, pady=(4, 2))
 
-            header_str = f"👤 {entry.author}  [{entry.channel}]"
+            header_str = f"👤 {entry.author}  [{get_channel_display(entry.channel)}]"
             ctk.CTkLabel(top_row, text=header_str, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left")
             ctk.CTkLabel(top_row, text=entry.timestamp, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
 
@@ -71,10 +70,11 @@ class TimelineWidget(ctk.CTkFrame):
         if not text:
             return
 
+        channel_val = get_channel_val_from_display(self.channel_combo.get())
         new_entry = TimelineEntry(
             timestamp=now_iso(),
             author=self.author_name,
-            channel=self.channel_combo.get(),
+            channel=channel_val,
             note=text,
         )
         self.timeline_entries.append(new_entry)

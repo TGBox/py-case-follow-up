@@ -4,7 +4,7 @@ import customtkinter as ctk
 from pathlib import Path
 
 from config import AppConfig
-from enums import LayoutMode
+from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
 from models.case import Case
 from models.customer import Customer
 from models.schema import QuestionSchema
@@ -94,7 +94,7 @@ class SupportCockpitApp(ctk.CTk):
         self.split_view = SplitView(self.container_frame, on_case_selected=self.on_case_selected, on_search_changed=self.on_search_changed)
 
         self.active_view = None
-        self.switch_layout(self.profile.ui_settings.default_layout)
+        self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
 
         # Register Shortcuts & Lifecycle
         self.register_shortcuts()
@@ -120,48 +120,48 @@ class SupportCockpitApp(ctk.CTk):
                 self.scoring_service.update_case_scoring(c)
 
     def create_menu_bar(self):
-        menu_frame = ctk.CTkFrame(self, height=45, corner_radius=0)
-        menu_frame.pack(fill="x", side="top")
+        menu_frame = ctk.CTkFrame(self, height=48, corner_radius=8)
+        menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6))
 
         # App Title
-        ctk.CTkLabel(menu_frame, text=" 🩺 Support-Cockpit ", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(menu_frame, text=" 🩺 Support-Cockpit ", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=10, pady=4)
 
         # Layout Switcher
-        ctk.CTkLabel(menu_frame, text="Layout:").pack(side="left", padx=(15, 5))
+        ctk.CTkLabel(menu_frame, text="Layout:").pack(side="left", padx=(12, 5), pady=4)
         layout_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=[LayoutMode.COCKPIT.value, LayoutMode.TAB_VIEW.value, LayoutMode.SPLIT_VIEW.value],
+            values=list(LAYOUT_DISPLAY.values()),
             command=self.switch_layout,
             width=120,
         )
-        layout_combo.set(self.profile.ui_settings.default_layout)
-        layout_combo.pack(side="left", padx=5)
+        layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        layout_combo.pack(side="left", padx=5, pady=4)
 
         # Action Buttons
         new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
-        new_btn.pack(side="left", padx=3)
+        new_btn.pack(side="left", padx=3, pady=4)
 
         cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=95)
-        cust_btn.pack(side="left", padx=3)
+        cust_btn.pack(side="left", padx=3, pady=4)
 
         tags_btn = ctk.CTkButton(menu_frame, text="🏷️ Tags", command=self.open_tag_management_dialog, width=85)
-        tags_btn.pack(side="left", padx=3)
+        tags_btn.pack(side="left", padx=3, pady=4)
 
         export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=95)
-        export_btn.pack(side="left", padx=3)
+        export_btn.pack(side="left", padx=3, pady=4)
 
         builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=105)
-        builder_btn.pack(side="left", padx=3)
+        builder_btn.pack(side="left", padx=3, pady=4)
 
         p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=110)
-        p2p_btn.pack(side="left", padx=3)
+        p2p_btn.pack(side="left", padx=3, pady=4)
 
         help_btn = ctk.CTkButton(menu_frame, text="📖 Hilfe", command=self.open_help_dialog, width=90, fg_color="gray40")
-        help_btn.pack(side="left", padx=3)
+        help_btn.pack(side="left", padx=3, pady=4)
 
         # Right side: User & Theme Toggle
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
-        theme_btn.pack(side="right", padx=6)
+        theme_btn.pack(side="right", padx=6, pady=4)
 
         self.user_btn = ctk.CTkButton(
             menu_frame,
@@ -172,23 +172,26 @@ class SupportCockpitApp(ctk.CTk):
             fg_color="transparent",
             hover_color=("gray80", "gray25")
         )
-        self.user_btn.pack(side="right", padx=6)
+        self.user_btn.pack(side="right", padx=6, pady=4)
 
     def switch_layout(self, layout_name: str):
         if self.active_view:
             self.active_view.pack_forget()
 
-        if layout_name == LayoutMode.TAB_VIEW.value:
+        # Handle both display name and internal enum value
+        val = get_layout_val_from_display(layout_name)
+
+        if val == LayoutMode.TAB_VIEW.value:
             self.tab_view.pack(fill="both", expand=True)
             self.active_view = self.tab_view
-        elif layout_name == LayoutMode.SPLIT_VIEW.value:
+        elif val == LayoutMode.SPLIT_VIEW.value:
             self.split_view.pack(fill="both", expand=True)
             self.active_view = self.split_view
         else:
             self.cockpit_view.pack(fill="both", expand=True)
             self.active_view = self.cockpit_view
 
-        self.profile.ui_settings.default_layout = layout_name
+        self.profile.ui_settings.default_layout = val
         self.refresh_views()
 
     def refresh_views(self):

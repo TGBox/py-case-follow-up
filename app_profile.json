@@ -1,8 +1,8 @@
 {
   "user": {
     "name": "Daniel Rösch",
-    "extension": "244",
-    "email": "d.roesch@softwarehersteller.de",
+    "extension": "62",
+    "email": "droesch@softwarehersteller.de",
     "mobile": ""
   },
   "ui_settings": {
@@ -41,5 +41,15 @@
     "token_secret": "ENV_BOOKSTACK_TOKEN_SECRET",
     "sync_mode": "METADATA_ONLY",
     "sync_on_startup": true
-  }
+  },
+  "available_tags": [
+    "PVS",
+    "Abrechnung",
+    "Hardware",
+    "Schnittstelle",
+    "Dringend",
+    "Vor-Ort",
+    "Rezept",
+    "Netzwerk"
+  ]
 }

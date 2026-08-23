@@ -219,9 +219,8 @@ class HelpDialog(ctk.CTkToplevel):
         self.article_title_lbl = ctk.CTkLabel(right_frame, text="", font=ctk.CTkFont(size=18, weight="bold"), anchor="w")
         self.article_title_lbl.pack(fill="x", padx=15, pady=(15, 5))
 
-        self.content_textbox = ctk.CTkTextbox(right_frame, wrap="word", font=ctk.CTkFont(size=13))
-        self.content_textbox.pack(fill="both", expand=True, padx=15, pady=(5, 15))
-        self.content_textbox.configure(state="disabled")
+        self.content_scroll = ctk.CTkScrollableFrame(right_frame, fg_color="transparent")
+        self.content_scroll.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
         self.render_nav_list()
 
@@ -255,12 +254,114 @@ class HelpDialog(ctk.CTkToplevel):
         self.active_article = article
         self.article_title_lbl.configure(text=article["title"])
 
-        self.content_textbox.configure(state="normal")
-        self.content_textbox.delete("1.0", "end")
-        self.content_textbox.insert("1.0", article["content"].strip())
-        self.content_textbox.configure(state="disabled")
-
+        self.render_markdown(article["content"])
         self.render_nav_list()
+
+    def render_markdown(self, markdown_text: str):
+        import re
+
+        for w in self.content_scroll.winfo_children():
+            w.destroy()
+
+        lines = markdown_text.strip().split("\n")
+        in_table = False
+        table_rows = []
+
+        def clean_inline(text: str) -> str:
+            cleaned = re.sub(r'\*\*(.*?)\*\*', r'\1', text)
+            cleaned = re.sub(r'\*(.*?)\*', r'\1', cleaned)
+            cleaned = re.sub(r'`(.*?)`', r'\1', cleaned)
+            return cleaned.strip()
+
+        def flush_table():
+            nonlocal in_table, table_rows
+            if not table_rows:
+                return
+
+            table_frame = ctk.CTkFrame(self.content_scroll, fg_color=("gray85", "gray20"), corner_radius=6)
+            table_frame.pack(fill="x", padx=10, pady=8)
+
+            header_cols = [clean_inline(c) for c in table_rows[0].strip("|").split("|")]
+            data_rows = table_rows[2:] if len(table_rows) > 2 and "---" in table_rows[1] else table_rows[1:]
+
+            # Header Frame
+            hdr_frame = ctk.CTkFrame(table_frame, fg_color=("gray70", "gray30"), corner_radius=4)
+            hdr_frame.pack(fill="x", padx=4, pady=(4, 2))
+            for col_txt in header_cols:
+                ctk.CTkLabel(hdr_frame, text=col_txt.strip(), font=ctk.CTkFont(size=12, weight="bold"), anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=4)
+
+            # Data Rows
+            for r_idx, r_line in enumerate(data_rows):
+                r_cols = [clean_inline(c) for c in r_line.strip("|").split("|")]
+                r_bg = ("gray90", "gray22") if r_idx % 2 == 0 else ("gray85", "gray25")
+                row_frame = ctk.CTkFrame(table_frame, fg_color=r_bg, corner_radius=2)
+                row_frame.pack(fill="x", padx=4, pady=1)
+
+                for col_txt in r_cols:
+                    ctk.CTkLabel(row_frame, text=col_txt.strip(), font=ctk.CTkFont(size=11), anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=4)
+
+            table_rows = []
+            in_table = False
+
+        for line in lines:
+            stripped = line.strip()
+
+            # Check Table line
+            if stripped.startswith("|") and stripped.endswith("|"):
+                in_table = True
+                table_rows.append(stripped)
+                continue
+            elif in_table:
+                flush_table()
+
+            if not stripped:
+                continue
+
+            # Horizontal rule
+            if stripped in ("---", "***", "___"):
+                sep = ctk.CTkFrame(self.content_scroll, height=2, fg_color=("gray75", "gray35"))
+                sep.pack(fill="x", padx=10, pady=10)
+                continue
+
+            # Headings
+            if stripped.startswith("### "):
+                txt = clean_inline(stripped[4:])
+                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=15, weight="bold"), text_color=("dodgerblue", "#4dabf7"), anchor="w")
+                lbl.pack(fill="x", padx=10, pady=(12, 4))
+                continue
+
+            if stripped.startswith("#### "):
+                txt = clean_inline(stripped[5:])
+                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=13, weight="bold"), text_color=("gray10", "gray90"), anchor="w")
+                lbl.pack(fill="x", padx=10, pady=(8, 2))
+                continue
+
+            # Lists (unordered or ordered)
+            is_bullet = stripped.startswith("- ") or stripped.startswith("* ")
+            is_num = bool(re.match(r'^\d+\.\s', stripped))
+
+            if is_bullet or is_num:
+                prefix = "• " if is_bullet else stripped.split()[0] + " "
+                raw_body = stripped.split(" ", 1)[1] if " " in stripped else stripped
+                clean_body = clean_inline(raw_body)
+
+                row = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
+                row.pack(fill="x", padx=15, pady=2)
+
+                bullet_lbl = ctk.CTkLabel(row, text=prefix, font=ctk.CTkFont(size=12, weight="bold"), text_color=("dodgerblue", "cyan"), anchor="nw", width=20)
+                bullet_lbl.pack(side="left", anchor="nw")
+
+                txt_lbl = ctk.CTkLabel(row, text=clean_body, font=ctk.CTkFont(size=12), anchor="w", justify="left", wraplength=560)
+                txt_lbl.pack(side="left", fill="x", expand=True)
+                continue
+
+            # Standard Paragraph
+            clean_para = clean_inline(stripped)
+            para_lbl = ctk.CTkLabel(self.content_scroll, text=clean_para, font=ctk.CTkFont(size=12), anchor="w", justify="left", wraplength=580)
+            para_lbl.pack(fill="x", padx=10, pady=3)
+
+        if in_table:
+            flush_table()
 
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()

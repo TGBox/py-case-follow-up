@@ -2,7 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
-from enums import LayoutMode, SyncMode
+from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
 
 
 class ProfileSettingsDialog(ctk.CTkToplevel):
@@ -86,9 +86,9 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(self.tab_ui, text="Standard-Layout beim Start:").pack(anchor="w", pady=(5, 2))
         self.layout_combo = ctk.CTkOptionMenu(
             self.tab_ui,
-            values=[LayoutMode.COCKPIT.value, LayoutMode.TAB_VIEW.value, LayoutMode.SPLIT_VIEW.value]
+            values=list(LAYOUT_DISPLAY.values())
         )
-        self.layout_combo.set(self.profile.ui_settings.default_layout)
+        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         self.layout_combo.pack(fill="x", pady=(0, 15))
 
     def setup_wiki_tab(self):
@@ -164,7 +164,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         # Update UI Settings
         self.profile.ui_settings.theme = self.theme_combo.get()
-        self.profile.ui_settings.default_layout = self.layout_combo.get()
+        self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
 
         # Update Wiki Settings
         self.profile.wiki_settings.api_url = self.wiki_url_entry.get().strip()

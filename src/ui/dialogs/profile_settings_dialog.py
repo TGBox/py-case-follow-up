@@ -39,12 +39,14 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
         self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
         self.tab_scoring = self.tabview.add("⌨️ Tastenkürzel & Scoring")
+        self.tab_backup = self.tabview.add("💾 Datensicherung")
 
         self.setup_user_tab()
         self.setup_ui_tab()
         self.setup_paths_tab()
         self.setup_wiki_tab()
         self.setup_scoring_tab()
+        self.setup_backup_tab()
 
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
@@ -410,3 +412,148 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         if self.on_profile_updated:
             self.on_profile_updated()
+
+    def setup_backup_tab(self):
+        from tkinter import filedialog
+        from pathlib import Path
+        from services.zip_backup_service import ZipBackupService
+        from ui.dialogs.zip_import_dialog import ZipImportPathDialog
+
+        ctk.CTkLabel(
+            self.tab_backup,
+            text="📦 Komplett-Datensicherung & ZIP-Archivierung",
+            font=ctk.CTkFont(size=14, weight="bold"),
+        ).pack(anchor="w", pady=(10, 5))
+
+        desc_str = (
+            "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter "
+            "und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für "
+            "den Wechsel auf einen anderen Arbeitsplatz genutzt werden."
+        )
+        ctk.CTkLabel(
+            self.tab_backup,
+            text=desc_str,
+            font=ctk.CTkFont(size=11),
+            text_color=("gray30", "gray80"),
+            justify="left",
+            anchor="w",
+            wraplength=800,
+        ).pack(anchor="w", pady=(0, 15))
+
+        # Section 1: Export
+        exp_card = ctk.CTkFrame(self.tab_backup, corner_radius=8)
+        exp_card.pack(fill="x", pady=(0, 15), padx=2)
+
+        ctk.CTkLabel(
+            exp_card,
+            text="1. Komplett-Datensatz als ZIP exportieren",
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+
+        ctk.CTkLabel(
+            exp_card,
+            text="Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+            anchor="w",
+        ).pack(anchor="w", padx=12, pady=(0, 10))
+
+        btn_export = ctk.CTkButton(
+            exp_card,
+            text="📦 Komplett-Backup als ZIP exportieren...",
+            command=self.on_click_export_zip,
+            fg_color="dodgerblue",
+            width=240,
+        )
+        btn_export.pack(anchor="w", padx=12, pady=(0, 12))
+
+        # Section 2: Import
+        imp_card = ctk.CTkFrame(self.tab_backup, corner_radius=8)
+        imp_card.pack(fill="x", pady=(0, 15), padx=2)
+
+        ctk.CTkLabel(
+            imp_card,
+            text="2. Datensicherung aus ZIP-Datei importieren",
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+
+        ctk.CTkLabel(
+            imp_card,
+            text="Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+            anchor="w",
+        ).pack(anchor="w", padx=12, pady=(0, 10))
+
+        btn_import = ctk.CTkButton(
+            imp_card,
+            text="📥 Datensicherung aus ZIP importieren...",
+            command=self.on_click_import_zip,
+            fg_color="forestgreen",
+            width=240,
+        )
+        btn_import.pack(anchor="w", padx=12, pady=(0, 12))
+
+    def on_click_export_zip(self):
+        from tkinter import filedialog
+        from pathlib import Path
+        from services.zip_backup_service import ZipBackupService
+
+        dest_file = filedialog.asksaveasfilename(
+            title="Datensicherung als ZIP speichern",
+            defaultextension=".zip",
+            filetypes=[("ZIP-Archiv", "*.zip")],
+            initialfile="SupportCockpit_Backup.zip",
+            parent=self,
+        )
+        if not dest_file:
+            return
+
+        res = ZipBackupService.export_backup_zip(self.storage_service, Path(dest_file))
+        mb_size = res["total_bytes"] / (1024 * 1024)
+        self.status_lbl.configure(
+            text=f"✅ ZIP-Backup erfolgreich erstellt: {res['file_count']} Dateien ({mb_size:.2f} MB)",
+            text_color="green",
+        )
+
+    def on_click_import_zip(self):
+        from tkinter import filedialog
+        from pathlib import Path
+        from services.zip_backup_service import ZipBackupService
+        from ui.dialogs.zip_import_dialog import ZipImportPathDialog
+
+        zip_file = filedialog.askopenfilename(
+            title="Datensicherung (ZIP-Datei) auswählen",
+            filetypes=[("ZIP-Archiv", "*.zip")],
+            parent=self,
+        )
+        if not zip_file:
+            return
+
+        zip_p = Path(zip_file)
+        default_data = self.storage_service.config.data_dir
+        default_att = self.storage_service.config.attachments_dir
+
+        def on_confirmed(target_data: Path, target_att: Path):
+            res = ZipBackupService.import_backup_zip(zip_p, target_data, target_att)
+
+            # Update paths in config
+            self.storage_service.config.custom_cases_path = target_data / "cases.json"
+            self.storage_service.config.custom_customers_path = target_data / "customers.json"
+            self.storage_service.config.ensure_directories()
+            self.storage_service.config.save_user_config()
+
+            self.status_lbl.configure(
+                text=f"✅ Import abgeschlossen! {res['extracted_data_files']} Datendateien & {res['extracted_attachment_files']} Anhänge entpackt.",
+                text_color="green",
+            )
+            if self.on_profile_updated:
+                self.on_profile_updated()
+
+        ZipImportPathDialog(
+            self,
+            zip_file_path=zip_p,
+            default_data_dir=default_data,
+            default_attachments_dir=default_att,
+            on_import_confirmed=on_confirmed,
+        )

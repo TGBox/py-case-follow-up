@@ -317,3 +317,37 @@ def test_demo_data_flag_and_ui_settings(tmp_path: Path):
 
     ui_restored = UISettings.from_dict(ui_dict)
     assert ui_restored.show_demo_data is False
+
+
+def test_zip_backup_export_and_import(tmp_path: Path):
+    from services.zip_backup_service import ZipBackupService
+    config = AppConfig(workspace_dir=tmp_path)
+    storage = StorageService(config)
+    config.ensure_directories()
+
+    # Create dummy data and attachment files
+    data_file = config.data_dir / "cases.json"
+    data_file.write_text('{"cases": []}', encoding="utf-8")
+
+    att_dir = config.attachments_dir / "case_01"
+    att_dir.mkdir(parents=True, exist_ok=True)
+    (att_dir / "sample.txt").write_text("Hello World Attachment", encoding="utf-8")
+
+    zip_dest = tmp_path / "backup_test.zip"
+    res_exp = ZipBackupService.export_backup_zip(storage, zip_dest)
+
+    assert zip_dest.exists()
+    assert res_exp["file_count"] >= 2
+
+    # Unpack into new destination directories
+    dest_data = tmp_path / "imported_data"
+    dest_att = tmp_path / "imported_attachments"
+
+    res_imp = ZipBackupService.import_backup_zip(zip_dest, dest_data, dest_att)
+
+    assert res_imp["extracted_data_files"] >= 1
+    assert res_imp["extracted_attachment_files"] >= 1
+
+    assert (dest_data / "cases.json").exists()
+    assert (dest_att / "case_01" / "sample.txt").exists()
+    assert (dest_att / "case_01" / "sample.txt").read_text(encoding="utf-8") == "Hello World Attachment"

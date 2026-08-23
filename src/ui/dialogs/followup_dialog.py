@@ -18,10 +18,10 @@ class FollowupDialog(ctk.CTkToplevel):
         self.on_followup_set = on_followup_set
 
         self.title("🔔 Wiedervorlage & Nachfrage-Erinnerung")
-        self.geometry("520x430")
-        self.resizable(False, False)
+        self.geometry("580x500")
+        self.minsize(520, 440)
         from utils.ui_utils import center_window
-        center_window(self, 520, 430)
+        center_window(self, 580, 500)
 
         self.transient(parent)
         self.grab_set()

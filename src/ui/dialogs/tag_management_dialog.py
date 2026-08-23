@@ -12,10 +12,10 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.on_tags_updated = on_tags_updated
 
         self.title("🏷️ System-Tags Verwaltung")
-        self.geometry("560x500")
-        self.minsize(480, 400)
+        self.geometry("640x560")
+        self.minsize(560, 480)
         from utils.ui_utils import center_window
-        center_window(self, 560, 500)
+        center_window(self, 640, 560)
 
         self.transient(parent)
         self.grab_set()

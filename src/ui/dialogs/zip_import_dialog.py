@@ -24,9 +24,9 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         self.on_import_confirmed = on_import_confirmed
 
         self.title("📥 Datensicherung Importieren — Zielpfade festlegen")
-        self.geometry("740x560")
-        self.minsize(680, 500)
-        center_window(self, 740, 560)
+        self.geometry("840x620")
+        self.minsize(760, 540)
+        center_window(self, 840, 620)
 
         self.transient(parent)
         self.grab_set()

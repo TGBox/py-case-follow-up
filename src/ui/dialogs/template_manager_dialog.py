@@ -25,10 +25,10 @@ class EditTemplateDialog(ctk.CTkToplevel):
 
         is_new = template is None
         self.title("✏️ Vorlage bearbeiten" if not is_new else "➕ Neue Export-Vorlage")
-        self.geometry("780x680")
-        self.minsize(680, 520)
+        self.geometry("880x740")
+        self.minsize(800, 640)
         from utils.ui_utils import center_window
-        center_window(self, 780, 680)
+        center_window(self, 880, 740)
 
         self.transient(parent)
         self.grab_set()
@@ -209,10 +209,10 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         self.on_templates_updated = on_templates_updated
 
         self.title("📄 Export-Vorlagen verwalten")
-        self.geometry("860x560")
-        self.minsize(700, 440)
+        self.geometry("980x720")
+        self.minsize(880, 640)
         from utils.ui_utils import center_window
-        center_window(self, 860, 560)
+        center_window(self, 980, 720)
 
         self.transient(parent)
         self.grab_set()

@@ -20,9 +20,10 @@ class ExportDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.title(f"Übergabe- & Export-Assistent — {case.case_id}")
-        self.geometry("680x700")
+        self.geometry("820x760")
+        self.minsize(740, 660)
         from utils.ui_utils import center_window
-        center_window(self, 680, 700)
+        center_window(self, 820, 760)
 
         self.case = case
         self.templates = templates

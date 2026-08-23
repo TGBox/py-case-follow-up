@@ -1,18 +1,52 @@
 {
   "user": {
     "name": "Daniel Rösch",
-    "extension": "62",
-    "email": "droesch@softwarehersteller.de",
-    "mobile": ""
+    "department": "Support",
+    "extension": "64",
+    "email": "droesch@data-al.de",
+    "mobile": "015737773742"
   },
   "ui_settings": {
     "theme": "Dark",
     "default_layout": "COCKPIT",
     "column_widths": {
+      "cockpit_left": 300,
+      "cockpit_center": 420,
+      "cockpit_right": 320,
+      "board_column": 280,
+      "table_col_id": 120,
+      "table_col_practice": 220,
+      "table_col_title": 280,
+      "table_col_actor": 130,
+      "table_col_followup": 150,
+      "table_col_score": 90,
       "ticket_list": 320,
       "case_details": 580,
       "timeline_sidebar": 360
-    }
+    },
+    "board_collapsed": {
+      "support": false,
+      "dev": false,
+      "followup": false,
+      "completed": false
+    },
+    "table_column_widths": {
+      "case_id": 120,
+      "practice": 220,
+      "title": 280,
+      "actor": 130,
+      "followup": 150,
+      "score": 90
+    },
+    "table_column_order": [
+      "case_id",
+      "practice",
+      "title",
+      "actor",
+      "followup",
+      "score"
+    ],
+    "show_demo_data": false
   },
   "shortcuts": {
     "new_case": "<Control-n>",
@@ -36,7 +70,7 @@
     "threshold_red": 100
   },
   "wiki_settings": {
-    "api_url": "https://wiki.intern.software.de",
+    "api_url": "https://wiki.data-al.de",
     "token_id": "ENV_BOOKSTACK_TOKEN_ID",
     "token_secret": "ENV_BOOKSTACK_TOKEN_SECRET",
     "sync_mode": "METADATA_ONLY",

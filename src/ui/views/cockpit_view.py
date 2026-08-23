@@ -88,8 +88,13 @@ class CockpitView(ctk.CTkFrame):
         )
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
+        self.print_btn = ctk.CTkButton(
+            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=100, state="disabled", fg_color="gray30"
+        )
+        self.print_btn.pack(side="right", padx=5)
+
         self.export_btn = ctk.CTkButton(
-            self.center_header, text="📤 Export / Übergabe", command=self.on_click_export, width=140, state="disabled"
+            self.center_header, text="📤 Export", command=self.on_click_export, width=110, state="disabled"
         )
         self.export_btn.pack(side="right", padx=5)
 
@@ -169,11 +174,17 @@ class CockpitView(ctk.CTkFrame):
         self.right_tabview.set("Zeitleiste")
         self.timeline_widget.note_textbox.focus_set()
 
+    def on_click_print(self):
+        if self.current_case:
+            from ui.dialogs.case_print_dialog import CasePrintDialog
+            CasePrintDialog(self, self.current_case)
+
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
         self.on_case_selected(case)
 
         self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
+        self.print_btn.configure(state="normal")
         self.export_btn.configure(state="normal")
         self.save_btn.configure(state="normal")
 

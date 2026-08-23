@@ -55,12 +55,11 @@ class TableView(ctk.CTkFrame):
         return default
 
     def set_col_w(self, key: str, value: int):
-        val = int(value)
         if self.app_config:
             if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
-                self.app_config.column_widths[f"table_col_{key}"] = val
+                self.app_config.column_widths[f"table_col_{key}"] = value
             if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
-                self.app_config.ui_settings.column_widths[f"table_col_{key}"] = val
+                self.app_config.ui_settings.column_widths[f"table_col_{key}"] = value
 
     def create_layout(self):
         self.grid_rowconfigure(0, weight=5)  # Top: Table

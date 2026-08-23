@@ -15,6 +15,7 @@ class SearchQuery:
     deadline: str | None = None  # "<2h", "overdue"
     tag: str | None = None
     reminder: str | None = None  # "due", "true", "false"
+    internal: bool | None = None  # True for internal tasks, False for customer cases
     free_text_terms: list[str] = field(default_factory=list)
 
 
@@ -35,6 +36,13 @@ def parse_search_query(query_str: str) -> SearchQuery:
 
             if key_lower == "vip":
                 query.vip = val_lower in ("true", "1", "yes", "ja")
+            elif key_lower in ("is", "type"):
+                if val_lower in ("internal", "intern"):
+                    query.internal = True
+                elif val_lower in ("customer", "kunde", "praxis"):
+                    query.internal = False
+            elif key_lower == "internal":
+                query.internal = val_lower in ("true", "1", "yes", "ja")
             elif key_lower == "actor":
                 query.actor = val_lower
             elif key_lower == "status":
@@ -60,6 +68,11 @@ class SearchService:
     @staticmethod
     def matches_query(case: Case, query: SearchQuery, now: datetime | None = None) -> bool:
         ref_now = now or get_local_now()
+
+        # 0. Internal Token
+        if query.internal is not None:
+            if case.is_internal != query.internal:
+                return False
 
         # 1. VIP Token
         if query.vip is not None:

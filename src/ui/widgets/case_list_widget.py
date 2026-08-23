@@ -79,11 +79,23 @@ class CaseListWidget(ctk.CTkFrame):
             score_lbl = ctk.CTkLabel(top_row, text=f"Pts: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             score_lbl.pack(side="right")
 
-            # Practice Name
-            practice_str = case.customer.practice_name
-            if case.customer.is_vip:
-                practice_str += " ★ VIP"
-            prac_lbl = ctk.CTkLabel(card, text=practice_str, anchor="w", font=ctk.CTkFont(size=12, weight="bold"))
+            # Practice Name / Internal Badge
+            if case.is_internal:
+                practice_str = "🏢 INTERNE AUFGABE / VORGANG"
+                prac_color = "dodgerblue"
+            else:
+                practice_str = case.customer.practice_name
+                if case.customer.is_vip:
+                    practice_str += " ★ VIP"
+                prac_color = None
+
+            prac_lbl = ctk.CTkLabel(
+                card,
+                text=practice_str,
+                anchor="w",
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color=prac_color,
+            )
             prac_lbl.pack(fill="x", padx=12, pady=(0, 2))
             prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 

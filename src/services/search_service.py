@@ -13,6 +13,7 @@ class SearchQuery:
     status: str | None = None  # "open", "done", "archived"
     error: str | None = None
     deadline: str | None = None  # "<2h", "overdue"
+    tag: str | None = None
     free_text_terms: list[str] = field(default_factory=list)
 
 
@@ -41,6 +42,8 @@ def parse_search_query(query_str: str) -> SearchQuery:
                 query.error = val
             elif key_lower == "deadline":
                 query.deadline = val_lower
+            elif key_lower in ("tag", "tags"):
+                query.tag = val_lower
             else:
                 # Unknown key treat as free text
                 free_text_terms.append(token)
@@ -101,11 +104,18 @@ class SearchService:
                 if not (0 <= h_remaining <= 2.0):
                     return False
 
-        # 6. Free text terms
+        # 6. Tag Token
+        if query.tag is not None:
+            case_tags = [t.lower() for t in case.classification.tags]
+            if query.tag.lower() not in case_tags:
+                return False
+
+        # 7. Free text terms
         if query.free_text_terms:
             searchable_text = " ".join([
                 case.case_id,
                 case.classification.title,
+                " ".join(case.classification.tags),
                 case.customer.customer_id,
                 case.customer.practice_name,
                 case.customer.contact_person,

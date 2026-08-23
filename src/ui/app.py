@@ -32,6 +32,7 @@ from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 from ui.dialogs.help_dialog import HelpDialog
 from ui.dialogs.customer_management_dialog import CustomerManagementDialog
 from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
+from ui.dialogs.tag_management_dialog import TagManagementDialog
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -140,13 +141,16 @@ class SupportCockpitApp(ctk.CTk):
         new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
         new_btn.pack(side="left", padx=3)
 
-        cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=105)
+        cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=95)
         cust_btn.pack(side="left", padx=3)
 
-        export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=110)
+        tags_btn = ctk.CTkButton(menu_frame, text="🏷️ Tags", command=self.open_tag_management_dialog, width=85)
+        tags_btn.pack(side="left", padx=3)
+
+        export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=95)
         export_btn.pack(side="left", padx=3)
 
-        builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=115)
+        builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=105)
         builder_btn.pack(side="left", padx=3)
 
         p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=110)
@@ -242,6 +246,22 @@ class SupportCockpitApp(ctk.CTk):
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         self.refresh_views()
 
+    def open_tag_management_dialog(self):
+        TagManagementDialog(
+            self,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_tags_updated=self.on_tags_updated,
+        )
+
+    def on_tags_updated(self):
+        self.profile = self.storage_service.load_profile()
+
+    def on_tag_added(self, new_tag: str):
+        if new_tag not in self.profile.available_tags:
+            self.profile.available_tags.append(new_tag)
+            self.storage_service.save_profile(self.profile)
+
     def open_new_case_dialog(self, event=None):
         NewCaseDialog(
             self,
@@ -250,6 +270,8 @@ class SupportCockpitApp(ctk.CTk):
             created_by=self.profile.user.name,
             on_case_created=self.on_case_created,
             on_customer_added=self.on_quick_customer_added,
+            available_tags=self.profile.available_tags,
+            on_tag_added=self.on_tag_added,
         )
 
     def on_quick_customer_added(self, new_customer: Customer):

@@ -90,8 +90,14 @@ class CaseListWidget(ctk.CTkFrame):
             # Title & Actor
             sub_str = f"{case.classification.title} | Actor: {case.workflow_status.current_actor}"
             sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
-            sub_lbl.pack(fill="x", padx=12, pady=(0, 6))
+            sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+            if case.classification.tags:
+                tags_str = "🏷️ " + ", ".join(case.classification.tags)
+                tag_lbl = ctk.CTkLabel(card, text=tags_str, anchor="w", font=ctk.CTkFont(size=10, weight="bold"), text_color=("dodgerblue", "cyan"))
+                tag_lbl.pack(fill="x", padx=12, pady=(0, 6))
+                tag_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
     def select_case(self, case: Case):
         self.selected_case_id = case.case_id

@@ -79,10 +79,12 @@ class NewCaseDialog(ctk.CTkToplevel):
         created_by: str,
         on_case_created: Callable[[Case], None],
         on_customer_added: Callable[[Customer], None] | None = None,
+        available_tags: list[str] | None = None,
+        on_tag_added: Callable[[str], None] | None = None,
     ):
         super().__init__(parent)
         self.title("Neuen Support-Fall anlegen")
-        self.geometry("560x600")
+        self.geometry("580x680")
         self.resizable(False, False)
 
         self.customers = list(customers)
@@ -90,6 +92,10 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.created_by = created_by
         self.on_case_created = on_case_created
         self.on_customer_added = on_customer_added
+        self.available_tags = list(available_tags) if available_tags else ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort"]
+        self.on_tag_added = on_tag_added
+
+        self.selected_tags_vars: dict[str, ctk.BooleanVar] = {}
         self.created_case: Case | None = None
 
         self.grab_set()  # Modal
@@ -109,7 +115,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         cust_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         cust_row.pack(fill="x", pady=(0, 10))
 
-        self.customer_combo = ctk.CTkOptionMenu(cust_row, values=[], width=360)
+        self.customer_combo = ctk.CTkOptionMenu(cust_row, values=[], width=380)
         self.customer_combo.pack(side="left", padx=(0, 5))
 
         add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
@@ -119,38 +125,72 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         # Case Title
         ctk.CTkLabel(main_frame, text="Titel / Kurzbeschreibung:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.title_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen", width=490)
+        self.title_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen", width=510)
         self.title_entry.pack(anchor="w", pady=(0, 10))
 
         # Schema selection
         ctk.CTkLabel(main_frame, text="Formular-Schema:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
         schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
-        self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_names if schema_names else ["Standard"], width=490)
+        self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_names if schema_names else ["Standard"], width=510)
         self.schema_combo.pack(anchor="w", pady=(0, 10))
+
+        # Tags Selection
+        ctk.CTkLabel(main_frame, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        
+        self.tags_frame = ctk.CTkScrollableFrame(main_frame, width=510, height=80, orientation="horizontal")
+        self.tags_frame.pack(fill="x", pady=(0, 10))
+
+        self.render_tags_checkboxes()
 
         # Callback deadline (optional)
         ctk.CTkLabel(main_frame, text="Rückruf-Deadline (ISO, optional YYYY-MM-DDTHH:MM:SS):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.deadline_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. 2026-08-23T16:00:00", width=490)
+        self.deadline_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. 2026-08-23T16:00:00", width=510)
         self.deadline_entry.pack(anchor="w", pady=(0, 10))
 
         # Initial Timeline Note
         ctk.CTkLabel(main_frame, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.note_textbox = ctk.CTkTextbox(main_frame, width=490, height=80)
-        self.note_textbox.pack(anchor="w", pady=(0, 15))
+        self.note_textbox = ctk.CTkTextbox(main_frame, width=510, height=75)
+        self.note_textbox.pack(anchor="w", pady=(0, 10))
 
         # Error label
         self.error_label = ctk.CTkLabel(main_frame, text="", text_color="red")
-        self.error_label.pack(anchor="w", pady=(0, 10))
+        self.error_label.pack(anchor="w", pady=(0, 5))
 
         # Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(10, 0))
+        btn_frame.pack(fill="x", pady=(5, 0))
 
         cancel_btn = ctk.CTkButton(btn_frame, text="Abbrechen", fg_color="gray", command=self.destroy, width=120)
         cancel_btn.pack(side="left")
 
         save_btn = ctk.CTkButton(btn_frame, text="Fall anlegen", command=self.on_save, width=160)
         save_btn.pack(side="right")
+
+    def render_tags_checkboxes(self):
+        for w in self.tags_frame.winfo_children():
+            w.destroy()
+
+        for tag in self.available_tags:
+            if tag not in self.selected_tags_vars:
+                self.selected_tags_vars[tag] = ctk.BooleanVar(value=False)
+
+            chk = ctk.CTkCheckBox(self.tags_frame, text=tag, variable=self.selected_tags_vars[tag])
+            chk.pack(side="left", padx=6, pady=5)
+
+        add_tag_btn = ctk.CTkButton(self.tags_frame, text="+ Tag", width=65, fg_color="gray30", hover_color="gray40", command=self.open_quick_add_tag)
+        add_tag_btn.pack(side="left", padx=6, pady=5)
+
+    def open_quick_add_tag(self):
+        dialog = ctk.CTkInputDialog(text="Geben Sie den Namen des neuen Tags ein:", title="Neuen Tag hinzufügen")
+        new_tag = dialog.get_input()
+        if new_tag and new_tag.strip():
+            tag_name = new_tag.strip()
+            if tag_name not in self.available_tags:
+                self.available_tags.append(tag_name)
+                self.selected_tags_vars[tag_name] = ctk.BooleanVar(value=True)
+                if self.on_tag_added:
+                    self.on_tag_added(tag_name)
+                self.render_tags_checkboxes()
 
     def refresh_customer_combo(self):
         customer_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers]
@@ -189,6 +229,9 @@ class NewCaseDialog(ctk.CTkToplevel):
         selected_schema_idx = self.schema_combo.cget("values").index(self.schema_combo.get()) if self.schema_combo.get() in self.schema_combo.cget("values") else 0
         schema_obj = self.schemas[selected_schema_idx] if selected_schema_idx < len(self.schemas) else QuestionSchema(schema_id="default")
 
+        # Get selected tags
+        selected_tags = [tag for tag, var in self.selected_tags_vars.items() if var.get()]
+
         now_str = now_iso()
         case_id = self.generate_case_id()
 
@@ -220,6 +263,7 @@ class NewCaseDialog(ctk.CTkToplevel):
                 schema_id=schema_obj.schema_id,
                 title=title,
                 deadline_callback=self.deadline_entry.get().strip(),
+                tags=selected_tags,
             ),
             workflow_status=WorkflowStatus(
                 is_completed=False,

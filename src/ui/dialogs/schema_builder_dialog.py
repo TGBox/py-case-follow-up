@@ -5,6 +5,66 @@ from enums import FieldType
 from services.schema_service import SchemaService
 
 
+class NewSchemaDialog(ctk.CTkToplevel):
+    def __init__(self, parent, on_schema_created: Callable[[QuestionSchema], None]):
+        super().__init__(parent)
+        self.title("🆕 Neues Formular (Schema) erstellen")
+        self.geometry("440x320")
+        self.resizable(False, False)
+        self.transient(parent)
+        self.grab_set()
+
+        self.on_schema_created = on_schema_created
+
+        main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        ctk.CTkLabel(main_frame, text="Neues Formular-Schema definieren", font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+
+        ctk.CTkLabel(main_frame, text="Anzeigename (Titel) *:").pack(anchor="w", pady=(2, 0))
+        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Abrechnung & Tarife")
+        self.name_entry.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(main_frame, text="Schema-ID (optional):").pack(anchor="w", pady=(2, 0))
+        self.id_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. schema_abrechnung")
+        self.id_entry.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(main_frame, text="Beschreibung:").pack(anchor="w", pady=(2, 0))
+        self.desc_entry = ctk.CTkEntry(main_frame, placeholder_text="Optionale Beschreibung des Formulars")
+        self.desc_entry.pack(fill="x", pady=(0, 10))
+
+        self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color="red")
+        self.err_lbl.pack(anchor="w", pady=2)
+
+        btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_row.pack(fill="x", pady=(10, 0))
+
+        ctk.CTkButton(btn_row, text="Abbrechen", fg_color="gray", command=self.destroy, width=100).pack(side="left")
+        ctk.CTkButton(btn_row, text="Erstellen", fg_color="forestgreen", command=self.on_save, width=140).pack(side="right")
+
+    def on_save(self):
+        name = self.name_entry.get().strip()
+        if not name:
+            self.err_lbl.configure(text="Bitte Anzeigenamen eingeben.")
+            return
+
+        schema_id = self.id_entry.get().strip()
+        if not schema_id:
+            import re
+            schema_id = f"schema_{re.sub(r'[^a-zA-Z0-9_]', '_', name.lower())}"
+
+        desc = self.desc_entry.get().strip()
+
+        new_schema = QuestionSchema(
+            schema_id=schema_id,
+            display_name=name,
+            description=desc,
+            fields=[]
+        )
+        self.on_schema_created(new_schema)
+        self.destroy()
+
+
 class SchemaBuilderDialog(ctk.CTkToplevel):
     def __init__(
         self,
@@ -15,7 +75,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.title("In-App Formular-Baukasten (Schemata verwalten)")
-        self.geometry("720x620")
+        self.geometry("780x640")
 
         self.schemas = schemas
         self.schema_service = schema_service
@@ -36,17 +96,23 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         top_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(top_frame, text="Schema auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
-        schema_names = [s.display_name for s in self.schemas]
+        ctk.CTkLabel(top_frame, text="Formular auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
+        
         self.schema_combo = ctk.CTkOptionMenu(
             top_frame,
-            values=schema_names if schema_names else ["Kein Schema"],
+            values=[],
             command=self.on_schema_selected,
-            width=360,
+            width=280,
         )
-        if self.selected_schema:
-            self.schema_combo.set(self.selected_schema.display_name)
-        self.schema_combo.pack(side="left")
+        self.schema_combo.pack(side="left", padx=(0, 10))
+
+        add_schema_btn = ctk.CTkButton(top_frame, text="+ Neues Formular", command=self.open_new_schema_dialog, fg_color="forestgreen", width=140)
+        add_schema_btn.pack(side="left", padx=(0, 10))
+
+        del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=100)
+        del_schema_btn.pack(side="right")
+
+        self.refresh_schema_combo()
 
         # Fields List Frame
         ctk.CTkLabel(main_frame, text="Enthaltene Formularfelder:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 5))
@@ -88,6 +154,36 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
 
         save_btn = ctk.CTkButton(btn_frame, text="Änderungen Speichern", command=self.on_save, width=180)
         save_btn.pack(side="right")
+
+    def refresh_schema_combo(self):
+        schema_names = [s.display_name for s in self.schemas]
+        if not schema_names:
+            schema_names = ["Kein Formular"]
+            self.selected_schema = None
+        elif self.selected_schema not in self.schemas:
+            self.selected_schema = self.schemas[0]
+
+        self.schema_combo.configure(values=schema_names)
+        if self.selected_schema:
+            self.schema_combo.set(self.selected_schema.display_name)
+        else:
+            self.schema_combo.set(schema_names[0])
+
+    def open_new_schema_dialog(self):
+        NewSchemaDialog(self, on_schema_created=self.on_schema_created)
+
+    def on_schema_created(self, new_schema: QuestionSchema):
+        self.schemas.append(new_schema)
+        self.selected_schema = new_schema
+        self.refresh_schema_combo()
+        self.refresh_fields_list()
+
+    def on_delete_schema(self):
+        if self.selected_schema and len(self.schemas) > 1:
+            self.schemas.remove(self.selected_schema)
+            self.selected_schema = self.schemas[0]
+            self.refresh_schema_combo()
+            self.refresh_fields_list()
 
     def on_schema_selected(self, name: str):
         self.selected_schema = next((s for s in self.schemas if s.display_name == name), None)

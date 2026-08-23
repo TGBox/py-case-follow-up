@@ -101,9 +101,10 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(top_frame, text="Formular auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
         
+        schema_names = [s.display_name for s in self.schemas] if self.schemas else ["Kein Formular"]
         self.schema_combo = ctk.CTkOptionMenu(
             top_frame,
-            values=[],
+            values=schema_names,
             command=self.on_schema_selected,
             width=280,
         )

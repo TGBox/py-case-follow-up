@@ -117,7 +117,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         cust_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         cust_row.pack(fill="x", pady=(0, 10))
 
-        self.customer_combo = ctk.CTkOptionMenu(cust_row, values=[], width=380)
+        initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else ["Keine Kunden"]
+        self.customer_combo = ctk.CTkOptionMenu(cust_row, values=initial_cust_names, width=380)
         self.customer_combo.pack(side="left", padx=(0, 5))
 
         add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)

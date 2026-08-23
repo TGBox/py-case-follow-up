@@ -27,7 +27,14 @@ class HandoverDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.case = case
-        self.colleagues = colleagues or []
+        self.colleagues = list(colleagues) if colleagues else []
+        if not self.colleagues:
+            storage = getattr(parent, "storage_service", None)
+            if not storage and hasattr(parent, "master"):
+                storage = getattr(parent.master, "storage_service", None)
+            if storage:
+                self.colleagues = storage.load_colleagues()
+
         self.on_handover_confirmed = on_handover_confirmed
 
         self.title(f"👤 Zuständigkeit übergeben (Fall {case.case_id})")
@@ -72,28 +79,22 @@ class HandoverDialog(ctk.CTkToplevel):
         self.channel_combo.set(HANDOVER_CHANNELS[0])
         self.channel_combo.pack(anchor="w", fill="x", pady=(0, 12))
 
-        # 3. Specific Person Name (Optional Entry or Dropdown)
-        ctk.CTkLabel(main_frame, text="Empfänger / Name der Person (optional):").pack(anchor="w", pady=(4, 2))
+        # 3. Specific Person Name (Select from Colleagues or custom entry)
+        ctk.CTkLabel(main_frame, text="Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(4, 2))
 
-        if self.colleagues:
-            c_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-            c_frame.pack(fill="x", pady=(0, 12))
+        c_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        c_frame.pack(fill="x", pady=(0, 12))
 
-            col_names = ["- Aus Liste wählen -"] + [f"{c.name} ({c.department})" for c in self.colleagues]
-            self.colleague_combo = ctk.CTkOptionMenu(
-                c_frame, values=col_names, command=self.on_colleague_selected, width=180
-            )
-            self.colleague_combo.pack(side="left", padx=(0, 5))
+        col_names = ["- Aus Mitarbeiterliste wählen -"] + [f"{c.name} ({c.department})" for c in self.colleagues] if self.colleagues else ["- Keine Mitarbeiter in Liste -"]
+        self.colleague_combo = ctk.CTkOptionMenu(
+            c_frame, values=col_names, command=self.on_colleague_selected, width=220
+        )
+        self.colleague_combo.pack(side="left", padx=(0, 5))
 
-            self.person_entry = ctk.CTkEntry(
-                c_frame, placeholder_text="Name oder aus Liste wählen..."
-            )
-            self.person_entry.pack(side="right", fill="x", expand=True)
-        else:
-            self.person_entry = ctk.CTkEntry(
-                main_frame, placeholder_text="z. B. Max Mustermann, Hr. Becker..."
-            )
-            self.person_entry.pack(fill="x", pady=(0, 12))
+        self.person_entry = ctk.CTkEntry(
+            c_frame, placeholder_text="Empfänger-Name..."
+        )
+        self.person_entry.pack(side="right", fill="x", expand=True)
 
         # 4. Optional Note
         ctk.CTkLabel(main_frame, text="Notiz / Details zur Übergabe (optional):").pack(anchor="w", pady=(4, 2))
@@ -110,7 +111,7 @@ class HandoverDialog(ctk.CTkToplevel):
         btn_frame.pack(fill="x", pady=(5, 0))
 
         ctk.CTkButton(
-            btn_frame, text="Abbrechen", fg_color="gray", command=self.destroy, width=110
+            btn_frame, text="Abbrechen", fg_color="gray", command=self.on_cancel, width=110
         ).pack(side="left")
 
         ctk.CTkButton(
@@ -123,10 +124,27 @@ class HandoverDialog(ctk.CTkToplevel):
 
     def on_colleague_selected(self, selected_text: str):
         if selected_text and not selected_text.startswith("-"):
-            # Extract name before parentheses
             name_part = selected_text.split(" (")[0]
             self.person_entry.delete(0, "end")
             self.person_entry.insert(0, name_part)
+
+            col = next((c for c in self.colleagues if c.name == name_part), None)
+            if col and col.department:
+                dept_lower = col.department.lower()
+                from enums import Actor
+                if "entwickl" in dept_lower or "dev" in dept_lower:
+                    self.actor_combo.set(ACTOR_DISPLAY[Actor.DEVELOPMENT])
+                elif "tech" in dept_lower or "sys" in dept_lower or "it" in dept_lower:
+                    self.actor_combo.set(ACTOR_DISPLAY[Actor.TECH])
+                elif "supp" in dept_lower or "serv" in dept_lower:
+                    self.actor_combo.set(ACTOR_DISPLAY[Actor.SUPPORT])
+
+    def on_cancel(self):
+        try:
+            self.grab_release()
+        except Exception:
+            pass
+        self.destroy()
 
     def on_confirm(self):
         new_actor_display = self.actor_combo.get()
@@ -135,7 +153,12 @@ class HandoverDialog(ctk.CTkToplevel):
         person = self.person_entry.get().strip()
         note = self.note_entry.get().strip()
 
-        if self.on_handover_confirmed:
-            self.on_handover_confirmed(new_actor_val, channel, person, note)
-
+        cb = self.on_handover_confirmed
+        try:
+            self.grab_release()
+        except Exception:
+            pass
         self.destroy()
+
+        if cb:
+            cb(new_actor_val, channel, person, note)

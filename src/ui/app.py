@@ -22,8 +22,8 @@ from services.schema_service import SchemaService
 from services.customer_service import CustomerService
 
 from ui.views.cockpit_view import CockpitView
-from ui.views.tab_view import TabView
-from ui.views.split_view import SplitView
+from ui.views.board_view import BoardView
+from ui.views.table_view import TableView
 
 from ui.dialogs.new_case_dialog import NewCaseDialog
 from ui.dialogs.export_dialog import ExportDialog
@@ -92,8 +92,24 @@ class SupportCockpitApp(ctk.CTk):
             on_archive_case=self.on_archive_case,
             app_config=self.app_config,
         )
-        self.tab_view = TabView(self.container_frame, on_select_case=self.on_case_selected)
-        self.split_view = SplitView(self.container_frame, on_case_selected=self.on_case_selected, on_search_changed=self.on_search_changed)
+        self.board_view = BoardView(
+            self.container_frame,
+            on_select_case=self.on_case_selected,
+            on_switch_to_cockpit=self.switch_to_cockpit_view_for_case,
+            on_open_followup=self.open_followup_dialog_for_case,
+            on_toggle_complete=self.on_toggle_complete_for_case,
+            on_change_actor=self.open_handover_dialog_for_case,
+            app_config=self.app_config,
+        )
+        self.table_view = TableView(
+            self.container_frame,
+            author_name=self.profile.user.name,
+            scoring_service=self.scoring_service,
+            attachment_service=self.attachment_service,
+            on_case_updated=self.on_case_updated,
+            on_case_selected=self.on_case_selected,
+            app_config=self.app_config,
+        )
 
         self.active_view = None
         self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
@@ -186,12 +202,12 @@ class SupportCockpitApp(ctk.CTk):
         # Handle both display name and internal enum value
         val = get_layout_val_from_display(layout_name)
 
-        if val == LayoutMode.TAB_VIEW.value:
-            self.tab_view.pack(fill="both", expand=True)
-            self.active_view = self.tab_view
-        elif val == LayoutMode.SPLIT_VIEW.value:
-            self.split_view.pack(fill="both", expand=True)
-            self.active_view = self.split_view
+        if val == LayoutMode.BOARD.value:
+            self.board_view.pack(fill="both", expand=True)
+            self.active_view = self.board_view
+        elif val == LayoutMode.TABLE.value:
+            self.table_view.pack(fill="both", expand=True)
+            self.active_view = self.table_view
         else:
             self.cockpit_view.pack(fill="both", expand=True)
             self.active_view = self.cockpit_view
@@ -203,8 +219,69 @@ class SupportCockpitApp(ctk.CTk):
         filtered_cases = SearchService.filter_cases(self.cases, self.search_query) if self.search_query else self.cases
         self.cockpit_view.set_schemas(self.schemas)
         self.cockpit_view.set_cases(filtered_cases)
-        self.tab_view.set_cases(filtered_cases)
-        self.split_view.set_cases(filtered_cases)
+        self.board_view.set_cases(filtered_cases)
+        self.table_view.set_schemas(self.schemas)
+        self.table_view.set_cases(filtered_cases)
+
+    def switch_to_cockpit_view_for_case(self, case: Case):
+        self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))
+        self.cockpit_view.on_select_case_from_list(case)
+
+    def open_followup_dialog_for_case(self, case: Case):
+        from ui.dialogs.followup_dialog import FollowupDialog
+
+        def on_followup_set(dt_iso: str, note_text: str):
+            case.workflow_status.followup_at = dt_iso
+            if note_text:
+                from models.case import TimelineEntry
+                from utils.datetime_utils import now_iso
+                from enums import Channel
+                entry = TimelineEntry(
+                    timestamp=now_iso(),
+                    author=self.profile.user.name,
+                    channel=Channel.INTERNAL_NOTE.value,
+                    note=f"Wiedervorlage gesetzt auf: {dt_iso}. {note_text}",
+                )
+                case.timeline.append(entry)
+            self.on_case_updated(case)
+
+        FollowupDialog(self, case=case, on_followup_set=on_followup_set)
+
+    def on_toggle_complete_for_case(self, case: Case):
+        case.workflow_status.is_completed = not case.workflow_status.is_completed
+        if case.workflow_status.is_completed:
+            case.workflow_status.followup_at = ""
+        self.on_case_updated(case)
+
+    def open_handover_dialog_for_case(self, case: Case):
+        # Quick handover options
+        from enums import ACTOR_DISPLAY, get_actor_val_from_display, Channel
+        from models.case import TimelineEntry
+        from utils.datetime_utils import now_iso
+
+        options = list(ACTOR_DISPLAY.values())
+        curr_display = ACTOR_DISPLAY.get(case.workflow_status.current_actor, case.workflow_status.current_actor)
+
+        dialog = ctk.CTkInputDialog(
+            text=f"Neue Zuständigkeit wählen (z. B. Entwicklung, Support, Technik):\n(Aktuell: {curr_display})",
+            title=f"👤 Zuständigkeit für {case.case_id} übergeben",
+        )
+        new_actor_str = dialog.get_input()
+        if new_actor_str and new_actor_str.strip():
+            prev_actor_val = case.workflow_status.current_actor
+            new_actor_val = get_actor_val_from_display(new_actor_str.strip())
+            if prev_actor_val != new_actor_val:
+                case.workflow_status.current_actor = new_actor_val
+                case.workflow_status.actor_since = now_iso()
+                entry = TimelineEntry(
+                    timestamp=now_iso(),
+                    author=self.profile.user.name,
+                    channel=Channel.INTERNAL_NOTE.value,
+                    note=f"Zuständigkeit übergeben an: {new_actor_str.strip()}",
+                    status_change=f"ZUSTÄNDIGKEIT: {prev_actor_val} -> {new_actor_val}",
+                )
+                case.timeline.append(entry)
+                self.on_case_updated(case)
 
     def on_search_changed(self, query: str):
         self.search_query = query

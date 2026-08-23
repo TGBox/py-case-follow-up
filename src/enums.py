@@ -49,8 +49,8 @@ class Channel(StrEnum):
 
 class LayoutMode(StrEnum):
     COCKPIT = "COCKPIT"
-    TAB_VIEW = "TAB_VIEW"
-    SPLIT_VIEW = "SPLIT_VIEW"
+    BOARD = "BOARD"
+    TABLE = "TABLE"
 
 
 CHANNEL_DISPLAY = {
@@ -69,9 +69,9 @@ ACTOR_DISPLAY = {
 }
 
 LAYOUT_DISPLAY = {
-    LayoutMode.COCKPIT.value: "Cockpit",
-    LayoutMode.TAB_VIEW.value: "Tab-Ansicht",
-    LayoutMode.SPLIT_VIEW.value: "Split-Ansicht",
+    LayoutMode.COCKPIT.value: "Cockpit (Einzel-Fall)",
+    LayoutMode.BOARD.value: "Kanban-Board (Zuständigkeiten)",
+    LayoutMode.TABLE.value: "Tabelle & Details (Sortier-Matrix)",
 }
 
 BOARD_COLUMN_DISPLAY = {

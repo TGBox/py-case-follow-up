@@ -1,8 +1,8 @@
 import pytest
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from src.models.export_template import ExportTemplate
-from src.models.schema import QuestionSchema, SchemaField
-from src.services.export_service import ExportService
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.export_template import ExportTemplate
+from models.schema import QuestionSchema, SchemaField
+from services.export_service import ExportService
 
 
 @pytest.fixture

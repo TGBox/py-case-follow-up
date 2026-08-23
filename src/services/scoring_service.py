@@ -1,9 +1,9 @@
 import math
 from datetime import datetime
-from src.models.case import Case
-from src.models.profile import ScoringMatrix
-from src.enums import UrgencyLevel
-from src.utils.datetime_utils import get_local_now, calculate_idle_days, hours_until_deadline
+from models.case import Case
+from models.profile import ScoringMatrix
+from enums import UrgencyLevel
+from utils.datetime_utils import get_local_now, calculate_idle_days, hours_until_deadline
 
 
 class ScoringService:

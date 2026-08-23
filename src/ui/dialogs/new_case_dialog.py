@@ -1,11 +1,11 @@
 import customtkinter as ctk
 from datetime import datetime
 from typing import Callable
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from src.models.customer import Customer
-from src.models.schema import QuestionSchema
-from src.enums import BoardColumn, Actor, UrgencyLevel, Channel
-from src.utils.datetime_utils import now_iso
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.customer import Customer
+from models.schema import QuestionSchema
+from enums import BoardColumn, Actor, UrgencyLevel, Channel
+from utils.datetime_utils import now_iso
 
 
 class NewCaseDialog(ctk.CTkToplevel):

@@ -1,9 +1,9 @@
 import sqlite3
 import pytest
 from pathlib import Path
-from src.config import AppConfig
-from src.services.storage_service import StorageService
-from src.services.seed_service import SeedService
+from config import AppConfig
+from services.storage_service import StorageService
+from services.seed_service import SeedService
 
 
 def test_seed_generation(tmp_path: Path):

@@ -1,19 +1,19 @@
 import customtkinter as ctk
 from typing import Callable, Any
-from src.models.case import Case, TimelineEntry
-from src.models.customer import Customer
-from src.models.schema import QuestionSchema
-from src.enums import BoardColumn, Actor
-from src.services.scoring_service import ScoringService
-from src.services.attachment_service import AttachmentService
-from src.services.wiki_sync_service import WikiSyncService
-from src.services.schema_service import SchemaService
+from models.case import Case, TimelineEntry
+from models.customer import Customer
+from models.schema import QuestionSchema
+from enums import BoardColumn, Actor
+from services.scoring_service import ScoringService
+from services.attachment_service import AttachmentService
+from services.wiki_sync_service import WikiSyncService
+from services.schema_service import SchemaService
 
-from src.ui.widgets.case_list_widget import CaseListWidget
-from src.ui.widgets.dynamic_form_widget import DynamicFormWidget
-from src.ui.widgets.timeline_widget import TimelineWidget
-from src.ui.widgets.attachment_widget import AttachmentWidget
-from src.ui.widgets.wiki_widget import WikiWidget
+from ui.widgets.case_list_widget import CaseListWidget
+from ui.widgets.dynamic_form_widget import DynamicFormWidget
+from ui.widgets.timeline_widget import TimelineWidget
+from ui.widgets.attachment_widget import AttachmentWidget
+from ui.widgets.wiki_widget import WikiWidget
 
 
 class CockpitView(ctk.CTkFrame):
@@ -85,7 +85,7 @@ class CockpitView(ctk.CTkFrame):
         self.save_btn.pack(side="right", padx=5)
 
         # Customer & Status Info Bar
-        self.info_bar = ctk.CTkFrame(self.center_frame, fg_color="gray20", corner_radius=6)
+        self.info_bar = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=6)
         self.info_bar.pack(fill="x", padx=10, pady=(0, 10))
 
         self.info_label = ctk.CTkLabel(self.info_bar, text="", font=ctk.CTkFont(size=12), anchor="w")

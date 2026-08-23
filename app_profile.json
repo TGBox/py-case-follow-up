@@ -6,7 +6,7 @@
     "mobile": ""
   },
   "ui_settings": {
-    "theme": "SYSTEM",
+    "theme": "Light",
     "default_layout": "COCKPIT",
     "column_widths": {
       "ticket_list": 320,

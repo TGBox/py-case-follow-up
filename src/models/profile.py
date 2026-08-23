@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
-from src.enums import SyncMode, LayoutMode
-from src.utils.security import normalize_url
+from enums import SyncMode, LayoutMode
+from utils.security import normalize_url
 
 
 @dataclass

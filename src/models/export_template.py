@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
-from src.enums import TargetType
+from enums import TargetType
 
 
 @dataclass

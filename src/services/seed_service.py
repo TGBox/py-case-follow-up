@@ -1,14 +1,14 @@
 import sqlite3
 from pathlib import Path
-from src.config import AppConfig
-from src.enums import UrgencyLevel, BoardColumn, Actor, FieldType, TargetType, Channel, SyncMode, LayoutMode
-from src.models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from src.models.customer import Customer, Contact
-from src.models.schema import QuestionSchema, SchemaField
-from src.models.export_template import ExportTemplate
-from src.models.profile import UserProfile, UserInfo, UISettings, ShortcutSettings, ReminderSettings, ScoringMatrix, WikiSettings, Colleague
-from src.services.storage_service import StorageService
-from src.services.scoring_service import ScoringService
+from config import AppConfig
+from enums import UrgencyLevel, BoardColumn, Actor, FieldType, TargetType, Channel, SyncMode, LayoutMode
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.customer import Customer, Contact
+from models.schema import QuestionSchema, SchemaField
+from models.export_template import ExportTemplate
+from models.profile import UserProfile, UserInfo, UISettings, ShortcutSettings, ReminderSettings, ScoringMatrix, WikiSettings, Colleague
+from services.storage_service import StorageService
+from services.scoring_service import ScoringService
 
 
 class SeedService:

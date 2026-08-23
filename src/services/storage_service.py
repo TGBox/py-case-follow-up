@@ -5,13 +5,13 @@ from pathlib import Path
 from typing import Any, Callable
 from datetime import datetime
 
-from src.config import AppConfig
-from src.models.case import Case
-from src.models.customer import Customer
-from src.models.profile import UserProfile, Colleague
-from src.models.schema import QuestionSchema
-from src.models.export_template import ExportTemplate
-from src.utils.datetime_utils import now_iso, parse_iso, calculate_idle_days
+from config import AppConfig
+from models.case import Case
+from models.customer import Customer
+from models.profile import UserProfile, Colleague
+from models.schema import QuestionSchema
+from models.export_template import ExportTemplate
+from utils.datetime_utils import now_iso, parse_iso, calculate_idle_days
 
 logger = logging.getLogger("SupportCockpit")
 

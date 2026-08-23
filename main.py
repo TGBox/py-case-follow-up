@@ -2,9 +2,9 @@ import argparse
 import sys
 from pathlib import Path
 
-from src.config import AppConfig
-from src.services.storage_service import StorageService
-from src.services.seed_service import SeedService
+from config import AppConfig
+from services.storage_service import StorageService
+from services.seed_service import SeedService
 
 
 def parse_args():
@@ -55,7 +55,7 @@ def main():
 
     # Import UI app and run
     try:
-        from src.ui.app import SupportCockpitApp
+        from ui.app import SupportCockpitApp
         app = SupportCockpitApp(config)
         app.mainloop()
     except Exception as e:

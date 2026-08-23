@@ -5,8 +5,8 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import Any
-from src.config import AppConfig
-from src.models.case import Case
+from config import AppConfig
+from models.case import Case
 
 # Reserved names in Windows
 RESERVED_NAMES = {
@@ -72,9 +72,9 @@ class AttachmentService:
         dest_path = dir_path / f"{timestamp}_clipboard.png"
 
         try:
-            from PIL import ImageGrab
+            from PIL import Image, ImageGrab
             img = ImageGrab.grabclipboard()
-            if img is not None:
+            if isinstance(img, Image.Image):
                 img.save(dest_path, "PNG")
                 return dest_path
         except Exception as e:

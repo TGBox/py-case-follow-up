@@ -3,31 +3,31 @@ import threading
 import customtkinter as ctk
 from pathlib import Path
 
-from src.config import AppConfig
-from src.enums import LayoutMode
-from src.models.case import Case
-from src.models.customer import Customer
-from src.models.schema import QuestionSchema
-from src.models.export_template import ExportTemplate
-from src.models.profile import UserProfile, Colleague
+from config import AppConfig
+from enums import LayoutMode
+from models.case import Case
+from models.customer import Customer
+from models.schema import QuestionSchema
+from models.export_template import ExportTemplate
+from models.profile import UserProfile, Colleague
 
-from src.services.storage_service import StorageService
-from src.services.scoring_service import ScoringService
-from src.services.attachment_service import AttachmentService
-from src.services.wiki_sync_service import WikiSyncService
-from src.services.export_service import ExportService
-from src.services.p2p_sync_service import P2PSyncService
-from src.services.search_service import SearchService
-from src.services.schema_service import SchemaService
+from services.storage_service import StorageService
+from services.scoring_service import ScoringService
+from services.attachment_service import AttachmentService
+from services.wiki_sync_service import WikiSyncService
+from services.export_service import ExportService
+from services.p2p_sync_service import P2PSyncService
+from services.search_service import SearchService
+from services.schema_service import SchemaService
 
-from src.ui.views.cockpit_view import CockpitView
-from src.ui.views.tab_view import TabView
-from src.ui.views.split_view import SplitView
+from ui.views.cockpit_view import CockpitView
+from ui.views.tab_view import TabView
+from ui.views.split_view import SplitView
 
-from src.ui.dialogs.new_case_dialog import NewCaseDialog
-from src.ui.dialogs.export_dialog import ExportDialog
-from src.ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
-from src.ui.dialogs.p2p_diff_dialog import P2PDiffDialog
+from ui.dialogs.new_case_dialog import NewCaseDialog
+from ui.dialogs.export_dialog import ExportDialog
+from ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
+from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -35,14 +35,14 @@ logger = logging.getLogger("SupportCockpit")
 class SupportCockpitApp(ctk.CTk):
     def __init__(self, config: AppConfig):
         super().__init__()
-        self.config = config
+        self.app_config = config
 
         # Initialize Services
-        self.storage_service = StorageService(self.config)
+        self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
-        self.attachment_service = AttachmentService(self.config)
-        self.wiki_service = WikiSyncService(self.config, self.profile.wiki_settings)
+        self.attachment_service = AttachmentService(self.app_config)
+        self.wiki_service = WikiSyncService(self.app_config, self.profile.wiki_settings)
         self.export_service = ExportService(self.storage_service)
         self.p2p_service = P2PSyncService(self.storage_service)
 
@@ -145,7 +145,7 @@ class SupportCockpitApp(ctk.CTk):
         p2p_btn.pack(side="left", padx=5)
 
         # Right side: User & Theme Toggle
-        theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color="gray30")
+        theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=10)
 
         user_lbl = ctk.CTkLabel(menu_frame, text=f"👤 {self.profile.user.name}", font=ctk.CTkFont(weight="bold"))
@@ -253,13 +253,15 @@ class SupportCockpitApp(ctk.CTk):
         new_theme = "Light" if curr == "Dark" else "Dark"
         ctk.set_appearance_mode(new_theme)
         self.profile.ui_settings.theme = new_theme
+        self.refresh_views()
 
     def register_shortcuts(self):
         shortcuts = self.profile.shortcuts
-        self.bind_all(shortcuts.new_case, self.open_new_case_dialog)
-        self.bind_all(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
-        self.bind_all(shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search())
-        self.bind_all(shortcuts.save_case, lambda e: self.cockpit_view.on_click_save())
+        import tkinter as tk
+        tk.Misc.bind_all(self, shortcuts.new_case, self.open_new_case_dialog)
+        tk.Misc.bind_all(self, shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
+        tk.Misc.bind_all(self, shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search())
+        tk.Misc.bind_all(self, shortcuts.save_case, lambda e: self.cockpit_view.on_click_save())
 
     def schedule_hourly_scoring(self):
         def update_timer():

@@ -284,6 +284,51 @@
     ]
   },
   {
+    "case_id": "T-2026-0007",
+    "created_at": "2026-07-01T09:00:00",
+    "updated_at": "2026-07-05T12:00:00",
+    "created_by": "Daniel Rösch",
+    "assigned_to": "Daniel Rösch",
+    "customer": {
+      "customer_id": "K-10890",
+      "practice_name": "Praxisklinik am Stadtgarten",
+      "is_vip": true,
+      "contact_person": "",
+      "phone": ""
+    },
+    "classification": {
+      "schema_id": "schema_bug_report",
+      "title": "Uralter Fall aus dem Vormonat",
+      "urgency_level": "RED",
+      "calculated_score": 785.0,
+      "deadline_callback": ""
+    },
+    "workflow_status": {
+      "is_completed": true,
+      "is_archived": false,
+      "board_column": "DONE",
+      "current_actor": "SUPPORT",
+      "actor_since": "2026-07-05T12:00:00",
+      "idle_warning_days": 1,
+      "is_data_complete": true
+    },
+    "form_data": {
+      "module_name": "System",
+      "reproduction_steps": "Behoben"
+    },
+    "missing_required_fields": [],
+    "attachment_directory": "attachments/T-2026-0007_Praxisklinik_Stadtgarten/",
+    "timeline": [
+      {
+        "timestamp": "2026-07-05T12:00:00",
+        "author": "Daniel Rösch",
+        "channel": "INTERNAL_NOTE",
+        "note": "Geklärt",
+        "status_change": ""
+      }
+    ]
+  },
+  {
     "case_id": "T-2026-0008",
     "created_at": "2026-08-23T14:00:00",
     "updated_at": "2026-08-23T14:00:00",

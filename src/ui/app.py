@@ -243,6 +243,7 @@ class SupportCockpitApp(ctk.CTk):
         )
 
     def on_profile_updated(self):
+        self.load_all_data()
         self.profile = self.storage_service.load_profile()
         self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         ctk.set_appearance_mode(self.profile.ui_settings.theme)

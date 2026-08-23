@@ -34,11 +34,13 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         self.tab_user = self.tabview.add("👤 Benutzerprofil")
         self.tab_ui = self.tabview.add("🎨 Erscheinungsbild")
+        self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
         self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
         self.tab_scoring = self.tabview.add("⌨️ Tastenkürzel & Scoring")
 
         self.setup_user_tab()
         self.setup_ui_tab()
+        self.setup_paths_tab()
         self.setup_wiki_tab()
         self.setup_scoring_tab()
 
@@ -90,6 +92,78 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         self.layout_combo.pack(fill="x", pady=(0, 15))
+
+    def setup_paths_tab(self):
+        from pathlib import Path
+        ctk.CTkLabel(self.tab_paths, text="Speicherort & Dateipfade (EXE / Externe Daten)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        # Main Workspace Directory
+        ctk.CTkLabel(self.tab_paths, text="Arbeitsbereich / Datenordner-Pfad:").pack(anchor="w", pady=(5, 2))
+        ws_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        ws_frame.pack(fill="x", pady=(0, 10))
+
+        self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text="Pfad zum Datenordner...")
+        self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
+        self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+        btn_browse_ws = ctk.CTkButton(ws_frame, text="📁 Ordner wählen", command=self.on_browse_workspace, width=120)
+        btn_browse_ws.pack(side="right")
+
+        # Custom Individual File Path Overrides
+        ctk.CTkLabel(self.tab_paths, text="Benutzerdefinierte Einzeldateipfade (Optional):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        # Cases Path Override
+        row_cases = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_cases.pack(fill="x", pady=2)
+        ctk.CTkLabel(row_cases, text="Fälle (cases.json):", width=160, anchor="w").pack(side="left")
+        self.path_cases_entry = ctk.CTkEntry(row_cases, placeholder_text="Standard im Datenordner")
+        if self.storage_service.config.custom_cases_path:
+            self.path_cases_entry.insert(0, str(self.storage_service.config.custom_cases_path))
+        self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
+        ctk.CTkButton(row_cases, text="Datei...", command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70).pack(side="right")
+
+        # Customers Path Override
+        row_cust = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_cust.pack(fill="x", pady=2)
+        ctk.CTkLabel(row_cust, text="Kunden (customers.json):", width=160, anchor="w").pack(side="left")
+        self.path_cust_entry = ctk.CTkEntry(row_cust, placeholder_text="Standard im Datenordner")
+        if self.storage_service.config.custom_customers_path:
+            self.path_cust_entry.insert(0, str(self.storage_service.config.custom_customers_path))
+        self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
+        ctk.CTkButton(row_cust, text="Datei...", command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70).pack(side="right")
+
+        # Wiki DB Path Override
+        row_wiki = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_wiki.pack(fill="x", pady=2)
+        ctk.CTkLabel(row_wiki, text="Wiki DB (sqlite):", width=160, anchor="w").pack(side="left")
+        self.path_wiki_entry = ctk.CTkEntry(row_wiki, placeholder_text="Standard im Datenordner")
+        if self.storage_service.config.custom_wiki_db_path:
+            self.path_wiki_entry.insert(0, str(self.storage_service.config.custom_wiki_db_path))
+        self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
+        ctk.CTkButton(row_wiki, text="Datei...", command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70).pack(side="right")
+
+        # Reset button
+        btn_reset_paths = ctk.CTkButton(self.tab_paths, text="🔄 Einzelpfade auf Standard zurücksetzen", command=self.on_reset_paths, fg_color="gray40", width=240)
+        btn_reset_paths.pack(anchor="w", pady=(15, 5))
+
+    def on_browse_workspace(self):
+        from tkinter import filedialog
+        chosen = filedialog.askdirectory(title="Datenordner auswählen", initialdir=self.ws_entry.get().strip() or None)
+        if chosen:
+            self.ws_entry.delete(0, "end")
+            self.ws_entry.insert(0, chosen)
+
+    def on_browse_file(self, entry_widget: ctk.CTkEntry, file_pattern: str):
+        from tkinter import filedialog
+        chosen = filedialog.askopenfilename(title="Datei auswählen", filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
+        if chosen:
+            entry_widget.delete(0, "end")
+            entry_widget.insert(0, chosen)
+
+    def on_reset_paths(self):
+        self.path_cases_entry.delete(0, "end")
+        self.path_cust_entry.delete(0, "end")
+        self.path_wiki_entry.delete(0, "end")
 
     def setup_wiki_tab(self):
         ctk.CTkLabel(self.tab_wiki, text="BookStack Server Konfiguration", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -151,6 +225,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.vip_bonus_entry.pack(side="right")
 
     def save_settings(self):
+        from pathlib import Path
         name = self.user_name_entry.get().strip()
         if not name:
             self.status_lbl.configure(text="⚠️ Benutzername darf nicht leer sein!", text_color="red")
@@ -165,6 +240,23 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         # Update UI Settings
         self.profile.ui_settings.theme = self.theme_combo.get()
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
+
+        # Update Workspace & Custom File Paths
+        ws_path_str = self.ws_entry.get().strip()
+        if ws_path_str:
+            self.storage_service.config.workspace_dir = Path(ws_path_str)
+
+        cases_override = self.path_cases_entry.get().strip()
+        self.storage_service.config.custom_cases_path = Path(cases_override) if cases_override else None
+
+        cust_override = self.path_cust_entry.get().strip()
+        self.storage_service.config.custom_customers_path = Path(cust_override) if cust_override else None
+
+        wiki_override = self.path_wiki_entry.get().strip()
+        self.storage_service.config.custom_wiki_db_path = Path(wiki_override) if wiki_override else None
+
+        self.storage_service.config.ensure_directories()
+        self.storage_service.config.save_user_config()
 
         # Update Wiki Settings
         self.profile.wiki_settings.api_url = self.wiki_url_entry.get().strip()
@@ -184,7 +276,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             pass
 
         self.storage_service.save_profile(self.profile)
-        self.status_lbl.configure(text="✅ Einstellungen erfolgreich gespeichert!", text_color="green")
+        self.status_lbl.configure(text="✅ Einstellungen & Pfade gespeichert!", text_color="green")
 
         if self.on_profile_updated:
             self.on_profile_updated()

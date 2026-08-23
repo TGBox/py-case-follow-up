@@ -167,6 +167,32 @@ Arbeiten Sie noch schneller mit folgenden Hotkeys:
 
 *Hinweis: Tastenkürzel können in den Einstellungen (`👤 Profil & Einstellungen`) angepasst werden.*
 """
+    },
+    {
+        "id": "storage_paths",
+        "title": "📁 Speicherorte, Datenordner & Exe-Betrieb",
+        "category": "Konfiguration",
+        "content": """
+### 📁 Speicherorte, Datenstruktur & Exe-Betrieb
+
+Das **Support-Cockpit** speichert Arbeitsdaten getrennt von Programmdateien. Dies ermöglicht die sichere Ausführung aus einer geschützten Einzel-Datei (PyInstaller `.exe`) und verhindert das Versionieren echter Kundendaten in Git-Repositories.
+
+#### 1. Datenordner & Pfade anpassen
+- Öffnen Sie **Profil & Einstellungen** (`👤 [Ihr Name]`) -> Reiter **📁 Speicherort & Pfade**.
+- **Haupt-Datenordner**: Klicken Sie auf **📁 Ordner wählen**, um Ihren Arbeitsbereich (z. B. auf `D:\\SupportDaten` oder ein Netzwerklaufwerk) frei festzulegen.
+- **Einzelne Dateipfade**: Sie können bei Bedarf einzelne Dateien (`cases.json`, `customers.json`, `wiki_index.sqlite`) an abweichende Orte koppeln oder über **🔄 Einzelpfade auf Standard zurücksetzen** zum Standard zurückkehren.
+
+#### 2. Verhalten beim Ausführen als Einzeldatei (Exe)
+- Wenn die Anwendung als kompilierte `.exe` ausgeführt wird, werden keine Ordner am Ausführungsort (z. B. `C:\\Program Files\\`) erstellt.
+- Stattdessen wird die zentrale Benutzerkonfiguration in Ihrem Benutzerprofil gespeichert:
+  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`
+  - Linux/Mac: `~/.config/SupportCockpit/user_config.json`
+- Fehlt die Konfiguration, wird als Standard-Datenordner automatisch `Dokumente\\SupportCockpitData` verwendet.
+
+#### 3. Beispieldateien & Automatische Initialisierung
+- **Vorlagen im Repository (`data_examples/`)**: Werden beim ersten Start Vorlagendateien aus `data_examples/` in Ihren gewählten Datenordner kopiert.
+- **Leere Dateien**: Sollten weder Daten noch Vorlagen existieren, erzeugt die Anwendung automatisch neue, leere Datendateien, damit der Betrieb reibungslos startet.
+"""
     }
 ]
 

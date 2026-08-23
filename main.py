@@ -36,8 +36,7 @@ def parse_args():
 def main():
     args = parse_args()
 
-    workspace_path = Path(args.workspace) if args.workspace else Path.cwd()
-    config = AppConfig(workspace_dir=workspace_path)
+    config = AppConfig.load_user_config(cli_workspace=args.workspace)
     storage = StorageService(config)
 
     if args.seed:

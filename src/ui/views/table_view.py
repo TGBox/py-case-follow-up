@@ -168,10 +168,10 @@ class TableView(ctk.CTkFrame):
         style.theme_use("clam")
 
         is_dark = ctk.get_appearance_mode().lower() == "dark"
-        bg_color = "#2b2b2b" if is_dark else "#f0f0f0"
-        fg_color = "#ffffff" if is_dark else "#000000"
-        hdr_bg = "#383838" if is_dark else "#d9d9d9"
-        sel_bg = "#1f538d"
+        bg_color = "#2b2b2b" if is_dark else "#ffffff"
+        fg_color = "#ffffff" if is_dark else "#101010"
+        hdr_bg = "#383838" if is_dark else "#e0e0e0"
+        sel_bg = "#1f538d" if is_dark else "#2563eb"
 
         style.configure(
             "Matrix.Treeview",
@@ -192,7 +192,7 @@ class TableView(ctk.CTkFrame):
             borderwidth=1,
             relief="raised",
         )
-        style.map("Matrix.Treeview.Heading", background=[("active", "#4a4a4a" if is_dark else "#bfbfbf")])
+        style.map("Matrix.Treeview.Heading", background=[("active", "#4a4a4a" if is_dark else "#cccccc")])
 
     def configure_tree_columns(self):
         for col_key in self.column_order:
@@ -236,6 +236,7 @@ class TableView(ctk.CTkFrame):
         self.render_rows()
 
     def render_rows(self):
+        self.setup_treeview_style()
         # Clear existing items
         for item in self.tree.get_children():
             self.tree.delete(item)

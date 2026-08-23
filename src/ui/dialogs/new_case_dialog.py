@@ -109,7 +109,18 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         # Header
         title_label = ctk.CTkLabel(main_frame, text="Neuen Support-Fall erfassen", font=ctk.CTkFont(size=18, weight="bold"))
-        title_label.pack(anchor="w", pady=(0, 15))
+        title_label.pack(anchor="w", pady=(0, 10))
+
+        # Internal Task Checkbox
+        self.is_internal_var = ctk.BooleanVar(value=False)
+        self.chk_internal = ctk.CTkCheckBox(
+            main_frame,
+            text="🏢 Interner Vorgang (ohne Kundenelement)",
+            variable=self.is_internal_var,
+            command=self.on_toggle_internal,
+            font=ctk.CTkFont(size=12, weight="bold"),
+        )
+        self.chk_internal.pack(anchor="w", pady=(0, 10))
 
         # Customer selection row
         ctk.CTkLabel(main_frame, text="Kunde / Praxis:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
@@ -121,8 +132,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.customer_combo = ctk.CTkOptionMenu(cust_row, values=initial_cust_names, width=380)
         self.customer_combo.pack(side="left", padx=(0, 5))
 
-        add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
-        add_cust_btn.pack(side="right")
+        self.add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
+        self.add_cust_btn.pack(side="right")
 
         self.refresh_customer_combo()
 
@@ -214,6 +225,20 @@ class NewCaseDialog(ctk.CTkToplevel):
         target_name = f"{new_cust.practice_name} ({new_cust.customer_id})"
         self.customer_combo.set(target_name)
 
+    def on_toggle_internal(self):
+        is_int = self.is_internal_var.get()
+        if is_int:
+            self.customer_combo.configure(state="disabled")
+            self.add_cust_btn.configure(state="disabled")
+            # Select internal schema if available
+            schema_names = self.schema_combo.cget("values")
+            int_schema = next((s for s in schema_names if "schema_internal_task" in s or "Interne" in s), None)
+            if int_schema:
+                self.schema_combo.set(int_schema)
+        else:
+            self.customer_combo.configure(state="normal")
+            self.add_cust_btn.configure(state="normal")
+
     def generate_case_id(self) -> str:
         year = datetime.now().year
         timestamp_part = datetime.now().strftime("%M%S")
@@ -225,9 +250,28 @@ class NewCaseDialog(ctk.CTkToplevel):
             self.error_label.configure(text="Bitte einen Titel für den Fall eingeben.")
             return
 
-        # Get selected customer
-        selected_cust_idx = self.customer_combo.cget("values").index(self.customer_combo.get()) if self.customer_combo.get() in self.customer_combo.cget("values") else 0
-        customer_obj = self.customers[selected_cust_idx] if selected_cust_idx < len(self.customers) else Customer(customer_id="K-10000", practice_name="Standard Praxis")
+        is_internal = self.is_internal_var.get()
+
+        if is_internal:
+            case_customer = CaseCustomer(
+                customer_id="INTERNAL",
+                practice_name="Intern / Keine Praxis",
+                is_vip=False,
+                contact_person="",
+                phone="",
+            )
+            att_folder = f"attachments/{self.generate_case_id()}_Intern"
+        else:
+            selected_cust_idx = self.customer_combo.cget("values").index(self.customer_combo.get()) if self.customer_combo.get() in self.customer_combo.cget("values") else 0
+            customer_obj = self.customers[selected_cust_idx] if selected_cust_idx < len(self.customers) else Customer(customer_id="K-10000", practice_name="Standard Praxis")
+            case_customer = CaseCustomer(
+                customer_id=customer_obj.customer_id,
+                practice_name=customer_obj.practice_name,
+                is_vip=customer_obj.is_vip,
+                contact_person=customer_obj.contacts[0].name if customer_obj.contacts else "",
+                phone=customer_obj.contacts[0].phone if customer_obj.contacts else "",
+            )
+            att_folder = f"attachments/{self.generate_case_id()}_{customer_obj.practice_name.replace(' ', '_')}"
 
         # Get selected schema
         selected_schema_idx = self.schema_combo.cget("values").index(self.schema_combo.get()) if self.schema_combo.get() in self.schema_combo.cget("values") else 0
@@ -256,13 +300,7 @@ class NewCaseDialog(ctk.CTkToplevel):
             updated_at=now_str,
             created_by=self.created_by,
             assigned_to=self.created_by,
-            customer=CaseCustomer(
-                customer_id=customer_obj.customer_id,
-                practice_name=customer_obj.practice_name,
-                is_vip=customer_obj.is_vip,
-                contact_person=customer_obj.contacts[0].name if customer_obj.contacts else "",
-                phone=customer_obj.contacts[0].phone if customer_obj.contacts else "",
-            ),
+            customer=case_customer,
             classification=Classification(
                 schema_id=schema_obj.schema_id,
                 title=title,
@@ -278,7 +316,7 @@ class NewCaseDialog(ctk.CTkToplevel):
             ),
             form_data={},
             missing_required_fields=[],
-            attachment_directory=f"attachments/{case_id}_{customer_obj.practice_name.replace(' ', '_')}",
+            attachment_directory=att_folder,
             timeline=timeline,
         )
 

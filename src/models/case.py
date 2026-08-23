@@ -49,6 +49,8 @@ class CaseCustomer:
 
     def validate(self) -> list[str]:
         errors = []
+        if self.customer_id == "INTERNAL":
+            return []
         if not self.customer_id.strip():
             errors.append("Case customer_id is required.")
         if not self.practice_name.strip():
@@ -169,6 +171,10 @@ class Case:
     attachment_directory: str = ""
     timeline: list[TimelineEntry] = field(default_factory=list)
     is_demo_data: bool = False
+
+    @property
+    def is_internal(self) -> bool:
+        return self.customer.customer_id == "INTERNAL"
 
     def validate(self) -> list[str]:
         errors = []

@@ -74,6 +74,17 @@ class SeedService:
     def create_seed_schemas(self) -> list[QuestionSchema]:
         return [
             QuestionSchema(
+                schema_id="schema_internal_task",
+                display_name="🏢 Interne Aufgabe / Notiz",
+                description="Für interne Aufgaben, Systemwartung, Prozessverbesserungen oder Notizen ohne Kundenbezug.",
+                default_suggested_exports=[],
+                fields=[
+                    SchemaField(field_id="internal_category", label="Kategorie der Aufgabe", field_type=FieldType.DROPDOWN, options=["Systemwartung", "Dokumentation", "Entwicklungsaufgabe", "Prozessverbesserung", "Sonstiges"], required=True, order=1),
+                    SchemaField(field_id="affected_systems", label="Betroffene Systeme / Server / Komponenten", field_type=FieldType.TEXT, required=False, placeholder="z. B. Server-02, P2P-Sync, Wiki-Cache...", order=2),
+                    SchemaField(field_id="description", label="Ausführliche Aufgabenbeschreibung & Details", field_type=FieldType.TEXT, required=True, placeholder="Schritt-für-Schritt Aufgabenbeschreibung...", order=3),
+                ],
+            ),
+            QuestionSchema(
                 schema_id="schema_zuzahlungsnachforderung",
                 display_name="Zuzahlungsnachforderung & Abrechnungskorrektur",
                 description="Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV.",

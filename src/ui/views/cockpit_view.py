@@ -202,32 +202,40 @@ class CockpitView(ctk.CTkFrame):
 
     def on_actor_changed(self, new_actor_display: str):
         if self.current_case:
-            prev_actor_val = self.current_case.workflow_status.current_actor
-            new_actor_val = get_actor_val_from_display(new_actor_display)
+            from ui.dialogs.handover_dialog import HandoverDialog
+            from utils.datetime_utils import now_iso
+            from models.case import TimelineEntry
+            from enums import Channel, get_actor_display
 
-            if prev_actor_val != new_actor_val:
-                from utils.datetime_utils import now_iso
-                from models.case import TimelineEntry
-                from enums import Channel
+            def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
+                if self.current_case:
+                    prev_actor_val = self.current_case.workflow_status.current_actor
+                    self.current_case.workflow_status.current_actor = new_actor_val
+                    self.current_case.workflow_status.actor_since = now_iso()
 
-                self.current_case.workflow_status.current_actor = new_actor_val
-                self.current_case.workflow_status.actor_since = now_iso()
+                    person_str = f" ({person})" if person else ""
+                    note_str = f" | Details: {note}" if note else ""
+                    note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
+                    change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
 
-                # Add timeline entry for handover
-                note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)} (vorher: {get_actor_display(prev_actor_val)})"
-                change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
-                entry = TimelineEntry(
-                    timestamp=now_iso(),
-                    author=self.author_name,
-                    channel=Channel.INTERNAL_NOTE.value,
-                    note=note_text,
-                    status_change=change_text,
-                )
-                self.current_case.timeline.append(entry)
-                self.timeline_widget.load_timeline(self.current_case.timeline)
+                    entry = TimelineEntry(
+                        timestamp=now_iso(),
+                        author=self.author_name,
+                        channel=Channel.INTERNAL_NOTE.value,
+                        note=note_text,
+                        status_change=change_text,
+                    )
+                    self.current_case.timeline.append(entry)
+                    self.timeline_widget.load_timeline(self.current_case.timeline)
 
-                self.on_click_save()
-                self.open_followup_dialog()
+                    self.on_click_save()
+                    self.open_followup_dialog()
+
+            HandoverDialog(
+                self,
+                case=self.current_case,
+                on_handover_confirmed=on_confirmed,
+            )
 
     def open_followup_dialog(self):
         if not self.current_case:

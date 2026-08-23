@@ -75,35 +75,44 @@ class SeedService:
         return [
             QuestionSchema(
                 schema_id="schema_zuzahlungsnachforderung",
-                display_name="Zuzahlungsnachforderung / Abrechnungskorrektur",
-                description="Erforderlich für manuelle Nachberechnungen und Datenbankanpassungen durch Devs.",
-                default_suggested_exports=["gitlab_dev_ticket", "mail_abrechnung_team"],
+                display_name="Zuzahlungsnachforderung & Abrechnungskorrektur",
+                description="Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV.",
+                default_suggested_exports=["mail_dev_zuzahlung_abrechnung", "mail_kunden_rueckmeldung"],
                 fields=[
-                    SchemaField(field_id="billing_quarter", label="Abrechnungsquartal", field_type=FieldType.DROPDOWN, options=["2026-Q1", "2026-Q2", "2026-Q3", "2026-Q4"], required=True, order=1),
-                    SchemaField(field_id="affected_patients_count", label="Anzahl betroffener Fälle", field_type=FieldType.NUMBER, required=False, order=2),
-                    SchemaField(field_id="error_code", label="Fehlermeldung / Code", field_type=FieldType.TEXT, required=True, placeholder="z. B. ERR_EXPORT_01", order=3),
-                    SchemaField(field_id="database_dump_provided", label="Datenbank-Backup im Fallordner abgelegt?", field_type=FieldType.BOOLEAN, required=True, order=4),
+                    SchemaField(field_id="action_type", label="Geforderte Aktion", field_type=FieldType.DROPDOWN, options=["Zuzahlungsnachforderung", "Abrechnungskorrektur"], required=True, order=1),
+                    SchemaField(field_id="invoice_number", label="Betroffene Rechnungsnummer", field_type=FieldType.TEXT, required=True, placeholder="z. B. RE-2026-0815", order=2),
+                    SchemaField(field_id="invoice_date", label="Rechnungsdatum", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=3),
+                    SchemaField(field_id="prescription_info", label="Betroffene Verordnung", field_type=FieldType.TEXT, required=True, placeholder="z. B. VO-987654", order=4),
+                    SchemaField(field_id="prescription_date", label="Datum der Verordnung", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=5),
+                    SchemaField(field_id="patient_names", label="Namen der betroffenen Patienten", field_type=FieldType.TEXT, required=True, placeholder="z. B. Max Mustermann", order=6),
+                    SchemaField(field_id="esol_filename", label="Name der originalen ESOL-Datei", field_type=FieldType.TEXT, required=True, placeholder="z. B. ESOL_20260801.dat", order=7),
+                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=8),
+                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=9),
                 ],
             ),
             QuestionSchema(
-                schema_id="schema_abrechnungskorrektur",
-                display_name="Allgemeine Abrechnungskorrektur",
-                description="Für Korrekturdateien und KV-Abrechnungs-Support.",
-                default_suggested_exports=["cobra_note"],
+                schema_id="schema_feature_request",
+                display_name="Kundenwunsch / Feature-Request",
+                description="Zur Erfassung neuer Funktionswünsche von Praxen für die Entwicklungsabteilung.",
+                default_suggested_exports=["gitlab_dev_kundenwunsch", "mail_kunden_rueckmeldung"],
                 fields=[
-                    SchemaField(field_id="kv_region", label="KV-Region", field_type=FieldType.TEXT, required=True, order=1),
-                    SchemaField(field_id="correction_reason", label="Korrekturgrund", field_type=FieldType.TEXT, required=True, order=2),
+                    SchemaField(field_id="module_name", label="Betroffenes Modul / Programmbereich", field_type=FieldType.TEXT, required=True, order=1),
+                    SchemaField(field_id="feature_description", label="Beschreibung des Kundenwunsches", field_type=FieldType.TEXT, required=True, order=2),
+                    SchemaField(field_id="practice_benefit", label="Gewünschter Nutzen / Ziel für die Praxis", field_type=FieldType.TEXT, required=True, order=3),
+                    SchemaField(field_id="has_mockup_or_screenshot", label="Screenshot/Skizze im Fallordner?", field_type=FieldType.BOOLEAN, required=False, order=4),
                 ],
             ),
             QuestionSchema(
                 schema_id="schema_bug_report",
                 display_name="Programmfehler / Bug-Report",
-                description="Zur Weiterleitung ungeklärter Abstürze an die Entwicklungsabteilung.",
-                default_suggested_exports=["gitlab_dev_ticket"],
+                description="Zur Weiterleitung ungeklärter Software-Fehler an die Entwicklungsabteilung.",
+                default_suggested_exports=["gitlab_dev_bug", "mail_kunden_rueckmeldung"],
                 fields=[
                     SchemaField(field_id="module_name", label="Betroffenes Modul", field_type=FieldType.TEXT, required=True, order=1),
-                    SchemaField(field_id="reproduction_steps", label="Schritte zur Reproduktion", field_type=FieldType.TEXT, required=True, order=2),
-                    SchemaField(field_id="stack_trace", label="Stack-Trace / Logauszug", field_type=FieldType.TEXT, required=False, order=3),
+                    SchemaField(field_id="error_message", label="Fehlermeldung / Code", field_type=FieldType.TEXT, required=True, order=2),
+                    SchemaField(field_id="reproduction_steps", label="Schritte zur Reproduktion", field_type=FieldType.TEXT, required=True, order=3),
+                    SchemaField(field_id="stack_trace", label="Stack-Trace / Logauszug", field_type=FieldType.TEXT, required=False, order=4),
+                    SchemaField(field_id="database_dump_provided", label="Datenbank-Backup im Fallordner abgelegt?", field_type=FieldType.BOOLEAN, required=True, order=5),
                 ],
             ),
         ]
@@ -111,38 +120,100 @@ class SeedService:
     def create_seed_templates(self) -> list[ExportTemplate]:
         return [
             ExportTemplate(
-                template_id="gitlab_dev_ticket",
-                display_name="GitLab / Dev-Ticket: DB-Korrektur",
+                template_id="mail_dev_zuzahlung_abrechnung",
+                display_name="E-Mail an Entwickler: Zuzahlung & Abrechnungskorrektur",
                 target_type=TargetType.CLIPBOARD_TEXT,
-                applicable_cases=["schema_zuzahlungsnachforderung", "schema_bug_report"],
-                description="Erzeugt formatierten Markdown-Text für ein neues Entwickler-Ticket im Issue-Tracker.",
-                required_schema_fields=["billing_quarter", "error_code", "database_dump_provided"],
+                applicable_cases=["schema_zuzahlungsnachforderung"],
+                description="Erzeugt eine vollständige E-Mail an das Entwicklerteam zur Nachberechnung oder Abrechnungskorrektur mit allen Pflichtdaten.",
+                required_schema_fields=[
+                    "action_type",
+                    "invoice_number",
+                    "invoice_date",
+                    "prescription_info",
+                    "prescription_date",
+                    "patient_names",
+                    "esol_filename",
+                    "action_reason_detail",
+                    "has_forwarded_email_or_screenshot",
+                ],
                 template_string=(
-                    "### Support-Übergabe: {{ customer.practice_name }} ({{ customer.customer_id }})\n"
-                    "**VIP-Status:** {{ 'JA' if customer.is_vip else 'NEIN' }}\n"
-                    "**Rückruf-Deadline:** {{ classification.deadline_callback }}\n\n"
-                    "#### Technische Parameter\n"
-                    "* **Quartal:** {{ form_data.billing_quarter }}\n"
-                    "* **Fehlercode:** {{ form_data.error_code }}\n"
-                    "* **DB-Dump:** {{ 'Vorhanden im Ordner ' ~ attachment_directory if form_data.database_dump_provided else '[FEHLT: DB-Dump]' }}\n\n"
-                    "#### Letzte Notiz\n"
-                    "{{ timeline[-1].note if timeline else 'Keine Notiz vorhanden' }}\n\n"
+                    "Betreff: [{{ form_data.action_type | default('Abrechnungskorrektur') }}] {{ customer.practice_name }} (BSNR/Kundennr: {{ customer.customer_id }})\n\n"
+                    "Hallo Entwicklerteam,\n\n"
+                    "für die Praxis {{ customer.practice_name }} (Kundennummer: {{ customer.customer_id }}, Ansprechpartner: {{ customer.contact_person }}) liegt eine Anforderung zur {{ form_data.action_type }} vor.\n\n"
+                    "### Details zur Anforderung:\n"
+                    "* **Aktions-Typ:** {{ form_data.action_type }}\n"
+                    "* **Rechnungsnummer:** {{ form_data.invoice_number }} (vom {{ form_data.invoice_date }})\n"
+                    "* **Verordnung:** {{ form_data.prescription_info }} (vom {{ form_data.prescription_date }})\n"
+                    "* **Betroffene Patienten:** {{ form_data.patient_names }}\n"
+                    "* **Original ESOL-Datei:** {{ form_data.esol_filename }}\n"
+                    "* **Begründung & Details:** {{ form_data.action_reason_detail }}\n\n"
+                    "### Belege & Anhänge:\n"
+                    "* **Weitergeleitete Mail / Screenshot im Fallordner:** {{ 'JA (siehe Fallordner ' ~ attachment_directory ~ ')' if form_data.has_forwarded_email_or_screenshot else 'NEIN' }}\n\n"
+                    "---\n"
                     "*Erfasst durch Support: {{ created_by }}*"
                 ),
             ),
             ExportTemplate(
-                template_id="cobra_note",
-                display_name="Cobra CRM Notiz / Übergabe",
+                template_id="gitlab_dev_kundenwunsch",
+                display_name="GitLab / Dev-Ticket: Kundenwunsch",
                 target_type=TargetType.CLIPBOARD_TEXT,
-                applicable_cases=["schema_abrechnungskorrektur", "schema_zuzahlungsnachforderung"],
-                description="Formatierter Text für den Eintrag in die Cobra CRM Kundenhistorie.",
-                required_schema_fields=["billing_quarter"],
+                applicable_cases=["schema_feature_request"],
+                description="Formatiertes Markdown-Ticket für neue Funktionswünsche an die Entwicklungsabteilung.",
+                required_schema_fields=["module_name", "feature_description", "practice_benefit"],
                 template_string=(
-                    "SUPPORT-HISTORIE - {{ case.case_id }}\n"
-                    "Praxis: {{ customer.practice_name }}\n"
-                    "Ansprechpartner: {{ customer.contact_person }} ({{ customer.phone }})\n"
-                    "Status: {{ workflow_status.board_column }} / Bearbeiter: {{ workflow_status.current_actor }}\n"
-                    "Notiz: {{ timeline[-1].note if timeline else '' }}"
+                    "### Feature-Request: {{ classification.title }}\n"
+                    "**Praxis:** {{ customer.practice_name }} (Kundennr: {{ customer.customer_id }}) {{ '★ VIP-Kunde' if customer.is_vip else '' }}\n"
+                    "**Betroffenes Modul:** {{ form_data.module_name }}\n\n"
+                    "#### Beschreibung des Kundenwunsches:\n"
+                    "{{ form_data.feature_description }}\n\n"
+                    "#### Gewünschter Nutzen / Ziel für die Praxis:\n"
+                    "{{ form_data.practice_benefit }}\n\n"
+                    "#### Mockups / Screenshots:\n"
+                    "{{ 'Screenshots / Skizzen sind im Fallordner hinterlegt (' ~ attachment_directory ~ ')' if form_data.has_mockup_or_screenshot else 'Keine Screenshots hinterlegt' }}\n\n"
+                    "---\n"
+                    "*Erfasst durch Support: {{ created_by }}*"
+                ),
+            ),
+            ExportTemplate(
+                template_id="gitlab_dev_bug",
+                display_name="GitLab / Dev-Ticket: Programmierfehler (Bug)",
+                target_type=TargetType.CLIPBOARD_TEXT,
+                applicable_cases=["schema_bug_report"],
+                description="Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
+                required_schema_fields=["module_name", "error_message", "reproduction_steps", "database_dump_provided"],
+                template_string=(
+                    "### Bug-Report: {{ classification.title }}\n"
+                    "**Praxis:** {{ customer.practice_name }} (Kundennr: {{ customer.customer_id }})\n"
+                    "**Modul:** {{ form_data.module_name }}\n"
+                    "**Fehlermeldung:** {{ form_data.error_message }}\n\n"
+                    "#### Schritte zur Reproduktion:\n"
+                    "{{ form_data.reproduction_steps }}\n\n"
+                    "#### Stack-Trace / Logauszug:\n"
+                    "```\n"
+                    "{{ form_data.stack_trace if form_data.stack_trace else 'Kein Stack-Trace angegeben' }}\n"
+                    "```\n\n"
+                    "#### DB-Backup / Logfiles:\n"
+                    "{{ 'Vorhanden im Ordner ' ~ attachment_directory if form_data.database_dump_provided else '[FEHLT: DB-Dump / Logfile]' }}\n\n"
+                    "---\n"
+                    "*Erfasst durch Support: {{ created_by }}*"
+                ),
+            ),
+            ExportTemplate(
+                template_id="mail_kunden_rueckmeldung",
+                display_name="E-Mail an Praxis: Lösungs-Zusammenfassung",
+                target_type=TargetType.CLIPBOARD_TEXT,
+                applicable_cases=["schema_zuzahlungsnachforderung", "schema_feature_request", "schema_bug_report"],
+                description="Kunden-E-Mail mit Zusammenfassung der Lösung und Kontaktdaten.",
+                required_schema_fields=[],
+                template_string=(
+                    "Sehr geehrte/r {{ customer.contact_person if customer.contact_person else 'Damen und Herren' }},\n\n"
+                    "vielen Dank für Ihre Anfrage bezüglich \"{{ classification.title }}\" (Fall-ID: {{ case.case_id }}).\n\n"
+                    "### Status / Zusammenfassung:\n"
+                    "{{ timeline[-1].note if timeline else 'Ihr Anliegen befindet sich derzeit in Bearbeitung.' }}\n\n"
+                    "Sollten Sie hierzu Fragen haben, erreichen Sie uns jederzeit unter Angabe der Fall-ID {{ case.case_id }}.\n\n"
+                    "Mit freundlichen Grüßen\n"
+                    "{{ created_by }}\n"
+                    "Support-Team"
                 ),
             ),
         ]
@@ -174,15 +245,19 @@ class SeedService:
                     board_column=BoardColumn.ACTION_REQUIRED,
                     current_actor=Actor.DEVELOPMENT,
                     actor_since="2026-08-23T10:00:00",
-                    is_data_complete=False,
                 ),
                 form_data={
-                    "billing_quarter": "2026-Q2",
-                    "affected_patients_count": 14,
-                    "error_code": "ERR_DB_EXPORT_902",
-                    "database_dump_provided": False,
+                    "action_type": "Zuzahlungsnachforderung",
+                    "invoice_number": "RE-2026-0815",
+                    "invoice_date": "2026-08-01",
+                    "prescription_info": "VO-987654 (Physiotherapie)",
+                    "prescription_date": "2026-07-15",
+                    "patient_names": "Max Mustermann, Maria Muster",
+                    "esol_filename": "ESOL_20260801_Praxis.dat",
+                    "action_reason_detail": "Nachforderung von 14 Zuzahlungsbeträgen nach Abrechnungskorrektur.",
+                    "has_forwarded_email_or_screenshot": True,
                 },
-                missing_required_fields=["database_dump_provided"],
+                missing_required_fields=[],
                 attachment_directory="attachments/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/",
                 timeline=[
                     TimelineEntry(

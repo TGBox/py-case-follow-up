@@ -245,11 +245,41 @@ class StorageService:
             example_path=self.config.get_example_path("question_schemas.json")
         )
         schemas_raw = data.get("schemas", []) if isinstance(data, dict) else []
-        return [QuestionSchema.from_dict(s) for s in schemas_raw if isinstance(s, dict)]
+        loaded_schemas = [QuestionSchema.from_dict(s) for s in schemas_raw if isinstance(s, dict)]
+
+        example_path = self.config.get_example_path("question_schemas.json")
+        if example_path and example_path.exists():
+            try:
+                with open(example_path, "r", encoding="utf-8") as f:
+                    ex_data = json.load(f)
+                ex_raw = ex_data.get("schemas", []) if isinstance(ex_data, dict) else []
+                ex_schemas = [QuestionSchema.from_dict(s) for s in ex_raw if isinstance(s, dict)]
+
+                existing_ids = {s.schema_id for s in loaded_schemas}
+                updated = False
+                for ex_s in ex_schemas:
+                    if ex_s.schema_id not in existing_ids:
+                        loaded_schemas.append(ex_s)
+                        updated = True
+
+                if updated:
+                    self.save_schemas(loaded_schemas)
+            except Exception as e:
+                logger.warning(f"Failed to auto-merge example schemas: {e}")
+
+        return loaded_schemas
 
     def save_schemas(self, schemas: list[QuestionSchema]) -> None:
         data = {"schemas": [s.to_dict() for s in schemas]}
         atomic_save_json(self.config.question_schemas_path, data)
+
+    def reset_schemas_to_defaults(self) -> list[QuestionSchema]:
+        """Overwrites working schemas with data_examples/question_schemas.json."""
+        example_path = self.config.get_example_path("question_schemas.json")
+        if example_path and example_path.exists():
+            shutil.copy2(example_path, self.config.question_schemas_path)
+            logger.info(f"Reset {self.config.question_schemas_path.name} from example template.")
+        return self.load_schemas()
 
     # --- Templates ---
     def load_templates(self) -> list[ExportTemplate]:
@@ -259,11 +289,41 @@ class StorageService:
             example_path=self.config.get_example_path("export_templates.json")
         )
         templates_raw = data.get("templates", []) if isinstance(data, dict) else []
-        return [ExportTemplate.from_dict(t) for t in templates_raw if isinstance(t, dict)]
+        loaded_templates = [ExportTemplate.from_dict(t) for t in templates_raw if isinstance(t, dict)]
+
+        example_path = self.config.get_example_path("export_templates.json")
+        if example_path and example_path.exists():
+            try:
+                with open(example_path, "r", encoding="utf-8") as f:
+                    ex_data = json.load(f)
+                ex_raw = ex_data.get("templates", []) if isinstance(ex_data, dict) else []
+                ex_templates = [ExportTemplate.from_dict(t) for t in ex_raw if isinstance(t, dict)]
+
+                existing_ids = {t.template_id for t in loaded_templates}
+                updated = False
+                for ex_t in ex_templates:
+                    if ex_t.template_id not in existing_ids:
+                        loaded_templates.append(ex_t)
+                        updated = True
+
+                if updated:
+                    self.save_templates(loaded_templates)
+            except Exception as e:
+                logger.warning(f"Failed to auto-merge example templates: {e}")
+
+        return loaded_templates
 
     def save_templates(self, templates: list[ExportTemplate]) -> None:
         data = {"templates": [t.to_dict() for t in templates]}
         atomic_save_json(self.config.export_templates_path, data)
+
+    def reset_templates_to_defaults(self) -> list[ExportTemplate]:
+        """Overwrites working templates with data_examples/export_templates.json."""
+        example_path = self.config.get_example_path("export_templates.json")
+        if example_path and example_path.exists():
+            shutil.copy2(example_path, self.config.export_templates_path)
+            logger.info(f"Reset {self.config.export_templates_path.name} from example template.")
+        return self.load_templates()
 
     # --- Colleagues ---
     def load_colleagues(self) -> list[Colleague]:

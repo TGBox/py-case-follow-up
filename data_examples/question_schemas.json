@@ -2,80 +2,138 @@
   "schemas": [
     {
       "schema_id": "schema_zuzahlungsnachforderung",
-      "display_name": "Zuzahlungsnachforderung / Abrechnungskorrektur",
-      "description": "Erforderlich für manuelle Nachberechnungen und Datenbankanpassungen durch Devs.",
+      "display_name": "Zuzahlungsnachforderung & Abrechnungskorrektur",
+      "description": "Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV.",
       "default_suggested_exports": [
-        "gitlab_dev_ticket",
-        "mail_abrechnung_team"
+        "mail_dev_zuzahlung_abrechnung",
+        "mail_kunden_rueckmeldung"
       ],
       "fields": [
         {
-          "field_id": "billing_quarter",
-          "label": "Abrechnungsquartal",
+          "field_id": "action_type",
+          "label": "Geforderte Aktion",
           "field_type": "dropdown",
           "required": true,
           "order": 1,
           "options": [
-            "2026-Q1",
-            "2026-Q2",
-            "2026-Q3",
-            "2026-Q4"
+            "Zuzahlungsnachforderung",
+            "Abrechnungskorrektur"
           ]
         },
         {
-          "field_id": "affected_patients_count",
-          "label": "Anzahl betroffener Fälle",
-          "field_type": "number",
-          "required": false,
-          "order": 2
+          "field_id": "invoice_number",
+          "label": "Betroffene Rechnungsnummer",
+          "field_type": "text",
+          "required": true,
+          "order": 2,
+          "placeholder": "z. B. RE-2026-0815"
         },
         {
-          "field_id": "error_code",
-          "label": "Fehlermeldung / Code",
+          "field_id": "invoice_date",
+          "label": "Rechnungsdatum",
           "field_type": "text",
           "required": true,
           "order": 3,
-          "placeholder": "z. B. ERR_EXPORT_01"
+          "placeholder": "YYYY-MM-DD (z. B. 2026-08-01)"
         },
         {
-          "field_id": "database_dump_provided",
-          "label": "Datenbank-Backup im Fallordner abgelegt?",
+          "field_id": "prescription_info",
+          "label": "Betroffene Verordnung",
+          "field_type": "text",
+          "required": true,
+          "order": 4,
+          "placeholder": "z. B. VO-987654 (Physiotherapie)"
+        },
+        {
+          "field_id": "prescription_date",
+          "label": "Datum der Verordnung",
+          "field_type": "text",
+          "required": true,
+          "order": 5,
+          "placeholder": "YYYY-MM-DD (z. B. 2026-07-15)"
+        },
+        {
+          "field_id": "patient_names",
+          "label": "Namen der betroffenen Patienten",
+          "field_type": "text",
+          "required": true,
+          "order": 6,
+          "placeholder": "z. B. Max Mustermann, Maria Muster"
+        },
+        {
+          "field_id": "esol_filename",
+          "label": "Name der originalen ESOL-Datei",
+          "field_type": "text",
+          "required": true,
+          "order": 7,
+          "placeholder": "z. B. ESOL_20260801_Praxis.dat"
+        },
+        {
+          "field_id": "action_reason_detail",
+          "label": "Genaue Begründung & Details der Nachforderung/Korrektur",
+          "field_type": "text",
+          "required": true,
+          "order": 8,
+          "placeholder": "Ausführliche Erklärung, weshalb was genau nachgefordert/korrigiert wird..."
+        },
+        {
+          "field_id": "has_forwarded_email_or_screenshot",
+          "label": "Weitergeleitete E-Mail / Screenshot von Krankenkasse oder Abrechnungszentrum im Fallordner abgelegt?",
           "field_type": "boolean",
           "required": true,
-          "order": 4
+          "order": 9
         }
       ]
     },
     {
-      "schema_id": "schema_abrechnungskorrektur",
-      "display_name": "Allgemeine Abrechnungskorrektur",
-      "description": "Für Korrekturdateien und KV-Abrechnungs-Support.",
+      "schema_id": "schema_feature_request",
+      "display_name": "Kundenwunsch / Feature-Request",
+      "description": "Zur Erfassung neuer Funktionswünsche von Praxen für die Entwicklungsabteilung.",
       "default_suggested_exports": [
-        "cobra_note"
+        "gitlab_dev_kundenwunsch",
+        "mail_kunden_rueckmeldung"
       ],
       "fields": [
         {
-          "field_id": "kv_region",
-          "label": "KV-Region",
+          "field_id": "module_name",
+          "label": "Betroffenes Modul / Programmbereich",
           "field_type": "text",
           "required": true,
-          "order": 1
+          "order": 1,
+          "placeholder": "z. B. Abrechnung / Terminkalender / Patientenvorlage"
         },
         {
-          "field_id": "correction_reason",
-          "label": "Korrekturgrund",
+          "field_id": "feature_description",
+          "label": "Beschreibung des Kundenwunsches",
           "field_type": "text",
           "required": true,
-          "order": 2
+          "order": 2,
+          "placeholder": "Detaillierte Beschreibung der gewünschten Funktion..."
+        },
+        {
+          "field_id": "practice_benefit",
+          "label": "Gewünschter Nutzen / Ziel für die Praxis",
+          "field_type": "text",
+          "required": true,
+          "order": 3,
+          "placeholder": "Welchen Vorteil hat die Praxis durch diese Funktion?"
+        },
+        {
+          "field_id": "has_mockup_or_screenshot",
+          "label": "Screenshot, Skizze oder Beispieldatei im Fallordner hinterlegt?",
+          "field_type": "boolean",
+          "required": false,
+          "order": 4
         }
       ]
     },
     {
       "schema_id": "schema_bug_report",
       "display_name": "Programmfehler / Bug-Report",
-      "description": "Zur Weiterleitung ungeklärter Abstürze an die Entwicklungsabteilung.",
+      "description": "Zur Weiterleitung ungeklärter Software-Fehler an die Entwicklungsabteilung.",
       "default_suggested_exports": [
-        "gitlab_dev_ticket"
+        "gitlab_dev_bug",
+        "mail_kunden_rueckmeldung"
       ],
       "fields": [
         {
@@ -83,21 +141,38 @@
           "label": "Betroffenes Modul",
           "field_type": "text",
           "required": true,
-          "order": 1
+          "order": 1,
+          "placeholder": "z. B. Schnittstelle / KV-Export"
+        },
+        {
+          "field_id": "error_message",
+          "label": "Fehlermeldung / Code",
+          "field_type": "text",
+          "required": true,
+          "order": 2,
+          "placeholder": "z. B. ERR_EXPORT_01 / Access Violation"
         },
         {
           "field_id": "reproduction_steps",
           "label": "Schritte zur Reproduktion",
           "field_type": "text",
           "required": true,
-          "order": 2
+          "order": 3,
+          "placeholder": "1. Modul öffnen -> 2. Button X klicken..."
         },
         {
           "field_id": "stack_trace",
           "label": "Stack-Trace / Logauszug",
           "field_type": "text",
           "required": false,
-          "order": 3
+          "order": 4
+        },
+        {
+          "field_id": "database_dump_provided",
+          "label": "Datenbank-Backup / Logfile im Fallordner abgelegt?",
+          "field_type": "boolean",
+          "required": true,
+          "order": 5
         }
       ]
     }

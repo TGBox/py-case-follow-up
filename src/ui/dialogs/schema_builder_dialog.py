@@ -106,10 +106,13 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         )
         self.schema_combo.pack(side="left", padx=(0, 10))
 
-        add_schema_btn = ctk.CTkButton(top_frame, text="+ Neues Formular", command=self.open_new_schema_dialog, fg_color="forestgreen", width=140)
-        add_schema_btn.pack(side="left", padx=(0, 10))
+        add_schema_btn = ctk.CTkButton(top_frame, text="+ Neues Formular", command=self.open_new_schema_dialog, fg_color="forestgreen", width=130)
+        add_schema_btn.pack(side="left", padx=(0, 5))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=100)
+        reset_schema_btn = ctk.CTkButton(top_frame, text="🔄 Standard-Formulare", command=self.on_reset_schemas, fg_color="gray30", width=160)
+        reset_schema_btn.pack(side="left", padx=(0, 5))
+
+        del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()
@@ -154,6 +157,15 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
 
         save_btn = ctk.CTkButton(btn_frame, text="Änderungen Speichern", command=self.on_save, width=180)
         save_btn.pack(side="right")
+
+    def on_reset_schemas(self):
+        storage_service = getattr(self.master, "storage_service", None)
+        if storage_service:
+            self.schemas = storage_service.reset_schemas_to_defaults()
+            self.selected_schema = self.schemas[0] if self.schemas else None
+            self.refresh_schema_combo()
+            self.refresh_fields_list()
+            self.on_schemas_updated(self.schemas)
 
     def refresh_schema_combo(self):
         schema_names = [s.display_name for s in self.schemas]

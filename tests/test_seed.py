@@ -16,7 +16,7 @@ def test_seed_generation(tmp_path: Path):
     assert summary["customers"] == 5
     assert summary["cases"] == 8
     assert summary["schemas"] == 3
-    assert summary["templates"] == 2
+    assert summary["templates"] == 4
 
     # Check files exist
     assert config.cases_path.exists()

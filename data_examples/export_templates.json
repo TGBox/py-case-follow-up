@@ -1,34 +1,69 @@
 {
   "templates": [
     {
-      "template_id": "gitlab_dev_ticket",
-      "display_name": "GitLab / Dev-Ticket: DB-Korrektur",
+      "template_id": "mail_dev_zuzahlung_abrechnung",
+      "display_name": "E-Mail an Entwickler: Zuzahlung & Abrechnungskorrektur",
+      "target_type": "CLIPBOARD_TEXT",
+      "applicable_cases": [
+        "schema_zuzahlungsnachforderung"
+      ],
+      "description": "Erzeugt eine vollständige E-Mail an das Entwicklerteam zur Nachberechnung oder Abrechnungskorrektur mit allen Pflichtdaten.",
+      "required_schema_fields": [
+        "action_type",
+        "invoice_number",
+        "invoice_date",
+        "prescription_info",
+        "prescription_date",
+        "patient_names",
+        "esol_filename",
+        "action_reason_detail",
+        "has_forwarded_email_or_screenshot"
+      ],
+      "template_string": "Betreff: [{{ form_data.action_type | default('Abrechnungskorrektur') }}] {{ customer.practice_name }} (BSNR/Kundennr: {{ customer.customer_id }})\n\nHallo Entwicklerteam,\n\nfür die Praxis {{ customer.practice_name }} (Kundennummer: {{ customer.customer_id }}, Ansprechpartner: {{ customer.contact_person }}) liegt eine Anforderung zur {{ form_data.action_type }} vor.\n\n### Details zur Anforderung:\n* **Aktions-Typ:** {{ form_data.action_type }}\n* **Rechnungsnummer:** {{ form_data.invoice_number }} (vom {{ form_data.invoice_date }})\n* **Verordnung:** {{ form_data.prescription_info }} (vom {{ form_data.prescription_date }})\n* **Betroffene Patienten:** {{ form_data.patient_names }}\n* **Original ESOL-Datei:** {{ form_data.esol_filename }}\n* **Begründung & Details:** {{ form_data.action_reason_detail }}\n\n### Belege & Anhänge:\n* **Weitergeleitete Mail / Screenshot / Beleg im Fallordner:** {{ 'JA (siehe Fallordner ' ~ attachment_directory ~ ')' if form_data.has_forwarded_email_or_screenshot else 'NEIN' }}\n\n---\n*Erfasst durch Support: {{ created_by }}*"
+    },
+    {
+      "template_id": "gitlab_dev_kundenwunsch",
+      "display_name": "GitLab / Dev-Ticket: Kundenwunsch",
+      "target_type": "CLIPBOARD_TEXT",
+      "applicable_cases": [
+        "schema_feature_request"
+      ],
+      "description": "Formatiertes Markdown-Ticket für neue Funktionswünsche an die Entwicklungsabteilung.",
+      "required_schema_fields": [
+        "module_name",
+        "feature_description",
+        "practice_benefit"
+      ],
+      "template_string": "### Feature-Request: {{ classification.title }}\n**Praxis:** {{ customer.practice_name }} (Kundennr: {{ customer.customer_id }}) {{ '★ VIP-Kunde' if customer.is_vip else '' }}\n**Betroffenes Modul:** {{ form_data.module_name }}\n\n#### Beschreibung des Kundenwunsches:\n{{ form_data.feature_description }}\n\n#### Gewünschter Nutzen / Ziel für die Praxis:\n{{ form_data.practice_benefit }}\n\n#### Mockups / Screenshots:\n{{ 'Screenshots / Skizzen sind im Fallordner hinterlegt (' ~ attachment_directory ~ ')' if form_data.has_mockup_or_screenshot else 'Keine Screenshots hinterlegt' }}\n\n---\n*Erfasst durch Support: {{ created_by }}*"
+    },
+    {
+      "template_id": "gitlab_dev_bug",
+      "display_name": "GitLab / Dev-Ticket: Programmierfehler (Bug)",
+      "target_type": "CLIPBOARD_TEXT",
+      "applicable_cases": [
+        "schema_bug_report"
+      ],
+      "description": "Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
+      "required_schema_fields": [
+        "module_name",
+        "error_message",
+        "reproduction_steps",
+        "database_dump_provided"
+      ],
+      "template_string": "### Bug-Report: {{ classification.title }}\n**Praxis:** {{ customer.practice_name }} (Kundennr: {{ customer.customer_id }})\n**Modul:** {{ form_data.module_name }}\n**Fehlermeldung:** {{ form_data.error_message }}\n\n#### Schritte zur Reproduktion:\n{{ form_data.reproduction_steps }}\n\n#### Stack-Trace / Logauszug:\n```\n{{ form_data.stack_trace if form_data.stack_trace else 'Kein Stack-Trace angegeben' }}\n```\n\n#### DB-Backup / Logfiles:\n{{ 'Vorhanden im Ordner ' ~ attachment_directory if form_data.database_dump_provided else '[FEHLT: DB-Dump / Logfile]' }}\n\n---\n*Erfasst durch Support: {{ created_by }}*"
+    },
+    {
+      "template_id": "mail_kunden_rueckmeldung",
+      "display_name": "E-Mail an Praxis: Lösungs-Zusammenfassung",
       "target_type": "CLIPBOARD_TEXT",
       "applicable_cases": [
         "schema_zuzahlungsnachforderung",
+        "schema_feature_request",
         "schema_bug_report"
       ],
-      "description": "Erzeugt formatierten Markdown-Text für ein neues Entwickler-Ticket im Issue-Tracker.",
-      "required_schema_fields": [
-        "billing_quarter",
-        "error_code",
-        "database_dump_provided"
-      ],
-      "template_string": "### Support-Übergabe: {{ customer.practice_name }} ({{ customer.customer_id }})\n**VIP-Status:** {{ 'JA' if customer.is_vip else 'NEIN' }}\n**Rückruf-Deadline:** {{ classification.deadline_callback }}\n\n#### Technische Parameter\n* **Quartal:** {{ form_data.billing_quarter }}\n* **Fehlercode:** {{ form_data.error_code }}\n* **DB-Dump:** {{ 'Vorhanden im Ordner ' ~ attachment_directory if form_data.database_dump_provided else '[FEHLT: DB-Dump]' }}\n\n#### Letzte Notiz\n{{ timeline[-1].note if timeline else 'Keine Notiz vorhanden' }}\n\n*Erfasst durch Support: {{ created_by }}*"
-    },
-    {
-      "template_id": "cobra_note",
-      "display_name": "Cobra CRM Notiz / Übergabe",
-      "target_type": "CLIPBOARD_TEXT",
-      "applicable_cases": [
-        "schema_abrechnungskorrektur",
-        "schema_zuzahlungsnachforderung"
-      ],
-      "description": "Formatierter Text für den Eintrag in die Cobra CRM Kundenhistorie.",
-      "required_schema_fields": [
-        "billing_quarter"
-      ],
-      "template_string": "SUPPORT-HISTORIE - {{ case.case_id }}\nPraxis: {{ customer.practice_name }}\nAnsprechpartner: {{ customer.contact_person }} ({{ customer.phone }})\nStatus: {{ workflow_status.board_column }} / Bearbeiter: {{ workflow_status.current_actor }}\nNotiz: {{ timeline[-1].note if timeline else '' }}"
+      "description": "Kunden-E-Mail mit Zusammenfassung der Lösung und Kontaktdaten.",
+      "required_schema_fields": [],
+      "template_string": "Sehr geehrte/r {{ customer.contact_person if customer.contact_person else 'Damen und Herren' }},\n\nvielen Dank für Ihre Anfrage bezüglich \"{{ classification.title }}\" (Fall-ID: {{ case.case_id }}).\n\n### Status / Zusammenfassung:\n{{ timeline[-1].note if timeline else 'Ihr Anliegen befindet sich derzeit in Bearbeitung.' }}\n\nSollten Sie hierzu Fragen haben, erreichen Sie uns jederzeit unter Angabe der Fall-ID {{ case.case_id }}.\n\nMit freundlichen Grüßen\n{{ created_by }}\nSupport-Team"
     }
   ]
 }

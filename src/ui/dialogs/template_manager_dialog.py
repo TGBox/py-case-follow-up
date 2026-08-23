@@ -222,12 +222,21 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         ctk.CTkLabel(top_bar, text="📄 Export-Vorlagen-Verwaltung", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         btn_new = ctk.CTkButton(top_bar, text="+ Neue Vorlage", command=self.on_add_template, fg_color="forestgreen", width=140)
-        btn_new.pack(side="right", padx=10)
+        btn_new.pack(side="right", padx=5)
+
+        btn_reset = ctk.CTkButton(top_bar, text="🔄 Standard-Vorlagen laden", command=self.on_reset_templates, fg_color="gray30", width=180)
+        btn_reset.pack(side="right", padx=5)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
         self.render_list()
+
+    def on_reset_templates(self):
+        self.templates = self.storage_service.reset_templates_to_defaults()
+        self.render_list()
+        if self.on_templates_updated:
+            self.on_templates_updated(self.templates)
 
     def render_list(self):
         for w in self.scroll_frame.winfo_children():

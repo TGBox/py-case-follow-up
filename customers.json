@@ -1,0 +1,89 @@
+[
+  {
+    "customer_id": "K-10482",
+    "practice_name": "Gemeinschaftspraxis Dr. Müller & Partner",
+    "is_vip": true,
+    "system_version": "v2026.2.4",
+    "general_notes": "Abrechnungsleitung bevorzugt telefonischen Kontakt morgens vor 10:00 Uhr.",
+    "contacts": [
+      {
+        "name": "Dr. Hans Müller",
+        "role": "Inhaber / Arzt",
+        "phone": "+49 731 123456-0",
+        "email": "mueller@praxis-ulm.de",
+        "note": ""
+      },
+      {
+        "name": "Frau Sabine Weber",
+        "role": "Abrechnungsleitung",
+        "phone": "+49 731 123456-12",
+        "email": "weber@praxis-ulm.de",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "customer_id": "K-10890",
+    "practice_name": "Praxisklinik am Stadtgarten",
+    "is_vip": true,
+    "system_version": "v2026.1.9",
+    "general_notes": "Großpraxis mit 8 Behandlungsstühlen.",
+    "contacts": [
+      {
+        "name": "Dr. Elena Rossi",
+        "role": "Ärztliche Leitung",
+        "phone": "+49 89 987654-0",
+        "email": "rossi@stadtgarten-praxis.de",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "customer_id": "K-10211",
+    "practice_name": "Zahnarztpraxis Dr. Schmidt",
+    "is_vip": false,
+    "system_version": "v2025.4.1",
+    "general_notes": "Nutzt Standard-Abrechnungsmodul.",
+    "contacts": [
+      {
+        "name": "Herr Thomas Schmidt",
+        "role": "Praxisinhaber",
+        "phone": "+49 30 5551234",
+        "email": "info@schmidt-zahnarzt.de",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "customer_id": "K-10554",
+    "practice_name": "MVZ Kardiologie Rhein-Neckar",
+    "is_vip": false,
+    "system_version": "v2026.2.0",
+    "general_notes": "Ansprechpartner IT: Herr Becker.",
+    "contacts": [
+      {
+        "name": "Klaus Becker",
+        "role": "IT-Administrator",
+        "phone": "+49 621 443322",
+        "email": "it@mvz-rhein-neckar.de",
+        "note": ""
+      }
+    ]
+  },
+  {
+    "customer_id": "K-10777",
+    "practice_name": "Hausarztpraxis Dipl.-Med. Fischer",
+    "is_vip": false,
+    "system_version": "v2026.2.4",
+    "general_notes": "Neukunde seit Anfang 2026.",
+    "contacts": [
+      {
+        "name": "Dipl.-Med. Petra Fischer",
+        "role": "Ärztin",
+        "phone": "+49 341 889900",
+        "email": "fischer@hausarzt-leipzig.de",
+        "note": ""
+      }
+    ]
+  }
+]

@@ -60,11 +60,20 @@ class ExportDialog(ctk.CTkToplevel):
             tpl_frame,
             values=tpl_names if tpl_names else ["Keine Vorlage"],
             command=self.on_template_selected,
-            width=380,
+            width=300,
         )
         if self.active_template:
             self.tpl_combo.set(self.active_template.display_name)
         self.tpl_combo.pack(side="left")
+
+        btn_manage = ctk.CTkButton(
+            tpl_frame,
+            text="🛠️ Vorlagen verwalten",
+            command=self.on_open_template_manager,
+            width=150,
+            fg_color="gray30"
+        )
+        btn_manage.pack(side="right", padx=(5, 0))
 
         # In-Place Completion Frame
         self.inplace_frame = ctk.CTkFrame(main_frame)
@@ -205,3 +214,25 @@ class ExportDialog(ctk.CTkToplevel):
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
             self.status_label.configure(text=f"💾 Datei gespeichert: {Path(file_path).name}", text_color="green")
+
+    def on_open_template_manager(self):
+        from ui.dialogs.template_manager_dialog import TemplateManagerDialog
+        storage_service = getattr(self.master, "storage_service", None)
+        if storage_service:
+            TemplateManagerDialog(
+                self,
+                templates=self.templates,
+                schemas=self.schemas,
+                storage_service=storage_service,
+                export_service=self.export_service,
+                on_templates_updated=self.on_templates_updated,
+            )
+
+    def on_templates_updated(self, updated_templates: list[ExportTemplate]):
+        self.templates = updated_templates
+        tpl_names = [t.display_name for t in self.templates]
+        self.tpl_combo.configure(values=tpl_names if tpl_names else ["Keine Vorlage"])
+        if self.templates:
+            self.active_template = self.templates[0]
+            self.tpl_combo.set(self.active_template.display_name)
+        self.update_render_preview()

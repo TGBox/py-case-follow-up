@@ -118,6 +118,8 @@ class WorkflowStatus:
     actor_since: str = ""
     idle_warning_days: int = 1
     is_data_complete: bool = False
+    followup_at: str = ""
+    followup_note: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -147,6 +149,8 @@ class WorkflowStatus:
             actor_since=data.get("actor_since", ""),
             idle_warning_days=int(data.get("idle_warning_days", 1)),
             is_data_complete=bool(data.get("is_data_complete", False)),
+            followup_at=data.get("followup_at", ""),
+            followup_note=data.get("followup_note", ""),
         )
 
 

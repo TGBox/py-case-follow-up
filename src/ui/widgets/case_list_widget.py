@@ -93,6 +93,18 @@ class CaseListWidget(ctk.CTkFrame):
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
+            if case.workflow_status.followup_at:
+                fw_dt_str = case.workflow_status.followup_at.split("T")[0]
+                fw_lbl = ctk.CTkLabel(
+                    card,
+                    text=f"🔔 Nachfragen am: {fw_dt_str}",
+                    anchor="w",
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="darkorange"
+                )
+                fw_lbl.pack(fill="x", padx=12, pady=(0, 2))
+                fw_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
             if case.classification.tags:
                 tags_str = "🏷️ " + ", ".join(case.classification.tags)
                 tag_lbl = ctk.CTkLabel(card, text=tags_str, anchor="w", font=ctk.CTkFont(size=10, weight="bold"), text_color=("dodgerblue", "cyan"))

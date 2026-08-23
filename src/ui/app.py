@@ -28,6 +28,7 @@ from ui.views.split_view import SplitView
 from ui.dialogs.new_case_dialog import NewCaseDialog
 from ui.dialogs.export_dialog import ExportDialog
 from ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
+from ui.dialogs.template_manager_dialog import TemplateManagerDialog
 from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 from ui.dialogs.help_dialog import HelpDialog
 from ui.dialogs.customer_management_dialog import CustomerManagementDialog
@@ -152,6 +153,9 @@ class SupportCockpitApp(ctk.CTk):
 
         builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=105)
         builder_btn.pack(side="left", padx=3, pady=4)
+
+        tpl_btn = ctk.CTkButton(menu_frame, text="📄 Vorlagen", command=self.open_template_manager_dialog, width=95)
+        tpl_btn.pack(side="left", padx=3, pady=4)
 
         p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=110)
         p2p_btn.pack(side="left", padx=3, pady=4)
@@ -312,6 +316,20 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_schemas_updated(self, updated_schemas: list[QuestionSchema]):
         self.schemas = updated_schemas
+        self.refresh_views()
+
+    def open_template_manager_dialog(self):
+        TemplateManagerDialog(
+            self,
+            templates=self.templates,
+            schemas=self.schemas,
+            storage_service=self.storage_service,
+            export_service=self.export_service,
+            on_templates_updated=self.on_templates_updated,
+        )
+
+    def on_templates_updated(self, updated_templates: list[ExportTemplate]):
+        self.templates = updated_templates
         self.refresh_views()
 
     def open_p2p_dialog(self):

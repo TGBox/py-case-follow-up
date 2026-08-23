@@ -111,7 +111,16 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         add_schema_btn = ctk.CTkButton(top_frame, text="+ Neues Formular", command=self.open_new_schema_dialog, fg_color="forestgreen", width=130)
         add_schema_btn.pack(side="left", padx=(0, 5))
 
-        reset_schema_btn = ctk.CTkButton(top_frame, text="🔄 Standard-Formulare", command=self.on_reset_schemas, fg_color="gray30", width=160)
+        self.adopt_schema_btn = ctk.CTkButton(
+            top_frame,
+            text="📥 Zu Realdaten übernehmen",
+            command=self.on_adopt_schema,
+            fg_color="dodgerblue",
+            width=200,
+        )
+        self.adopt_schema_btn.pack(side="left", padx=(0, 5))
+
+        reset_schema_btn = ctk.CTkButton(top_frame, text="🔄 Standard-Formulare", command=self.on_reset_schemas, fg_color="gray30", width=150)
         reset_schema_btn.pack(side="left", padx=(0, 5))
 
         del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
@@ -199,11 +208,48 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             self.refresh_schema_combo()
             self.refresh_fields_list()
 
+    def check_adopt_status(self):
+        storage_service = getattr(self.master, "storage_service", None)
+        if not storage_service or not self.selected_schema:
+            self.adopt_schema_btn.configure(state="disabled", text="📥 Zu Realdaten übernehmen", fg_color="gray40")
+            return
+
+        saved_schemas = storage_service.load_schemas()
+        is_already_saved = False
+        for s in saved_schemas:
+            if s.schema_id == self.selected_schema.schema_id:
+                if len(s.fields) == len(self.selected_schema.fields):
+                    if all(f1.field_id == f2.field_id and f1.label == f2.label for f1, f2 in zip(s.fields, self.selected_schema.fields)):
+                        is_already_saved = True
+                        break
+
+        if is_already_saved:
+            self.adopt_schema_btn.configure(text="✓ In Realdaten enthalten", state="disabled", fg_color="gray40")
+        else:
+            self.adopt_schema_btn.configure(text="📥 Zu Realdaten übernehmen", state="normal", fg_color="dodgerblue")
+
+    def on_adopt_schema(self):
+        storage_service = getattr(self.master, "storage_service", None)
+        if storage_service and self.selected_schema:
+            saved_schemas = storage_service.load_schemas()
+            idx = next((i for i, s in enumerate(saved_schemas) if s.schema_id == self.selected_schema.schema_id), -1)
+            if idx >= 0:
+                saved_schemas[idx] = self.selected_schema
+            else:
+                saved_schemas.append(self.selected_schema)
+
+            storage_service.save_schemas(saved_schemas)
+            self.schemas = saved_schemas
+            self.on_schemas_updated(saved_schemas)
+            self.refresh_schema_combo()
+            self.check_adopt_status()
+
     def on_schema_selected(self, name: str):
         self.selected_schema = next((s for s in self.schemas if s.display_name == name), None)
         self.refresh_fields_list()
 
     def refresh_fields_list(self):
+        self.check_adopt_status()
         for widget in self.fields_scroll.winfo_children():
             widget.destroy()
 

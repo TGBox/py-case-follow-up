@@ -1,5 +1,6 @@
 import json
 import logging
+import shutil
 import sqlite3
 import urllib.request
 import urllib.error
@@ -23,6 +24,15 @@ class WikiSyncService:
     def init_db(self) -> None:
         """Initializes SQLite database and FTS5 virtual table."""
         self.config.ensure_directories()
+        if not self.db_path.exists():
+            example_db = self.config.get_example_path("wiki_index.sqlite")
+            if example_db.exists():
+                try:
+                    shutil.copy2(example_db, self.db_path)
+                    logger.info(f"Initialized wiki_index.sqlite from example {example_db}")
+                except Exception as copy_err:
+                    logger.error(f"Could not copy example wiki db: {copy_err}")
+
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 

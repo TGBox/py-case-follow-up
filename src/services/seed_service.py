@@ -500,7 +500,7 @@ class SeedService:
         self.storage.save_profile(profile)
 
         colleagues = [
-            Colleague(username="mmueller", name="Max Müller", extension="245", email="m.mueller@softwarehersteller.de", cases_path=str(self.config.workspace_dir / "colleagues" / "mmueller_cases.json"))
+            Colleague(username="mmueller", name="Max Müller", extension="245", email="m.mueller@softwarehersteller.de", cases_path=str(self.config.colleagues_dir / "mmueller_cases.json"))
         ]
         self.storage.save_colleagues(colleagues)
 

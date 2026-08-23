@@ -15,9 +15,10 @@ class P2PDiffDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.title("Multi-User P2P-Sync & Kollegendaten-Abgleich")
-        self.geometry("820x680")
+        self.geometry("920x720")
+        self.minsize(820, 620)
         from utils.ui_utils import center_window
-        center_window(self, 820, 680)
+        center_window(self, 920, 720)
 
         self.colleagues = colleagues
         self.p2p_service = p2p_service

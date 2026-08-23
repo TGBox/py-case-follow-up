@@ -13,10 +13,10 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.on_profile_updated = on_profile_updated
 
         self.title("⚙️ Profil & Einstellungen")
-        self.geometry("880x720")
-        self.minsize(800, 640)
+        self.geometry("960x780")
+        self.minsize(880, 680)
         from utils.ui_utils import center_window
-        center_window(self, 880, 720)
+        center_window(self, 960, 780)
 
         self.transient(parent)
         self.grab_set()

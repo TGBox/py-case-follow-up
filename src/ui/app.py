@@ -19,6 +19,7 @@ from services.export_service import ExportService
 from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
 from services.schema_service import SchemaService
+from services.customer_service import CustomerService
 
 from ui.views.cockpit_view import CockpitView
 from ui.views.tab_view import TabView
@@ -28,6 +29,9 @@ from ui.dialogs.new_case_dialog import NewCaseDialog
 from ui.dialogs.export_dialog import ExportDialog
 from ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
 from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
+from ui.dialogs.help_dialog import HelpDialog
+from ui.dialogs.customer_management_dialog import CustomerManagementDialog
+from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -40,6 +44,7 @@ class SupportCockpitApp(ctk.CTk):
         # Initialize Services
         self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
+        self.customer_service = CustomerService(self.storage_service)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         self.attachment_service = AttachmentService(self.app_config)
         self.wiki_service = WikiSyncService(self.app_config, self.profile.wiki_settings)
@@ -132,24 +137,38 @@ class SupportCockpitApp(ctk.CTk):
         layout_combo.pack(side="left", padx=5)
 
         # Action Buttons
-        new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=160, fg_color="forestgreen")
-        new_btn.pack(side="left", padx=5)
+        new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
+        new_btn.pack(side="left", padx=3)
 
-        export_btn = ctk.CTkButton(menu_frame, text="📤 Export (Strg+E)", command=lambda: self.open_export_dialog(self.active_case), width=140)
-        export_btn.pack(side="left", padx=5)
+        cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=105)
+        cust_btn.pack(side="left", padx=3)
 
-        builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formular-Baukasten", command=self.open_schema_builder_dialog, width=160)
-        builder_btn.pack(side="left", padx=5)
+        export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=110)
+        export_btn.pack(side="left", padx=3)
 
-        p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=120)
-        p2p_btn.pack(side="left", padx=5)
+        builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=115)
+        builder_btn.pack(side="left", padx=3)
+
+        p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=110)
+        p2p_btn.pack(side="left", padx=3)
+
+        help_btn = ctk.CTkButton(menu_frame, text="📖 Hilfe", command=self.open_help_dialog, width=90, fg_color="gray40")
+        help_btn.pack(side="left", padx=3)
 
         # Right side: User & Theme Toggle
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
-        theme_btn.pack(side="right", padx=10)
+        theme_btn.pack(side="right", padx=6)
 
-        user_lbl = ctk.CTkLabel(menu_frame, text=f"👤 {self.profile.user.name}", font=ctk.CTkFont(weight="bold"))
-        user_lbl.pack(side="right", padx=10)
+        self.user_btn = ctk.CTkButton(
+            menu_frame,
+            text=f"👤 {self.profile.user.name}",
+            font=ctk.CTkFont(weight="bold"),
+            command=self.open_profile_settings_dialog,
+            width=130,
+            fg_color="transparent",
+            hover_color=("gray80", "gray25")
+        )
+        self.user_btn.pack(side="right", padx=6)
 
     def switch_layout(self, layout_name: str):
         if self.active_view:
@@ -195,6 +214,34 @@ class SupportCockpitApp(ctk.CTk):
             self.refresh_views()
 
     # --- Dialog Openers ---
+    def open_help_dialog(self):
+        HelpDialog(self)
+
+    def open_customer_management_dialog(self):
+        CustomerManagementDialog(
+            self,
+            customer_service=self.customer_service,
+            on_customers_updated=self.on_customers_updated,
+        )
+
+    def on_customers_updated(self):
+        self.customers = self.storage_service.load_customers()
+
+    def open_profile_settings_dialog(self):
+        ProfileSettingsDialog(
+            self,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_profile_updated=self.on_profile_updated,
+        )
+
+    def on_profile_updated(self):
+        self.profile = self.storage_service.load_profile()
+        self.user_btn.configure(text=f"👤 {self.profile.user.name}")
+        ctk.set_appearance_mode(self.profile.ui_settings.theme)
+        self.scoring_service = ScoringService(self.profile.scoring_matrix)
+        self.refresh_views()
+
     def open_new_case_dialog(self, event=None):
         NewCaseDialog(
             self,
@@ -202,7 +249,12 @@ class SupportCockpitApp(ctk.CTk):
             schemas=self.schemas,
             created_by=self.profile.user.name,
             on_case_created=self.on_case_created,
+            on_customer_added=self.on_quick_customer_added,
         )
+
+    def on_quick_customer_added(self, new_customer: Customer):
+        self.customer_service.save_customer(new_customer)
+        self.customers = self.storage_service.load_customers()
 
     def on_case_created(self, new_case: Case):
         self.scoring_service.update_case_scoring(new_case)

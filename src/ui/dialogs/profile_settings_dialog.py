@@ -173,7 +173,17 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             values=list(LAYOUT_DISPLAY.values())
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(fill="x", pady=(0, 20))
+        self.layout_combo.pack(fill="x", pady=(0, 15))
+
+        self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+            self.tab_ui,
+            text="🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"
+        )
+        if self.profile.ui_settings.show_demo_data is True:
+            self.demo_switch.select()
+        else:
+            self.demo_switch.deselect()
+        self.demo_switch.pack(anchor="w", pady=(0, 20))
 
         # Column widths reset section
         ctk.CTkLabel(self.tab_ui, text="Gespeicherte Spaltenbreiten (Profile-Level)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -358,6 +368,8 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         # Update UI Settings
         self.profile.ui_settings.theme = self.theme_combo.get()
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
+        if hasattr(self, "demo_switch"):
+            self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
 
         # Update Workspace & Custom File Paths
         ws_path_str = self.ws_entry.get().strip()

@@ -294,3 +294,26 @@ def test_colleague_crud_storage(tmp_path: Path):
     assert found.name == "Markus Becker"
     assert found.department == "Entwicklung"
     assert found.notes == "Spezialist für PVS-Imports"
+
+
+def test_demo_data_flag_and_ui_settings(tmp_path: Path):
+    c_demo = Case(case_id="DEMO-1", is_demo_data=True)
+    c_user = Case(case_id="USER-1", is_demo_data=False)
+
+    d_demo = c_demo.to_dict()
+    d_user = c_user.to_dict()
+    assert d_demo["is_demo_data"] is True
+    assert d_user["is_demo_data"] is False
+
+    restored_demo = Case.from_dict(d_demo)
+    restored_user = Case.from_dict(d_user)
+    assert restored_demo.is_demo_data is True
+    assert restored_user.is_demo_data is False
+
+    from models.profile import UISettings
+    ui = UISettings(show_demo_data=False)
+    ui_dict = ui.to_dict()
+    assert ui_dict["show_demo_data"] is False
+
+    ui_restored = UISettings.from_dict(ui_dict)
+    assert ui_restored.show_demo_data is False

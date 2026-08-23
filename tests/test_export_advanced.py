@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
-from models.case import Case, TimelineEntry
-from models.customer import Customer
+from models.case import Case, CaseCustomer, TimelineEntry
 from models.export_template import ExportTemplate, TargetType
 from services.export_service import ExportService
 from services.storage_service import StorageService, AppConfig
@@ -21,7 +20,7 @@ def test_export_template_rendering_with_custom_placeholders(tmp_path: Path):
     )
 
     c = Case(case_id="T-2026-888")
-    c.customer = Customer(customer_id="K-555", practice_name="Radiologie Nord", is_vip=True)
+    c.customer = CaseCustomer(customer_id="K-555", practice_name="Radiologie Nord", is_vip=True)
     c.classification.title = "DICOM-Export bricht ab"
     c.timeline.append(TimelineEntry(timestamp="2026-08-23T10:00:00", author="Daniel Rösch", note="Patientenbild konnte nicht geladen werden"))
 

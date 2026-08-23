@@ -100,3 +100,24 @@ def test_archive_single_case(tmp_config: AppConfig):
     assert len(archived) == 1
     assert archived[0].case_id == "T-001"
     assert archived[0].workflow_status.is_archived is True
+
+
+def test_custom_workspace_and_path_overrides(tmp_path: Path):
+    custom_ws = tmp_path / "custom_data_dir"
+    custom_cases = tmp_path / "external_cases.json"
+    
+    config = AppConfig(workspace_dir=custom_ws, custom_cases_path=custom_cases)
+    config.ensure_directories()
+    
+    assert config.workspace_dir == custom_ws
+    assert config.cases_path == custom_cases
+    assert config.customers_path == custom_ws / "data" / "customers.json"
+    
+    storage = StorageService(config)
+    case = Case(case_id="T-999")
+    storage.save_cases([case])
+
+    assert custom_cases.exists()
+    loaded = storage.load_cases()
+    assert len(loaded) == 1
+    assert loaded[0].case_id == "T-999"

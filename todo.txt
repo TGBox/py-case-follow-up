@@ -7,7 +7,7 @@
 (B) Live-Dateivorschau im Cockpit für Bilder, PDFs und Textfiles +NewFeature @attachments
 (B) OS-Integration zum Öffnen von Anhängen im System-Standardprogramm +NewFeature @attachments
 (B) Schnellfilter-Buttons über der Fallliste ("🔥 Dringend", "🔔 Fällige Wiedervorlagen", "🏢 Intern") & gespeicherte Smart-Filter +NewFeature @search
-(B) Benutzerdefinierte Tastatur-Shortcuts im Profile-Einstellungen-Dialog konfigurierbar machen (inkl. Konfliktprüfung) +NewFeature @settings
+(B) Benutzerdefinierte Tastatur-Shortcuts im Profile-Einstellungen-Dialog erweitern und Konfliktprüfung hinzufügen. +NewFeature @settings
 (B) Abwesenheits- & Urlaubs-Status für Mitarbeiter unterstützen (inkl. Warnhinweis bei Übergabe an abwesende Kollegen) +NewFeature @colleagues
 (C) Neuer Hauptansichts-Reiter "📊 Auswertungen" im Hauptmenü hinzufügen +NewFeature @dashboard
 (C) Kennzahlen & KPIs (Fall-Laufzeiten, Auslastung pro Abteilung) berechnen +NewFeature @dashboard

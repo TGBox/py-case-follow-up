@@ -1,0 +1,12 @@
+(A) Kopfzeilen-Glocken-Badge (🔔) mit Zähler fälliger Wiedervorlagen & Deadlines implementieren +Sprint1 @ui
+(A) Hintergrund-Timer & Toast-Notifications für fällige Fristen umsetzen +Sprint1 @notifications
+(A) Erinnerungs-Flyout mit Schnell-Aktionen (+1 Tag, +1 Woche verschieben) +Sprint1 @ui
+(B) Drag & Drop Upload-Zone im Cockpit-Detailpanel für Dateianhänge +Sprint2 @attachments
+(B) Live-Dateivorschau im Cockpit für Bilder, PDFs und Textfiles +Sprint2 @attachments
+(B) OS-Integration zum Öffnen von Anhängen im System-Standardprogramm +Sprint2 @attachments
+(C) Neuer Hauptansichts-Reiter "📊 Auswertungen" im Hauptmenü hinzufügen +Sprint3 @dashboard
+(C) Kennzahlen & KPIs (Fall-Laufzeiten, Auslastung pro Abteilung) berechnen +Sprint3 @dashboard
+(C) Kunden- & Fehlercode-Ranking mit Diagramm-Vorschau umsetzen +Sprint3 @dashboard
+(D) E-Mail-Postfach Import (IMAP) für automatische Fallerstellung +Sprint4 @integrations
+(D) GitLab / Jira Webhook Integrator bei Fallübergabe an Entwicklung +Sprint4 @integrations
+(D) Direct-Linking von Support-Fällen mit BookStack-Wiki-Einträgen +Sprint4 @integrations

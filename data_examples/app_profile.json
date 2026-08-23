@@ -43,13 +43,25 @@
     "sync_on_startup": true
   },
   "available_tags": [
-    "PVS",
     "Abrechnung",
     "Hardware",
+    "Berechtigung",
+    "Windows",
     "Schnittstelle",
     "Dringend",
-    "Vor-Ort",
-    "Rezept",
-    "Netzwerk"
+    "Kürzung",
+    "Ablehnung",
+    "Verordnung",
+    "Netzwerk",
+    "Datenbank",
+    "Fehler",
+    "Rechnung",
+    "Kündigung",
+    "Zuzahlungsnachforderung",
+    "Kunde Wütend",
+    "Kundenwunsch",
+    "Fragen",
+    "Rückmeldung",
+    "Informationen"
   ]
 }

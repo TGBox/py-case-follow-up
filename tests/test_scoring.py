@@ -100,3 +100,52 @@ def test_update_case_scoring(scoring_service):
     assert score == 150.0
     assert case.classification.calculated_score == 150.0
     assert case.classification.urgency_level == UrgencyLevel.RED
+
+
+def test_completed_case_score_zero(scoring_service):
+    now = datetime(2026, 8, 23, 14, 0, 0)
+    case = Case(
+        case_id="T-001",
+        customer=CaseCustomer(is_vip=True),
+        classification=Classification(deadline_callback=format_iso(now - timedelta(days=2))),
+        workflow_status=WorkflowStatus(is_completed=True, actor_since=format_iso(now - timedelta(days=5))),
+    )
+    score = scoring_service.calculate_score(case, now)
+    assert score == 0.0
+    assert scoring_service.determine_urgency_level(score) == UrgencyLevel.GREEN
+
+
+def test_archived_case_score_zero(scoring_service):
+    now = datetime(2026, 8, 23, 14, 0, 0)
+    case = Case(
+        case_id="T-001",
+        customer=CaseCustomer(is_vip=True),
+        workflow_status=WorkflowStatus(is_archived=True, is_completed=True),
+    )
+    score = scoring_service.calculate_score(case, now)
+    assert score == 0.0
+    assert scoring_service.determine_urgency_level(score) == UrgencyLevel.GREEN
+
+
+def test_negative_idle_days_clamped(scoring_service):
+    now = datetime(2026, 8, 23, 14, 0, 0)
+    future_actor = now + timedelta(days=2)  # Future date
+    case = Case(
+        case_id="T-001",
+        customer=CaseCustomer(is_vip=False),
+        workflow_status=WorkflowStatus(actor_since=format_iso(future_actor)),
+    )
+    score = scoring_service.calculate_score(case, now)
+    assert score == 0.0
+
+
+def test_scoring_with_missing_dates(scoring_service):
+    now = datetime(2026, 8, 23, 14, 0, 0)
+    case = Case(
+        case_id="T-001",
+        customer=CaseCustomer(is_vip=False),
+        classification=Classification(deadline_callback="INVALID_DATE_STRING"),
+        workflow_status=WorkflowStatus(actor_since=""),
+    )
+    score = scoring_service.calculate_score(case, now)
+    assert score == 0.0

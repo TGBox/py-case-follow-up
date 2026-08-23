@@ -14,7 +14,10 @@ class ScoringService:
         self.matrix = matrix
 
     def calculate_score(self, case: Case, now: datetime | None = None) -> float:
-        """Calculates urgency score according to SRS formula."""
+        """Calculates urgency score according to SRS formula. Completed or archived cases score 0."""
+        if case.workflow_status.is_completed or case.workflow_status.is_archived:
+            return 0.0
+
         ref_now = now or get_local_now()
 
         # 1. VIP Bonus
@@ -23,19 +26,22 @@ class ScoringService:
         # 2. Idle Days (floor(idle_days) * points_per_idle_day)
         actor_time = case.workflow_status.actor_since or case.updated_at or case.created_at
         idle_days = calculate_idle_days(actor_time, ref_now)
-        full_idle_days = math.floor(idle_days)
+        full_idle_days = max(0, math.floor(idle_days))
         idle_points = full_idle_days * self.matrix.points_per_idle_day
 
         # 3. Deadline Bonus
         deadline_points = 0
         if case.classification.deadline_callback:
-            h_until_deadline = hours_until_deadline(case.classification.deadline_callback, ref_now)
-            if h_until_deadline < 0:
-                # Overdue
-                deadline_points = self.matrix.deadline_overdue_bonus
-            elif h_until_deadline <= self.matrix.deadline_close_hours:
-                # Close to deadline
-                deadline_points = self.matrix.deadline_close_bonus
+            try:
+                h_until_deadline = hours_until_deadline(case.classification.deadline_callback, ref_now)
+                if h_until_deadline < 0:
+                    # Overdue
+                    deadline_points = self.matrix.deadline_overdue_bonus
+                elif h_until_deadline <= self.matrix.deadline_close_hours:
+                    # Close to deadline
+                    deadline_points = self.matrix.deadline_close_bonus
+            except Exception:
+                deadline_points = 0
 
         total_score = float(vip_points + idle_points + deadline_points)
         return total_score

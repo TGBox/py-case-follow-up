@@ -11,10 +11,10 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.on_customers_updated = on_customers_updated
 
         self.title("🏥 Praxis- & Kundenverwaltung")
-        self.geometry("900x600")
-        self.minsize(750, 480)
+        self.geometry("960x660")
+        self.minsize(800, 540)
         from utils.ui_utils import center_window
-        center_window(self, 900, 600)
+        center_window(self, 960, 660)
 
         self.transient(parent)
         self.grab_set()

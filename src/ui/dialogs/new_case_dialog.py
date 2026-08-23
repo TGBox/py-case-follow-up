@@ -151,7 +151,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         # Tags Selection
         ctk.CTkLabel(main_frame, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
         
-        self.tags_frame = ctk.CTkScrollableFrame(main_frame, width=510, height=80, orientation="horizontal")
+        self.tags_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         self.tags_frame.pack(fill="x", pady=(0, 10))
 
         self.render_tags_checkboxes()
@@ -185,15 +185,62 @@ class NewCaseDialog(ctk.CTkToplevel):
         for w in self.tags_frame.winfo_children():
             w.destroy()
 
+        current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
+        current_row.pack(fill="x", anchor="w", pady=1)
+        items_in_row = 0
+        max_items_per_row = 5
+
         for tag in self.available_tags:
             if tag not in self.selected_tags_vars:
                 self.selected_tags_vars[tag] = ctk.BooleanVar(value=False)
 
-            chk = ctk.CTkCheckBox(self.tags_frame, text=tag, variable=self.selected_tags_vars[tag])
-            chk.pack(side="left", padx=6, pady=5)
+            if items_in_row >= max_items_per_row:
+                current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
+                current_row.pack(fill="x", anchor="w", pady=1)
+                items_in_row = 0
 
-        add_tag_btn = ctk.CTkButton(self.tags_frame, text="+ Tag", width=65, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=self.open_quick_add_tag)
-        add_tag_btn.pack(side="left", padx=6, pady=5)
+            is_selected = self.selected_tags_vars[tag].get()
+            btn_text = f"✓  {tag}" if is_selected else f"   {tag}"
+            btn_fg = ("#2563eb", "#1d4ed8") if is_selected else ("gray85", "gray28")
+            btn_hover = ("#1d4ed8", "#1e40af") if is_selected else ("gray75", "gray38")
+            btn_text_color = "white" if is_selected else ("gray20", "gray85")
+
+            btn = ctk.CTkButton(
+                current_row,
+                text=btn_text,
+                height=28,
+                corner_radius=14,
+                font=ctk.CTkFont(size=11, weight="bold" if is_selected else "normal"),
+                fg_color=btn_fg,
+                hover_color=btn_hover,
+                text_color=btn_text_color,
+                command=lambda t=tag: self.toggle_tag(t),
+            )
+            btn.pack(side="left", padx=3, pady=2)
+            items_in_row += 1
+
+        if items_in_row >= max_items_per_row:
+            current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
+            current_row.pack(fill="x", anchor="w", pady=1)
+
+        add_tag_btn = ctk.CTkButton(
+            current_row,
+            text="+ Tag",
+            width=65,
+            height=28,
+            corner_radius=14,
+            font=ctk.CTkFont(size=11, weight="bold"),
+            fg_color=("gray75", "gray35"),
+            hover_color=("gray65", "gray45"),
+            command=self.open_quick_add_tag,
+        )
+        add_tag_btn.pack(side="left", padx=3, pady=2)
+
+    def toggle_tag(self, tag_name: str):
+        if tag_name in self.selected_tags_vars:
+            curr = self.selected_tags_vars[tag_name].get()
+            self.selected_tags_vars[tag_name].set(not curr)
+            self.render_tags_checkboxes()
 
     def open_quick_add_tag(self):
         dialog = ctk.CTkInputDialog(text="Geben Sie den Namen des neuen Tags ein:", title="Neuen Tag hinzufügen")

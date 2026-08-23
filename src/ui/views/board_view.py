@@ -17,7 +17,6 @@ class KanbanCardWidget(ctk.CTkFrame):
         on_open_followup: Callable[[Case], None],
         on_toggle_complete: Callable[[Case], None],
         on_change_actor: Callable[[Case], None],
-        card_width: int = 280,
     ):
         super().__init__(parent, corner_radius=8, fg_color=("gray85", "gray20"))
         self.case = case
@@ -26,13 +25,10 @@ class KanbanCardWidget(ctk.CTkFrame):
         self.on_open_followup = on_open_followup
         self.on_toggle_complete = on_toggle_complete
         self.on_change_actor = on_change_actor
-        self.card_width = card_width
 
         self.create_card()
 
     def create_card(self):
-        wrap_w = max(160, self.card_width - 35)
-
         # Header: ID + Urgency Score Badge
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=10, pady=(8, 2))
@@ -66,7 +62,7 @@ class KanbanCardWidget(ctk.CTkFrame):
             font=ctk.CTkFont(size=12, weight="bold"),
             anchor="w",
             justify="left",
-            wraplength=wrap_w,
+            wraplength=260,
             text_color=("gray20", "gray85"),
         )
         cust_lbl.pack(fill="x", padx=10, pady=(2, 2))
@@ -77,7 +73,7 @@ class KanbanCardWidget(ctk.CTkFrame):
             text=self.case.classification.title,
             font=ctk.CTkFont(size=11),
             anchor="w",
-            wraplength=wrap_w,
+            wraplength=260,
             justify="left",
         )
         title_lbl.pack(fill="x", padx=10, pady=(0, 4))
@@ -92,7 +88,6 @@ class KanbanCardWidget(ctk.CTkFrame):
             text=actor_txt,
             font=ctk.CTkFont(size=10),
             text_color=("gray40", "gray70"),
-            wraplength=int(wrap_w * 0.55),
             anchor="w",
             justify="left",
         ).pack(side="left")
@@ -104,7 +99,6 @@ class KanbanCardWidget(ctk.CTkFrame):
                 text=fw_txt,
                 font=ctk.CTkFont(size=10, weight="bold"),
                 text_color=("darkblue", "lightblue"),
-                wraplength=int(wrap_w * 0.45),
                 anchor="e",
                 justify="right",
             ).pack(side="right")
@@ -156,7 +150,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
 
 class BoardView(ctk.CTkFrame):
-    """Interactive 4-column Kanban workflow board with dynamic column width control."""
+    """Interactive 4-column Kanban workflow board with individual column collapsing."""
 
     def __init__(
         self,
@@ -177,56 +171,28 @@ class BoardView(ctk.CTkFrame):
         self.app_config = app_config
 
         self.cases: list[Case] = []
+        self.collapsed_states: dict[str, bool] = {
+            "support": False,
+            "dev": False,
+            "followup": False,
+            "completed": False,
+        }
 
-        # Read column width from config/profile
-        self.board_col_width = 280
+        # Load collapsed state from profile / app_config
         if self.app_config:
-            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
-                self.board_col_width = self.app_config.column_widths.get("board_column", 280)
-            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
-                self.board_col_width = self.app_config.ui_settings.column_widths.get("board_column", 280)
+            if hasattr(self.app_config, "board_collapsed") and isinstance(self.app_config.board_collapsed, dict):
+                self.collapsed_states.update(self.app_config.board_collapsed)
+            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):
+                self.collapsed_states.update(self.app_config.ui_settings.board_collapsed)
 
         self.create_board()
 
     def create_board(self):
-        self.grid_rowconfigure(0, weight=0)  # Controls
-        self.grid_rowconfigure(1, weight=1)  # Kanban columns
-        for i in range(4):
-            self.grid_columnconfigure(i, weight=1, minsize=self.board_col_width)
+        # Clear existing children
+        for child in self.winfo_children():
+            child.destroy()
 
-        # 0. Top Controls: Column Width Slider
-        ctrl_frame = ctk.CTkFrame(self, height=36)
-        ctrl_frame.grid(row=0, column=0, columnspan=4, sticky="ew", padx=4, pady=(2, 6))
-
-        ctk.CTkLabel(
-            ctrl_frame,
-            text="📐 Spaltenbreite im Kanban-Board:",
-            font=ctk.CTkFont(weight="bold", size=11),
-        ).pack(side="left", padx=(10, 5))
-
-        self.width_slider = ctk.CTkSlider(  # type: ignore[attr-defined]
-            ctrl_frame,
-            from_=200,
-            to=500,
-            number_of_steps=30,
-            command=self.on_slider_width_changed,
-            width=220,
-        )
-        self.width_slider.set(self.board_col_width)
-        self.width_slider.pack(side="left", padx=5)
-
-        self.width_val_label = ctk.CTkLabel(
-            ctrl_frame,
-            text=f"{self.board_col_width} px",
-            font=ctk.CTkFont(size=11, weight="bold"),
-            width=60,
-        )
-        self.width_val_label.pack(side="left", padx=2)
-
-        # 1. 4 Kanban Columns
-        self.col_headers: dict[str, ctk.CTkLabel] = {}
-        self.col_scrolls: dict[str, ctk.CTkScrollableFrame] = {}
-
+        self.grid_rowconfigure(0, weight=1)
         cols_def = [
             ("support", "📥 Support / In Bearbeitung"),
             ("dev", "💻 Entwickler / Dev-Team"),
@@ -234,38 +200,85 @@ class BoardView(ctk.CTkFrame):
             ("completed", "✓ Erledigte Fälle"),
         ]
 
+        self.col_headers: dict[str, ctk.CTkLabel] = {}
+        self.col_scrolls: dict[str, ctk.CTkScrollableFrame] = {}
+
         for idx, (col_key, col_title) in enumerate(cols_def):
-            col_frame = ctk.CTkFrame(self)
-            col_frame.grid(row=1, column=idx, sticky="nsew", padx=4, pady=4)
+            is_collapsed = self.collapsed_states.get(col_key, False)
 
-            header_lbl = ctk.CTkLabel(
-                col_frame,
-                text=col_title,
-                font=ctk.CTkFont(size=13, weight="bold"),
-                anchor="w",
-            )
-            header_lbl.pack(fill="x", padx=10, pady=8)
-            self.col_headers[col_key] = header_lbl
+            if is_collapsed:
+                # Collapsed slim column
+                self.grid_columnconfigure(idx, weight=0, minsize=42)
+                col_frame = ctk.CTkFrame(self, width=42, fg_color=("gray80", "gray25"))
+                col_frame.grid(row=0, column=idx, sticky="nsew", padx=2, pady=4)
+                col_frame.grid_propagate(False)
 
-            scroll = ctk.CTkScrollableFrame(col_frame)
-            scroll.pack(fill="both", expand=True, padx=4, pady=4)
-            self.col_scrolls[col_key] = scroll
+                # Expand button
+                btn_exp = ctk.CTkButton(
+                    col_frame,
+                    text="▶",
+                    width=28,
+                    height=28,
+                    command=lambda k=col_key: self.toggle_column_collapse(k),
+                    fg_color="gray35",
+                    hover_color="gray50",
+                )
+                btn_exp.pack(anchor="n", pady=8, padx=6)
 
-    def on_slider_width_changed(self, val: float):
-        new_w = int(val)
-        self.board_col_width = new_w
-        self.width_val_label.configure(text=f"{new_w} px")
+                lbl = ctk.CTkLabel(
+                    col_frame,
+                    text=f"{col_title.split(' ')[0]}\n({col_key[0].upper()})",
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                )
+                lbl.pack(pady=10)
+                self.col_headers[col_key] = lbl
+            else:
+                # Expanded full column
+                self.grid_columnconfigure(idx, weight=1, minsize=220)
+                col_frame = ctk.CTkFrame(self)
+                col_frame.grid(row=0, column=idx, sticky="nsew", padx=4, pady=4)
 
-        # Save to app_config / profile
+                header_frame = ctk.CTkFrame(col_frame, height=36, fg_color="transparent")
+                header_frame.pack(fill="x", padx=6, pady=(6, 4))
+
+                header_lbl = ctk.CTkLabel(
+                    header_frame,
+                    text=col_title,
+                    font=ctk.CTkFont(size=13, weight="bold"),
+                    anchor="w",
+                )
+                header_lbl.pack(side="left", padx=4)
+                self.col_headers[col_key] = header_lbl
+
+                # Collapse button
+                btn_col = ctk.CTkButton(
+                    header_frame,
+                    text="◀ Zuklappen",
+                    width=80,
+                    height=24,
+                    font=ctk.CTkFont(size=10),
+                    command=lambda k=col_key: self.toggle_column_collapse(k),
+                    fg_color="gray35",
+                    hover_color="gray50",
+                )
+                btn_col.pack(side="right", padx=2)
+
+                scroll = ctk.CTkScrollableFrame(col_frame)
+                scroll.pack(fill="both", expand=True, padx=4, pady=4)
+                self.col_scrolls[col_key] = scroll
+
+    def toggle_column_collapse(self, col_key: str):
+        curr = self.collapsed_states.get(col_key, False)
+        self.collapsed_states[col_key] = not curr
+
+        # Save to profile / app_config
         if self.app_config:
-            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
-                self.app_config.column_widths["board_column"] = new_w
-            if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
-                self.app_config.ui_settings.column_widths["board_column"] = new_w
+            if hasattr(self.app_config, "board_collapsed") and isinstance(self.app_config.board_collapsed, dict):
+                self.app_config.board_collapsed[col_key] = not curr
+            if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):
+                self.app_config.ui_settings.board_collapsed[col_key] = not curr
 
-        for i in range(4):
-            self.grid_columnconfigure(i, minsize=new_w)
-
+        self.create_board()
         self.refresh_board()
 
     def set_cases(self, cases: list[Case]):
@@ -273,11 +286,6 @@ class BoardView(ctk.CTkFrame):
         self.refresh_board()
 
     def refresh_board(self):
-        # Clear all columns
-        for scroll in self.col_scrolls.values():
-            for child in scroll.winfo_children():
-                child.destroy()
-
         col_cases: dict[str, list[Case]] = {
             "support": [],
             "dev": [],
@@ -303,21 +311,29 @@ class BoardView(ctk.CTkFrame):
         }
 
         for k, title in titles.items():
-            self.col_headers[k].configure(text=title)
+            if k in self.col_headers:
+                if self.collapsed_states.get(k, False):
+                    short_icon = title.split(" ")[0]
+                    cnt = title.split("(")[-1].replace(")", "")
+                    self.col_headers[k].configure(text=f"{short_icon}\n({cnt})")
+                else:
+                    self.col_headers[k].configure(text=title)
 
         for col_key, c_list in col_cases.items():
-            scroll = self.col_scrolls[col_key]
-            # Sort cases by score descending inside column
-            c_list_sorted = sorted(c_list, key=lambda x: x.classification.calculated_score, reverse=True)
-            for c in c_list_sorted:
-                card = KanbanCardWidget(
-                    scroll,
-                    case=c,
-                    on_select_case=self.on_select_case,
-                    on_switch_to_cockpit=self.on_switch_to_cockpit,
-                    on_open_followup=self.on_open_followup,
-                    on_toggle_complete=self.on_toggle_complete,
-                    on_change_actor=self.on_change_actor,
-                    card_width=self.board_col_width,
-                )
-                card.pack(fill="x", pady=4, padx=2)
+            if col_key in self.col_scrolls:
+                scroll = self.col_scrolls[col_key]
+                for child in scroll.winfo_children():
+                    child.destroy()
+
+                c_list_sorted = sorted(c_list, key=lambda x: x.classification.calculated_score, reverse=True)
+                for c in c_list_sorted:
+                    card = KanbanCardWidget(
+                        scroll,
+                        case=c,
+                        on_select_case=self.on_select_case,
+                        on_switch_to_cockpit=self.on_switch_to_cockpit,
+                        on_open_followup=self.on_open_followup,
+                        on_toggle_complete=self.on_toggle_complete,
+                        on_change_actor=self.on_change_actor,
+                    )
+                    card.pack(fill="x", pady=4, padx=2)

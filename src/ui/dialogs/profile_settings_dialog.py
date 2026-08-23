@@ -15,6 +15,8 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.title("⚙️ Profil & Einstellungen")
         self.geometry("700x560")
         self.minsize(600, 460)
+        from utils.ui_utils import center_window
+        center_window(self, 700, 560)
 
         self.transient(parent)
         self.grab_set()

@@ -13,6 +13,8 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.title("🏥 Praxis- & Kundenverwaltung")
         self.geometry("900x600")
         self.minsize(750, 480)
+        from utils.ui_utils import center_window
+        center_window(self, 900, 600)
 
         self.transient(parent)
         self.grab_set()

@@ -76,6 +76,8 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         super().__init__(parent)
         self.title("In-App Formular-Baukasten (Schemata verwalten)")
         self.geometry("780x640")
+        from utils.ui_utils import center_window
+        center_window(self, 780, 640)
 
         self.schemas = schemas
         self.schema_service = schema_service

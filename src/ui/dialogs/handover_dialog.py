@@ -33,6 +33,8 @@ class HandoverDialog(ctk.CTkToplevel):
         self.title(f"👤 Zuständigkeit übergeben (Fall {case.case_id})")
         self.geometry("500x440")
         self.resizable(False, False)
+        from utils.ui_utils import center_window
+        center_window(self, 500, 440)
         self.transient(parent)
         self.grab_set()
 

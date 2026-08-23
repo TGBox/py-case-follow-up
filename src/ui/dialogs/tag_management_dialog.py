@@ -14,6 +14,8 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.title("🏷️ System-Tags Verwaltung")
         self.geometry("560x500")
         self.minsize(480, 400)
+        from utils.ui_utils import center_window
+        center_window(self, 560, 500)
 
         self.transient(parent)
         self.grab_set()

@@ -47,15 +47,30 @@ class UISettings:
     column_widths: dict[str, int] = field(
         default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
+    board_collapsed: dict[str, bool] = field(
+        default_factory=lambda: {"support": False, "dev": False, "followup": False, "completed": False}
+    )
+    table_column_widths: dict[str, int] = field(
+        default_factory=lambda: {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
+    )
+    table_column_order: list[str] = field(
+        default_factory=lambda: ["case_id", "practice", "title", "actor", "followup", "score"]
+    )
 
     def reset_column_widths(self) -> None:
         self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
+        self.board_collapsed = {"support": False, "dev": False, "followup": False, "completed": False}
+        self.table_column_widths = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
+        self.table_column_order = ["case_id", "practice", "title", "actor", "followup", "score"]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "theme": self.theme,
             "default_layout": self.default_layout,
             "column_widths": self.column_widths,
+            "board_collapsed": self.board_collapsed,
+            "table_column_widths": self.table_column_widths,
+            "table_column_order": self.table_column_order,
         }
 
     @classmethod
@@ -64,10 +79,25 @@ class UISettings:
         default_widths = dict(DEFAULT_COLUMN_WIDTHS)
         if isinstance(widths, dict):
             default_widths.update({k: int(v) for k, v in widths.items() if isinstance(v, (int, float))})
+
+        b_collapsed = {"support": False, "dev": False, "followup": False, "completed": False}
+        if isinstance(data.get("board_collapsed"), dict):
+            b_collapsed.update(data["board_collapsed"])
+
+        t_widths = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
+        if isinstance(data.get("table_column_widths"), dict):
+            t_widths.update({k: int(v) for k, v in data["table_column_widths"].items() if isinstance(v, (int, float))})
+
+        def_order = ["case_id", "practice", "title", "actor", "followup", "score"]
+        t_order = list(data.get("table_column_order", def_order)) if isinstance(data.get("table_column_order"), list) else def_order
+
         return cls(
             theme=data.get("theme", "SYSTEM"),
             default_layout=data.get("default_layout", LayoutMode.COCKPIT),
             column_widths=default_widths,
+            board_collapsed=b_collapsed,
+            table_column_widths=t_widths,
+            table_column_order=t_order,
         )
 
 

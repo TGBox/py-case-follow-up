@@ -72,10 +72,26 @@ class HandoverDialog(ctk.CTkToplevel):
 
         # 3. Specific Person Name (Optional Entry or Dropdown)
         ctk.CTkLabel(main_frame, text="Empfänger / Name der Person (optional):").pack(anchor="w", pady=(4, 2))
-        self.person_entry = ctk.CTkEntry(
-            main_frame, placeholder_text="z. B. Max Mustermann, Hr. Becker..."
-        )
-        self.person_entry.pack(fill="x", pady=(0, 12))
+
+        if self.colleagues:
+            c_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+            c_frame.pack(fill="x", pady=(0, 12))
+
+            col_names = ["- Aus Liste wählen -"] + [f"{c.name} ({c.department})" for c in self.colleagues]
+            self.colleague_combo = ctk.CTkOptionMenu(
+                c_frame, values=col_names, command=self.on_colleague_selected, width=180
+            )
+            self.colleague_combo.pack(side="left", padx=(0, 5))
+
+            self.person_entry = ctk.CTkEntry(
+                c_frame, placeholder_text="Name oder aus Liste wählen..."
+            )
+            self.person_entry.pack(side="right", fill="x", expand=True)
+        else:
+            self.person_entry = ctk.CTkEntry(
+                main_frame, placeholder_text="z. B. Max Mustermann, Hr. Becker..."
+            )
+            self.person_entry.pack(fill="x", pady=(0, 12))
 
         # 4. Optional Note
         ctk.CTkLabel(main_frame, text="Notiz / Details zur Übergabe (optional):").pack(anchor="w", pady=(4, 2))
@@ -102,6 +118,13 @@ class HandoverDialog(ctk.CTkToplevel):
             command=self.on_confirm,
             width=180,
         ).pack(side="right")
+
+    def on_colleague_selected(self, selected_text: str):
+        if selected_text and not selected_text.startswith("-"):
+            # Extract name before parentheses
+            name_part = selected_text.split(" (")[0]
+            self.person_entry.delete(0, "end")
+            self.person_entry.insert(0, name_part)
 
     def on_confirm(self):
         new_actor_display = self.actor_combo.get()

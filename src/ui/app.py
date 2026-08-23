@@ -32,6 +32,7 @@ from ui.dialogs.template_manager_dialog import TemplateManagerDialog
 from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 from ui.dialogs.help_dialog import HelpDialog
 from ui.dialogs.customer_management_dialog import CustomerManagementDialog
+from ui.dialogs.colleague_management_dialog import ColleagueManagementDialog
 from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 from ui.dialogs.tag_management_dialog import TagManagementDialog
 
@@ -161,6 +162,9 @@ class SupportCockpitApp(ctk.CTk):
 
         cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=95)
         cust_btn.pack(side="left", padx=3, pady=4)
+
+        colleague_btn = ctk.CTkButton(menu_frame, text="👥 Mitarbeiter", command=self.open_colleague_management_dialog, width=115)
+        colleague_btn.pack(side="left", padx=3, pady=4)
 
         tags_btn = ctk.CTkButton(menu_frame, text="🏷️ Tags", command=self.open_tag_management_dialog, width=85)
         tags_btn.pack(side="left", padx=3, pady=4)
@@ -413,6 +417,16 @@ class SupportCockpitApp(ctk.CTk):
     def on_templates_updated(self, updated_templates: list[ExportTemplate]):
         self.templates = updated_templates
         self.refresh_views()
+
+    def open_colleague_management_dialog(self):
+        ColleagueManagementDialog(
+            self,
+            storage_service=self.storage_service,
+            on_colleagues_updated=self.on_colleagues_updated,
+        )
+
+    def on_colleagues_updated(self):
+        self.colleagues = self.storage_service.load_colleagues()
 
     def open_p2p_dialog(self):
         P2PDiffDialog(

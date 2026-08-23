@@ -34,10 +34,10 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text="Alle", width=50, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=85, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlagen", width=115, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🏢 Intern", width=70, fg_color="gray30", hover_color="gray40", command=lambda: self.apply_quick_filter("is:internal")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="Alle", width=50, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=85, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlagen", width=115, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🏢 Intern", width=70, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("is:internal")).pack(side="left", padx=2)
 
         # Header Info
         self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")

@@ -94,7 +94,8 @@ class ZipImportPathDialog(ctk.CTkToplevel):
             mode_frame,
             text="⚙️ Einzelne Pfade anpassen",
             command=self.set_mode_custom,
-            fg_color="gray40",
+            fg_color=("gray70", "gray40"),
+            hover_color=("gray60", "gray50"),
             width=230,
         )
         self.btn_mode_custom.pack(side="left")
@@ -124,7 +125,8 @@ class ZipImportPathDialog(ctk.CTkToplevel):
             bottom_bar,
             text="Abbrechen",
             command=self.destroy,
-            fg_color="gray40",
+            fg_color=("gray70", "gray40"),
+            hover_color=("gray60", "gray50"),
             width=120,
         ).pack(side="left")
 
@@ -140,12 +142,12 @@ class ZipImportPathDialog(ctk.CTkToplevel):
     def set_mode_root(self):
         self.mode = "root"
         self.btn_mode_root.configure(fg_color="dodgerblue")
-        self.btn_mode_custom.configure(fg_color="gray40")
+        self.btn_mode_custom.configure(fg_color=("gray70", "gray40"))
         self.render_path_inputs()
 
     def set_mode_custom(self):
         self.mode = "custom"
-        self.btn_mode_root.configure(fg_color="gray40")
+        self.btn_mode_root.configure(fg_color=("gray70", "gray40"))
         self.btn_mode_custom.configure(fg_color="dodgerblue")
         self.render_path_inputs()
 

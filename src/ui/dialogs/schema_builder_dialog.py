@@ -259,7 +259,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             return
 
         for idx, f in enumerate(self.selected_schema.fields):
-            f_frame = ctk.CTkFrame(self.fields_scroll, fg_color="gray20" if idx % 2 == 0 else "transparent")
+            f_frame = ctk.CTkFrame(self.fields_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
             f_frame.pack(fill="x", pady=2, padx=5)
 
             req_str = "[PFLICHT]" if f.required else "[OPTIONAL]"

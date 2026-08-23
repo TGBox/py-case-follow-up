@@ -55,7 +55,7 @@ class CalendarDialog(ctk.CTkToplevel):
         nav_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         nav_frame.pack(fill="x", pady=(0, 10))
 
-        btn_prev = ctk.CTkButton(nav_frame, text="◀", width=36, command=self.prev_month, fg_color="gray30")
+        btn_prev = ctk.CTkButton(nav_frame, text="◀", width=36, command=self.prev_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
         btn_prev.pack(side="left")
 
         self.month_label = ctk.CTkLabel(
@@ -63,7 +63,7 @@ class CalendarDialog(ctk.CTkToplevel):
         )
         self.month_label.pack(side="left", expand=True)
 
-        btn_next = ctk.CTkButton(nav_frame, text="▶", width=36, command=self.next_month, fg_color="gray30")
+        btn_next = ctk.CTkButton(nav_frame, text="▶", width=36, command=self.next_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
         btn_next.pack(side="right")
 
         # Weekdays Header (Mo - So)
@@ -112,21 +112,21 @@ class CalendarDialog(ctk.CTkToplevel):
         presets_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")
         presets_frame1.pack(fill="x", pady=(2, 2))
 
-        ctk.CTkButton(presets_frame1, text="Heute 11:30 (vor Mittag)", width=170, fg_color="gray30", hover_color="gray40", command=self.set_today_before_lunch).pack(side="left", padx=2)
-        ctk.CTkButton(presets_frame1, text="Heute 13:30 (nach Mittag)", width=170, fg_color="gray30", hover_color="gray40", command=self.set_today_after_lunch).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame1, text="Heute 11:30 (vor Mittag)", width=170, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=self.set_today_before_lunch).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame1, text="Heute 13:30 (nach Mittag)", width=170, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=self.set_today_after_lunch).pack(side="left", padx=2)
 
         presets_frame2 = ctk.CTkFrame(main_frame, fg_color="transparent")
         presets_frame2.pack(fill="x", pady=(2, 8))
 
-        ctk.CTkButton(presets_frame2, text="Morgen 08:00", width=110, fg_color="gray30", hover_color="gray40", command=self.set_tomorrow_8am).pack(side="left", padx=2)
-        ctk.CTkButton(presets_frame2, text="+ 1 Tag", width=110, fg_color="gray30", hover_color="gray40", command=lambda: self.add_days(1)).pack(side="left", padx=2)
-        ctk.CTkButton(presets_frame2, text="+ 1 Woche", width=110, fg_color="gray30", hover_color="gray40", command=lambda: self.add_days(7)).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame2, text="Morgen 08:00", width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=self.set_tomorrow_8am).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame2, text="+ 1 Tag", width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.add_days(1)).pack(side="left", padx=2)
+        ctk.CTkButton(presets_frame2, text="+ 1 Woche", width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.add_days(7)).pack(side="left", padx=2)
 
         # Bottom Actions
         action_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         action_frame.pack(fill="x", side="bottom")
 
-        btn_cancel = ctk.CTkButton(action_frame, text="Abbrechen", fg_color="gray", command=self.destroy, width=100)
+        btn_cancel = ctk.CTkButton(action_frame, text="Abbrechen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.destroy, width=100)
         btn_cancel.pack(side="left")
 
         btn_apply = ctk.CTkButton(action_frame, text="Übernehmen", fg_color="forestgreen", command=self.on_apply, width=140)
@@ -300,7 +300,7 @@ class DatePickerWidget(ctk.CTkFrame):
                 self.entry.insert(0, formatted)
 
         self.cal_btn = ctk.CTkButton(
-            self, text="📅 Kalender", width=95, command=self.open_calendar, fg_color="gray30"
+            self, text="📅 Kalender", width=95, command=self.open_calendar, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         self.cal_btn.pack(side="right")
 

@@ -139,7 +139,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
         ctk.CTkButton(bottom_bar, text="💾 Vorlage Speichern", command=self.save, fg_color="forestgreen", width=160).pack(side="right", padx=5)
-        ctk.CTkButton(bottom_bar, text="Abbrechen", command=self.destroy, fg_color="gray40", width=90).pack(side="left", padx=5)
+        ctk.CTkButton(bottom_bar, text="Abbrechen", command=self.destroy, fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), width=90).pack(side="left", padx=5)
 
     def render_preview(self):
         tmpl_str = self.template_textbox.get("1.0", "end-1c")
@@ -228,7 +228,7 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         btn_new = ctk.CTkButton(top_bar, text="+ Neue Vorlage", command=self.on_add_template, fg_color="forestgreen", width=140)
         btn_new.pack(side="right", padx=5)
 
-        btn_reset = ctk.CTkButton(top_bar, text="🔄 Standard-Vorlagen laden", command=self.on_reset_templates, fg_color="gray30", width=180)
+        btn_reset = ctk.CTkButton(top_bar, text="🔄 Standard-Vorlagen laden", command=self.on_reset_templates, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), width=180)
         btn_reset.pack(side="right", padx=5)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self)

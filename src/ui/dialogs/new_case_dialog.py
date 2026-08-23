@@ -192,7 +192,7 @@ class NewCaseDialog(ctk.CTkToplevel):
             chk = ctk.CTkCheckBox(self.tags_frame, text=tag, variable=self.selected_tags_vars[tag])
             chk.pack(side="left", padx=6, pady=5)
 
-        add_tag_btn = ctk.CTkButton(self.tags_frame, text="+ Tag", width=65, fg_color="gray30", hover_color="gray40", command=self.open_quick_add_tag)
+        add_tag_btn = ctk.CTkButton(self.tags_frame, text="+ Tag", width=65, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=self.open_quick_add_tag)
         add_tag_btn.pack(side="left", padx=6, pady=5)
 
     def open_quick_add_tag(self):

@@ -183,7 +183,12 @@ class AppConfig:
                 with open(config_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
 
-                ws_dir = Path(data["workspace_dir"]) if data.get("workspace_dir") else get_default_workspace_dir()
+                ws_path_str = data.get("workspace_dir")
+                ws_dir = Path(ws_path_str) if ws_path_str else get_default_workspace_dir()
+                if not ws_dir.exists():
+                    logger.warning(f"Configured workspace_dir '{ws_dir}' does not exist. Falling back to default workspace.")
+                    ws_dir = get_default_workspace_dir()
+
                 col_widths = data.get("column_widths", {})
                 default_widths = {"cockpit_left": 300, "cockpit_center": 420, "cockpit_right": 320, "board_column": 280}
                 if isinstance(col_widths, dict):

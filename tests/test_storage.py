@@ -219,7 +219,10 @@ def test_german_date_formatting_and_parsing():
     assert parsed_date_only == "2026-08-23T00:00:00"
 
 
-def test_column_width_persistence(tmp_path: Path):
+def test_column_width_persistence(tmp_path: Path, monkeypatch):
+    test_config_file = tmp_path / "user_config.json"
+    monkeypatch.setattr("config.get_global_config_file", lambda: test_config_file)
+
     config = AppConfig(workspace_dir=tmp_path)
     config.column_widths = {"cockpit_left": 350, "cockpit_center": 500, "cockpit_right": 300, "board_column": 320}
 

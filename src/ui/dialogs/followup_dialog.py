@@ -48,14 +48,21 @@ class FollowupDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(anchor="w", padx=10, pady=(10, 5))
 
-        # Quick Preset Buttons
-        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", padx=10, pady=5)
+        # Quick Preset Buttons Rows
+        btn_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_frame1.pack(fill="x", padx=10, pady=2)
 
-        ctk.CTkButton(btn_frame, text="+ 1 Tag", width=90, command=lambda: self.set_preset_days(1)).pack(side="left", padx=3)
-        ctk.CTkButton(btn_frame, text="+ 2 Tage", width=90, command=lambda: self.set_preset_days(2)).pack(side="left", padx=3)
-        ctk.CTkButton(btn_frame, text="+ 3 Tage", width=90, command=lambda: self.set_preset_days(3)).pack(side="left", padx=3)
-        ctk.CTkButton(btn_frame, text="+ 1 Woche", width=90, command=lambda: self.set_preset_days(7)).pack(side="left", padx=3)
+        ctk.CTkButton(btn_frame1, text="Heute 11:30 (vor Mittag)", width=155, command=self.set_preset_today_before_lunch, fg_color="gray30", hover_color="gray40").pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="Heute 13:30 (nach Mittag)", width=155, command=self.set_preset_today_after_lunch, fg_color="gray30", hover_color="gray40").pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="Morgen 08:00 Uhr", width=140, command=self.set_preset_tomorrow_8am, fg_color="gray30", hover_color="gray40").pack(side="left", padx=2)
+
+        btn_frame2 = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_frame2.pack(fill="x", padx=10, pady=(2, 5))
+
+        ctk.CTkButton(btn_frame2, text="+ 1 Tag", width=95, command=lambda: self.set_preset_days(1)).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame2, text="+ 2 Tage", width=95, command=lambda: self.set_preset_days(2)).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame2, text="+ 3 Tage", width=95, command=lambda: self.set_preset_days(3)).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame2, text="+ 1 Woche", width=105, command=lambda: self.set_preset_days(7)).pack(side="left", padx=2)
 
         # Custom Date Entry using DatePickerWidget
         ctk.CTkLabel(main_frame, text="Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(anchor="w", padx=10, pady=(15, 2))
@@ -111,6 +118,21 @@ class FollowupDialog(ctk.CTkToplevel):
             fg_color="gray40",
             width=90
         ).pack(side="left", padx=5)
+
+    def set_preset_today_before_lunch(self):
+        now = get_local_now()
+        german_str = f"{format_german_date(now)} 11:30"
+        self.date_picker.set_date(german_str)
+
+    def set_preset_today_after_lunch(self):
+        now = get_local_now()
+        german_str = f"{format_german_date(now)} 13:30"
+        self.date_picker.set_date(german_str)
+
+    def set_preset_tomorrow_8am(self):
+        tmw = get_local_now() + timedelta(days=1)
+        german_str = f"{format_german_date(tmw)} 08:00"
+        self.date_picker.set_date(german_str)
 
     def set_preset_days(self, days: int):
         target_dt = get_local_now() + timedelta(days=days)

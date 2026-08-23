@@ -85,5 +85,21 @@
         "note": ""
       }
     ]
+  },
+  {
+    "customer_id": "00121",
+    "practice_name": "Praxis Weber",
+    "is_vip": true,
+    "system_version": "",
+    "general_notes": "",
+    "contacts": [
+      {
+        "name": "Ute Weber (Inhaberin)",
+        "role": "Hauptansprechpartner",
+        "phone": "0123565767",
+        "email": "ute-weber@mail.de",
+        "note": ""
+      }
+    ]
   }
 ]

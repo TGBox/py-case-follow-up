@@ -3,7 +3,7 @@ from typing import Callable, Any
 from models.case import Case, TimelineEntry
 from models.customer import Customer
 from models.schema import QuestionSchema
-from enums import BoardColumn, Actor
+from enums import BoardColumn, Actor, get_actor_display, get_actor_val_from_display, ACTOR_DISPLAY
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
@@ -94,7 +94,7 @@ class CockpitView(ctk.CTkFrame):
         # Actor Selector & Complete Buttons
         self.actor_combo = ctk.CTkOptionMenu(
             self.info_bar,
-            values=[a.value for a in Actor],
+            values=list(ACTOR_DISPLAY.values()),
             command=self.on_actor_changed,
             width=130,
         )
@@ -118,7 +118,7 @@ class CockpitView(ctk.CTkFrame):
         self.right_tabview = ctk.CTkTabview(self)
         self.right_tabview.grid(row=0, column=2, sticky="nsew", padx=5, pady=5)
 
-        tab_timeline = self.right_tabview.add("Timeline")
+        tab_timeline = self.right_tabview.add("Zeitleiste")
         tab_attachments = self.right_tabview.add("Anhänge")
         tab_wiki = self.right_tabview.add("Wiki")
 
@@ -154,7 +154,7 @@ class CockpitView(ctk.CTkFrame):
         info_str = f"Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str} | Ansprechpartner: {case.customer.contact_person}"
         self.info_label.configure(text=info_str)
 
-        self.actor_combo.set(case.workflow_status.current_actor)
+        self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
         self.complete_btn.configure(text="✓ Wieder öffnen" if case.workflow_status.is_completed else "✓ Erledigen")
 
         # Load active schema
@@ -180,9 +180,10 @@ class CockpitView(ctk.CTkFrame):
         self.scoring_service.update_case_scoring(self.current_case)
         self.on_case_updated(self.current_case)
 
-    def on_actor_changed(self, new_actor: str):
+    def on_actor_changed(self, new_actor_display: str):
         if self.current_case:
-            self.current_case.workflow_status.current_actor = new_actor
+            self.current_case.workflow_status.current_actor = get_actor_val_from_display(new_actor_display)
+            self.on_click_save()
             self.on_click_save()
 
     def on_toggle_complete(self):

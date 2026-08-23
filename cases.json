@@ -17,7 +17,8 @@
       "title": "Zuzahlungsnachforderungsdatei fehlerhaft erzeugt",
       "urgency_level": "RED",
       "calculated_score": 150.0,
-      "deadline_callback": "2026-08-23T16:00:00"
+      "deadline_callback": "2026-08-23T16:00:00",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,
@@ -73,13 +74,14 @@
       "title": "Absturz beim Drucken von BMA-Rezepten",
       "urgency_level": "RED",
       "calculated_score": 195.0,
-      "deadline_callback": "2026-08-21T10:00:00"
+      "deadline_callback": "2026-08-21T10:00:00",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,
       "is_archived": false,
       "board_column": "ACTION_REQUIRED",
-      "current_actor": "SUPPORT",
+      "current_actor": "TECH",
       "actor_since": "2026-08-20T11:00:00",
       "idle_warning_days": 1,
       "is_data_complete": true
@@ -119,7 +121,8 @@
       "title": "KV-Abrechnungstext korrigieren",
       "urgency_level": "GREEN",
       "calculated_score": 0.0,
-      "deadline_callback": ""
+      "deadline_callback": "",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,
@@ -164,7 +167,8 @@
       "title": "Prüfung Nachforderung 2026-Q1",
       "urgency_level": "GREEN",
       "calculated_score": 15.0,
-      "deadline_callback": ""
+      "deadline_callback": "",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,
@@ -211,7 +215,8 @@
       "title": "GUI-Schriftgröße im Laborfenster zu klein",
       "urgency_level": "GREEN",
       "calculated_score": 0.0,
-      "deadline_callback": ""
+      "deadline_callback": "",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,
@@ -256,7 +261,8 @@
       "title": "Alte Abrechnung Q1 gelöst",
       "urgency_level": "RED",
       "calculated_score": 155.0,
-      "deadline_callback": ""
+      "deadline_callback": "",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": true,
@@ -299,9 +305,10 @@
     "classification": {
       "schema_id": "schema_zuzahlungsnachforderung",
       "title": "Frische Nachforderung ohne DB-Dump",
-      "urgency_level": "GREEN",
-      "calculated_score": 40.0,
-      "deadline_callback": "2026-08-23T18:00:00"
+      "urgency_level": "RED",
+      "calculated_score": 100.0,
+      "deadline_callback": "2026-08-23T18:00:00",
+      "tags": []
     },
     "workflow_status": {
       "is_completed": false,

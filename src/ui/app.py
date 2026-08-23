@@ -113,6 +113,8 @@ class SupportCockpitApp(ctk.CTk):
             on_case_selected=self.on_case_selected,
             app_config=self.app_config,
         )
+        from ui.views.analytics_view import AnalyticsView
+        self.analytics_view = AnalyticsView(self.container_frame)
 
         self.active_view = None
         self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
@@ -279,6 +281,7 @@ class SupportCockpitApp(ctk.CTk):
         self.board_view.set_cases(filtered_cases)
         self.table_view.set_schemas(self.schemas)
         self.table_view.set_cases(filtered_cases)
+        self.analytics_view.set_cases(filtered_cases)
 
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
         has_user_cases = len(user_cases) > 0
@@ -457,6 +460,13 @@ class SupportCockpitApp(ctk.CTk):
             export_service=self.export_service,
             on_case_updated=self.on_case_updated,
         )
+
+    def open_case_print_dialog(self, case: Case | None = None):
+        target_case = case or self.active_case
+        if not target_case:
+            return
+        from ui.dialogs.case_print_dialog import CasePrintDialog
+        CasePrintDialog(self, target_case)
 
     def open_schema_builder_dialog(self):
         SchemaBuilderDialog(

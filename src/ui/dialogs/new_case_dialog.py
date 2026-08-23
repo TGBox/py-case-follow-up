@@ -86,6 +86,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.title("Neuen Support-Fall anlegen")
         self.geometry("580x680")
         self.resizable(False, False)
+        from utils.ui_utils import center_window
+        center_window(self, 580, 680)
 
         self.customers = list(customers)
         self.schemas = schemas

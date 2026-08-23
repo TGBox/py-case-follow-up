@@ -22,6 +22,8 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.title("👥 Mitarbeiter- & Kollegeneinträge")
         self.geometry("920x620")
         self.minsize(780, 500)
+        from utils.ui_utils import center_window
+        center_window(self, 920, 620)
 
         self.transient(parent)
         self.grab_set()

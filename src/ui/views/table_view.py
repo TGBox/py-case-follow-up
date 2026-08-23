@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import ttk
 import customtkinter as ctk
 from typing import Callable, Any
 from models.case import Case
@@ -12,8 +14,18 @@ from enums import get_actor_display
 from utils.datetime_utils import format_german_datetime
 
 
+COL_TITLE_MAP = {
+    "case_id": "ID ⇅",
+    "practice": "Praxis / Kunde ⇅",
+    "title": "Titel / Betreff ⇅",
+    "actor": "Zuständigkeit ⇅",
+    "followup": "Wiedervorlage ⇅",
+    "score": "Score ⇅",
+}
+
+
 class TableView(ctk.CTkFrame):
-    """Sortable Data Matrix Table View with interactive column width adjustment and text wrapping."""
+    """Data Matrix Table View with native mouse-resizable & reorderable ttk.Treeview columns."""
 
     def __init__(
         self,
@@ -39,72 +51,74 @@ class TableView(ctk.CTkFrame):
 
         self.sort_column: str = "score"
         self.sort_reverse: bool = True
-        self.show_width_controls: bool = False
+
+        # Load saved column widths and order from profile
+        self.column_widths: dict[str, int] = {
+            "case_id": 120,
+            "practice": 220,
+            "title": 280,
+            "actor": 130,
+            "followup": 150,
+            "score": 90,
+        }
+        self.column_order: list[str] = ["case_id", "practice", "title", "actor", "followup", "score"]
+
+        if self.app_config:
+            if hasattr(self.app_config, "table_column_widths") and isinstance(self.app_config.table_column_widths, dict):
+                self.column_widths.update(self.app_config.table_column_widths)
+            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "table_column_widths"):
+                self.column_widths.update(self.app_config.ui_settings.table_column_widths)
+
+            if hasattr(self.app_config, "table_column_order") and isinstance(self.app_config.table_column_order, list):
+                self.column_order = list(self.app_config.table_column_order)
+            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "table_column_order"):
+                self.column_order = list(self.app_config.ui_settings.table_column_order)
 
         self.create_layout()
 
     def set_schemas(self, schemas: list[QuestionSchema]):
         self.schemas = schemas
 
-    def get_col_w(self, key: str, default: int) -> int:
-        if self.app_config:
-            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
-                return self.app_config.column_widths.get(f"table_col_{key}", default)
-            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
-                return self.app_config.ui_settings.column_widths.get(f"table_col_{key}", default)
-        return default
-
-    def set_col_w(self, key: str, value: int):
-        if self.app_config:
-            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
-                self.app_config.column_widths[f"table_col_{key}"] = value
-            if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
-                self.app_config.ui_settings.column_widths[f"table_col_{key}"] = value
-
     def create_layout(self):
-        self.grid_rowconfigure(0, weight=5)  # Top: Table
-        self.grid_rowconfigure(1, weight=5)  # Bottom: Details
+        self.grid_rowconfigure(0, weight=5)  # Top: Table Treeview
+        self.grid_rowconfigure(1, weight=5)  # Bottom: Details Panel
         self.grid_columnconfigure(0, weight=1)
 
-        # 1. Top Section: Data Table Frame
+        # 1. Top Section: Data Table Frame with ttk.Treeview
         top_frame = ctk.CTkFrame(self)
         top_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=(5, 2))
 
-        # Top Control Bar (Toggle Column Width Controls)
-        top_ctrl_bar = ctk.CTkFrame(top_frame, height=32, fg_color="transparent")
-        top_ctrl_bar.pack(fill="x", side="top", padx=5, pady=(4, 2))
+        # Setup ttk Style for Dark/Light Mode
+        self.setup_treeview_style()
 
-        ctk.CTkLabel(
-            top_ctrl_bar,
-            text="📊 Datenmatrix",
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(side="left", padx=5)
-
-        self.btn_toggle_ctrls = ctk.CTkButton(
-            top_ctrl_bar,
-            text="📐 Spaltenbreiten anpassen",
-            command=self.toggle_width_controls,
-            width=170,
-            height=24,
-            font=ctk.CTkFont(size=11),
-            fg_color="gray35",
+        # Treeview Widget
+        cols = tuple(self.column_order)
+        self.tree = ttk.Treeview(
+            top_frame,
+            columns=cols,
+            show="headings",
+            selectmode="browse",
+            style="Matrix.Treeview",
         )
-        self.btn_toggle_ctrls.pack(side="right", padx=5)
 
-        # Collapsible Column Width Controls Bar
-        self.ctrl_panel = ctk.CTkFrame(top_frame, fg_color=("gray85", "gray25"))
-        # Initially hidden
+        # Scrollbars
+        vsb = ttk.Scrollbar(top_frame, orient="vertical", command=self.tree.yview)
+        hsb = ttk.Scrollbar(top_frame, orient="horizontal", command=self.tree.xview)
+        self.tree.configure(yscrollcommand=vsb.set, xscrollcommand=hsb.set)
 
-        # Table Header
-        self.h_frame = ctk.CTkFrame(top_frame, height=36, fg_color=("gray75", "gray25"))
-        self.h_frame.pack(fill="x", side="top", padx=5, pady=(2, 2))
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        vsb.grid(row=0, column=1, sticky="ns")
+        hsb.grid(row=1, column=0, sticky="ew")
 
-        self.header_buttons: dict[str, ctk.CTkButton] = {}
-        self.render_headers()
+        top_frame.grid_rowconfigure(0, weight=1)
+        top_frame.grid_columnconfigure(0, weight=1)
 
-        # Scrollable Rows Container
-        self.table_scroll = ctk.CTkScrollableFrame(top_frame)
-        self.table_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+        # Configure columns & headings
+        self.configure_tree_columns()
+
+        # Bind events
+        self.tree.bind("<<TreeviewSelect>>", self.on_tree_select)
+        self.tree.bind("<ButtonRelease-1>", self.on_header_mouse_release)
 
         # 2. Bottom Section: Collapsible Detail Panel
         bottom_frame = ctk.CTkFrame(self)
@@ -149,89 +163,49 @@ class TableView(ctk.CTkFrame):
         self.attachment_widget = AttachmentWidget(tab_attachments, self.attachment_service)
         self.attachment_widget.pack(fill="both", expand=True)
 
-    def toggle_width_controls(self):
-        self.show_width_controls = not self.show_width_controls
-        if self.show_width_controls:
-            self.btn_toggle_ctrls.configure(fg_color="darkblue", text="✖ Regler ausblenden")
-            self.build_ctrl_panel()
-            self.ctrl_panel.pack(fill="x", side="top", padx=5, pady=(2, 4), before=self.h_frame)
-        else:
-            self.btn_toggle_ctrls.configure(fg_color="gray35", text="📐 Spaltenbreiten anpassen")
-            self.ctrl_panel.pack_forget()
+    def setup_treeview_style(self):
+        style = ttk.Style()
+        style.theme_use("clam")
 
-    def build_ctrl_panel(self):
-        for child in self.ctrl_panel.winfo_children():
-            child.destroy()
+        is_dark = ctk.get_appearance_mode().lower() == "dark"
+        bg_color = "#2b2b2b" if is_dark else "#f0f0f0"
+        fg_color = "#ffffff" if is_dark else "#000000"
+        hdr_bg = "#383838" if is_dark else "#d9d9d9"
+        sel_bg = "#1f538d"
 
-        sliders_def = [
-            ("id", "ID", 80, 250, 120),
-            ("practice", "Praxis", 140, 450, 220),
-            ("title", "Titel", 180, 600, 280),
-            ("actor", "Zuständigkeit", 100, 250, 130),
-            ("followup", "Wiedervorlage", 100, 250, 150),
-            ("score", "Score", 60, 150, 90),
-        ]
+        style.configure(
+            "Matrix.Treeview",
+            background=bg_color,
+            foreground=fg_color,
+            fieldbackground=bg_color,
+            rowheight=32,
+            font=("Segoe UI", 10),
+            borderwidth=0,
+        )
+        style.map("Matrix.Treeview", background=[("selected", sel_bg)], foreground=[("selected", "#ffffff")])
 
-        row_f = ctk.CTkFrame(self.ctrl_panel, fg_color="transparent")
-        row_f.pack(fill="x", padx=5, pady=5)
+        style.configure(
+            "Matrix.Treeview.Heading",
+            background=hdr_bg,
+            foreground=fg_color,
+            font=("Segoe UI", 10, "bold"),
+            borderwidth=1,
+            relief="raised",
+        )
+        style.map("Matrix.Treeview.Heading", background=[("active", "#4a4a4a" if is_dark else "#bfbfbf")])
 
-        for col_key, label_txt, min_v, max_v, def_v in sliders_def:
-            curr_w = self.get_col_w(col_key, def_v)
+    def configure_tree_columns(self):
+        for col_key in self.column_order:
+            title_txt = COL_TITLE_MAP.get(col_key, col_key)
+            w = self.column_widths.get(col_key, 150)
 
-            col_box = ctk.CTkFrame(row_f, fg_color="transparent")
-            col_box.pack(side="left", expand=True, padx=4)
-
-            lbl = ctk.CTkLabel(col_box, text=f"{label_txt}: {curr_w}px", font=ctk.CTkFont(size=10, weight="bold"))
-            lbl.pack(anchor="w")
-
-            def make_cmd(k=col_key, l=lbl, t=label_txt):
-                return lambda val: self.on_col_slider_changed(k, val, l, t)
-
-            slider = ctk.CTkSlider(  # type: ignore[attr-defined]
-                col_box,
-                from_=min_v,
-                to=max_v,
-                number_of_steps=(max_v - min_v) // 5,
-                width=110,
-                height=16,
-                command=make_cmd(),
-            )
-            slider.set(curr_w)
-            slider.pack(anchor="w", pady=(2, 0))
-
-    def on_col_slider_changed(self, col_key: str, val: float, label_widget: ctk.CTkLabel, title_txt: str):
-        new_w = int(val)
-        label_widget.configure(text=f"{title_txt}: {new_w}px")
-        self.set_col_w(col_key, new_w)
-        self.render_headers()
-        self.render_rows()
-
-    def render_headers(self):
-        for child in self.h_frame.winfo_children():
-            child.destroy()
-
-        cols = [
-            ("case_id", "ID ⇅", self.get_col_w("id", 120)),
-            ("practice", "Praxis / Kunde ⇅", self.get_col_w("practice", 220)),
-            ("title", "Titel / Betreff ⇅", self.get_col_w("title", 280)),
-            ("actor", "Zuständigkeit ⇅", self.get_col_w("actor", 130)),
-            ("followup", "Wiedervorlage ⇅", self.get_col_w("followup", 150)),
-            ("score", "Score ⇅", self.get_col_w("score", 90)),
-        ]
-
-        for col_key, col_label, width in cols:
-            btn = ctk.CTkButton(
-                self.h_frame,
-                text=col_label,
-                font=ctk.CTkFont(weight="bold", size=11),
+            self.tree.heading(
+                col_key,
+                text=title_txt,
                 command=lambda k=col_key: self.on_header_click(k),
-                width=width,
-                fg_color="transparent",
-                hover_color=("gray65", "gray35"),
                 anchor="w",
             )
-            btn.pack(side="left", padx=2, pady=2)
-            self.header_buttons[col_key] = btn
+            self.tree.column(col_key, width=w, minwidth=60, stretch=True, anchor="w")
 
     def on_header_click(self, col_key: str):
         if self.sort_column == col_key:
@@ -241,19 +215,34 @@ class TableView(ctk.CTkFrame):
             self.sort_reverse = True
         self.render_rows()
 
+    def on_header_mouse_release(self, event=None):
+        # Save updated widths and display order after drag
+        for col_key in self.column_order:
+            try:
+                w = self.tree.column(col_key, "width")
+                if isinstance(w, (int, float)):
+                    self.column_widths[col_key] = int(w)
+            except Exception:
+                pass
+
+        if self.app_config:
+            if hasattr(self.app_config, "table_column_widths") and isinstance(self.app_config.table_column_widths, dict):
+                self.app_config.table_column_widths.update(self.column_widths)
+            if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "table_column_widths"):
+                self.app_config.ui_settings.table_column_widths.update(self.column_widths)
+
     def set_cases(self, cases: list[Case]):
         self.cases = cases
         self.render_rows()
 
     def render_rows(self):
-        for child in self.table_scroll.winfo_children():
-            child.destroy()
+        # Clear existing items
+        for item in self.tree.get_children():
+            self.tree.delete(item)
 
         if not self.cases:
-            ctk.CTkLabel(self.table_scroll, text="Keine Fälle vorhanden.", text_color="gray").pack(pady=20)
             return
 
-        # Sort cases according to sort_column
         def get_sort_key(c: Case):
             if self.sort_column == "case_id":
                 return c.case_id
@@ -270,103 +259,43 @@ class TableView(ctk.CTkFrame):
 
         sorted_cases = sorted(self.cases, key=get_sort_key, reverse=self.sort_reverse)
 
-        w_id = self.get_col_w("id", 120)
-        w_pr = self.get_col_w("practice", 220)
-        w_tt = self.get_col_w("title", 280)
-        w_ac = self.get_col_w("actor", 130)
-        w_fw = self.get_col_w("followup", 150)
-        w_sc = self.get_col_w("score", 90)
-
         for c in sorted_cases:
-            is_sel = self.selected_case and self.selected_case.case_id == c.case_id
-            bg_color = ("gray75", "gray35") if is_sel else ("gray85", "gray20")
-
-            row = ctk.CTkFrame(self.table_scroll, fg_color=bg_color, cursor="hand2")
-            row.pack(fill="x", pady=2, padx=2)
-            row.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
             vip_str = " ★ VIP" if c.customer.is_vip else ""
             fw_str = format_german_datetime(c.workflow_status.followup_at) if c.workflow_status.followup_at else "-"
-
-            # Columns with text wrapping support
-            id_l = ctk.CTkLabel(
-                row,
-                text=c.case_id,
-                width=w_id,
-                wraplength=max(60, w_id - 6),
-                font=ctk.CTkFont(weight="bold"),
-                anchor="w",
-                justify="left",
-            )
-            id_l.pack(side="left", padx=2, pady=4)
-            id_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
-            pr_l = ctk.CTkLabel(
-                row,
-                text=f"{c.customer.practice_name}{vip_str}",
-                width=w_pr,
-                wraplength=max(100, w_pr - 6),
-                anchor="w",
-                justify="left",
-            )
-            pr_l.pack(side="left", padx=2, pady=4)
-            pr_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
-            tt_l = ctk.CTkLabel(
-                row,
-                text=c.classification.title,
-                width=w_tt,
-                wraplength=max(140, w_tt - 6),
-                anchor="w",
-                justify="left",
-            )
-            tt_l.pack(side="left", padx=2, pady=4)
-            tt_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
-            ac_l = ctk.CTkLabel(
-                row,
-                text=get_actor_display(c.workflow_status.current_actor),
-                width=w_ac,
-                wraplength=max(80, w_ac - 6),
-                anchor="w",
-                justify="left",
-            )
-            ac_l.pack(side="left", padx=2, pady=4)
-            ac_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
-            fw_l = ctk.CTkLabel(
-                row,
-                text=fw_str,
-                width=w_fw,
-                wraplength=max(80, w_fw - 6),
-                anchor="w",
-                justify="left",
-            )
-            fw_l.pack(side="left", padx=2, pady=4)
-            fw_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
-
             score = c.classification.calculated_score
-            sc_color = "firebrick" if score >= 100 else ("darkgoldenrod" if score >= 50 else "darkgreen")
-            sc_l = ctk.CTkLabel(
-                row,
-                text=f"{score:.0f}",
-                width=w_sc,
-                wraplength=max(40, w_sc - 6),
-                font=ctk.CTkFont(weight="bold"),
-                text_color=sc_color,
-                anchor="w",
-                justify="left",
-            )
-            sc_l.pack(side="left", padx=2, pady=4)
-            sc_l.bind("<Button-1>", lambda e, case=c: self.select_case(case))
+
+            values_map = {
+                "case_id": c.case_id,
+                "practice": f"{c.customer.practice_name}{vip_str}",
+                "title": c.classification.title,
+                "actor": get_actor_display(c.workflow_status.current_actor),
+                "followup": fw_str,
+                "score": f"{score:.0f}",
+            }
+
+            row_values = tuple(values_map.get(k, "") for k in self.column_order)
+            item_id = self.tree.insert("", "end", iid=c.case_id, values=row_values)
+
+            if self.selected_case and self.selected_case.case_id == c.case_id:
+                self.tree.selection_set(item_id)
+
+    def on_tree_select(self, event=None):
+        sel = self.tree.selection()
+        if not sel:
+            return
+        case_id = sel[0]
+        case = next((c for c in self.cases if c.case_id == case_id), None)
+        if case:
+            self.select_case(case)
 
     def select_case(self, case: Case):
         self.selected_case = case
         self.on_case_selected(case)
-        self.render_rows()
 
         # Update bottom detail panel
-        self.detail_title_label.configure(text=f"📋 Falldetails: {case.case_id} - {case.customer.practice_name} ({case.classification.title})")
+        self.detail_title_label.configure(
+            text=f"📋 Falldetails: {case.case_id} - {case.customer.practice_name} ({case.classification.title})"
+        )
         self.save_btn.configure(state="normal")
 
         # Schema & Form

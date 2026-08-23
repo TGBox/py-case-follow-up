@@ -265,6 +265,8 @@ class HelpDialog(ctk.CTkToplevel):
         self.title("📖 Handbuch & Anwendungsdokumentation")
         self.geometry("960x640")
         self.minsize(800, 500)
+        from utils.ui_utils import center_window
+        center_window(self, 960, 640)
 
         # Make modal window
         self.transient(parent)

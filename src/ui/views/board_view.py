@@ -6,7 +6,7 @@ from utils.datetime_utils import format_german_datetime
 
 
 class KanbanCardWidget(ctk.CTkFrame):
-    """Kanban card representation of a single case with quick actions."""
+    """Kanban card representation of a single case with quick actions and auto-wrapping."""
 
     def __init__(
         self,
@@ -17,6 +17,7 @@ class KanbanCardWidget(ctk.CTkFrame):
         on_open_followup: Callable[[Case], None],
         on_toggle_complete: Callable[[Case], None],
         on_change_actor: Callable[[Case], None],
+        card_width: int = 280,
     ):
         super().__init__(parent, corner_radius=8, fg_color=("gray85", "gray20"))
         self.case = case
@@ -25,10 +26,13 @@ class KanbanCardWidget(ctk.CTkFrame):
         self.on_open_followup = on_open_followup
         self.on_toggle_complete = on_toggle_complete
         self.on_change_actor = on_change_actor
+        self.card_width = card_width
 
         self.create_card()
 
     def create_card(self):
+        wrap_w = max(160, self.card_width - 35)
+
         # Header: ID + Urgency Score Badge
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=10, pady=(8, 2))
@@ -53,7 +57,7 @@ class KanbanCardWidget(ctk.CTkFrame):
         )
         score_lbl.pack(side="right")
 
-        # Customer Name + VIP
+        # Customer Name + VIP (with auto-wrap)
         vip_str = " ★ VIP" if self.case.customer.is_vip else ""
         cust_str = f"🏥 {self.case.customer.practice_name}{vip_str}"
         cust_lbl = ctk.CTkLabel(
@@ -61,17 +65,19 @@ class KanbanCardWidget(ctk.CTkFrame):
             text=cust_str,
             font=ctk.CTkFont(size=12, weight="bold"),
             anchor="w",
+            justify="left",
+            wraplength=wrap_w,
             text_color=("gray20", "gray85"),
         )
         cust_lbl.pack(fill="x", padx=10, pady=(2, 2))
 
-        # Case Title
+        # Case Title (with auto-wrap)
         title_lbl = ctk.CTkLabel(
             self,
             text=self.case.classification.title,
             font=ctk.CTkFont(size=11),
             anchor="w",
-            wraplength=250,
+            wraplength=wrap_w,
             justify="left",
         )
         title_lbl.pack(fill="x", padx=10, pady=(0, 4))
@@ -81,11 +87,27 @@ class KanbanCardWidget(ctk.CTkFrame):
         meta_frame.pack(fill="x", padx=10, pady=(0, 6))
 
         actor_txt = f"👤 {get_actor_display(self.case.workflow_status.current_actor)}"
-        ctk.CTkLabel(meta_frame, text=actor_txt, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="left")
+        ctk.CTkLabel(
+            meta_frame,
+            text=actor_txt,
+            font=ctk.CTkFont(size=10),
+            text_color=("gray40", "gray70"),
+            wraplength=int(wrap_w * 0.55),
+            anchor="w",
+            justify="left",
+        ).pack(side="left")
 
         if self.case.workflow_status.followup_at:
             fw_txt = f"🔔 {format_german_datetime(self.case.workflow_status.followup_at)}"
-            ctk.CTkLabel(meta_frame, text=fw_txt, font=ctk.CTkFont(size=10, weight="bold"), text_color=("darkblue", "lightblue")).pack(side="right")
+            ctk.CTkLabel(
+                meta_frame,
+                text=fw_txt,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=("darkblue", "lightblue"),
+                wraplength=int(wrap_w * 0.45),
+                anchor="e",
+                justify="right",
+            ).pack(side="right")
 
         # Action Buttons Row
         action_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -134,7 +156,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
 
 class BoardView(ctk.CTkFrame):
-    """Interactive 4-column Kanban workflow board."""
+    """Interactive 4-column Kanban workflow board with dynamic column width control."""
 
     def __init__(
         self,
@@ -156,18 +178,52 @@ class BoardView(ctk.CTkFrame):
 
         self.cases: list[Case] = []
 
+        # Read column width from config/profile
+        self.board_col_width = 280
+        if self.app_config:
+            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
+                self.board_col_width = self.app_config.column_widths.get("board_column", 280)
+            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
+                self.board_col_width = self.app_config.ui_settings.column_widths.get("board_column", 280)
+
         self.create_board()
 
     def create_board(self):
-        col_w = 280
-        if self.app_config and hasattr(self.app_config, "column_widths"):
-            col_w = self.app_config.column_widths.get("board_column", 280)
-
-        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=0)  # Controls
+        self.grid_rowconfigure(1, weight=1)  # Kanban columns
         for i in range(4):
-            self.grid_columnconfigure(i, weight=1, minsize=col_w)
+            self.grid_columnconfigure(i, weight=1, minsize=self.board_col_width)
 
-        # 4 Columns
+        # 0. Top Controls: Column Width Slider
+        ctrl_frame = ctk.CTkFrame(self, height=36)
+        ctrl_frame.grid(row=0, column=0, columnspan=4, sticky="ew", padx=4, pady=(2, 6))
+
+        ctk.CTkLabel(
+            ctrl_frame,
+            text="📐 Spaltenbreite im Kanban-Board:",
+            font=ctk.CTkFont(weight="bold", size=11),
+        ).pack(side="left", padx=(10, 5))
+
+        self.width_slider = ctk.CTkSlider(  # type: ignore[attr-defined]
+            ctrl_frame,
+            from_=200,
+            to=500,
+            number_of_steps=30,
+            command=self.on_slider_width_changed,
+            width=220,
+        )
+        self.width_slider.set(self.board_col_width)
+        self.width_slider.pack(side="left", padx=5)
+
+        self.width_val_label = ctk.CTkLabel(
+            ctrl_frame,
+            text=f"{self.board_col_width} px",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            width=60,
+        )
+        self.width_val_label.pack(side="left", padx=2)
+
+        # 1. 4 Kanban Columns
         self.col_headers: dict[str, ctk.CTkLabel] = {}
         self.col_scrolls: dict[str, ctk.CTkScrollableFrame] = {}
 
@@ -180,7 +236,7 @@ class BoardView(ctk.CTkFrame):
 
         for idx, (col_key, col_title) in enumerate(cols_def):
             col_frame = ctk.CTkFrame(self)
-            col_frame.grid(row=0, column=idx, sticky="nsew", padx=4, pady=4)
+            col_frame.grid(row=1, column=idx, sticky="nsew", padx=4, pady=4)
 
             header_lbl = ctk.CTkLabel(
                 col_frame,
@@ -194,6 +250,23 @@ class BoardView(ctk.CTkFrame):
             scroll = ctk.CTkScrollableFrame(col_frame)
             scroll.pack(fill="both", expand=True, padx=4, pady=4)
             self.col_scrolls[col_key] = scroll
+
+    def on_slider_width_changed(self, val: float):
+        new_w = int(val)
+        self.board_col_width = new_w
+        self.width_val_label.configure(text=f"{new_w} px")
+
+        # Save to app_config / profile
+        if self.app_config:
+            if hasattr(self.app_config, "column_widths") and isinstance(self.app_config.column_widths, dict):
+                self.app_config.column_widths["board_column"] = new_w
+            if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "column_widths"):
+                self.app_config.ui_settings.column_widths["board_column"] = new_w
+
+        for i in range(4):
+            self.grid_columnconfigure(i, minsize=new_w)
+
+        self.refresh_board()
 
     def set_cases(self, cases: list[Case]):
         self.cases = cases
@@ -245,5 +318,6 @@ class BoardView(ctk.CTkFrame):
                     on_open_followup=self.on_open_followup,
                     on_toggle_complete=self.on_toggle_complete,
                     on_change_actor=self.on_change_actor,
+                    card_width=self.board_col_width,
                 )
                 card.pack(fill="x", pady=4, padx=2)

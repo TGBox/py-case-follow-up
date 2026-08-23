@@ -42,11 +42,37 @@ class DynamicFormWidget(ctk.CTkFrame):
             val = form_data.get(f.field_id)
             is_missing = f.field_id in missing_fields
 
-            border_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
+            entry_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
 
-            if f.field_type == FieldType.DROPDOWN:
-                options = f.options if f.options else [""]
-                combo = ctk.CTkOptionMenu(row_frame, values=options, **border_kwargs)
+            is_date_field = (
+                f.field_type == FieldType.DATE
+                or any(k in f.field_id.lower() or k in f.label.lower() for k in ("datum", "date", "frist"))
+            )
+
+            if is_date_field and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN):
+                entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
+                entry_row.pack(fill="x")
+
+                entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or "TT.MM.JJJJ", **entry_kwargs)
+                if val:
+                    entry.insert(0, str(val))
+                entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+                cal_btn = ctk.CTkButton(
+                    entry_row,
+                    text="📅 Kalender",
+                    width=95,
+                    fg_color="gray30",
+                    hover_color="gray40",
+                    command=lambda e=entry: self.open_calendar_picker(e),
+                )
+                cal_btn.pack(side="right")
+                self.field_widgets[f.field_id] = (f.field_type, entry)
+
+            elif f.field_type == FieldType.DROPDOWN:
+                options = f.options if f.options else ["-"]
+                opt_kwargs: dict[str, Any] = {"button_color": "darkred", "fg_color": "firebrick"} if is_missing else {}
+                combo = ctk.CTkOptionMenu(row_frame, values=options, **opt_kwargs)
                 if val and str(val) in options:
                     combo.set(str(val))
                 combo.pack(fill="x")
@@ -54,12 +80,12 @@ class DynamicFormWidget(ctk.CTkFrame):
 
             elif f.field_type == FieldType.BOOLEAN:
                 bool_var = ctk.BooleanVar(value=bool(val) if val is not None else False)
-                chk = ctk.CTkCheckBox(row_frame, text=f.label, variable=bool_var, **border_kwargs)
+                chk = ctk.CTkCheckBox(row_frame, text=f.label, variable=bool_var, **entry_kwargs)
                 chk.pack(anchor="w")
                 self.field_widgets[f.field_id] = (f.field_type, bool_var)
 
             elif f.field_type == FieldType.NUMBER:
-                entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **border_kwargs)
+                entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **entry_kwargs)
                 if val is not None:
                     entry.insert(0, str(val))
                 entry.pack(fill="x")
@@ -67,11 +93,26 @@ class DynamicFormWidget(ctk.CTkFrame):
 
             else:
                 # Text
-                entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **border_kwargs)
+                entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **entry_kwargs)
                 if val:
                     entry.insert(0, str(val))
                 entry.pack(fill="x")
                 self.field_widgets[f.field_id] = (f.field_type, entry)
+
+    def open_calendar_picker(self, entry: ctk.CTkEntry):
+        from ui.widgets.date_picker import CalendarDialog
+        curr_val = entry.get().strip()
+
+        def on_sel(d_str: str):
+            entry.delete(0, "end")
+            entry.insert(0, d_str)
+
+        CalendarDialog(
+            self.winfo_toplevel(),
+            initial_date=curr_val,
+            include_time=True if ":" in curr_val or "uhr" in curr_val.lower() else False,
+            on_date_selected=on_sel,
+        )
 
     def get_form_data(self) -> dict[str, Any]:
         data = {}

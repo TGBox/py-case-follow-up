@@ -27,6 +27,7 @@ class FieldType(StrEnum):
     DROPDOWN = "dropdown"
     NUMBER = "number"
     BOOLEAN = "boolean"
+    DATE = "date"
 
 
 class SyncMode(StrEnum):

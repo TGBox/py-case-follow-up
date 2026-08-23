@@ -1,0 +1,73 @@
+from dataclasses import dataclass, field, asdict
+from typing import Any
+
+
+@dataclass
+class Contact:
+    name: str = ""
+    role: str = ""
+    phone: str = ""
+    email: str = ""
+    note: str = ""
+
+    def validate(self) -> list[str]:
+        errors = []
+        if not self.name.strip():
+            errors.append("Contact name is required.")
+        return errors
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Contact":
+        return cls(
+            name=data.get("name", ""),
+            role=data.get("role", ""),
+            phone=data.get("phone", ""),
+            email=data.get("email", ""),
+            note=data.get("note", ""),
+        )
+
+
+@dataclass
+class Customer:
+    customer_id: str = ""
+    practice_name: str = ""
+    is_vip: bool = False
+    system_version: str = ""
+    general_notes: str = ""
+    contacts: list[Contact] = field(default_factory=list)
+
+    def validate(self) -> list[str]:
+        errors = []
+        if not self.customer_id.strip():
+            errors.append("Customer ID is required.")
+        if not self.practice_name.strip():
+            errors.append("Practice name is required.")
+        for contact in self.contacts:
+            errors.extend(contact.validate())
+        return errors
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "customer_id": self.customer_id,
+            "practice_name": self.practice_name,
+            "is_vip": self.is_vip,
+            "system_version": self.system_version,
+            "general_notes": self.general_notes,
+            "contacts": [c.to_dict() for c in self.contacts],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Customer":
+        contacts_raw = data.get("contacts", [])
+        contacts = [Contact.from_dict(c) for c in contacts_raw] if isinstance(contacts_raw, list) else []
+        return cls(
+            customer_id=data.get("customer_id", ""),
+            practice_name=data.get("practice_name", ""),
+            is_vip=bool(data.get("is_vip", False)),
+            system_version=data.get("system_version", ""),
+            general_notes=data.get("general_notes", ""),
+            contacts=contacts,
+        )

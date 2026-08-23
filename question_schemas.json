@@ -1,0 +1,105 @@
+{
+  "schemas": [
+    {
+      "schema_id": "schema_zuzahlungsnachforderung",
+      "display_name": "Zuzahlungsnachforderung / Abrechnungskorrektur",
+      "description": "Erforderlich für manuelle Nachberechnungen und Datenbankanpassungen durch Devs.",
+      "default_suggested_exports": [
+        "gitlab_dev_ticket",
+        "mail_abrechnung_team"
+      ],
+      "fields": [
+        {
+          "field_id": "billing_quarter",
+          "label": "Abrechnungsquartal",
+          "field_type": "dropdown",
+          "required": true,
+          "order": 1,
+          "options": [
+            "2026-Q1",
+            "2026-Q2",
+            "2026-Q3",
+            "2026-Q4"
+          ]
+        },
+        {
+          "field_id": "affected_patients_count",
+          "label": "Anzahl betroffener Fälle",
+          "field_type": "number",
+          "required": false,
+          "order": 2
+        },
+        {
+          "field_id": "error_code",
+          "label": "Fehlermeldung / Code",
+          "field_type": "text",
+          "required": true,
+          "order": 3,
+          "placeholder": "z. B. ERR_EXPORT_01"
+        },
+        {
+          "field_id": "database_dump_provided",
+          "label": "Datenbank-Backup im Fallordner abgelegt?",
+          "field_type": "boolean",
+          "required": true,
+          "order": 4
+        }
+      ]
+    },
+    {
+      "schema_id": "schema_abrechnungskorrektur",
+      "display_name": "Allgemeine Abrechnungskorrektur",
+      "description": "Für Korrekturdateien und KV-Abrechnungs-Support.",
+      "default_suggested_exports": [
+        "cobra_note"
+      ],
+      "fields": [
+        {
+          "field_id": "kv_region",
+          "label": "KV-Region",
+          "field_type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "field_id": "correction_reason",
+          "label": "Korrekturgrund",
+          "field_type": "text",
+          "required": true,
+          "order": 2
+        }
+      ]
+    },
+    {
+      "schema_id": "schema_bug_report",
+      "display_name": "Programmfehler / Bug-Report",
+      "description": "Zur Weiterleitung ungeklärter Abstürze an die Entwicklungsabteilung.",
+      "default_suggested_exports": [
+        "gitlab_dev_ticket"
+      ],
+      "fields": [
+        {
+          "field_id": "module_name",
+          "label": "Betroffenes Modul",
+          "field_type": "text",
+          "required": true,
+          "order": 1
+        },
+        {
+          "field_id": "reproduction_steps",
+          "label": "Schritte zur Reproduktion",
+          "field_type": "text",
+          "required": true,
+          "order": 2
+        },
+        {
+          "field_id": "stack_trace",
+          "label": "Stack-Trace / Logauszug",
+          "field_type": "text",
+          "required": false,
+          "order": 3
+        }
+      ]
+    }
+  ]
+}

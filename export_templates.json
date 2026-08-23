@@ -1,0 +1,34 @@
+{
+  "templates": [
+    {
+      "template_id": "gitlab_dev_ticket",
+      "display_name": "GitLab / Dev-Ticket: DB-Korrektur",
+      "target_type": "CLIPBOARD_TEXT",
+      "applicable_cases": [
+        "schema_zuzahlungsnachforderung",
+        "schema_bug_report"
+      ],
+      "description": "Erzeugt formatierten Markdown-Text für ein neues Entwickler-Ticket im Issue-Tracker.",
+      "required_schema_fields": [
+        "billing_quarter",
+        "error_code",
+        "database_dump_provided"
+      ],
+      "template_string": "### Support-Übergabe: {{ customer.practice_name }} ({{ customer.customer_id }})\n**VIP-Status:** {{ 'JA' if customer.is_vip else 'NEIN' }}\n**Rückruf-Deadline:** {{ classification.deadline_callback }}\n\n#### Technische Parameter\n* **Quartal:** {{ form_data.billing_quarter }}\n* **Fehlercode:** {{ form_data.error_code }}\n* **DB-Dump:** {{ 'Vorhanden im Ordner ' ~ attachment_directory if form_data.database_dump_provided else '[FEHLT: DB-Dump]' }}\n\n#### Letzte Notiz\n{{ timeline[-1].note if timeline else 'Keine Notiz vorhanden' }}\n\n*Erfasst durch Support: {{ created_by }}*"
+    },
+    {
+      "template_id": "cobra_note",
+      "display_name": "Cobra CRM Notiz / Übergabe",
+      "target_type": "CLIPBOARD_TEXT",
+      "applicable_cases": [
+        "schema_abrechnungskorrektur",
+        "schema_zuzahlungsnachforderung"
+      ],
+      "description": "Formatierter Text für den Eintrag in die Cobra CRM Kundenhistorie.",
+      "required_schema_fields": [
+        "billing_quarter"
+      ],
+      "template_string": "SUPPORT-HISTORIE - {{ case.case_id }}\nPraxis: {{ customer.practice_name }}\nAnsprechpartner: {{ customer.contact_person }} ({{ customer.phone }})\nStatus: {{ workflow_status.board_column }} / Bearbeiter: {{ workflow_status.current_actor }}\nNotiz: {{ timeline[-1].note if timeline else '' }}"
+    }
+  ]
+}

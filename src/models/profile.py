@@ -1,0 +1,218 @@
+from dataclasses import dataclass, field, asdict
+from typing import Any
+from src.enums import SyncMode, LayoutMode
+from src.utils.security import normalize_url
+
+
+@dataclass
+class UserInfo:
+    name: str = "Support Agent"
+    extension: str = ""
+    email: str = ""
+    mobile: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "UserInfo":
+        return cls(
+            name=data.get("name", "Support Agent"),
+            extension=data.get("extension", ""),
+            email=data.get("email", ""),
+            mobile=data.get("mobile", ""),
+        )
+
+
+@dataclass
+class UISettings:
+    theme: str = "SYSTEM"
+    default_layout: str = LayoutMode.COCKPIT
+    column_widths: dict[str, int] = field(
+        default_factory=lambda: {
+            "ticket_list": 320,
+            "case_details": 580,
+            "timeline_sidebar": 360,
+        }
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "theme": self.theme,
+            "default_layout": self.default_layout,
+            "column_widths": self.column_widths,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "UISettings":
+        widths = data.get("column_widths", {})
+        default_widths = {"ticket_list": 320, "case_details": 580, "timeline_sidebar": 360}
+        if isinstance(widths, dict):
+            default_widths.update({k: int(v) for k, v in widths.items() if isinstance(v, (int, float))})
+        return cls(
+            theme=data.get("theme", "SYSTEM"),
+            default_layout=data.get("default_layout", LayoutMode.COCKPIT),
+            column_widths=default_widths,
+        )
+
+
+@dataclass
+class ShortcutSettings:
+    new_case: str = "<Control-n>"
+    search_customer: str = "<Control-f>"
+    wiki_search: str = "<Control-w>"
+    export_dialog: str = "<Control-e>"
+    save_case: str = "<Control-s>"
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ShortcutSettings":
+        return cls(
+            new_case=data.get("new_case", "<Control-n>"),
+            search_customer=data.get("search_customer", "<Control-f>"),
+            wiki_search=data.get("wiki_search", "<Control-w>"),
+            export_dialog=data.get("export_dialog", "<Control-e>"),
+            save_case=data.get("save_case", "<Control-s>"),
+        )
+
+
+@dataclass
+class ReminderSettings:
+    notification_level: str = "LEVEL_A"
+    audio_enabled: bool = False
+    os_popup_enabled: bool = True
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ReminderSettings":
+        return cls(
+            notification_level=data.get("notification_level", "LEVEL_A"),
+            audio_enabled=bool(data.get("audio_enabled", False)),
+            os_popup_enabled=bool(data.get("os_popup_enabled", True)),
+        )
+
+
+@dataclass
+class ScoringMatrix:
+    vip_bonus_points: int = 50
+    points_per_idle_day: int = 15
+    deadline_close_hours: int = 2
+    deadline_close_bonus: int = 40
+    deadline_overdue_bonus: int = 100
+    threshold_yellow: int = 50
+    threshold_red: int = 100
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "ScoringMatrix":
+        return cls(
+            vip_bonus_points=int(data.get("vip_bonus_points", 50)),
+            points_per_idle_day=int(data.get("points_per_idle_day", 15)),
+            deadline_close_hours=int(data.get("deadline_close_hours", 2)),
+            deadline_close_bonus=int(data.get("deadline_close_bonus", 40)),
+            deadline_overdue_bonus=int(data.get("deadline_overdue_bonus", 100)),
+            threshold_yellow=int(data.get("threshold_yellow", 50)),
+            threshold_red=int(data.get("threshold_red", 100)),
+        )
+
+
+@dataclass
+class WikiSettings:
+    api_url: str = ""
+    token_id: str = "ENV_BOOKSTACK_TOKEN_ID"
+    token_secret: str = "ENV_BOOKSTACK_TOKEN_SECRET"
+    sync_mode: str = SyncMode.METADATA_ONLY
+    sync_on_startup: bool = True
+
+    def __post_init__(self):
+        self.api_url = normalize_url(self.api_url)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "api_url": self.api_url,
+            "token_id": self.token_id,
+            "token_secret": self.token_secret,
+            "sync_mode": self.sync_mode,
+            "sync_on_startup": self.sync_on_startup,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "WikiSettings":
+        return cls(
+            api_url=normalize_url(data.get("api_url", "")),
+            token_id=data.get("token_id", "ENV_BOOKSTACK_TOKEN_ID"),
+            token_secret=data.get("token_secret", "ENV_BOOKSTACK_TOKEN_SECRET"),
+            sync_mode=data.get("sync_mode", SyncMode.METADATA_ONLY),
+            sync_on_startup=bool(data.get("sync_on_startup", True)),
+        )
+
+
+@dataclass
+class UserProfile:
+    user: UserInfo = field(default_factory=UserInfo)
+    ui_settings: UISettings = field(default_factory=UISettings)
+    shortcuts: ShortcutSettings = field(default_factory=ShortcutSettings)
+    reminder_settings: ReminderSettings = field(default_factory=ReminderSettings)
+    scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
+    wiki_settings: WikiSettings = field(default_factory=WikiSettings)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "user": self.user.to_dict(),
+            "ui_settings": self.ui_settings.to_dict(),
+            "shortcuts": self.shortcuts.to_dict(),
+            "reminder_settings": self.reminder_settings.to_dict(),
+            "scoring_matrix": self.scoring_matrix.to_dict(),
+            "wiki_settings": self.wiki_settings.to_dict(),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "UserProfile":
+        return cls(
+            user=UserInfo.from_dict(data.get("user", {})),
+            ui_settings=UISettings.from_dict(data.get("ui_settings", {})),
+            shortcuts=ShortcutSettings.from_dict(data.get("shortcuts", {})),
+            reminder_settings=ReminderSettings.from_dict(data.get("reminder_settings", {})),
+            scoring_matrix=ScoringMatrix.from_dict(data.get("scoring_matrix", {})),
+            wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
+        )
+
+
+@dataclass
+class Colleague:
+    username: str = ""
+    name: str = ""
+    extension: str = ""
+    email: str = ""
+    mobile: str = ""
+    cases_path: str = ""
+
+    def validate(self) -> list[str]:
+        errors = []
+        if not self.username.strip():
+            errors.append("Username is required.")
+        if not self.name.strip():
+            errors.append("Name is required.")
+        if not self.cases_path.strip():
+            errors.append("Cases path is required.")
+        return errors
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "Colleague":
+        return cls(
+            username=data.get("username", ""),
+            name=data.get("name", ""),
+            extension=data.get("extension", ""),
+            email=data.get("email", ""),
+            mobile=data.get("mobile", ""),
+            cases_path=data.get("cases_path", ""),
+        )

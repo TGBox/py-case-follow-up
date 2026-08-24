@@ -36,6 +36,9 @@ class Customer:
     practice_name: str = ""
     is_vip: bool = False
     system_version: str = ""
+    website: str = ""
+    vm_number: int | None = None
+    instance_number: int | None = None
     general_notes: str = ""
     contacts: list[Contact] = field(default_factory=list)
 
@@ -55,6 +58,9 @@ class Customer:
             "practice_name": self.practice_name,
             "is_vip": self.is_vip,
             "system_version": self.system_version,
+            "website": self.website,
+            "vm_number": self.vm_number,
+            "instance_number": self.instance_number,
             "general_notes": self.general_notes,
             "contacts": [c.to_dict() for c in self.contacts],
         }
@@ -63,11 +69,21 @@ class Customer:
     def from_dict(cls, data: dict[str, Any]) -> "Customer":
         contacts_raw = data.get("contacts", [])
         contacts = [Contact.from_dict(c) for c in contacts_raw] if isinstance(contacts_raw, list) else []
+        
+        raw_vm = data.get("vm_number")
+        vm_num = int(raw_vm) if raw_vm is not None and str(raw_vm).isdigit() else None
+        
+        raw_inst = data.get("instance_number")
+        inst_num = int(raw_inst) if raw_inst is not None and str(raw_inst).isdigit() else None
+
         return cls(
             customer_id=data.get("customer_id", ""),
             practice_name=data.get("practice_name", ""),
             is_vip=bool(data.get("is_vip", False)),
             system_version=data.get("system_version", ""),
+            website=data.get("website", ""),
+            vm_number=vm_num,
+            instance_number=inst_num,
             general_notes=data.get("general_notes", ""),
             contacts=contacts,
         )

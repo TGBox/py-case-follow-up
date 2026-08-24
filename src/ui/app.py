@@ -168,17 +168,17 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["⚙️ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷️ Tags"],
+            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags"],
             command=self._on_stammdaten_selected,
             width=145,
         )
-        self.stammdaten_combo.set("⚙️ Stammdaten ▾")
+        self.stammdaten_combo.set("⚙ Stammdaten ▾")
         self.stammdaten_combo.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["📄 Vorlagen & Formulare ▾", "🛠️ Formulare", "📄 Vorlagen"],
+            values=["📄 Vorlagen & Formulare ▾", "🛠 Formulare", "📄 Vorlagen"],
             command=self._on_vorlagen_selected,
             width=175,
         )
@@ -194,33 +194,6 @@ class SupportCockpitApp(ctk.CTk):
         )
         self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
         self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
-
-    def _on_stammdaten_selected(self, choice: str):
-        self.stammdaten_combo.set("⚙️ Stammdaten ▾")
-        if choice == "🏥 Praxen":
-            self.open_customer_management_dialog()
-        elif choice == "👥 Mitarbeiter":
-            self.open_colleague_management_dialog()
-        elif choice == "🏷️ Tags":
-            self.open_tag_management_dialog()
-
-    def _on_vorlagen_selected(self, choice: str):
-        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
-        if choice == "🛠️ Formulare":
-            self.open_schema_builder_dialog()
-        elif choice == "📄 Vorlagen":
-            self.open_template_manager_dialog()
-
-    def _on_datenaustausch_selected(self, choice: str):
-        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
-        if choice.startswith("📤 Export"):
-            self.open_export_dialog(self.active_case)
-        elif choice == "📦 ZIP-Backup":
-            self.open_zip_export_dialog()
-        elif choice == "🔄 P2P-Sync":
-            self.open_p2p_dialog()
-        elif choice.startswith("📖 Hilfe"):
-            self.open_help_dialog()
 
         # Right side: User, Bell Badge & Theme Toggle
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
@@ -255,6 +228,33 @@ class SupportCockpitApp(ctk.CTk):
             hover_color=("gray80", "gray25")
         )
         self.user_btn.pack(side="right", padx=6, pady=4)
+
+    def _on_stammdaten_selected(self, choice: str):
+        self.stammdaten_combo.set("⚙ Stammdaten ▾")
+        if choice == "🏥 Praxen":
+            self.open_customer_management_dialog()
+        elif choice == "👥 Mitarbeiter":
+            self.open_colleague_management_dialog()
+        elif choice.startswith("🏷"):
+            self.open_tag_management_dialog()
+
+    def _on_vorlagen_selected(self, choice: str):
+        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
+        if choice.startswith("🛠"):
+            self.open_schema_builder_dialog()
+        elif choice == "📄 Vorlagen":
+            self.open_template_manager_dialog()
+
+    def _on_datenaustausch_selected(self, choice: str):
+        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
+        if choice.startswith("📤 Export"):
+            self.open_export_dialog(self.active_case)
+        elif choice == "📦 ZIP-Backup":
+            self.open_zip_export_dialog()
+        elif choice == "🔄 P2P-Sync":
+            self.open_p2p_dialog()
+        elif choice.startswith("📖 Hilfe"):
+            self.open_help_dialog()
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]

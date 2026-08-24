@@ -395,6 +395,7 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_case_selected(self, case: Case):
         self.active_case = case
+        self.switch_to_cockpit_view_for_case(case)
 
     def on_case_updated(self, case: Case):
         self.scoring_service.update_case_scoring(case)
@@ -621,7 +622,12 @@ class SupportCockpitApp(ctk.CTk):
             self.bell_btn.configure(text=f"🔔 {due_count}", fg_color="darkred")
             if not getattr(self, "_last_notified_due_count", 0) or due_count > self._last_notified_due_count:
                 top_case = due_cases[0]
-                ToastNotification(self, title=f"🔔 Wiedervorlage fällig ({due_count})", message=f"[{top_case.case_id}] {top_case.classification.title}")
+                ToastNotification(
+                    self,
+                    title=f"🔔 Wiedervorlage fällig ({due_count})",
+                    message=f"[{top_case.case_id}] {top_case.classification.title}",
+                    on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
+                )
             self._last_notified_due_count = due_count
         else:
             self.bell_btn.configure(text="🔔 0", fg_color="gray30")

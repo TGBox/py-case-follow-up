@@ -23,6 +23,9 @@ class SeedService:
                 practice_name="Gemeinschaftspraxis Dr. Müller & Partner",
                 is_vip=True,
                 system_version="v2026.2.4",
+                website="https://praxis-ulm.de",
+                vm_number=104,
+                instance_number=1,
                 general_notes="Abrechnungsleitung bevorzugt telefonischen Kontakt morgens vor 10:00 Uhr.",
                 contacts=[
                     Contact(name="Dr. Hans Müller", role="Inhaber / Arzt", phone="+49 731 123456-0", email="mueller@praxis-ulm.de"),
@@ -34,6 +37,9 @@ class SeedService:
                 practice_name="Praxisklinik am Stadtgarten",
                 is_vip=True,
                 system_version="v2026.1.9",
+                website="https://stadtgarten-praxis.de",
+                vm_number=108,
+                instance_number=2,
                 general_notes="Großpraxis mit 8 Behandlungsstühlen.",
                 contacts=[
                     Contact(name="Dr. Elena Rossi", role="Ärztliche Leitung", phone="+49 89 987654-0", email="rossi@stadtgarten-praxis.de"),
@@ -44,6 +50,9 @@ class SeedService:
                 practice_name="Zahnarztpraxis Dr. Schmidt",
                 is_vip=False,
                 system_version="v2025.4.1",
+                website="https://schmidt-zahnarzt.de",
+                vm_number=102,
+                instance_number=1,
                 general_notes="Nutzt Standard-Abrechnungsmodul.",
                 contacts=[
                     Contact(name="Herr Thomas Schmidt", role="Praxisinhaber", phone="+49 30 5551234", email="info@schmidt-zahnarzt.de"),
@@ -54,6 +63,9 @@ class SeedService:
                 practice_name="MVZ Kardiologie Rhein-Neckar",
                 is_vip=False,
                 system_version="v2026.2.0",
+                website="https://mvz-rhein-neckar.de",
+                vm_number=105,
+                instance_number=3,
                 general_notes="Ansprechpartner IT: Herr Becker.",
                 contacts=[
                     Contact(name="Klaus Becker", role="IT-Administrator", phone="+49 621 443322", email="it@mvz-rhein-neckar.de"),
@@ -64,6 +76,9 @@ class SeedService:
                 practice_name="Hausarztpraxis Dipl.-Med. Fischer",
                 is_vip=False,
                 system_version="v2026.2.4",
+                website="https://hausarzt-leipzig.de",
+                vm_number=107,
+                instance_number=1,
                 general_notes="Neukunde seit Anfang 2026.",
                 contacts=[
                     Contact(name="Dipl.-Med. Petra Fischer", role="Ärztin", phone="+49 341 889900", email="fischer@hausarzt-leipzig.de"),
@@ -721,7 +736,17 @@ class SeedService:
         self.storage.save_profile(profile)
 
         colleagues = [
-            Colleague(username="mmueller", name="Max Müller", extension="245", email="m.mueller@softwarehersteller.de", cases_path=str(self.config.colleagues_dir / "mmueller_cases.json"))
+            Colleague(
+                username="mmueller",
+                name="Max Müller",
+                department="Support",
+                extension="245",
+                email="m.mueller@softwarehersteller.de",
+                notes="Support-Spezialist",
+                cases_path=str(self.config.colleagues_dir / "mmueller_cases.json"),
+                is_absent=False,
+                absence_reason="",
+            )
         ]
         self.storage.save_colleagues(colleagues)
 

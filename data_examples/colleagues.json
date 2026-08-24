@@ -2,9 +2,13 @@
   {
     "username": "mmueller",
     "name": "Max Müller",
+    "department": "Support",
     "extension": "245",
     "email": "m.mueller@softwarehersteller.de",
     "mobile": "",
-    "cases_path": "data/colleagues/mmueller_cases.json"
+    "notes": "Support-Spezialist",
+    "cases_path": "data/colleagues/mmueller_cases.json",
+    "is_absent": false,
+    "absence_reason": ""
   }
 ]

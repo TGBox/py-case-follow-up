@@ -34,7 +34,17 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         ctk.CTkLabel(top_bar, text="🏥 Registrierte Praxen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         new_btn = ctk.CTkButton(top_bar, text="+ Neue Praxis anlegen", command=self.on_click_new_customer, fg_color="forestgreen", width=160)
-        new_btn.pack(side="right", padx=10)
+        new_btn.pack(side="right", padx=(5, 10))
+
+        cobra_btn = ctk.CTkButton(
+            top_bar,
+            text="🐍 Cobra CRM Import...",
+            command=self.on_click_cobra_import,
+            fg_color="darkmagenta",
+            hover_color="purple",
+            width=165,
+        )
+        cobra_btn.pack(side="right", padx=5)
 
         # Body: Left list, Right edit form
         body_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -430,3 +440,18 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         else:
             self.filtered_customers = self.customer_service.search_customers(query)
         self.render_list()
+
+    def on_click_cobra_import(self):
+        from ui.dialogs.cobra_import_dialog import CobraImportDialog
+        CobraImportDialog(
+            self,
+            existing_customers=self.customers,
+            on_import_completed=self.on_cobra_import_completed,
+        )
+
+    def on_cobra_import_completed(self, merged_customers: list[Customer]):
+        for c in merged_customers:
+            self.customer_service.save_customer(c)
+        self.load_customers()
+        if self.on_customers_updated:
+            self.on_customers_updated()

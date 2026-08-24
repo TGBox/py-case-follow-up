@@ -1,5 +1,6 @@
 import logging
 import threading
+from typing import Any, Callable
 import customtkinter as ctk
 from pathlib import Path
 
@@ -57,6 +58,8 @@ class SupportCockpitApp(ctk.CTk):
         self.calendar_email_service = CalendarEmailService(self.app_config.workspace_dir)
         from services.deep_search_service import DeepSearchService
         self.deep_search_service = DeepSearchService(self.app_config.workspace_dir)
+        from services.snippet_service import SnippetService
+        self.snippet_service = SnippetService(self.app_config.workspace_dir)
 
         # Configure Window
         self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
@@ -102,6 +105,7 @@ class SupportCockpitApp(ctk.CTk):
             storage_service=self.storage_service,
             on_manage_module_tags=self.open_module_tag_management_dialog,
             on_open_email_calendar=self.open_email_calendar_dialog,
+            on_open_snippet_picker=self.open_snippet_picker_dialog,
         )
         self.board_view = BoardView(
             self.container_frame,
@@ -176,9 +180,9 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche"],
+            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
             command=self._on_stammdaten_selected,
-            width=155,
+            width=165,
         )
         self.stammdaten_combo.set("⚙ Stammdaten ▾")
         self.stammdaten_combo.pack(side="left", padx=3, pady=4)
@@ -247,6 +251,8 @@ class SupportCockpitApp(ctk.CTk):
             self.open_tag_management_dialog(initial_tab="tags")
         elif choice.startswith("🧩"):
             self.open_module_tag_management_dialog()
+        elif choice.startswith("📝"):
+            self.open_snippet_management_dialog()
 
     def _on_vorlagen_selected(self, choice: str):
         self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
@@ -584,7 +590,16 @@ class SupportCockpitApp(ctk.CTk):
             case=case,
             calendar_email_service=self.calendar_email_service,
             user_name=self.profile.user.name,
+            snippet_service=self.snippet_service,
         )
+
+    def open_snippet_picker_dialog(self, callback: Any):
+        from ui.dialogs.snippet_picker_dialog import SnippetPickerDialog
+        SnippetPickerDialog(self, snippet_service=self.snippet_service, on_snippet_selected=callback)
+
+    def open_snippet_management_dialog(self):
+        from ui.dialogs.snippet_management_dialog import SnippetManagementDialog
+        SnippetManagementDialog(self, snippet_service=self.snippet_service)
 
     def toggle_theme(self):
         curr = ctk.get_appearance_mode()

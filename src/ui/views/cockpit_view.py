@@ -36,6 +36,7 @@ class CockpitView(ctk.CTkFrame):
         storage_service: StorageService | None = None,
         on_manage_module_tags: Callable[[], None] | None = None,
         on_open_email_calendar: Callable[[Case], None] | None = None,
+        on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
@@ -52,6 +53,7 @@ class CockpitView(ctk.CTkFrame):
         self.storage_service = storage_service
         self.on_manage_module_tags = on_manage_module_tags
         self.on_open_email_calendar = on_open_email_calendar
+        self.on_open_snippet_picker = on_open_snippet_picker
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
@@ -173,7 +175,12 @@ class CockpitView(ctk.CTkFrame):
         tab_attachments = self.right_tabview.add("Anhänge")
         tab_wiki = self.right_tabview.add("Wiki")
 
-        self.timeline_widget = TimelineWidget(tab_timeline, self.author_name, self.on_timeline_updated)
+        self.timeline_widget = TimelineWidget(
+            tab_timeline,
+            self.author_name,
+            self.on_timeline_updated,
+            on_open_snippet_picker=self.on_open_snippet_picker,
+        )
         self.timeline_widget.pack(fill="both", expand=True)
 
         self.attachment_widget = AttachmentWidget(tab_attachments, self.attachment_service)

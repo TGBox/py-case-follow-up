@@ -15,11 +15,13 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         case: Case,
         calendar_email_service: CalendarEmailService,
         user_name: str = "",
+        snippet_service: Any | None = None,
     ):
         super().__init__(parent)
         self.case = case
         self.service = calendar_email_service
         self.user_name = user_name
+        self.snippet_service = snippet_service
 
         self.title(f"✉️ E-Mail & 📅 Kalender-Entwurf - Fall {case.case_id}")
         self.geometry("720x640")
@@ -76,8 +78,22 @@ class EmailCalendarDialog(ctk.CTkToplevel):
             self.subject_entry.insert(0, self.draft_data["subject"])
         self.subject_entry.pack(fill="x", pady=(0, 8))
 
-        # Body Textbox
-        ctk.CTkLabel(content_scroll, text="E-Mail Nachrichtentext:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
+        # Body Textbox Control Row
+        body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
+        body_hdr_row.pack(fill="x", pady=(2, 1))
+
+        ctk.CTkLabel(body_hdr_row, text="E-Mail Nachrichtentext:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+
+        if self.snippet_service:
+            ctk.CTkButton(
+                body_hdr_row,
+                text="🧩 Textbaustein",
+                width=110,
+                fg_color="gray30",
+                hover_color="darkmagenta",
+                command=self.open_snippet_picker,
+            ).pack(side="right")
+
         self.body_textbox = ctk.CTkTextbox(content_scroll, height=200)
         if self.draft_data.get("body"):
             self.body_textbox.insert("1.0", self.draft_data["body"])
@@ -138,6 +154,21 @@ class EmailCalendarDialog(ctk.CTkToplevel):
             command=self.destroy,
             width=90,
         ).pack(side="left")
+
+    def open_snippet_picker(self):
+        if self.snippet_service:
+            from ui.dialogs.snippet_picker_dialog import SnippetPickerDialog
+            SnippetPickerDialog(
+                self,
+                snippet_service=self.snippet_service,
+                on_snippet_selected=self.insert_snippet_text,
+            )
+
+    def insert_snippet_text(self, text: str):
+        if text:
+            curr = self.body_textbox.get("1.0", "end-1c")
+            sep = "\n\n" if curr.strip() else ""
+            self.body_textbox.insert("end", f"{sep}{text}")
 
     def on_open_mailto(self):
         to = self.to_entry.get().strip()

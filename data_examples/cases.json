@@ -18,7 +18,10 @@
       "urgency_level": "RED",
       "calculated_score": 150.0,
       "deadline_callback": "2026-08-23T16:00:00",
-      "tags": []
+      "tags": [
+        "Abrechnung",
+        "Dringend"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -27,7 +30,9 @@
       "current_actor": "DEVELOPMENT",
       "actor_since": "2026-08-23T10:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": false
+      "is_data_complete": false,
+      "followup_at": "2026-08-24T10:00:00",
+      "followup_note": "Rückmeldung von Dev abwarten"
     },
     "form_data": {
       "billing_quarter": "2026-Q2",
@@ -54,7 +59,8 @@
         "note": "Ticket via GitLab-Template an Dev übergeben. Warte auf Prüfung der Abrechnungs-Engine.",
         "status_change": "ACTION_REQUIRED (SUPPORT) -> ACTION_REQUIRED (DEVELOPMENT)"
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0002",
@@ -75,7 +81,10 @@
       "urgency_level": "RED",
       "calculated_score": 195.0,
       "deadline_callback": "2026-08-21T10:00:00",
-      "tags": []
+      "tags": [
+        "Rezept",
+        "Dringend"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -84,7 +93,9 @@
       "current_actor": "TECH",
       "actor_since": "2026-08-20T11:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": true
+      "is_data_complete": true,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "module_name": "Rezeptdruck",
@@ -101,7 +112,8 @@
         "note": "Rezeptdruck stürzt ab",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0003",
@@ -122,7 +134,9 @@
       "urgency_level": "GREEN",
       "calculated_score": 0.0,
       "deadline_callback": "",
-      "tags": []
+      "tags": [
+        "Abrechnung"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -131,7 +145,9 @@
       "current_actor": "SUPPORT",
       "actor_since": "2026-08-23T12:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": true
+      "is_data_complete": true,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "kv_region": "KV Berlin",
@@ -147,7 +163,8 @@
         "note": "Anfrage zur Korrektur",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0004",
@@ -168,7 +185,9 @@
       "urgency_level": "GREEN",
       "calculated_score": 15.0,
       "deadline_callback": "",
-      "tags": []
+      "tags": [
+        "Abrechnung"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -177,7 +196,9 @@
       "current_actor": "CUSTOMER",
       "actor_since": "2026-08-22T15:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": false
+      "is_data_complete": false,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "billing_quarter": "2026-Q1",
@@ -195,7 +216,8 @@
         "note": "Warten auf DB-Dump der Praxis",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0005",
@@ -216,7 +238,9 @@
       "urgency_level": "GREEN",
       "calculated_score": 0.0,
       "deadline_callback": "",
-      "tags": []
+      "tags": [
+        "Kundenwunsch"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -225,7 +249,9 @@
       "current_actor": "SUPPORT",
       "actor_since": "2026-08-23T13:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": true
+      "is_data_complete": true,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "module_name": "Labor",
@@ -241,7 +267,8 @@
         "note": "Feedback erfasst",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0006",
@@ -262,7 +289,9 @@
       "urgency_level": "RED",
       "calculated_score": 155.0,
       "deadline_callback": "",
-      "tags": []
+      "tags": [
+        "Abrechnung"
+      ]
     },
     "workflow_status": {
       "is_completed": true,
@@ -271,7 +300,9 @@
       "current_actor": "SUPPORT",
       "actor_since": "2026-08-16T10:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": true
+      "is_data_complete": true,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "kv_region": "KV BW",
@@ -287,7 +318,8 @@
         "note": "Erfolgreich abgeschlossen",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   },
   {
     "case_id": "T-2026-0008",
@@ -308,7 +340,9 @@
       "urgency_level": "RED",
       "calculated_score": 100.0,
       "deadline_callback": "2026-08-23T18:00:00",
-      "tags": []
+      "tags": [
+        "Abrechnung"
+      ]
     },
     "workflow_status": {
       "is_completed": false,
@@ -317,7 +351,9 @@
       "current_actor": "SUPPORT",
       "actor_since": "2026-08-23T14:00:00",
       "idle_warning_days": 1,
-      "is_data_complete": false
+      "is_data_complete": false,
+      "followup_at": "",
+      "followup_note": ""
     },
     "form_data": {
       "billing_quarter": "2026-Q3",
@@ -335,6 +371,7 @@
         "note": "Neu erfasst",
         "status_change": ""
       }
-    ]
+    ],
+    "is_demo_data": true
   }
 ]

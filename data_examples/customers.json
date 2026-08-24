@@ -4,6 +4,9 @@
     "practice_name": "Gemeinschaftspraxis Dr. Müller & Partner",
     "is_vip": true,
     "system_version": "v2026.2.4",
+    "website": "https://praxis-ulm.de",
+    "vm_number": 104,
+    "instance_number": 1,
     "general_notes": "Abrechnungsleitung bevorzugt telefonischen Kontakt morgens vor 10:00 Uhr.",
     "contacts": [
       {
@@ -27,6 +30,9 @@
     "practice_name": "Praxisklinik am Stadtgarten",
     "is_vip": true,
     "system_version": "v2026.1.9",
+    "website": "https://stadtgarten-praxis.de",
+    "vm_number": 108,
+    "instance_number": 2,
     "general_notes": "Großpraxis mit 8 Behandlungsstühlen.",
     "contacts": [
       {
@@ -43,6 +49,9 @@
     "practice_name": "Zahnarztpraxis Dr. Schmidt",
     "is_vip": false,
     "system_version": "v2025.4.1",
+    "website": "https://schmidt-zahnarzt.de",
+    "vm_number": 102,
+    "instance_number": 1,
     "general_notes": "Nutzt Standard-Abrechnungsmodul.",
     "contacts": [
       {
@@ -59,6 +68,9 @@
     "practice_name": "MVZ Kardiologie Rhein-Neckar",
     "is_vip": false,
     "system_version": "v2026.2.0",
+    "website": "https://mvz-rhein-neckar.de",
+    "vm_number": 105,
+    "instance_number": 3,
     "general_notes": "Ansprechpartner IT: Herr Becker.",
     "contacts": [
       {
@@ -75,6 +87,9 @@
     "practice_name": "Hausarztpraxis Dipl.-Med. Fischer",
     "is_vip": false,
     "system_version": "v2026.2.4",
+    "website": "https://hausarzt-leipzig.de",
+    "vm_number": 107,
+    "instance_number": 1,
     "general_notes": "Neukunde seit Anfang 2026.",
     "contacts": [
       {
@@ -91,6 +106,9 @@
     "practice_name": "Praxis Weber",
     "is_vip": true,
     "system_version": "",
+    "website": "https://praxis-weber.de",
+    "vm_number": 121,
+    "instance_number": 1,
     "general_notes": "",
     "contacts": [
       {

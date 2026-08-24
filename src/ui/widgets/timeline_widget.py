@@ -6,10 +6,17 @@ from utils.datetime_utils import now_iso
 
 
 class TimelineWidget(ctk.CTkFrame):
-    def __init__(self, parent, author_name: str, on_timeline_updated: Callable[[list[TimelineEntry]], None]):
+    def __init__(
+        self,
+        parent,
+        author_name: str,
+        on_timeline_updated: Callable[[list[TimelineEntry]], None],
+        on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
+    ):
         super().__init__(parent)
         self.author_name = author_name
         self.on_timeline_updated = on_timeline_updated
+        self.on_open_snippet_picker = on_open_snippet_picker
         self.timeline_entries: list[TimelineEntry] = []
 
         self.create_widgets()
@@ -28,7 +35,20 @@ class TimelineWidget(ctk.CTkFrame):
         input_frame = ctk.CTkFrame(self)
         input_frame.pack(fill="x", padx=5, pady=5)
 
-        ctk.CTkLabel(input_frame, text="Neue Notiz hinzufügen:", font=ctk.CTkFont(size=11, weight="bold")).pack(anchor="w", padx=5, pady=(5, 2))
+        ctrl_row = ctk.CTkFrame(input_frame, fg_color="transparent")
+        ctrl_row.pack(fill="x", padx=5, pady=(5, 2))
+
+        ctk.CTkLabel(ctrl_row, text="Neue Notiz hinzufügen:", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+
+        snip_btn = ctk.CTkButton(
+            ctrl_row,
+            text="🧩 Textbaustein",
+            width=110,
+            fg_color="gray30",
+            hover_color="darkmagenta",
+            command=self.on_click_snippet,
+        )
+        snip_btn.pack(side="right")
 
         self.channel_combo = ctk.CTkOptionMenu(input_frame, values=list(CHANNEL_DISPLAY.values()), width=200)
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
@@ -39,6 +59,16 @@ class TimelineWidget(ctk.CTkFrame):
 
         add_btn = ctk.CTkButton(input_frame, text="+ Notiz Hinzufügen", command=self.on_add_note, width=140)
         add_btn.pack(side="right", padx=5, pady=(0, 5))
+
+    def on_click_snippet(self):
+        if self.on_open_snippet_picker:
+            self.on_open_snippet_picker(self.insert_snippet_text)
+
+    def insert_snippet_text(self, text: str):
+        if text:
+            curr_text = self.note_textbox.get("1.0", "end-1c")
+            sep = "\n" if curr_text.strip() else ""
+            self.note_textbox.insert("end", f"{sep}{text}")
 
     def load_timeline(self, entries: list[TimelineEntry]):
         self.timeline_entries = list(entries)

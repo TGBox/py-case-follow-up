@@ -42,6 +42,18 @@ class Customer:
     general_notes: str = ""
     contacts: list[Contact] = field(default_factory=list)
 
+    @property
+    def contact_person(self) -> str:
+        return self.contacts[0].name if self.contacts else ""
+
+    @property
+    def email(self) -> str:
+        return self.contacts[0].email if self.contacts else ""
+
+    @property
+    def phone(self) -> str:
+        return self.contacts[0].phone if self.contacts else ""
+
     def validate(self) -> list[str]:
         errors = []
         if not self.customer_id.strip():

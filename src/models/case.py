@@ -46,6 +46,7 @@ class CaseCustomer:
     is_vip: bool = False
     contact_person: str = ""
     phone: str = ""
+    email: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -68,6 +69,7 @@ class CaseCustomer:
             is_vip=bool(data.get("is_vip", False)),
             contact_person=data.get("contact_person", ""),
             phone=data.get("phone", ""),
+            email=data.get("email", ""),
         )
 
 
@@ -175,6 +177,20 @@ class Case:
     @property
     def is_internal(self) -> bool:
         return self.customer.customer_id == "INTERNAL"
+
+    @property
+    def title(self) -> str:
+        return self.classification.title if self.classification else ""
+
+    @property
+    def followup_due_at(self) -> str:
+        return self.classification.deadline_callback if self.classification else ""
+
+    @property
+    def initial_note(self) -> str:
+        if self.timeline:
+            return self.timeline[0].note
+        return ""
 
     def validate(self) -> list[str]:
         errors = []

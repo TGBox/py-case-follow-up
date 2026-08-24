@@ -53,6 +53,8 @@ class SupportCockpitApp(ctk.CTk):
         self.wiki_service = WikiSyncService(self.app_config, self.profile.wiki_settings)
         self.export_service = ExportService(self.storage_service)
         self.p2p_service = P2PSyncService(self.storage_service)
+        from services.calendar_email_service import CalendarEmailService
+        self.calendar_email_service = CalendarEmailService(self.app_config.workspace_dir)
 
         # Configure Window
         self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
@@ -97,6 +99,7 @@ class SupportCockpitApp(ctk.CTk):
             profile=self.profile,
             storage_service=self.storage_service,
             on_manage_module_tags=self.open_module_tag_management_dialog,
+            on_open_email_calendar=self.open_email_calendar_dialog,
         )
         self.board_view = BoardView(
             self.container_frame,
@@ -558,6 +561,15 @@ class SupportCockpitApp(ctk.CTk):
     def on_p2p_sync_completed(self):
         self.load_all_data()
         self.refresh_views()
+
+    def open_email_calendar_dialog(self, case: Case):
+        from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
+        EmailCalendarDialog(
+            self,
+            case=case,
+            calendar_email_service=self.calendar_email_service,
+            user_name=self.profile.user.name,
+        )
 
     def toggle_theme(self):
         curr = ctk.get_appearance_mode()

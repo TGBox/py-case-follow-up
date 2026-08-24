@@ -187,5 +187,21 @@ def test_tag_management_dialog_modules_tab():
     assert "NeuesModul" not in profile.available_module_tags
 
 
+def test_new_case_dialog_pinned_action_buttons():
+    from ui.dialogs.new_case_dialog import NewCaseDialog
+    assert hasattr(NewCaseDialog, "create_widgets")
+    assert hasattr(NewCaseDialog, "on_save")
+    assert hasattr(NewCaseDialog, "render_tags_checkboxes")
+
+
+def test_auto_hiding_scrollbar_utility():
+    from utils.ui_utils import enable_auto_hiding_scrollbar, AutoScrollableFrame
+    import customtkinter as ctk
+
+    assert callable(enable_auto_hiding_scrollbar)
+    assert issubclass(AutoScrollableFrame, ctk.CTkScrollableFrame)
+
+
+
 
 

@@ -75,6 +75,8 @@ class TagManagementDialog(ctk.CTkToplevel):
 
         self.tags_scroll = ctk.CTkScrollableFrame(tab_tags)
         self.tags_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.tags_scroll)
 
         # --- TAB 2: PROGRAMMBEREICHE ---
         add_box2 = ctk.CTkFrame(tab_modules)
@@ -95,6 +97,7 @@ class TagManagementDialog(ctk.CTkToplevel):
 
         self.modules_scroll = ctk.CTkScrollableFrame(tab_modules)
         self.modules_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        enable_auto_hiding_scrollbar(self.modules_scroll)
 
         # Footer Status & Close
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")

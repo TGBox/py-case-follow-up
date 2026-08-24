@@ -96,6 +96,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         # Scrollable List
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.pack(fill="both", expand=True, padx=12, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.scroll_frame)
 
         # Footer
         ftr = ctk.CTkFrame(self, fg_color="transparent")
@@ -170,6 +172,8 @@ class DynamicFormWidget(ctk.CTkFrame):
     def create_widgets(self):
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.scroll_frame)
 
     def _scroll_form_canvas(self, delta: int):
         try:

@@ -181,7 +181,6 @@ class CockpitView(ctk.CTkFrame):
 
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
-        self.on_case_selected(case)
 
         self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
         self.print_btn.configure(state="normal")

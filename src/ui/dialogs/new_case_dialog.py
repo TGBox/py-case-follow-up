@@ -151,7 +151,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         # Tags Selection
         ctk.CTkLabel(main_frame, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
         
-        self.tags_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        self.tags_frame = ctk.CTkScrollableFrame(main_frame, height=130, fg_color="transparent")
         self.tags_frame.pack(fill="x", pady=(0, 10))
 
         self.render_tags_checkboxes()
@@ -188,7 +188,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
         current_row.pack(fill="x", anchor="w", pady=1)
         items_in_row = 0
-        max_items_per_row = 5
+        max_items_per_row = 4
 
         for tag in self.available_tags:
             if tag not in self.selected_tags_vars:

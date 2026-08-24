@@ -52,6 +52,101 @@ class TextboxResizeHandle(ctk.CTkFrame):
                 self.storage_service.save_profile(self.profile)
 
 
+class ModuleTagPickerPopup(ctk.CTkToplevel):
+    """Clean, searchable multiselect popup dialog for choosing Programmbereich tags."""
+
+    def __init__(self, parent, available_tags: list[str], selected_tags: list[str], on_apply: Callable[[list[str]], None]):
+        super().__init__(parent)
+        self.available_tags = available_tags
+        self.selected_tags = set(selected_tags)
+        self.on_apply = on_apply
+
+        self.title("🧩 Programmbereiche auswählen")
+        self.geometry("450x440")
+        self.minsize(380, 320)
+        from utils.ui_utils import center_window
+        center_window(self, 450, 440)
+
+        self.transient(parent)
+        self.grab_set()
+
+        self.create_widgets()
+        self.render_tag_checkboxes()
+
+    def create_widgets(self):
+        hdr = ctk.CTkFrame(self, fg_color="transparent")
+        hdr.pack(fill="x", padx=12, pady=(10, 4))
+
+        ctk.CTkLabel(hdr, text="🧩 Programmbereiche auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w")
+
+        # Search Bar & Quick Action Buttons
+        tools_frame = ctk.CTkFrame(self, fg_color="transparent")
+        tools_frame.pack(fill="x", padx=12, pady=(0, 6))
+
+        self.search_entry = ctk.CTkEntry(tools_frame, placeholder_text="🔍 Programmbereich suchen...")
+        self.search_entry.pack(fill="x", pady=(0, 6))
+        self.search_entry.bind("<KeyRelease>", lambda e: self.render_tag_checkboxes())
+
+        btn_row = ctk.CTkFrame(tools_frame, fg_color="transparent")
+        btn_row.pack(fill="x")
+
+        ctk.CTkButton(btn_row, text="Alle auswählen", width=110, height=24, fg_color="gray30", command=self.select_all).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(btn_row, text="Keine auswählen", width=110, height=24, fg_color="gray30", command=self.select_none).pack(side="left")
+
+        # Scrollable List
+        self.scroll_frame = ctk.CTkScrollableFrame(self)
+        self.scroll_frame.pack(fill="both", expand=True, padx=12, pady=5)
+
+        # Footer
+        ftr = ctk.CTkFrame(self, fg_color="transparent")
+        ftr.pack(fill="x", padx=12, pady=(4, 10))
+
+        ctk.CTkButton(ftr, text="✓ Übernehmen & Schließen", fg_color="forestgreen", command=self.apply_and_close).pack(side="right")
+
+    def render_tag_checkboxes(self):
+        for w in self.scroll_frame.winfo_children():
+            w.destroy()
+
+        query = self.search_entry.get().strip().lower()
+        filtered = [t for t in self.available_tags if query in t.lower()] if query else self.available_tags
+
+        if not filtered:
+            ctk.CTkLabel(self.scroll_frame, text="Kein Programmbereich gefunden.", text_color="gray").pack(pady=15)
+            return
+
+        for tag in filtered:
+            is_on = tag in self.selected_tags
+            bvar = ctk.BooleanVar(value=is_on)
+
+            def make_chk_cb(t=tag, v=bvar):
+                if v.get():
+                    self.selected_tags.add(t)
+                else:
+                    self.selected_tags.discard(t)
+
+            chk = ctk.CTkCheckBox(
+                self.scroll_frame,
+                text=tag,
+                variable=bvar,
+                command=make_chk_cb,
+                font=ctk.CTkFont(size=12),
+            )
+            chk.pack(anchor="w", pady=4, padx=5)
+
+    def select_all(self):
+        for t in self.available_tags:
+            self.selected_tags.add(t)
+        self.render_tag_checkboxes()
+
+    def select_none(self):
+        self.selected_tags.clear()
+        self.render_tag_checkboxes()
+
+    def apply_and_close(self):
+        self.on_apply(sorted(list(self.selected_tags)))
+        self.destroy()
+
+
 class DynamicFormWidget(ctk.CTkFrame):
     def __init__(
         self,
@@ -75,6 +170,54 @@ class DynamicFormWidget(ctk.CTkFrame):
     def create_widgets(self):
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+    def _scroll_form_canvas(self, delta: int):
+        try:
+            canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
+            if canvas and hasattr(canvas, "yview_scroll"):
+                canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+        except Exception:
+            pass
+
+    def _bind_mouse_wheel_recursive(self, widget):
+        """Recursively binds mouse wheel scrolling so the form stays 100% responsive everywhere, including over textboxes."""
+        def _on_mouse_wheel(event):
+            self._scroll_form_canvas(event.delta)
+
+        def _on_textbox_mouse_wheel(event, textbox):
+            try:
+                tk_text = getattr(textbox, "_textbox", None)
+                if tk_text:
+                    top, bottom = tk_text.yview()
+                    all_text_visible = (top <= 0.001 and bottom >= 0.999)
+                    if not all_text_visible:
+                        can_scroll_up = (event.delta > 0 and top > 0.001)
+                        can_scroll_down = (event.delta < 0 and bottom < 0.999)
+                        if can_scroll_up or can_scroll_down:
+                            return  # Allow inner textbox text scrolling ONLY when text exceeds visible lines
+                # Scroll the main view whenever text fits inside the visible textbox display
+                self._scroll_form_canvas(event.delta)
+                return "break"
+            except Exception:
+                pass
+
+        if isinstance(widget, ctk.CTkTextbox):
+            tb_target = getattr(widget, "_textbox", widget)
+            try:
+                tb_target.bind("<MouseWheel>", lambda e, tb=widget: _on_textbox_mouse_wheel(e, tb))
+            except Exception:
+                pass
+        else:
+            for w in (widget, getattr(widget, "_label", None), getattr(widget, "_canvas", None), getattr(widget, "_entry", None)):
+                if w and hasattr(w, "bind"):
+                    try:
+                        w.bind("<MouseWheel>", _on_mouse_wheel)
+                    except Exception:
+                        pass
+
+        if hasattr(widget, "winfo_children"):
+            for child in widget.winfo_children():
+                self._bind_mouse_wheel_recursive(child)
 
     def load_schema(
         self,
@@ -122,7 +265,7 @@ class DynamicFormWidget(ctk.CTkFrame):
             fid_lower = f.field_id.lower()
             flabel_lower = f.label.lower()
 
-            # 1. PROGRAMMBEREICH / MODULE TAGS MULTISELECT
+            # 1. PROGRAMMBEREICH / MODULE TAGS COMPACT DROPDOWN POPUP
             if fid_lower in ("module_name", "programmbereich", "programmteil") or "programm" in flabel_lower or "bereich" in flabel_lower:
                 if self.on_manage_module_tags:
                     ctk.CTkButton(
@@ -135,49 +278,50 @@ class DynamicFormWidget(ctk.CTkFrame):
                         command=self.on_manage_module_tags,
                     ).pack(side="right", padx=5)
 
-                available_mods = self.profile.available_module_tags if self.profile else ["Fakturaübersicht", "Rezeptdruck", "Labor", "eRezept", "System"]
+                available_mods = self.profile.available_module_tags if self.profile else ["Fakturaübersicht", "Rezeptdruck", "Labor", "eRezept / Verordnung", "System"]
                 selected_mods = [m.strip() for m in str(val).split(",") if m.strip()] if val else []
 
-                mod_frame = ctk.CTkFrame(row_frame, fg_color=("gray90", "gray20"), corner_radius=6)
-                mod_frame.pack(fill="x", pady=2)
+                mod_container = ctk.CTkFrame(row_frame, fg_color="transparent")
+                mod_container.pack(fill="x", pady=2)
 
-                mod_vars: dict[str, ctk.BooleanVar] = {}
+                mod_selected_holder = {"selected": selected_mods}
 
-                def make_mod_toggle(m_name: str, var: ctk.BooleanVar):
-                    def toggle():
-                        var.set(not var.get())
-                    return toggle
+                def format_mod_btn_text(sel_list: list[str]) -> str:
+                    if not sel_list:
+                        return "🧩 Keinen Programmbereich ausgewählt ▾"
+                    elif len(sel_list) == 1:
+                        return f"🧩 {sel_list[0]} ▾"
+                    elif len(sel_list) <= 2:
+                        return f"🧩 {', '.join(sel_list)} ▾"
+                    else:
+                        return f"🧩 {sel_list[0]}, {sel_list[1]} (+{len(sel_list)-2} weitere) ▾"
 
-                pills_box = ctk.CTkFrame(mod_frame, fg_color="transparent")
-                pills_box.pack(fill="x", padx=6, pady=6)
+                btn_text = format_mod_btn_text(selected_mods)
+                picker_btn = ctk.CTkButton(
+                    mod_container,
+                    text=btn_text,
+                    height=32,
+                    anchor="w",
+                    fg_color=("gray85", "gray25"),
+                    hover_color=("gray75", "gray35"),
+                    text_color=("gray10", "white"),
+                )
+                picker_btn.pack(fill="x", expand=True)
 
-                for mod_name in available_mods:
-                    is_on = mod_name in selected_mods
-                    bvar = ctk.BooleanVar(value=is_on)
-                    mod_vars[mod_name] = bvar
+                def open_mod_picker(b=picker_btn, holder=mod_selected_holder):
+                    def on_apply_mods(new_selected: list[str]):
+                        holder["selected"] = new_selected
+                        b.configure(text=format_mod_btn_text(new_selected))
 
-                    btn_color = "dodgerblue" if is_on else ("gray80", "gray30")
-                    btn = ctk.CTkButton(
-                        pills_box,
-                        text=mod_name,
-                        height=26,
-                        fg_color=btn_color,
-                        hover_color="deepskyblue",
-                        text_color="white" if is_on else ("gray10", "white"),
+                    ModuleTagPickerPopup(
+                        self.winfo_toplevel(),
+                        available_tags=available_mods,
+                        selected_tags=holder["selected"],
+                        on_apply=on_apply_mods,
                     )
-                    btn.pack(side="left", padx=3, pady=3)
 
-                    def on_mod_click(m=mod_name, b=btn, v=bvar):
-                        new_st = not v.get()
-                        v.set(new_st)
-                        b.configure(
-                            fg_color="dodgerblue" if new_st else ("gray80", "gray30"),
-                            text_color="white" if new_st else ("gray10", "white"),
-                        )
-
-                    btn.configure(command=on_mod_click)
-
-                self.field_widgets[f.field_id] = ("module_pills", mod_vars)
+                picker_btn.configure(command=open_mod_picker)
+                self.field_widgets[f.field_id] = ("module_picker", mod_selected_holder)
 
             # 2. BROWSER MULTISELECT WITH MUTUAL EXCLUSION FOR "UNBEKANNT"
             elif fid_lower in ("tested_browsers", "browser", "welcher_browser") or "browser" in flabel_lower:
@@ -189,7 +333,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                 b_frame.pack(fill="x", pady=2)
 
                 b_pills_box = ctk.CTkFrame(b_frame, fg_color="transparent")
-                b_pills_box.pack(fill="x", padx=6, pady=6)
+                b_pills_box.pack(fill="x", padx=6, pady=4)
 
                 b_vars: dict[str, ctk.BooleanVar] = {}
                 b_btns: dict[str, ctk.CTkButton] = {}
@@ -204,14 +348,12 @@ class DynamicFormWidget(ctk.CTkFrame):
 
                 def on_browser_click(clicked_opt: str):
                     if clicked_opt == "Unbekannt":
-                        # If Unbekannt is clicked, select Unbekannt and deselect all others
                         new_state = not b_vars["Unbekannt"].get()
                         b_vars["Unbekannt"].set(new_state)
                         if new_state:
                             for o in ["Firefox", "Edge", "Chrome"]:
                                 b_vars[o].set(False)
                     else:
-                        # If Firefox/Edge/Chrome is clicked, toggle it and deselect Unbekannt
                         new_state = not b_vars[clicked_opt].get()
                         b_vars[clicked_opt].set(new_state)
                         if new_state:
@@ -272,7 +414,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                 combo.pack(fill="x")
                 self.field_widgets[f.field_id] = (f.field_type, combo)
 
-            # 5. BOOLEAN / CHECKBOX FIELD (Includes DB Backup import & File List)
+            # 5. BOOLEAN / CHECKBOX FIELD
             elif f.field_type == FieldType.BOOLEAN:
                 bool_var = ctk.BooleanVar(value=bool(val) if val is not None else False)
                 chk_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
@@ -296,7 +438,6 @@ class DynamicFormWidget(ctk.CTkFrame):
 
                 self.field_widgets[f.field_id] = (f.field_type, bool_var)
 
-                # If this is the DB Backup field, also append the attachment import & list section right below it!
                 if is_db_backup_field and case:
                     self.render_mini_attachment_section(row_frame, case)
 
@@ -308,7 +449,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                 entry.pack(fill="x")
                 self.field_widgets[f.field_id] = (f.field_type, entry)
 
-            # 7. MULTILINE TEXTBOX FIELD (for detailed text fields with resize handle)
+            # 7. MULTILINE TEXTBOX FIELD
             elif any(k in fid_lower or k in flabel_lower for k in (
                 "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
                 "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung"
@@ -322,7 +463,6 @@ class DynamicFormWidget(ctk.CTkFrame):
                     textbox.insert("1.0", str(val))
                 textbox.pack(fill="x", expand=True)
 
-                # Add double-arrow drag handle below textbox
                 handle = TextboxResizeHandle(
                     row_frame,
                     target_textbox=textbox,
@@ -341,6 +481,9 @@ class DynamicFormWidget(ctk.CTkFrame):
                     entry.insert(0, str(val))
                 entry.pack(fill="x")
                 self.field_widgets[f.field_id] = (f.field_type, entry)
+
+        # Bind mouse wheel recursively so form is 100% responsive when scrolling
+        self._bind_mouse_wheel_recursive(self.scroll_frame)
 
     def _get_target_dir(self, case: Case) -> str:
         if self.attachment_service:
@@ -372,24 +515,29 @@ class DynamicFormWidget(ctk.CTkFrame):
 
     def render_mini_attachment_section(self, parent_frame, case: Case):
         attach_box = ctk.CTkFrame(parent_frame, fg_color=("gray92", "gray18"), corner_radius=6)
-        attach_box.pack(fill="x", pady=(8, 4))
+        attach_box.pack(fill="x", pady=(6, 4))
 
         hdr_row = ctk.CTkFrame(attach_box, fg_color="transparent")
-        hdr_row.pack(fill="x", padx=8, pady=(6, 2))
+        hdr_row.pack(fill="x", padx=8, pady=4)
 
-        ctk.CTkLabel(hdr_row, text="📎 Abgelegte Dateien im Fallordner:", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+        self.mini_attach_hdr_label = ctk.CTkLabel(
+            hdr_row,
+            text="📎 Abgelegte Dateien im Fallordner: Keine (0)",
+            font=ctk.CTkFont(size=11, weight="bold"),
+        )
+        self.mini_attach_hdr_label.pack(side="left")
 
         ctk.CTkButton(
             hdr_row,
             text="+ Datei(en) importieren...",
             height=24,
+            width=150,
             fg_color="gray30",
             hover_color="gray40",
             command=lambda: self.import_general_files(case),
         ).pack(side="right")
 
         self.mini_attach_scroll = ctk.CTkScrollableFrame(attach_box, height=90, fg_color="transparent")
-        self.mini_attach_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 6))
 
         self.refresh_mini_attachment_list(case)
 
@@ -413,15 +561,17 @@ class DynamicFormWidget(ctk.CTkFrame):
             w.destroy()
 
         target_dir = self._get_target_dir(case)
+        files = []
+        if os.path.exists(target_dir):
+            files = [f for f in os.listdir(target_dir) if os.path.isfile(os.path.join(target_dir, f))]
 
-        if not os.path.exists(target_dir):
-            ctk.CTkLabel(self.mini_attach_scroll, text="Keine Dateien abgelegt.", font=ctk.CTkFont(size=11), text_color="gray").pack(pady=10)
-            return
-
-        files = [f for f in os.listdir(target_dir) if os.path.isfile(os.path.join(target_dir, f))]
         if not files:
-            ctk.CTkLabel(self.mini_attach_scroll, text="Keine Dateien abgelegt.", font=ctk.CTkFont(size=11), text_color="gray").pack(pady=10)
+            self.mini_attach_hdr_label.configure(text="📎 Abgelegte Dateien im Fallordner: Keine (0)")
+            self.mini_attach_scroll.pack_forget()
             return
+
+        self.mini_attach_hdr_label.configure(text=f"📎 Abgelegte Dateien im Fallordner ({len(files)}):")
+        self.mini_attach_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 4))
 
         for f_name in files:
             f_path = os.path.join(target_dir, f_name)
@@ -470,12 +620,14 @@ class DynamicFormWidget(ctk.CTkFrame):
     def get_form_data(self) -> dict[str, Any]:
         data = {}
         for fid, (ftype, widget) in self.field_widgets.items():
-            if ftype == "module_pills":
-                # Dict of mod_name -> BooleanVar
+            if ftype == "module_picker":
+                # dict with 'selected' list
+                selected = widget.get("selected", [])
+                data[fid] = ", ".join(selected)
+            elif ftype == "module_pills":
                 selected = [m for m, bvar in widget.items() if bvar.get()]
                 data[fid] = ", ".join(selected)
             elif ftype == "browser_pills":
-                # Dict of browser_opt -> BooleanVar
                 selected = [b for b, bvar in widget.items() if bvar.get()]
                 data[fid] = ", ".join(selected)
             elif ftype == "textbox":

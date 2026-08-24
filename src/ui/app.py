@@ -55,6 +55,8 @@ class SupportCockpitApp(ctk.CTk):
         self.p2p_service = P2PSyncService(self.storage_service)
         from services.calendar_email_service import CalendarEmailService
         self.calendar_email_service = CalendarEmailService(self.app_config.workspace_dir)
+        from services.deep_search_service import DeepSearchService
+        self.deep_search_service = DeepSearchService(self.app_config.workspace_dir)
 
         # Configure Window
         self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
@@ -313,9 +315,22 @@ class SupportCockpitApp(ctk.CTk):
 
     def refresh_views(self):
         active_cases = self.get_filtered_cases()
-        filtered_cases = SearchService.filter_cases(active_cases, self.search_query) if self.search_query else active_cases
+        deep_results = {}
+        is_deep_active = (
+            hasattr(self.cockpit_view, "left_frame")
+            and getattr(self.cockpit_view.left_frame, "is_deep_search_active", False)
+        )
+
+        if is_deep_active and self.search_query:
+            deep_results = self.deep_search_service.perform_deep_search(active_cases, self.search_query)
+            matching_ids = set(deep_results.keys())
+            std_filtered = SearchService.filter_cases(active_cases, self.search_query)
+            filtered_cases = [c for c in active_cases if c.case_id in matching_ids or c in std_filtered]
+        else:
+            filtered_cases = SearchService.filter_cases(active_cases, self.search_query) if self.search_query else active_cases
+
         self.cockpit_view.set_schemas(self.schemas)
-        self.cockpit_view.set_cases(filtered_cases)
+        self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
         self.board_view.set_cases(filtered_cases)
         self.table_view.set_schemas(self.schemas)
         self.table_view.set_cases(filtered_cases)

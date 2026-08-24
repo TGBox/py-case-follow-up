@@ -82,6 +82,7 @@ class CockpitView(ctk.CTkFrame):
             self,
             on_case_selected=self.on_select_case_from_list,
             on_search_changed=self.on_search_changed,
+            on_toggle_deep_search=lambda active: self.on_search_changed(self.left_frame.search_entry.get()),
         )
         self.left_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
@@ -181,8 +182,8 @@ class CockpitView(ctk.CTkFrame):
         self.wiki_widget = WikiWidget(tab_wiki, self.wiki_service)
         self.wiki_widget.pack(fill="both", expand=True)
 
-    def set_cases(self, cases: list[Case]):
-        self.left_frame.set_cases(cases)
+    def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
+        self.left_frame.set_cases(cases, deep_results=deep_results)
 
     def set_schemas(self, schemas: list[QuestionSchema]):
         self.schemas = schemas

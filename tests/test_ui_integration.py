@@ -134,3 +134,58 @@ def test_app_case_selection_recursion_prevention():
     assert calls[0].case_id == "T-PREVENT-RECURSION"
 
 
+def test_dynamic_form_browser_mutual_exclusion():
+    from ui.widgets.dynamic_form_widget import DynamicFormWidget
+
+    class MockVar:
+        def __init__(self, val: bool):
+            self._val = val
+
+        def get(self) -> bool:
+            return self._val
+
+        def set(self, val: bool):
+            self._val = val
+
+    widget = DynamicFormWidget.__new__(DynamicFormWidget)
+    widget.field_widgets = {}
+
+    bvars = {
+        "Firefox": MockVar(True),
+        "Edge": MockVar(False),
+        "Chrome": MockVar(True),
+        "Unbekannt": MockVar(False),
+    }
+    widget.field_widgets["tested_browsers"] = ("browser_pills", bvars)
+
+    data1 = widget.get_form_data()
+    assert "Firefox" in data1["tested_browsers"]
+    assert "Chrome" in data1["tested_browsers"]
+
+    # Simulate mutual exclusion: selecting Unbekannt deselects all others
+    bvars["Unbekannt"].set(True)
+    for b in ["Firefox", "Edge", "Chrome"]:
+        bvars[b].set(False)
+
+    data2 = widget.get_form_data()
+    assert data2["tested_browsers"] == "Unbekannt"
+
+
+def test_tag_management_dialog_modules_tab():
+    from models.profile import UserProfile
+
+    profile = UserProfile()
+    initial_len = len(profile.available_module_tags)
+
+    # Add module tag
+    profile.available_module_tags.append("NeuesModul")
+    assert len(profile.available_module_tags) == initial_len + 1
+    assert "NeuesModul" in profile.available_module_tags
+
+    # Delete module tag
+    profile.available_module_tags.remove("NeuesModul")
+    assert "NeuesModul" not in profile.available_module_tags
+
+
+
+

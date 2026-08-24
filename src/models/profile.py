@@ -57,12 +57,16 @@ class UISettings:
         default_factory=lambda: ["case_id", "practice", "title", "actor", "followup", "score"]
     )
     show_demo_data: bool | None = None
+    textbox_height: int = 90
+    custom_textbox_heights: dict[str, int] = field(default_factory=dict)
 
     def reset_column_widths(self) -> None:
         self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
         self.board_collapsed = {"support": False, "dev": False, "followup": False, "completed": False}
         self.table_column_widths = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
         self.table_column_order = ["case_id", "practice", "title", "actor", "followup", "score"]
+        self.textbox_height = 90
+        self.custom_textbox_heights = {}
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -73,6 +77,8 @@ class UISettings:
             "table_column_widths": self.table_column_widths,
             "table_column_order": self.table_column_order,
             "show_demo_data": self.show_demo_data,
+            "textbox_height": self.textbox_height,
+            "custom_textbox_heights": self.custom_textbox_heights,
         }
 
     @classmethod
@@ -97,6 +103,9 @@ class UISettings:
         if not isinstance(s_demo, bool):
             s_demo = None
 
+        tb_height = int(data.get("textbox_height", 90))
+        cust_tb_heights = dict(data.get("custom_textbox_heights", {})) if isinstance(data.get("custom_textbox_heights"), dict) else {}
+
         return cls(
             theme=data.get("theme", "SYSTEM"),
             default_layout=data.get("default_layout", LayoutMode.COCKPIT),
@@ -105,6 +114,8 @@ class UISettings:
             table_column_widths=t_widths,
             table_column_order=t_order,
             show_demo_data=s_demo,
+            textbox_height=tb_height,
+            custom_textbox_heights=cust_tb_heights,
         )
 
 
@@ -205,6 +216,20 @@ class WikiSettings:
         )
 
 
+DEFAULT_MODULE_TAGS = [
+    "Fakturaübersicht",
+    "Rezeptdruck",
+    "Labor",
+    "eRezept / Verordnung",
+    "EGK-Kartenleser",
+    "GKV-Export",
+    "PVS-Schnittstelle",
+    "Terminkalender",
+    "Stammdaten",
+    "System / Allgemeine GUI",
+]
+
+
 @dataclass
 class UserProfile:
     user: UserInfo = field(default_factory=UserInfo)
@@ -214,6 +239,7 @@ class UserProfile:
     scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
     available_tags: list[str] = field(default_factory=lambda: ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"])
+    available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -224,6 +250,7 @@ class UserProfile:
             "scoring_matrix": self.scoring_matrix.to_dict(),
             "wiki_settings": self.wiki_settings.to_dict(),
             "available_tags": self.available_tags,
+            "available_module_tags": self.available_module_tags,
         }
 
     @classmethod
@@ -231,6 +258,8 @@ class UserProfile:
         default_tags = ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"]
         tags_raw = data.get("available_tags", default_tags)
         tags = list(tags_raw) if isinstance(tags_raw, list) else default_tags
+        mod_tags_raw = data.get("available_module_tags", DEFAULT_MODULE_TAGS)
+        mod_tags = list(mod_tags_raw) if isinstance(mod_tags_raw, list) else list(DEFAULT_MODULE_TAGS)
         return cls(
             user=UserInfo.from_dict(data.get("user", {})),
             ui_settings=UISettings.from_dict(data.get("ui_settings", {})),
@@ -239,6 +268,7 @@ class UserProfile:
             scoring_matrix=ScoringMatrix.from_dict(data.get("scoring_matrix", {})),
             wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
             available_tags=tags,
+            available_module_tags=mod_tags,
         )
 
 

@@ -4,6 +4,8 @@ from models.case import Case, TimelineEntry
 from models.customer import Customer
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, get_actor_display, get_actor_val_from_display, ACTOR_DISPLAY
+from models.profile import UserProfile
+from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
@@ -30,6 +32,9 @@ class CockpitView(ctk.CTkFrame):
         on_open_export_dialog: Callable[[Case], None],
         on_archive_case: Callable[[Case], None],
         app_config: Any | None = None,
+        profile: UserProfile | None = None,
+        storage_service: StorageService | None = None,
+        on_manage_module_tags: Callable[[], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
@@ -42,6 +47,9 @@ class CockpitView(ctk.CTkFrame):
         self.on_open_export_dialog = on_open_export_dialog
         self.on_archive_case = on_archive_case
         self.app_config = app_config
+        self.profile = profile
+        self.storage_service = storage_service
+        self.on_manage_module_tags = on_manage_module_tags
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
@@ -140,7 +148,13 @@ class CockpitView(ctk.CTkFrame):
         self.archive_btn.pack(side="right", padx=5, pady=4)
 
         # Dynamic Form
-        self.form_widget = DynamicFormWidget(self.center_frame)
+        self.form_widget = DynamicFormWidget(
+            self.center_frame,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            attachment_service=self.attachment_service,
+            on_manage_module_tags=self.on_manage_module_tags,
+        )
         self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
 
         # 3. Right Column: Tabbed Sidebar (Timeline, Attachments, Wiki)
@@ -200,7 +214,7 @@ class CockpitView(ctk.CTkFrame):
         schema = next((s for s in self.schemas if s.schema_id == case.classification.schema_id), None)
         if schema:
             SchemaService.update_case_completion(case, schema)
-        self.form_widget.load_schema(schema, case.form_data, case.missing_required_fields)
+        self.form_widget.load_schema(schema, case.form_data, case.missing_required_fields, case=case)
 
         # Load right sidebar
         self.timeline_widget.load_timeline(case.timeline)

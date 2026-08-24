@@ -97,5 +97,17 @@
     "Fragen",
     "Rückmeldung",
     "Informationen"
+  ],
+  "available_module_tags": [
+    "Fakturaübersicht",
+    "Rezeptdruck",
+    "Labor",
+    "eRezept / Verordnung",
+    "EGK-Kartenleser",
+    "GKV-Export",
+    "PVS-Schnittstelle",
+    "Terminkalender",
+    "Stammdaten",
+    "System / Allgemeine GUI"
   ]
 }

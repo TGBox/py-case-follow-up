@@ -94,6 +94,9 @@ class SupportCockpitApp(ctk.CTk):
             on_open_export_dialog=self.open_export_dialog,
             on_archive_case=self.on_archive_case,
             app_config=self.app_config,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_manage_module_tags=self.open_module_tag_management_dialog,
         )
         self.board_view = BoardView(
             self.container_frame,
@@ -168,9 +171,9 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags"],
+            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche"],
             command=self._on_stammdaten_selected,
-            width=145,
+            width=155,
         )
         self.stammdaten_combo.set("⚙ Stammdaten ▾")
         self.stammdaten_combo.pack(side="left", padx=3, pady=4)
@@ -236,7 +239,9 @@ class SupportCockpitApp(ctk.CTk):
         elif choice == "👥 Mitarbeiter":
             self.open_colleague_management_dialog()
         elif choice.startswith("🏷"):
-            self.open_tag_management_dialog()
+            self.open_tag_management_dialog(initial_tab="tags")
+        elif choice.startswith("🧩"):
+            self.open_module_tag_management_dialog()
 
     def _on_vorlagen_selected(self, choice: str):
         self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
@@ -443,13 +448,17 @@ class SupportCockpitApp(ctk.CTk):
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         self.refresh_views()
 
-    def open_tag_management_dialog(self):
+    def open_tag_management_dialog(self, initial_tab: str = "tags"):
         TagManagementDialog(
             self,
             profile=self.profile,
             storage_service=self.storage_service,
             on_tags_updated=self.on_tags_updated,
+            initial_tab=initial_tab,
         )
+
+    def open_module_tag_management_dialog(self):
+        self.open_tag_management_dialog(initial_tab="modules")
 
     def on_tags_updated(self):
         self.profile = self.storage_service.load_profile()

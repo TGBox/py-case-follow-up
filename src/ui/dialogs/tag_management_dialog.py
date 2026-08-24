@@ -5,58 +5,100 @@ from services.storage_service import StorageService
 
 
 class TagManagementDialog(ctk.CTkToplevel):
-    def __init__(self, parent, profile: UserProfile, storage_service: StorageService, on_tags_updated: Callable[[], None] | None = None):
+    def __init__(
+        self,
+        parent,
+        profile: UserProfile,
+        storage_service: StorageService,
+        on_tags_updated: Callable[[], None] | None = None,
+        initial_tab: str = "tags",
+    ):
         super().__init__(parent)
         self.profile = profile
         self.storage_service = storage_service
         self.on_tags_updated = on_tags_updated
+        self.initial_tab = initial_tab
 
-        self.title("🏷️ System-Tags Verwaltung")
-        self.geometry("640x560")
-        self.minsize(560, 480)
+        self.title("🏷️ Tags & Programmbereiche Verwaltung")
+        self.geometry("680x600")
+        self.minsize(580, 500)
         from utils.ui_utils import center_window
-        center_window(self, 640, 560)
+
+        center_window(self, 680, 600)
 
         self.transient(parent)
         self.grab_set()
 
         self.create_widgets()
+        if initial_tab == "modules":
+            self.tabview.set("🧩 Programmbereiche")
+        else:
+            self.tabview.set("🏷️ Allgemeine Tags")
+
         self.render_tags_list()
+        self.render_modules_list()
 
     def create_widgets(self):
-        # Header
+        # Header Bar
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="🏷️ System-Tags Verwalten", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text="🏷️ System-Tags & Programmbereiche", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=(5, 10))
 
-        # Add New Tag Box
-        add_box = ctk.CTkFrame(main_frame)
-        add_box.pack(fill="x", pady=(0, 10), padx=5)
+        # Tabview
+        self.tabview = ctk.CTkTabview(main_frame)
+        self.tabview.pack(fill="both", expand=True, pady=(0, 5))
 
-        ctk.CTkLabel(add_box, text="Neuen Tag erstellen:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 2))
+        tab_tags = self.tabview.add("🏷️ Allgemeine Tags")
+        tab_modules = self.tabview.add("🧩 Programmbereiche")
 
-        add_row = ctk.CTkFrame(add_box, fg_color="transparent")
-        add_row.pack(fill="x", padx=10, pady=(0, 10))
+        # --- TAB 1: ALLGEMEINE TAGS ---
+        # Search & Add Box
+        add_box1 = ctk.CTkFrame(tab_tags)
+        add_box1.pack(fill="x", pady=5, padx=5)
 
-        self.new_tag_entry = ctk.CTkEntry(add_row, placeholder_text="z. B. Schnittstelle, Abrechnung, Telematik...")
+        self.search_tag_entry = ctk.CTkEntry(add_box1, placeholder_text="🔍 Tags durchsuchen...")
+        self.search_tag_entry.pack(fill="x", padx=10, pady=(8, 4))
+        self.search_tag_entry.bind("<KeyRelease>", lambda e: self.render_tags_list())
+
+        add_row1 = ctk.CTkFrame(add_box1, fg_color="transparent")
+        add_row1.pack(fill="x", padx=10, pady=(4, 8))
+
+        self.new_tag_entry = ctk.CTkEntry(add_row1, placeholder_text="Neuen Tag erstellen (z. B. Schnittstelle)...")
         self.new_tag_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        add_btn = ctk.CTkButton(add_row, text="+ Tag Hinzufügen", command=self.on_add_tag, fg_color="forestgreen", width=140)
-        add_btn.pack(side="right")
+        add_btn1 = ctk.CTkButton(add_row1, text="+ Tag Hinzufügen", command=self.on_add_tag, fg_color="forestgreen", width=140)
+        add_btn1.pack(side="right")
 
-        # Tags List Scrollable
-        ctk.CTkLabel(main_frame, text="Verfügbare Tags:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=5, pady=(5, 2))
+        self.tags_scroll = ctk.CTkScrollableFrame(tab_tags)
+        self.tags_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.tags_scroll = ctk.CTkScrollableFrame(main_frame)
-        self.tags_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 10))
+        # --- TAB 2: PROGRAMMBEREICHE ---
+        add_box2 = ctk.CTkFrame(tab_modules)
+        add_box2.pack(fill="x", pady=5, padx=5)
 
-        # Status & Action Buttons
+        self.search_mod_entry = ctk.CTkEntry(add_box2, placeholder_text="🔍 Programmbereiche durchsuchen...")
+        self.search_mod_entry.pack(fill="x", padx=10, pady=(8, 4))
+        self.search_mod_entry.bind("<KeyRelease>", lambda e: self.render_modules_list())
+
+        add_row2 = ctk.CTkFrame(add_box2, fg_color="transparent")
+        add_row2.pack(fill="x", padx=10, pady=(4, 8))
+
+        self.new_mod_entry = ctk.CTkEntry(add_row2, placeholder_text="Neuen Programmbereich erstellen (z. B. Rezeptdruck)...")
+        self.new_mod_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+
+        add_btn2 = ctk.CTkButton(add_row2, text="+ Bereich Hinzufügen", command=self.on_add_module, fg_color="dodgerblue", width=160)
+        add_btn2.pack(side="right")
+
+        self.modules_scroll = ctk.CTkScrollableFrame(tab_modules)
+        self.modules_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # Footer Status & Close
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x")
+        btn_frame.pack(fill="x", pady=(5, 0))
 
         self.status_lbl = ctk.CTkLabel(btn_frame, text="", text_color="green")
         self.status_lbl.pack(side="left")
@@ -64,15 +106,19 @@ class TagManagementDialog(ctk.CTkToplevel):
         close_btn = ctk.CTkButton(btn_frame, text="Schließen", command=self.destroy, width=120)
         close_btn.pack(side="right")
 
+    # --- TAGS LOGIC ---
     def render_tags_list(self):
         for w in self.tags_scroll.winfo_children():
             w.destroy()
 
-        if not self.profile.available_tags:
-            ctk.CTkLabel(self.tags_scroll, text="Keine Tags vorhanden.", text_color="gray").pack(pady=20)
+        query = self.search_tag_entry.get().strip().lower()
+        tags = [t for t in self.profile.available_tags if query in t.lower()] if query else self.profile.available_tags
+
+        if not tags:
+            ctk.CTkLabel(self.tags_scroll, text="Keine Tags gefunden.", text_color="gray").pack(pady=20)
             return
 
-        for idx, tag in enumerate(self.profile.available_tags):
+        for idx, tag in enumerate(tags):
             row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
             row.pack(fill="x", pady=2, padx=5)
 
@@ -106,5 +152,54 @@ class TagManagementDialog(ctk.CTkToplevel):
             self.storage_service.save_profile(self.profile)
             self.status_lbl.configure(text=f"✅ Tag '{tag_name}' gelöscht.", text_color="green")
             self.render_tags_list()
+            if self.on_tags_updated:
+                self.on_tags_updated()
+
+    # --- MODULE TAGS LOGIC ---
+    def render_modules_list(self):
+        for w in self.modules_scroll.winfo_children():
+            w.destroy()
+
+        query = self.search_mod_entry.get().strip().lower()
+        mods = [m for m in self.profile.available_module_tags if query in m.lower()] if query else self.profile.available_module_tags
+
+        if not mods:
+            ctk.CTkLabel(self.modules_scroll, text="Keine Programmbereiche gefunden.", text_color="gray").pack(pady=20)
+            return
+
+        for idx, mod in enumerate(mods):
+            row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+            row.pack(fill="x", pady=2, padx=5)
+
+            ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+
+            del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
+            del_btn.pack(side="right", padx=5, pady=3)
+
+    def on_add_module(self):
+        new_mod = self.new_mod_entry.get().strip()
+        if not new_mod:
+            self.status_lbl.configure(text="⚠️ Programmbereich darf nicht leer sein!", text_color="red")
+            return
+
+        if new_mod in self.profile.available_module_tags:
+            self.status_lbl.configure(text="⚠️ Programmbereich existiert bereits!", text_color="red")
+            return
+
+        self.profile.available_module_tags.append(new_mod)
+        self.storage_service.save_profile(self.profile)
+        self.new_mod_entry.delete(0, "end")
+        self.status_lbl.configure(text="✅ Programmbereich erfolgreich hinzugefügt!", text_color="green")
+
+        self.render_modules_list()
+        if self.on_tags_updated:
+            self.on_tags_updated()
+
+    def on_delete_module(self, mod_name: str):
+        if mod_name in self.profile.available_module_tags:
+            self.profile.available_module_tags.remove(mod_name)
+            self.storage_service.save_profile(self.profile)
+            self.status_lbl.configure(text=f"✅ Programmbereich '{mod_name}' gelöscht.", text_color="green")
+            self.render_modules_list()
             if self.on_tags_updated:
                 self.on_tags_updated()

@@ -327,7 +327,9 @@ class SupportCockpitApp(ctk.CTk):
                 self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AUS", fg_color="gray40")
 
     def switch_to_cockpit_view_for_case(self, case: Case):
-        self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))
+        self.active_case = case
+        if self.active_view != self.cockpit_view:
+            self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))
         self.cockpit_view.on_select_case_from_list(case)
 
     def open_followup_dialog_for_case(self, case: Case):
@@ -395,7 +397,8 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_case_selected(self, case: Case):
         self.active_case = case
-        self.switch_to_cockpit_view_for_case(case)
+        if self.active_view != self.cockpit_view or self.cockpit_view.current_case != case:
+            self.switch_to_cockpit_view_for_case(case)
 
     def on_case_updated(self, case: Case):
         self.scoring_service.update_case_scoring(case)

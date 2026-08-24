@@ -105,3 +105,32 @@ def test_toast_notification_open_callback():
     assert len(opened_cases) == 1
     assert opened_cases[0].case_id == "T-8888"
 
+
+def test_app_case_selection_recursion_prevention():
+    from models.case import Case, Classification
+    from ui.app import SupportCockpitApp
+
+    case = Case(case_id="T-PREVENT-RECURSION", classification=Classification(title="Recursion Test"))
+    app = SupportCockpitApp.__new__(SupportCockpitApp)
+    app.active_case = None
+    app.cockpit_view = type("MockCockpit", (), {"current_case": None})()
+    app.active_view = app.cockpit_view
+
+    calls = []
+
+    def mock_switch(case: Case) -> None:
+        calls.append(case)
+        app.active_case = case
+        app.cockpit_view.current_case = case
+
+    app.switch_to_cockpit_view_for_case = mock_switch
+
+    # Call on_case_selected twice with same case
+    app.on_case_selected(case)
+    app.on_case_selected(case)
+
+    # Should only call switch once due to guard clause
+    assert len(calls) == 1
+    assert calls[0].case_id == "T-PREVENT-RECURSION"
+
+

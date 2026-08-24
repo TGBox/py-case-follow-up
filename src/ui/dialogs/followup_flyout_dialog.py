@@ -75,17 +75,33 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         btn_close.pack(side="right")
 
     def select_case(self, case: Case):
-        self.on_case_selected(case)
+        cb = self.on_case_selected
+        try:
+            self.grab_release()
+        except Exception:
+            pass
         self.destroy()
+        if cb:
+            cb(case)
 
     def snooze_case(self, case: Case, days: int):
         new_dt = get_local_now() + timedelta(days=days)
         case.workflow_status.followup_at = format_german_date(new_dt) + " 09:00"
-        self.on_refresh()
+        try:
+            self.grab_release()
+        except Exception:
+            pass
         self.destroy()
+        if self.on_refresh:
+            self.on_refresh()
 
     def complete_followup(self, case: Case):
         case.workflow_status.followup_at = ""
         case.workflow_status.followup_note = ""
-        self.on_refresh()
+        try:
+            self.grab_release()
+        except Exception:
+            pass
         self.destroy()
+        if self.on_refresh:
+            self.on_refresh()

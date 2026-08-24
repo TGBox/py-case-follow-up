@@ -26,7 +26,16 @@ class CustomerService:
             if (
                 q_lower in c.customer_id.lower()
                 or q_lower in c.practice_name.lower()
-                or any(q_lower in contact.name.lower() for contact in c.contacts)
+                or (c.website and q_lower in c.website.lower())
+                or (c.vm_number is not None and q_lower in str(c.vm_number))
+                or (c.instance_number is not None and q_lower in str(c.instance_number))
+                or any(
+                    q_lower in contact.name.lower()
+                    or q_lower in contact.role.lower()
+                    or q_lower in contact.email.lower()
+                    or q_lower in contact.phone.lower()
+                    for contact in c.contacts
+                )
             ):
                 results.append(c)
         return results

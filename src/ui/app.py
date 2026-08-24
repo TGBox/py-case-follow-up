@@ -180,7 +180,7 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["⚙ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
+            values=["⚙ Stammdaten ▾", "🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
             command=self._on_stammdaten_selected,
             width=165,
         )
@@ -245,6 +245,8 @@ class SupportCockpitApp(ctk.CTk):
         self.stammdaten_combo.set("⚙ Stammdaten ▾")
         if choice == "🏥 Praxen":
             self.open_customer_management_dialog()
+        elif choice.startswith("🐍"):
+            self.open_cobra_import_dialog()
         elif choice == "👥 Mitarbeiter":
             self.open_colleague_management_dialog()
         elif choice.startswith("🏷"):
@@ -454,6 +456,19 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_customers_updated(self):
         self.customers = self.storage_service.load_customers()
+
+    def open_cobra_import_dialog(self):
+        from ui.dialogs.cobra_import_dialog import CobraImportDialog
+        CobraImportDialog(
+            self,
+            existing_customers=self.customers,
+            on_import_completed=self.on_cobra_import_completed,
+        )
+
+    def on_cobra_import_completed(self, merged_customers: list[Customer]):
+        for c in merged_customers:
+            self.customer_service.save_customer(c)
+        self.on_customers_updated()
 
     def open_profile_settings_dialog(self):
         ProfileSettingsDialog(

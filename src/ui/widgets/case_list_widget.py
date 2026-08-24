@@ -10,12 +10,16 @@ class CaseListWidget(ctk.CTkFrame):
         parent,
         on_case_selected: Callable[[Case], None],
         on_search_changed: Callable[[str], None],
+        on_toggle_deep_search: Callable[[bool], None] | None = None,
     ):
         super().__init__(parent)
         self.on_case_selected = on_case_selected
         self.on_search_changed = on_search_changed
+        self.on_toggle_deep_search = on_toggle_deep_search
         self.cases: list[Case] = []
         self.selected_case_id: str | None = None
+        self.is_deep_search_active: bool = False
+        self.deep_search_results: dict[str, dict] = {}
 
         self.create_widgets()
 
@@ -34,10 +38,30 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text="Alle", width=50, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=85, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlagen", width=115, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🏢 Intern", width=70, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("is:internal")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        
+        self.deep_btn = ctk.CTkButton(
+            qfilter_frame,
+            text="🔍 Tiefensuche",
+            width=100,
+            fg_color="gray30",
+            hover_color="darkmagenta",
+            command=self.toggle_deep_search,
+        )
+        self.deep_btn.pack(side="left", padx=2)
+
+    def toggle_deep_search(self):
+        self.is_deep_search_active = not self.is_deep_search_active
+        if self.is_deep_search_active:
+            self.deep_btn.configure(fg_color="darkmagenta", hover_color="purple")
+        else:
+            self.deep_btn.configure(fg_color="gray30", hover_color="gray40")
+
+        if self.on_toggle_deep_search:
+            self.on_toggle_deep_search(self.is_deep_search_active)
+        self.on_search_changed(self.search_entry.get())
 
         # Header Info
         self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
@@ -55,9 +79,11 @@ class CaseListWidget(ctk.CTkFrame):
             self.search_entry.insert(0, filter_token)
         self.on_search_changed(filter_token)
 
-    def set_cases(self, cases: list[Case]):
+    def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
         """Sets cases list sorted by score descending."""
         self.cases = sorted(cases, key=lambda c: c.classification.calculated_score, reverse=True)
+        if deep_results is not None:
+            self.deep_search_results = deep_results
         self.count_label.configure(text=f"{len(self.cases)} Support-Fälle")
         self.render_list()
 
@@ -121,6 +147,38 @@ class CaseListWidget(ctk.CTkFrame):
             sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+            # Deep Search Match Badges
+            if self.is_deep_search_active and case.case_id in self.deep_search_results:
+                res = self.deep_search_results[case.case_id]
+                att_m = res.get("attachment_matches", [])
+                wiki_m = res.get("wiki_matches", [])
+
+                if att_m:
+                    m0 = att_m[0]
+                    att_text = f"📄 {m0['file_name']} (Z. {m0['line_number']}): \"{m0['snippet'][:35]}...\""
+                    att_lbl = ctk.CTkLabel(
+                        card,
+                        text=att_text,
+                        anchor="w",
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="plum",
+                    )
+                    att_lbl.pack(fill="x", padx=12, pady=(0, 2))
+                    att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+                if wiki_m:
+                    w0 = wiki_m[0]
+                    wiki_text = f"📚 Wiki: {w0['title']}"
+                    wiki_lbl = ctk.CTkLabel(
+                        card,
+                        text=wiki_text,
+                        anchor="w",
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="orchid",
+                    )
+                    wiki_lbl.pack(fill="x", padx=12, pady=(0, 2))
+                    wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             if case.workflow_status.followup_at:
                 from utils.datetime_utils import format_german_datetime

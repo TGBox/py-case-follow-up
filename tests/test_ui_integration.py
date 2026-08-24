@@ -50,16 +50,58 @@ def test_ui_service_workflow_integration(tmp_path: Path):
 
 def test_handover_dialog_formatting():
     from enums import Actor, get_actor_display
-    from models.case import TimelineEntry
-    from utils.datetime_utils import now_iso
 
-    new_actor_val = Actor.DEVELOPMENT.value
-    channel = "Slacknachricht / Chat"
-    person = "Max Mustermann"
-    note = "Bitte um Prüfung"
+    def format_handover_text(person_val: str, note_val: str) -> str:
+        new_actor_val = Actor.DEVELOPMENT.value
+        channel = "Slacknachricht / Chat"
+        person_str = f" ({person_val})" if len(person_val) > 0 else ""
+        note_str = f" | Details: {note_val}" if len(note_val) > 0 else ""
+        return f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
 
-    person_str = f" ({person})" if person else ""
-    note_str = f" | Details: {note}" if note else ""
-    note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
+    note_text1 = format_handover_text("Max Mustermann", "Bitte um Prüfung")
+    assert "Zuständigkeit übergeben an: Entwicklung (Max Mustermann) via Slacknachricht / Chat | Details: Bitte um Prüfung" in note_text1
 
-    assert "Zuständigkeit übergeben an: Entwicklung (Max Mustermann) via Slacknachricht / Chat | Details: Bitte um Prüfung" in note_text
+    note_text2 = format_handover_text("", "")
+    assert "Zuständigkeit übergeben an: Entwicklung via Slacknachricht / Chat" in note_text2
+
+
+
+def test_followup_flyout_case_selection():
+    from models.case import Case, Classification
+    from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog
+
+    c1 = Case(case_id="T-9999", classification=Classification(title="Test Case"))
+    selected_cases = []
+
+    def mock_on_case_selected(case):
+        selected_cases.append(case)
+
+    flyout = FollowupFlyoutDialog.__new__(FollowupFlyoutDialog)
+    flyout.on_case_selected = mock_on_case_selected
+    flyout.destroy = lambda: None
+
+    flyout.select_case(c1)
+
+    assert len(selected_cases) == 1
+    assert selected_cases[0].case_id == "T-9999"
+
+
+def test_toast_notification_open_callback():
+    from ui.widgets.toast_notification import ToastNotification
+    from models.case import Case
+
+    opened_cases = []
+    c1 = Case(case_id="T-8888")
+
+    def mock_open():
+        opened_cases.append(c1)
+
+    toast = ToastNotification.__new__(ToastNotification)
+    toast.on_open = mock_open
+    toast.safe_destroy = lambda: None
+
+    toast.handle_open()
+
+    assert len(opened_cases) == 1
+    assert opened_cases[0].case_id == "T-8888"
+

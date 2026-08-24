@@ -165,32 +165,62 @@ class SupportCockpitApp(ctk.CTk):
         new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
         new_btn.pack(side="left", padx=3, pady=4)
 
-        cust_btn = ctk.CTkButton(menu_frame, text="🏥 Praxen", command=self.open_customer_management_dialog, width=95)
-        cust_btn.pack(side="left", padx=3, pady=4)
+        # Grouped Dropdown 1: Stammdaten
+        self.stammdaten_combo = ctk.CTkOptionMenu(
+            menu_frame,
+            values=["⚙️ Stammdaten ▾", "🏥 Praxen", "👥 Mitarbeiter", "🏷️ Tags"],
+            command=self._on_stammdaten_selected,
+            width=145,
+        )
+        self.stammdaten_combo.set("⚙️ Stammdaten ▾")
+        self.stammdaten_combo.pack(side="left", padx=3, pady=4)
 
-        colleague_btn = ctk.CTkButton(menu_frame, text="👥 Mitarbeiter", command=self.open_colleague_management_dialog, width=115)
-        colleague_btn.pack(side="left", padx=3, pady=4)
+        # Grouped Dropdown 2: Vorlagen & Formulare
+        self.vorlagen_combo = ctk.CTkOptionMenu(
+            menu_frame,
+            values=["📄 Vorlagen & Formulare ▾", "🛠️ Formulare", "📄 Vorlagen"],
+            command=self._on_vorlagen_selected,
+            width=175,
+        )
+        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
+        self.vorlagen_combo.pack(side="left", padx=3, pady=4)
 
-        tags_btn = ctk.CTkButton(menu_frame, text="🏷️ Tags", command=self.open_tag_management_dialog, width=85)
-        tags_btn.pack(side="left", padx=3, pady=4)
+        # Grouped Dropdown 3: Datenaustausch
+        self.datenaustausch_combo = ctk.CTkOptionMenu(
+            menu_frame,
+            values=["🔄 Datenaustausch ▾", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
+            command=self._on_datenaustausch_selected,
+            width=155,
+        )
+        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
+        self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
 
-        export_btn = ctk.CTkButton(menu_frame, text="📤 Export", command=lambda: self.open_export_dialog(self.active_case), width=95)
-        export_btn.pack(side="left", padx=3, pady=4)
+    def _on_stammdaten_selected(self, choice: str):
+        self.stammdaten_combo.set("⚙️ Stammdaten ▾")
+        if choice == "🏥 Praxen":
+            self.open_customer_management_dialog()
+        elif choice == "👥 Mitarbeiter":
+            self.open_colleague_management_dialog()
+        elif choice == "🏷️ Tags":
+            self.open_tag_management_dialog()
 
-        backup_btn = ctk.CTkButton(menu_frame, text="📦 ZIP-Backup", command=self.open_zip_export_dialog, width=115)
-        backup_btn.pack(side="left", padx=3, pady=4)
+    def _on_vorlagen_selected(self, choice: str):
+        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
+        if choice == "🛠️ Formulare":
+            self.open_schema_builder_dialog()
+        elif choice == "📄 Vorlagen":
+            self.open_template_manager_dialog()
 
-        builder_btn = ctk.CTkButton(menu_frame, text="🛠️ Formulare", command=self.open_schema_builder_dialog, width=105)
-        builder_btn.pack(side="left", padx=3, pady=4)
-
-        tpl_btn = ctk.CTkButton(menu_frame, text="📄 Vorlagen", command=self.open_template_manager_dialog, width=95)
-        tpl_btn.pack(side="left", padx=3, pady=4)
-
-        p2p_btn = ctk.CTkButton(menu_frame, text="🔄 P2P-Sync", command=self.open_p2p_dialog, width=110)
-        p2p_btn.pack(side="left", padx=3, pady=4)
-
-        help_btn = ctk.CTkButton(menu_frame, text="📖 Hilfe", command=self.open_help_dialog, width=90, fg_color="gray40")
-        help_btn.pack(side="left", padx=3, pady=4)
+    def _on_datenaustausch_selected(self, choice: str):
+        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
+        if choice.startswith("📤 Export"):
+            self.open_export_dialog(self.active_case)
+        elif choice == "📦 ZIP-Backup":
+            self.open_zip_export_dialog()
+        elif choice == "🔄 P2P-Sync":
+            self.open_p2p_dialog()
+        elif choice.startswith("📖 Hilfe"):
+            self.open_help_dialog()
 
         # Right side: User, Bell Badge & Theme Toggle
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
@@ -530,6 +560,7 @@ class SupportCockpitApp(ctk.CTk):
         tk.Misc.bind_all(self, shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
         tk.Misc.bind_all(self, shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search())
         tk.Misc.bind_all(self, shortcuts.save_case, lambda e: self.cockpit_view.on_click_save())
+        tk.Misc.bind_all(self, "<F1>", lambda e: self.open_help_dialog())
 
     def schedule_hourly_scoring(self):
         def update_timer():

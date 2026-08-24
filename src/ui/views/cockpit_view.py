@@ -35,6 +35,7 @@ class CockpitView(ctk.CTkFrame):
         profile: UserProfile | None = None,
         storage_service: StorageService | None = None,
         on_manage_module_tags: Callable[[], None] | None = None,
+        on_open_email_calendar: Callable[[Case], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
@@ -50,6 +51,7 @@ class CockpitView(ctk.CTkFrame):
         self.profile = profile
         self.storage_service = storage_service
         self.on_manage_module_tags = on_manage_module_tags
+        self.on_open_email_calendar = on_open_email_calendar
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
@@ -101,13 +103,18 @@ class CockpitView(ctk.CTkFrame):
         )
         self.print_btn.pack(side="right", padx=5)
 
+        self.email_cal_btn = ctk.CTkButton(
+            self.center_header, text="✉️ E-Mail / Kalender", command=self.on_click_email_calendar, width=145, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
+        )
+        self.email_cal_btn.pack(side="right", padx=5)
+
         self.export_btn = ctk.CTkButton(
-            self.center_header, text="📤 Export", command=self.on_click_export, width=110, state="disabled"
+            self.center_header, text="📤 Export", command=self.on_click_export, width=100, state="disabled"
         )
         self.export_btn.pack(side="right", padx=5)
 
         self.save_btn = ctk.CTkButton(
-            self.center_header, text="💾 Speichern", command=self.on_click_save, width=110, state="disabled"
+            self.center_header, text="💾 Speichern", command=self.on_click_save, width=100, state="disabled"
         )
         self.save_btn.pack(side="right", padx=5)
 
@@ -193,11 +200,16 @@ class CockpitView(ctk.CTkFrame):
             from ui.dialogs.case_print_dialog import CasePrintDialog
             CasePrintDialog(self, self.current_case)
 
+    def on_click_email_calendar(self):
+        if self.current_case and self.on_open_email_calendar:
+            self.on_open_email_calendar(self.current_case)
+
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
 
         self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
         self.print_btn.configure(state="normal")
+        self.email_cal_btn.configure(state="normal")
         self.export_btn.configure(state="normal")
         self.save_btn.configure(state="normal")
 

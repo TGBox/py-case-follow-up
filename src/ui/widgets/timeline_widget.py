@@ -21,6 +21,8 @@ class TimelineWidget(ctk.CTkFrame):
         # Scrollable list
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.scroll_frame)
 
         # Input Area for New Note
         input_frame = ctk.CTkFrame(self)

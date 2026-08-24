@@ -84,10 +84,10 @@ class NewCaseDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         self.title("Neuen Support-Fall anlegen")
-        self.geometry("680x740")
-        self.minsize(600, 660)
+        self.geometry("760x860")
+        self.minsize(700, 780)
         from utils.ui_utils import center_window
-        center_window(self, 680, 740)
+        center_window(self, 760, 860)
 
         self.customers = list(customers)
         self.schemas = schemas
@@ -105,32 +105,52 @@ class NewCaseDialog(ctk.CTkToplevel):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=15, pady=12)
+
+        # 1. Pinned Bottom Action Bar (ALWAYS 100% VISIBLE AT BOTTOM)
+        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_frame.pack(side="bottom", fill="x", pady=(8, 0))
+
+        cancel_btn = ctk.CTkButton(btn_frame, text="Abbrechen", fg_color="gray", command=self.destroy, width=120)
+        cancel_btn.pack(side="left")
+
+        save_btn = ctk.CTkButton(btn_frame, text="Fall anlegen", command=self.on_save, width=160, fg_color="#2563eb", hover_color="#1d4ed8")
+        save_btn.pack(side="right")
+
+        # Error label pinned right above bottom buttons
+        self.error_label = ctk.CTkLabel(main_frame, text="", text_color="red")
+        self.error_label.pack(side="bottom", anchor="w", pady=(0, 2))
+
+        # 2. Scrollable Form Inputs Area (Fills remaining height)
+        form_scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
+        form_scroll.pack(side="top", fill="both", expand=True)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(form_scroll)
 
         # Header
-        title_label = ctk.CTkLabel(main_frame, text="Neuen Support-Fall erfassen", font=ctk.CTkFont(size=18, weight="bold"))
-        title_label.pack(anchor="w", pady=(0, 10))
+        title_label = ctk.CTkLabel(form_scroll, text="Neuen Support-Fall erfassen", font=ctk.CTkFont(size=18, weight="bold"))
+        title_label.pack(anchor="w", pady=(0, 8))
 
         # Internal Task Checkbox
         self.is_internal_var = ctk.BooleanVar(value=False)
         self.chk_internal = ctk.CTkCheckBox(
-            main_frame,
+            form_scroll,
             text="🏢 Interner Vorgang (ohne Kundenelement)",
             variable=self.is_internal_var,
             command=self.on_toggle_internal,
             font=ctk.CTkFont(size=12, weight="bold"),
         )
-        self.chk_internal.pack(anchor="w", pady=(0, 10))
+        self.chk_internal.pack(anchor="w", pady=(0, 8))
 
         # Customer selection row
-        ctk.CTkLabel(main_frame, text="Kunde / Praxis:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(form_scroll, text="Kunde / Praxis:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         
-        cust_row = ctk.CTkFrame(main_frame, fg_color="transparent")
-        cust_row.pack(fill="x", pady=(0, 10))
+        cust_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
+        cust_row.pack(fill="x", pady=(0, 6))
 
         initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else ["Keine Kunden"]
         self.customer_combo = ctk.CTkOptionMenu(cust_row, values=initial_cust_names, width=380)
-        self.customer_combo.pack(side="left", padx=(0, 5))
+        self.customer_combo.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
         self.add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
         self.add_cust_btn.pack(side="right")
@@ -138,48 +158,35 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.refresh_customer_combo()
 
         # Case Title
-        ctk.CTkLabel(main_frame, text="Titel / Kurzbeschreibung:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.title_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen", width=510)
-        self.title_entry.pack(anchor="w", pady=(0, 10))
+        ctk.CTkLabel(form_scroll, text="Titel / Kurzbeschreibung:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen")
+        self.title_entry.pack(fill="x", pady=(0, 6))
 
         # Schema selection
-        ctk.CTkLabel(main_frame, text="Formular-Schema:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(form_scroll, text="Formular-Schema:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
-        self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_names if schema_names else ["Standard"], width=510)
-        self.schema_combo.pack(anchor="w", pady=(0, 10))
+        self.schema_combo = ctk.CTkOptionMenu(form_scroll, values=schema_names if schema_names else ["Standard"])
+        self.schema_combo.pack(fill="x", pady=(0, 6))
 
         # Tags Selection
-        ctk.CTkLabel(main_frame, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(form_scroll, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         
-        self.tags_frame = ctk.CTkScrollableFrame(main_frame, height=130, fg_color="transparent")
-        self.tags_frame.pack(fill="x", pady=(0, 10))
+        self.tags_frame = ctk.CTkScrollableFrame(form_scroll, height=100, fg_color="transparent")
+        self.tags_frame.pack(fill="x", pady=(0, 6))
+        enable_auto_hiding_scrollbar(self.tags_frame)
 
         self.render_tags_checkboxes()
 
         # Callback deadline (optional)
-        ctk.CTkLabel(main_frame, text="Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(form_scroll, text="Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         from ui.widgets.date_picker import DatePickerWidget
-        self.deadline_picker = DatePickerWidget(main_frame, placeholder_text="z. B. 23.08.2026 16:00", include_time=True, width=380)
-        self.deadline_picker.pack(anchor="w", pady=(0, 10))
+        self.deadline_picker = DatePickerWidget(form_scroll, placeholder_text="z. B. 23.08.2026 16:00", include_time=True, width=380)
+        self.deadline_picker.pack(fill="x", pady=(0, 6))
 
         # Initial Timeline Note
-        ctk.CTkLabel(main_frame, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(5, 2))
-        self.note_textbox = ctk.CTkTextbox(main_frame, width=510, height=75)
-        self.note_textbox.pack(anchor="w", pady=(0, 10))
-
-        # Error label
-        self.error_label = ctk.CTkLabel(main_frame, text="", text_color="red")
-        self.error_label.pack(anchor="w", pady=(0, 5))
-
-        # Buttons
-        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(5, 0))
-
-        cancel_btn = ctk.CTkButton(btn_frame, text="Abbrechen", fg_color="gray", command=self.destroy, width=120)
-        cancel_btn.pack(side="left")
-
-        save_btn = ctk.CTkButton(btn_frame, text="Fall anlegen", command=self.on_save, width=160)
-        save_btn.pack(side="right")
+        ctk.CTkLabel(form_scroll, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.note_textbox = ctk.CTkTextbox(form_scroll, height=65)
+        self.note_textbox.pack(fill="x", pady=(0, 6))
 
     def render_tags_checkboxes(self):
         for w in self.tags_frame.winfo_children():

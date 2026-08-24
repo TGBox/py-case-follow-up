@@ -46,6 +46,8 @@ class CaseListWidget(ctk.CTkFrame):
         # Scrollable Cases Container
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.scroll_frame)
 
     def apply_quick_filter(self, filter_token: str):
         self.search_entry.delete(0, "end")

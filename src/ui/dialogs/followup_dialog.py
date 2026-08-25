@@ -5,6 +5,7 @@ from typing import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
 from utils.datetime_utils import format_german_date, parse_german_date, get_local_now
+from utils.ui_utils import center_window
 
 
 class FollowupDialog(ctk.CTkToplevel):
@@ -19,10 +20,9 @@ class FollowupDialog(ctk.CTkToplevel):
         self.on_followup_set = on_followup_set
 
         self.title("🔔 Wiedervorlage & Nachfrage-Erinnerung")
-        self.geometry("580x500")
-        self.minsize(520, 440)
-        from utils.ui_utils import center_window
-        center_window(self, 580, 500)
+        self.geometry("500x385")
+        self.minsize(460, 350)
+        center_window(self, 500, 385)
 
         self.transient(parent)
         self.grab_set()
@@ -31,43 +31,77 @@ class FollowupDialog(ctk.CTkToplevel):
 
     def create_widgets(self):
         # Header
-        top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
-        top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
+        top_bar = ctk.CTkFrame(self, height=40, corner_radius=0)
+        top_bar.pack(fill="x", side="top", padx=10, pady=(8, 4))
 
         ctk.CTkLabel(
             top_bar,
             text=f"🔔 Wiedervorlage einplanen: {self.case.case_id}",
-            font=ctk.CTkFont(size=15, weight="bold")
+            font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self)
-        main_frame.pack(fill="both", expand=True, padx=15, pady=10)
+        main_frame.pack(fill="both", expand=True, padx=12, pady=(0, 10))
 
         ctk.CTkLabel(
             main_frame,
-            text="Wann möchten Sie an diesen Fall erinnert werden?",
-            font=ctk.CTkFont(size=12, weight="bold")
-        ).pack(anchor="w", padx=10, pady=(10, 5))
+            text="⚡ Schnellauswahl / Presets:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            anchor="w"
+        ).pack(fill="x", padx=12, pady=(8, 3))
 
-        # Quick Preset Buttons Rows
-        btn_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame1.pack(fill="x", padx=10, pady=2)
+        # Quick Preset Buttons Grid (Uniform sizes for all pill buttons)
+        preset_grid = ctk.CTkFrame(main_frame, fg_color="transparent")
+        preset_grid.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(btn_frame1, text="+ 1 Std.", width=75, command=lambda: self.set_preset_hours(1), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame1, text="+ 2 Std.", width=75, command=lambda: self.set_preset_hours(2), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame1, text="Heute 16:30", width=100, command=self.set_preset_today_1630, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame1, text="Morgen 08:00", width=110, command=self.set_preset_tomorrow_8am, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        for col in range(4):
+            preset_grid.grid_columnconfigure(col, weight=1, uniform="fw_presets")
 
-        btn_frame2 = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame2.pack(fill="x", padx=10, pady=(2, 5))
+        presets_row1 = [
+            ("+ 1 Std.", lambda: self.set_preset_hours(1)),
+            ("+ 2 Std.", lambda: self.set_preset_hours(2)),
+            ("Heute 16:30", self.set_preset_today_1630),
+            ("Morgen 08:00", self.set_preset_tomorrow_8am),
+        ]
+        for col_idx, (text, cmd) in enumerate(presets_row1):
+            btn = ctk.CTkButton(
+                preset_grid,
+                text=text,
+                height=28,
+                corner_radius=12,
+                font=ctk.CTkFont(size=11),
+                fg_color=("gray75", "gray30"),
+                hover_color=("gray65", "gray40"),
+                command=cmd,
+            )
+            btn.grid(row=0, column=col_idx, padx=2, pady=2, sticky="ew")
 
-        ctk.CTkButton(btn_frame2, text="+ 1 Tag", width=95, command=lambda: self.set_preset_days(1), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame2, text="+ 2 Tage", width=95, command=lambda: self.set_preset_days(2), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame2, text="+ 3 Tage", width=95, command=lambda: self.set_preset_days(3), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame2, text="+ 1 Woche", width=105, command=lambda: self.set_preset_days(7), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        presets_row2 = [
+            ("+ 1 Tag", lambda: self.set_preset_days(1)),
+            ("+ 2 Tage", lambda: self.set_preset_days(2)),
+            ("+ 3 Tage", lambda: self.set_preset_days(3)),
+            ("+ 1 Woche", lambda: self.set_preset_days(7)),
+        ]
+        for col_idx, (text, cmd) in enumerate(presets_row2):
+            btn = ctk.CTkButton(
+                preset_grid,
+                text=text,
+                height=28,
+                corner_radius=12,
+                font=ctk.CTkFont(size=11),
+                fg_color=("gray75", "gray30"),
+                hover_color=("gray65", "gray40"),
+                command=cmd,
+            )
+            btn.grid(row=1, column=col_idx, padx=2, pady=2, sticky="ew")
 
         # Custom Date Entry using DatePickerWidget
-        ctk.CTkLabel(main_frame, text="Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(anchor="w", padx=10, pady=(15, 2))
+        ctk.CTkLabel(
+            main_frame,
+            text="📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            anchor="w"
+        ).pack(fill="x", padx=12, pady=(6, 2))
         
         init_date = ""
         if self.case.workflow_status.followup_at:
@@ -83,26 +117,32 @@ class FollowupDialog(ctk.CTkToplevel):
             initial_value=init_date,
             width=260,
         )
-        self.date_picker.pack(fill="x", padx=10, pady=(0, 10))
+        self.date_picker.pack(fill="x", padx=12, pady=(0, 6))
 
         # Note entry
-        ctk.CTkLabel(main_frame, text="Notiz / Nachfrage-Grund (Optional):").pack(anchor="w", padx=10, pady=(5, 2))
+        ctk.CTkLabel(
+            main_frame,
+            text="📝 Notiz / Nachfrage-Grund (Optional):",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            anchor="w"
+        ).pack(fill="x", padx=12, pady=(4, 2))
         self.note_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Beim Entwickler nach dem Stand fragen...")
         if self.case.workflow_status.followup_note:
             self.note_entry.insert(0, self.case.workflow_status.followup_note)
-        self.note_entry.pack(fill="x", padx=10, pady=(0, 15))
+        self.note_entry.pack(fill="x", padx=12, pady=(0, 8))
 
         # Action Buttons
         bottom_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        bottom_frame.pack(fill="x", padx=10, pady=10)
+        bottom_frame.pack(fill="x", padx=12, pady=(4, 8), side="bottom")
 
         ctk.CTkButton(
             bottom_frame,
             text="💾 Wiedervorlage Speichern",
             command=self.on_save,
             fg_color="forestgreen",
+            height=30,
             width=180
-        ).pack(side="right", padx=5)
+        ).pack(side="right", padx=(4, 0))
 
         if self.case.workflow_status.followup_at:
             ctk.CTkButton(
@@ -110,16 +150,18 @@ class FollowupDialog(ctk.CTkToplevel):
                 text="❌ Entfernen",
                 command=self.on_clear,
                 fg_color="darkred",
-                width=110
-            ).pack(side="right", padx=5)
+                height=30,
+                width=100
+            ).pack(side="right", padx=4)
 
         ctk.CTkButton(
             bottom_frame,
             text="Abbrechen",
             command=self.safe_destroy,
             fg_color=("gray70", "gray40"),
-            width=90
-        ).pack(side="left", padx=5)
+            height=30,
+            width=85
+        ).pack(side="left", padx=(0, 4))
 
     def set_preset_hours(self, hours: int):
         target_dt = get_local_now() + timedelta(hours=hours)

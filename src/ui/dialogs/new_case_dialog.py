@@ -207,28 +207,28 @@ class NewCaseDialog(ctk.CTkToplevel):
         for w in self.tags_frame.winfo_children():
             w.destroy()
 
-        current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
-        current_row.pack(fill="x", anchor="w", pady=1)
-        items_in_row = 0
-        max_items_per_row = 4
+        grid_frame = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
+        grid_frame.pack(fill="x", padx=2, pady=1)
 
-        for tag in self.available_tags:
+        num_cols = 4
+        for col in range(num_cols):
+            grid_frame.grid_columnconfigure(col, weight=1, uniform="new_case_tag_pills")
+
+        for idx, tag in enumerate(self.available_tags):
             if tag not in self.selected_tags_vars:
                 self.selected_tags_vars[tag] = ctk.BooleanVar(value=False)
 
-            if items_in_row >= max_items_per_row:
-                current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
-                current_row.pack(fill="x", anchor="w", pady=1)
-                items_in_row = 0
-
             is_selected = self.selected_tags_vars[tag].get()
-            btn_text = f"✓  {tag}" if is_selected else f"   {tag}"
+            btn_text = f"✓ {tag}" if is_selected else tag
             btn_fg = ("#2563eb", "#1d4ed8") if is_selected else ("gray85", "gray28")
             btn_hover = ("#1d4ed8", "#1e40af") if is_selected else ("gray75", "gray38")
             btn_text_color = "white" if is_selected else ("gray20", "gray85")
 
+            r = idx // num_cols
+            c = idx % num_cols
+
             btn = ctk.CTkButton(
-                current_row,
+                grid_frame,
                 text=btn_text,
                 height=28,
                 corner_radius=14,
@@ -238,17 +238,16 @@ class NewCaseDialog(ctk.CTkToplevel):
                 text_color=btn_text_color,
                 command=lambda t=tag: self.toggle_tag(t),
             )
-            btn.pack(side="left", padx=3, pady=2)
-            items_in_row += 1
+            btn.grid(row=r, column=c, padx=3, pady=2, sticky="ew")
 
-        if items_in_row >= max_items_per_row:
-            current_row = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
-            current_row.pack(fill="x", anchor="w", pady=1)
+        # Place the + Tag button in the next slot
+        next_idx = len(self.available_tags)
+        r = next_idx // num_cols
+        c = next_idx % num_cols
 
         add_tag_btn = ctk.CTkButton(
-            current_row,
+            grid_frame,
             text="+ Tag",
-            width=65,
             height=28,
             corner_radius=14,
             font=ctk.CTkFont(size=11, weight="bold"),
@@ -256,7 +255,7 @@ class NewCaseDialog(ctk.CTkToplevel):
             hover_color=("gray65", "gray45"),
             command=self.open_quick_add_tag,
         )
-        add_tag_btn.pack(side="left", padx=3, pady=2)
+        add_tag_btn.grid(row=r, column=c, padx=3, pady=2, sticky="ew")
 
         canvas = getattr(self.tags_frame, "_parent_canvas", getattr(self.tags_frame, "_canvas", None))
         if canvas:

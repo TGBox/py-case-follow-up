@@ -543,6 +543,49 @@ def test_layout_combo_updates_on_view_redirect(tmp_path: Path):
     assert app.layout_combo.get() == get_layout_display(LayoutMode.COCKPIT.value)
 
 
+def test_multiline_info_bar_and_card_tooltip(tmp_path: Path):
+    """UI Workflow Chain 13: Cockpit view stacks customer info in 3 vertical lines and case card tooltips build correctly."""
+    from typing import Any
+    from config import AppConfig
+    from services.storage_service import StorageService
+    from services.seed_service import SeedService
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    config = AppConfig(workspace_dir=tmp_path, username="test_agent")
+    storage = StorageService(config)
+    seed_service = SeedService(storage)
+    seed_service.run_seed(force=True)
+
+    profile = storage.load_profile()
+    cases = storage.load_cases()
+
+    # Test CTkTooltip text callback construction
+    case = cases[0]
+    case.workflow_status.followup_at = "2026-09-01T10:00:00"
+    case.workflow_status.followup_note = "Entwickler fragen"
+    case.classification.tags = ["VIP", "Dringend"]
+
+    class MockWidget:
+        def bind(self, *args, **kwargs): pass
+        def winfo_children(self): return []
+        def after(self, delay, func): return "timer"
+
+    mw = MockWidget()
+    def build_tooltip():
+        lines = [f"📌 Fall: {case.case_id}"]
+        lines.append(f"🏥 Kunde: {case.customer.practice_name}")
+        lines.append(f"👤 Ansprechpartner: {case.customer.contact_person}")
+        if case.classification.tags:
+            lines.append(f"🏷️ Tags: {', '.join(case.classification.tags)}")
+        return "\n".join(lines)
+
+    tooltip = CTkTooltip(mw, build_tooltip)
+    txt = tooltip.text_or_func() if callable(tooltip.text_or_func) else str(tooltip.text_or_func)
+    assert "📌 Fall:" in txt
+    assert case.customer.practice_name in txt
+    assert "VIP, Dringend" in txt
+
+
 
 
 

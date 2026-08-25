@@ -132,10 +132,14 @@ class CaseListWidget(ctk.CTkFrame):
                     practice_str += " ★ VIP"
                 prac_color = None
 
+            disp_prac = practice_str if len(practice_str) <= 60 else practice_str[:57] + "..."
+
             prac_lbl = ctk.CTkLabel(
                 card,
-                text=practice_str,
+                text=disp_prac,
                 anchor="w",
+                justify="left",
+                wraplength=250,
                 font=ctk.CTkFont(size=12, weight="bold"),
                 text_color=prac_color,
             )
@@ -144,7 +148,17 @@ class CaseListWidget(ctk.CTkFrame):
 
             # Title & Actor
             sub_str = f"{case.classification.title} | Zuständig: {get_actor_display(case.workflow_status.current_actor)}"
-            sub_lbl = ctk.CTkLabel(card, text=sub_str, anchor="w", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+            disp_sub = sub_str if len(sub_str) <= 80 else sub_str[:77] + "..."
+
+            sub_lbl = ctk.CTkLabel(
+                card,
+                text=disp_sub,
+                anchor="w",
+                justify="left",
+                wraplength=250,
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+            )
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
@@ -161,6 +175,8 @@ class CaseListWidget(ctk.CTkFrame):
                         card,
                         text=att_text,
                         anchor="w",
+                        justify="left",
+                        wraplength=250,
                         font=ctk.CTkFont(size=10, weight="bold"),
                         text_color="plum",
                     )
@@ -174,6 +190,8 @@ class CaseListWidget(ctk.CTkFrame):
                         card,
                         text=wiki_text,
                         anchor="w",
+                        justify="left",
+                        wraplength=250,
                         font=ctk.CTkFont(size=10, weight="bold"),
                         text_color="orchid",
                     )
@@ -187,6 +205,8 @@ class CaseListWidget(ctk.CTkFrame):
                     card,
                     text=f"🔔 Nachfragen am: {fw_dt_str}",
                     anchor="w",
+                    justify="left",
+                    wraplength=250,
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color="darkorange"
                 )
@@ -195,9 +215,46 @@ class CaseListWidget(ctk.CTkFrame):
 
             if case.classification.tags:
                 tags_str = "🏷️ " + ", ".join(case.classification.tags)
-                tag_lbl = ctk.CTkLabel(card, text=tags_str, anchor="w", font=ctk.CTkFont(size=10, weight="bold"), text_color=("dodgerblue", "cyan"))
+                tag_lbl = ctk.CTkLabel(
+                    card,
+                    text=tags_str,
+                    anchor="w",
+                    justify="left",
+                    wraplength=250,
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=("dodgerblue", "cyan"),
+                )
                 tag_lbl.pack(fill="x", padx=12, pady=(0, 6))
                 tag_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+            # CTkTooltip hover overlay for full untruncated details
+            from ui.widgets.ctk_tooltip import CTkTooltip
+            def build_tooltip(c: Case = case) -> str:
+                lines = [
+                    f"📌 Fall: {c.case_id} (Priorität: {c.classification.calculated_score:.0f} Pts)",
+                ]
+                if c.is_internal:
+                    lines.append(f"🏢 Kunde: INTERNE AUFGABE ({c.customer.customer_id})")
+                else:
+                    vip_t = " ★ VIP" if c.customer.is_vip else ""
+                    lines.append(f"🏥 Kunde: {c.customer.practice_name} ({c.customer.customer_id}){vip_t}")
+                    lines.append(f"👤 Ansprechpartner: {c.customer.contact_person}")
+
+                lines.append(f"📋 Thema: {c.classification.title}")
+                lines.append(f"👤 Zuständig: {get_actor_display(c.workflow_status.current_actor)}")
+
+                if c.workflow_status.followup_at:
+                    from utils.datetime_utils import format_german_datetime
+                    fw_t = format_german_datetime(c.workflow_status.followup_at)
+                    note_t = f" ({c.workflow_status.followup_note})" if c.workflow_status.followup_note else ""
+                    lines.append(f"🔔 Wiedervorlage: {fw_t}{note_t}")
+
+                if c.classification.tags:
+                    lines.append(f"🏷️ Tags: {', '.join(c.classification.tags)}")
+
+                return "\n".join(lines)
+
+            CTkTooltip(card, build_tooltip, delay_ms=300)
 
     def select_case(self, case: Case):
         self.selected_case_id = case.case_id

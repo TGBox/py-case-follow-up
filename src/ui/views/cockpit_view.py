@@ -199,53 +199,52 @@ class CockpitView(ctk.CTkFrame):
         )
         self.save_btn.pack(side="right", padx=3)
 
-        # Customer & Status Info Bar (2 Compact Rows for flexible column resizing)
+        # Customer & Status Info Bar (3 vertical info lines on left + action buttons on right)
         self.info_bar = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=6)
         self.info_bar.pack(fill="x", padx=10, pady=(0, 10))
 
-        # Row 1: Case Info & Main Workflow Status
-        self.info_row1 = ctk.CTkFrame(self.info_bar, fg_color="transparent")
-        self.info_row1.pack(fill="x", padx=6, pady=(4, 2))
+        # Left Column: 3 vertical stacked lines for customer details
+        self.info_left_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
+        self.info_left_frame.pack(side="left", fill="both", expand=True, padx=8, pady=6)
 
-        self.info_label = ctk.CTkLabel(self.info_row1, text="", font=ctk.CTkFont(size=12), anchor="w")
-        self.info_label.pack(side="left", padx=5, pady=2)
+        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+        self.kunde_label.pack(fill="x", anchor="w")
 
-        self.archive_btn = ctk.CTkButton(
-            self.info_row1, text="📦 Archivieren", command=self.on_click_archive, width=90, fg_color="darkred"
-        )
-        self.archive_btn.pack(side="right", padx=3, pady=2)
+        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w")
+        self.ansprechpartner_label.pack(fill="x", anchor="w")
 
-        self.complete_btn = ctk.CTkButton(
-            self.info_row1, text="✓ Erledigt", command=self.on_toggle_complete, width=85, fg_color="green"
-        )
-        self.complete_btn.pack(side="right", padx=3, pady=2)
+        self.wiedervorlage_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11, weight="bold"), text_color="darkorange", anchor="w")
+        self.wiedervorlage_label.pack(fill="x", anchor="w")
 
-        self.actor_combo = ctk.CTkOptionMenu(
-            self.info_row1,
-            values=list(ACTOR_DISPLAY.values()),
-            command=self.on_actor_changed,
-            width=120,
-        )
-        self.actor_combo.pack(side="right", padx=3, pady=2)
+        # Right Column: Action Buttons Container
+        self.info_right_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
+        self.info_right_frame.pack(side="right", padx=6, pady=6)
 
-        # Row 2: Actions & Form Conversion
-        self.info_row2 = ctk.CTkFrame(self.info_bar, fg_color="transparent")
-        self.info_row2.pack(fill="x", padx=6, pady=(2, 4))
+        # Row 1 of right buttons
+        self.info_btn_row1 = ctk.CTkFrame(self.info_right_frame, fg_color="transparent")
+        self.info_btn_row1.pack(fill="x", anchor="e", pady=(0, 2))
 
-        self.convert_schema_btn = ctk.CTkButton(
-            self.info_row2, text="🔄 Formular umwandeln", command=self.open_convert_schema_dialog, width=140, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled"
-        )
-        self.convert_schema_btn.pack(side="right", padx=3, pady=2)
+        self.archive_btn = ctk.CTkButton(self.info_btn_row1, text="📦 Archivieren", command=self.on_click_archive, width=90, fg_color="darkred")
+        self.archive_btn.pack(side="right", padx=2)
 
-        self.add_note_btn = ctk.CTkButton(
-            self.info_row2, text="📝 Notiz", command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
-        )
-        self.add_note_btn.pack(side="right", padx=3, pady=2)
+        self.complete_btn = ctk.CTkButton(self.info_btn_row1, text="✓ Erledigt", command=self.on_toggle_complete, width=85, fg_color="green")
+        self.complete_btn.pack(side="right", padx=2)
 
-        self.followup_btn = ctk.CTkButton(
-            self.info_row2, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=110, fg_color="darkblue"
-        )
-        self.followup_btn.pack(side="right", padx=3, pady=2)
+        self.actor_combo = ctk.CTkOptionMenu(self.info_btn_row1, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=120)
+        self.actor_combo.pack(side="right", padx=2)
+
+        # Row 2 of right buttons
+        self.info_btn_row2 = ctk.CTkFrame(self.info_right_frame, fg_color="transparent")
+        self.info_btn_row2.pack(fill="x", anchor="e", pady=(2, 0))
+
+        self.convert_schema_btn = ctk.CTkButton(self.info_btn_row2, text="🔄 Formular umwandeln", command=self.open_convert_schema_dialog, width=140, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled")
+        self.convert_schema_btn.pack(side="right", padx=2)
+
+        self.add_note_btn = ctk.CTkButton(self.info_btn_row2, text="📝 Notiz", command=self.focus_timeline_note, width=75, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
+        self.add_note_btn.pack(side="right", padx=2)
+
+        self.followup_btn = ctk.CTkButton(self.info_btn_row2, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=110, fg_color="darkblue")
+        self.followup_btn.pack(side="right", padx=2)
 
         # Dynamic Form Widget
         self.form_widget = DynamicFormWidget(
@@ -321,9 +320,21 @@ class CockpitView(ctk.CTkFrame):
 
         from utils.datetime_utils import format_german_datetime
         vip_str = " ★ VIP" if case.customer.is_vip else ""
-        fw_str = f" | 🔔 Wiedervorlage: {format_german_datetime(case.workflow_status.followup_at)}" if case.workflow_status.followup_at else ""
-        info_str = f"Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str} | Ansprechpartner: {case.customer.contact_person}{fw_str}"
-        self.info_label.configure(text=info_str)
+        if case.is_internal:
+            self.kunde_label.configure(text=f"🏢 Kunde: INTERNE AUFGABE / VORGANG ({case.customer.customer_id}){vip_str}")
+        else:
+            self.kunde_label.configure(text=f"🏥 Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
+
+        self.ansprechpartner_label.configure(text=f"👤 Ansprechpartner: {case.customer.contact_person}")
+
+        if case.workflow_status.followup_at:
+            fw_dt_str = format_german_datetime(case.workflow_status.followup_at)
+            note_suffix = f" ({case.workflow_status.followup_note})" if case.workflow_status.followup_note else ""
+            self.wiedervorlage_label.configure(text=f"🔔 Wiedervorlage: {fw_dt_str}{note_suffix}")
+            self.wiedervorlage_label.pack(fill="x", anchor="w")
+        else:
+            self.wiedervorlage_label.configure(text="")
+            self.wiedervorlage_label.pack_forget()
 
         self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
         self.complete_btn.configure(text="✓ Wieder öffnen" if case.workflow_status.is_completed else "✓ Erledigen")

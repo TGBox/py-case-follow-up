@@ -1,5 +1,7 @@
 import logging
+import sys
 import threading
+import ctypes
 from typing import Any, Callable
 import customtkinter as ctk
 from pathlib import Path
@@ -42,6 +44,9 @@ logger = logging.getLogger("SupportCockpit")
 
 class SupportCockpitApp(ctk.CTk):
     def __init__(self, config: AppConfig):
+        # Deactivate CustomTkinter's internal header manipulation which causes multiple withdraw/update/deiconify cycles on Windows
+        ctk.CTk._deactivate_windows_window_header_manipulation = True
+
         super().__init__()
         self.app_config = config
 
@@ -61,7 +66,11 @@ class SupportCockpitApp(ctk.CTk):
         from services.snippet_service import SnippetService
         self.snippet_service = SnippetService(self.app_config.workspace_dir)
 
-        # Configure Window
+        # Set Theme
+        theme_mode = self.profile.ui_settings.theme
+        ctk.set_appearance_mode(theme_mode)
+
+        # Configure Window directly in maximized mode
         self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
         self.geometry("1440x880")
         self.minsize(1024, 700)
@@ -69,11 +78,7 @@ class SupportCockpitApp(ctk.CTk):
             self.state("zoomed")
         except Exception:
             pass
-
-
-        # Set Theme
-        theme_mode = self.profile.ui_settings.theme
-        ctk.set_appearance_mode(theme_mode)
+        self.apply_windows_theme(theme_mode == "Dark")
 
         # Load Working Data
         self.cases: list[Case] = []
@@ -650,9 +655,28 @@ class SupportCockpitApp(ctk.CTk):
         from ui.dialogs.snippet_management_dialog import SnippetManagementDialog
         SnippetManagementDialog(self, snippet_service=self.snippet_service)
 
-    def _on_window_mapped(self, event=None):
-        if event and event.widget == self:
-            self._maximize_window()
+    def apply_windows_theme(self, dark: bool):
+        if sys.platform.startswith("win"):
+            try:
+                self.update_idletasks()
+                wid = self.winfo_id()
+                if not wid:
+                    return
+                hwnd = ctypes.windll.user32.GetParent(wid)
+                if not hwnd:
+                    hwnd = wid
+                if hwnd:
+                    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+                    DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19
+                    value = ctypes.c_int(1 if dark else 0)
+                    if ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                        hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(value), ctypes.sizeof(value)
+                    ) != 0:
+                        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                            hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ctypes.byref(value), ctypes.sizeof(value)
+                        )
+            except Exception:
+                pass
 
     def _maximize_window(self):
         try:
@@ -660,10 +684,13 @@ class SupportCockpitApp(ctk.CTk):
         except Exception as e:
             logger.warning(f"Could not maximize window: {e}")
 
+    _ensure_maximized = _maximize_window
+
     def toggle_theme(self):
         curr = ctk.get_appearance_mode()
         new_theme = "Light" if curr == "Dark" else "Dark"
         ctk.set_appearance_mode(new_theme)
+        self.apply_windows_theme(new_theme == "Dark")
         self.profile.ui_settings.theme = new_theme
         self.refresh_views()
 

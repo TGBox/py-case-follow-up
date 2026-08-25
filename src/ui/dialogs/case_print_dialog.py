@@ -136,7 +136,7 @@ window.addEventListener('DOMContentLoaded', function() {
             "</div>",
             f"<h1>Fall-Akte: {self.case.case_id} — {self.case.classification.title}</h1>",
             "<table>",
-            f"<tr><th>Fall-ID</th><td><strong>{self.case.case_id}</strong></td><th>Priorität / Score</th><td>{self.case.classification.calculated_score:.0f} Pts ({self.case.classification.urgency_level})</td></tr>",
+            f"<tr><th>Fall-ID</th><td><strong>{self.case.case_id}</strong></td><th>Priorität / Score</th><td>{self.case.classification.calculated_score:.0f} Pkt. ({self.case.classification.urgency_level})</td></tr>",
             f"<tr><th>Aktueller Status</th><td>{status_disp}</td><th>Zuständigkeit</th><td>{actor_disp}</td></tr>",
             f"<tr><th>Erstellt am</th><td>{created_str} ({self.case.created_by})</td><th>Rückruf-Deadline</th><td>{deadline_str}</td></tr>",
             f"<tr><th>Wiedervorlage</th><td colspan='3'>{followup_str}</td></tr>",

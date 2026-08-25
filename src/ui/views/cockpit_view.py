@@ -216,30 +216,64 @@ class CockpitView(ctk.CTkFrame):
         self.info_left_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
         self.info_left_frame.pack(side="left", fill="both", expand=True, padx=8, pady=6)
 
-        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w", height=0)
         self.kunde_label.pack(fill="x", anchor="w")
 
-        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w")
-        self.wiedervorlage_label = ctk.CTkLabel(
-            self.info_left_frame,
+        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w", height=0)
+
+        # Multi-line Wiedervorlage container in Cockpit Center Pane
+        self.wiedervorlage_frame = ctk.CTkFrame(self.info_left_frame, fg_color="transparent")
+
+        self.wv_hdr_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="🔔 Nachfragen am:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wv_date_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
             text="",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="darkorange",
             anchor="w",
             justify="left",
-            wraplength=350,
+            height=0,
         )
-        self.wiedervorlage_label.pack(fill="x", anchor="w")
+        self.wv_time_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wv_note_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wiedervorlage_label = self.wv_hdr_label
 
         # Full untruncated follow-up text & hover tooltip overlay
         self._wiedervorlage_full_text: str = ""
         self._wiedervorlage_is_truncated: bool = False
         from ui.widgets.ctk_tooltip import CTkTooltip
         self.wiedervorlage_tooltip = CTkTooltip(
-            self.wiedervorlage_label,
+            self.wiedervorlage_frame,
             self._get_wiedervorlage_tooltip_text,
             delay_ms=250,
         )
+        for _lbl in (self.wv_hdr_label, self.wv_date_label, self.wv_time_label, self.wv_note_label):
+            CTkTooltip(_lbl, self._get_wiedervorlage_tooltip_text, delay_ms=250)
+
         self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
         # Right Column: Action Buttons Container
@@ -499,7 +533,7 @@ class CockpitView(ctk.CTkFrame):
             self._update_wiedervorlage_display()
 
     def _get_wiedervorlage_tooltip_text(self) -> str:
-        if self._wiedervorlage_is_truncated and self._wiedervorlage_full_text:
+        if self._wiedervorlage_full_text:
             return self._wiedervorlage_full_text
         return ""
 
@@ -507,17 +541,22 @@ class CockpitView(ctk.CTkFrame):
         if not self.current_case or not self.current_case.workflow_status.followup_at:
             self._wiedervorlage_full_text = ""
             self._wiedervorlage_is_truncated = False
-            self.wiedervorlage_label.configure(text="")
-            self.wiedervorlage_label.pack_forget()
+            self.wv_hdr_label.configure(text="")
+            self.wv_date_label.configure(text="")
+            self.wv_time_label.configure(text="")
+            self.wv_note_label.configure(text="")
+            self.wiedervorlage_frame.pack_forget()
             return
 
-        from utils.datetime_utils import format_german_datetime
-        from utils.ui_utils import wrap_and_truncate_text
+        from utils.datetime_utils import format_german_date_with_relative, format_german_time, format_german_datetime
+
+        fw_date_str = format_german_date_with_relative(self.current_case.workflow_status.followup_at)
+        fw_time_str = format_german_time(self.current_case.workflow_status.followup_at, with_uhr=True)
+        note = self.current_case.workflow_status.followup_note or ""
 
         fw_dt_str = format_german_datetime(self.current_case.workflow_status.followup_at)
-        note_suffix = f" ({self.current_case.workflow_status.followup_note})" if self.current_case.workflow_status.followup_note else ""
-        full_text = f"🔔 Wiedervorlage: {fw_dt_str}{note_suffix}"
-        self._wiedervorlage_full_text = full_text
+        note_suffix = f" ({note})" if note else ""
+        self._wiedervorlage_full_text = f"🔔 Nachfragen am: {fw_date_str}, {fw_time_str}{note_suffix}"
 
         # Compute available pixel width in info_left_frame
         w = self.info_left_frame.winfo_width()
@@ -528,13 +567,19 @@ class CockpitView(ctk.CTkFrame):
         else:
             w = max(200, w - 10)
 
-        disp_text, is_trunc = wrap_and_truncate_text(
-            full_text,
-            font=self.wiedervorlage_label.cget("font"),
-            max_width=w,
-            max_lines=2,
-        )
-        self._wiedervorlage_is_truncated = is_trunc
-        self.wiedervorlage_label.configure(text=disp_text, wraplength=w)
-        self.wiedervorlage_label.pack(fill="x", anchor="w")
+        self.wv_hdr_label.configure(text="🔔 Nachfragen am:", wraplength=w)
+        self.wv_date_label.configure(text=f"  {fw_date_str}", wraplength=w)
+        self.wv_time_label.configure(text=f"  {fw_time_str}", wraplength=w)
+
+        self.wv_hdr_label.pack(fill="x", anchor="w", pady=0)
+        self.wv_date_label.pack(fill="x", anchor="w", pady=0)
+        self.wv_time_label.pack(fill="x", anchor="w", pady=0)
+
+        if note:
+            self.wv_note_label.configure(text=f"  {note}", wraplength=w)
+            self.wv_note_label.pack(fill="x", anchor="w", pady=0)
+        else:
+            self.wv_note_label.pack_forget()
+
+        self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(2, 0))
 

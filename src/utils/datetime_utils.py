@@ -72,7 +72,7 @@ def format_german_date(val: str | datetime | None) -> str:
         return ""
     if isinstance(val, datetime):
         return val.strftime("%d.%m.%Y")
-    val_str = str(val).strip()
+    val_str = val.strip()
     if not val_str:
         return ""
     try:
@@ -92,7 +92,7 @@ def format_german_datetime(val: str | datetime | None, include_seconds: bool = F
     fmt = "%d.%m.%Y %H:%M:%S" if include_seconds else "%d.%m.%Y %H:%M"
     if isinstance(val, datetime):
         return val.strftime(fmt)
-    val_str = str(val).strip()
+    val_str = val.strip()
     if not val_str:
         return ""
     try:

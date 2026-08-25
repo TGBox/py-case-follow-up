@@ -1,5 +1,6 @@
 from datetime import datetime, date, timezone
 import re
+from constants import ISO_DATETIME_FORMAT
 
 
 def get_local_now() -> datetime:
@@ -9,7 +10,7 @@ def get_local_now() -> datetime:
 
 def now_iso() -> str:
     """Returns current ISO 8601 formatted string (YYYY-MM-DDTHH:MM:SS)."""
-    return get_local_now().strftime("%Y-%m-%dT%H:%M:%S")
+    return get_local_now().strftime(ISO_DATETIME_FORMAT)
 
 
 def parse_iso(iso_str: str) -> datetime:

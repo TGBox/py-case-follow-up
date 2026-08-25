@@ -16,6 +16,7 @@ from ui.widgets.dynamic_form_widget import DynamicFormWidget
 from ui.widgets.timeline_widget import TimelineWidget
 from ui.widgets.attachment_widget import AttachmentWidget
 from ui.widgets.wiki_widget import WikiWidget
+from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
 
 
 import logging
@@ -146,7 +147,7 @@ class CockpitView(ctk.CTkFrame):
         w_right = widths.get("cockpit_right", 320)
 
         is_dark = ctk.get_appearance_mode() == "Dark"
-        sash_bg = "#2b2b2b" if is_dark else "#d0d0d0"
+        sash_bg = COLOR_SASH_DARK if is_dark else COLOR_SASH_LIGHT
 
         # Native PanedWindow for 100% reliable 60fps drag resizing
         self.paned = tk.PanedWindow(

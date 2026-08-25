@@ -6,6 +6,15 @@ from typing import Any, Callable
 class CTkTooltip:
     """Hover Overlay Tooltip for CustomTkinter widgets and containers."""
 
+    _active_tooltips: set["CTkTooltip"] = set()
+
+    @classmethod
+    def dismiss_all(cls):
+        """Immediately destroys all open tooltip windows across the app."""
+        for tooltip in list(cls._active_tooltips):
+            tooltip.cancel_timer()
+            tooltip.hide_tooltip()
+
     def __init__(
         self,
         widget: Any,
@@ -24,14 +33,22 @@ class CTkTooltip:
         try:
             w.bind("<Enter>", self.on_enter, add="+")
             w.bind("<Leave>", self.on_leave, add="+")
-            w.bind("<Button-1>", self.on_leave, add="+")
-            w.bind("<ButtonPress>", self.on_leave, add="+")
+            w.bind("<Button-1>", self.on_click, add="+")
+            w.bind("<ButtonRelease-1>", self.on_click, add="+")
+            w.bind("<Destroy>", self.on_destroy, add="+")
         except Exception:
             pass
 
         if hasattr(w, "winfo_children"):
             for child in w.winfo_children():
                 self._bind_events(child)
+
+    def on_click(self, event=None):
+        CTkTooltip.dismiss_all()
+
+    def on_destroy(self, event=None):
+        self.cancel_timer()
+        self.hide_tooltip()
 
     def on_enter(self, event=None):
         self.cancel_timer()
@@ -53,8 +70,7 @@ class CTkTooltip:
             self._timer_id = None
 
     def show_tooltip(self):
-        if self.tooltip_window:
-            return
+        CTkTooltip.dismiss_all()
 
         try:
             text = self.text_or_func() if callable(self.text_or_func) else self.text_or_func
@@ -87,10 +103,13 @@ class CTkTooltip:
                 text_color=("gray95", "gray95"),
             )
             lbl.pack(padx=10, pady=8)
+
+            CTkTooltip._active_tooltips.add(self)
         except Exception:
             self.hide_tooltip()
 
     def hide_tooltip(self):
+        CTkTooltip._active_tooltips.discard(self)
         if self.tooltip_window:
             try:
                 self.tooltip_window.destroy()

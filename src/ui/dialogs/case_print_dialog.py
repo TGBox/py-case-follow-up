@@ -61,8 +61,24 @@ class CasePrintDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom")
 
-        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.destroy, width=100).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_destroy, width=100).pack(side="left")
         ctk.CTkButton(btn_frame, text="🖨️ Im Browser öffnen & Drucken", fg_color="forestgreen", command=self.generate_and_open_html, width=220).pack(side="right")
+
+    def safe_destroy(self):
+        try:
+            self.grab_release()
+        except Exception:
+            pass
+        if hasattr(self, "tk"):
+            self.after(1, self._do_destroy)
+        else:
+            self._do_destroy()
+
+    def _do_destroy(self):
+        try:
+            self.destroy()
+        except Exception:
+            pass
 
     def generate_and_open_html(self):
         selected_entries = [self.case.timeline[idx] for var, idx in self.timeline_vars if var.get()]
@@ -79,7 +95,21 @@ class CasePrintDialog(ctk.CTkToplevel):
             "th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }",
             "th { background-color: #f2f2f2; }",
             ".entry { background: #f8f9f9; border-left: 4px solid #3498db; margin: 10px 0; padding: 10px; }",
-            "</style></head><body>",
+            ".no-print { margin-bottom: 20px; background: #ebf5fb; padding: 15px; border-radius: 6px; border: 1px solid #aed6f1; font-size: 14px; }",
+            ".print-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }",
+            ".print-btn:hover { background: #219150; }",
+            "@media print { .no-print { display: none !important; } body { margin: 0; } }",
+            "</style>",
+            "<script>",
+            "window.addEventListener('DOMContentLoaded', function() {",
+            "    setTimeout(function() { window.print(); }, 400);",
+            "});",
+            "</script>",
+            "</head><body>",
+            "<div class='no-print'>",
+            "  <button class='print-btn' onclick='window.print()'>🖨️ Als PDF speichern / Drucken</button>",
+            "  <span style='margin-left: 15px; color: #333;'>Der Druck- & PDF-Dialog wurde automatisch geöffnet.</span>",
+            "</div>",
             f"<h1>Fall-Akte: {self.case.case_id} — {self.case.classification.title}</h1>",
             f"<p><strong>Erstellt am:</strong> {format_german_datetime(self.case.created_at)} | <strong>Erstellt von:</strong> {self.case.created_by}</p>",
         ]
@@ -117,4 +147,4 @@ class CasePrintDialog(ctk.CTkToplevel):
         html_file.write_text("\n".join(html_lines), encoding="utf-8")
 
         webbrowser.open(html_file.as_uri())
-        self.destroy()
+        self.safe_destroy()

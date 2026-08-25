@@ -97,10 +97,10 @@ Ein Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich.
     },
     {
         "id": "schemas",
-        "title": "🛠️ Formular-Baukasten (Schemas)",
+        "title": "📄 Formular-Baukasten (Schemas)",
         "category": "Formulare",
         "content": """
-### 🛠️ Dynamische Formular-Baukästen
+### 📄 Dynamische Formular-Baukästen
 
 Unterschiedliche Support-Typen (z.B. Hardware-Tausch, Abrechnungsfrage, Schnittstellen-Problem) erfordern unterschiedliche Informationen.
 

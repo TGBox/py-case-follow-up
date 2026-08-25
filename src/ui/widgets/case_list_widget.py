@@ -257,6 +257,8 @@ class CaseListWidget(ctk.CTkFrame):
             CTkTooltip(card, build_tooltip, delay_ms=300)
 
     def select_case(self, case: Case):
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        CTkTooltip.dismiss_all()
         self.selected_case_id = case.case_id
         self.render_list()
         self.on_case_selected(case)

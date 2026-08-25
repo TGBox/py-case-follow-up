@@ -86,7 +86,6 @@ class CockpitView(ctk.CTkFrame):
                 return
             total_w = self.paned.winfo_width()
             if total_w <= 50:
-                self.after(50, self.restore_sash_positions)
                 return
 
             widths = {}

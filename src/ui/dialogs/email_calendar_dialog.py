@@ -24,11 +24,11 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.snippet_service = snippet_service
 
         self.title(f"✉️ E-Mail & 📅 Kalender-Entwurf - Fall {case.case_id}")
-        self.geometry("720x640")
-        self.minsize(640, 520)
+        self.geometry("760x660")
+        self.minsize(720, 540)
 
         from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
-        center_window(self, 720, 640)
+        center_window(self, 760, 660)
 
         self.transient(parent)
         self.grab_set()
@@ -51,9 +51,10 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         ).pack(anchor="w")
 
         practice_name = self.case.customer.practice_name if self.case.customer else "Unbekannte Praxis"
+        deadline_str = self.case.formatted_deadline or "Keine Deadline gesetzt"
         ctk.CTkLabel(
             hdr_frame,
-            text=f"Praxis: {practice_name} | Rückruf-Deadline: {self.case.followup_due_at or 'Keine Deadline gesetzt'}",
+            text=f"Praxis: {practice_name} | Rückruf-Deadline: {deadline_str}",
             font=ctk.CTkFont(size=11),
             text_color="gray",
         ).pack(anchor="w")
@@ -103,57 +104,63 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.status_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11), text_color="dodgerblue")
         self.status_lbl.pack(anchor="w", pady=(0, 5))
 
-        # Action Buttons Frame
+        # Action Buttons Container (2 structured rows)
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_box.pack(fill="x", pady=(5, 0))
+        btn_box.pack(fill="x", pady=(8, 0))
 
-        # Left Column Buttons (E-Mail Actions)
-        left_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
-        left_btns.pack(side="left")
+        # Row 1: E-Mail Actions
+        row1_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
+        row1_btns.pack(fill="x", pady=(0, 6))
 
         ctk.CTkButton(
-            left_btns,
+            row1_btns,
             text="✉️ Im Mail-Client öffnen",
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,
-        ).pack(side="left", padx=(0, 6))
+            height=32,
+        ).pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(
-            left_btns,
-            text="📋 Text kopieren",
+            row1_btns,
+            text="📋 Text in Zwischenablage kopieren",
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_copy_text,
-        ).pack(side="left", padx=(0, 6))
+            height=32,
+        ).pack(side="left", padx=(0, 8))
 
-        # Right Column Buttons (Calendar Actions & Close)
-        right_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
-        right_btns.pack(side="right")
+        # Row 2: Calendar Actions & Close
+        row2_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
+        row2_btns.pack(fill="x", pady=(2, 0))
 
         ctk.CTkButton(
-            right_btns,
+            row2_btns,
             text="📅 .ics Kalenderdatei öffnen",
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_open_ics,
-        ).pack(side="left", padx=(0, 6))
+            height=32,
+        ).pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(
-            right_btns,
-            text="📁 .ics Speichern...",
+            row2_btns,
+            text="💾 .ics Datei speichern...",
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_save_ics,
-        ).pack(side="left", padx=(0, 6))
+            height=32,
+        ).pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(
-            right_btns,
+            row2_btns,
             text="Schließen",
             fg_color="gray50",
+            hover_color="gray60",
             command=self.destroy,
-            width=90,
-        ).pack(side="left")
+            width=100,
+            height=32,
+        ).pack(side="right")
 
     def open_snippet_picker(self):
         if self.snippet_service:

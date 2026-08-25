@@ -118,8 +118,10 @@ class CalendarEmailService:
         """Generates structured email draft components (to, subject, body)."""
         to_email = getattr(case.customer, "email", "") if case.customer else ""
         practice_name = case.customer.practice_name if case.customer else "Damen und Herren"
+        from enums import get_board_column_display
+        raw_status = case.workflow_status.board_column if (case.workflow_status and hasattr(case.workflow_status, "board_column")) else "Offen"
+        status_val = get_board_column_display(raw_status)
         contact_person = getattr(case.customer, "contact_person", "") if case.customer else ""
-        status_val = case.workflow_status.board_column if (case.workflow_status and hasattr(case.workflow_status, "board_column")) else "Offen"
 
         greeting = f"Hallo Frau/Herr {contact_person}," if contact_person else f"Sehr geehrte Damen und Herren ({practice_name}),"
 
@@ -138,7 +140,8 @@ class CalendarEmailService:
         ]
 
         if case.followup_due_at:
-            body_lines.append(f"Geplante Rückruf-Deadline: {case.followup_due_at}")
+            body_lines.append(f"Geplante Rückruf-Deadline: {case.formatted_deadline}")
+
 
         body_lines.extend([
             "",

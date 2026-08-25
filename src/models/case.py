@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import UrgencyLevel, BoardColumn, Actor, Channel
-from utils.datetime_utils import parse_iso
+from utils.datetime_utils import parse_iso, format_german_datetime
 
 
 @dataclass
@@ -185,6 +185,22 @@ class Case:
     @property
     def followup_due_at(self) -> str:
         return self.classification.deadline_callback if self.classification else ""
+
+    @property
+    def formatted_deadline(self) -> str:
+        return format_german_datetime(self.followup_due_at, with_uhr=True) if self.followup_due_at else ""
+
+    @property
+    def formatted_followup(self) -> str:
+        return format_german_datetime(self.workflow_status.followup_at, with_uhr=True) if self.workflow_status.followup_at else ""
+
+    @property
+    def formatted_created_at(self) -> str:
+        return format_german_datetime(self.created_at, with_uhr=True) if self.created_at else ""
+
+    @property
+    def formatted_updated_at(self) -> str:
+        return format_german_datetime(self.updated_at, with_uhr=True) if self.updated_at else ""
 
     @property
     def initial_note(self) -> str:

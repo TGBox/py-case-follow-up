@@ -209,8 +209,9 @@ def test_german_date_formatting_and_parsing():
 
     iso_str = "2026-08-23T16:30:00"
     assert format_german_date(iso_str) == "23.08.2026"
-    assert format_german_datetime(iso_str) == "23.08.2026 16:30"
-    assert format_german_datetime(iso_str, include_seconds=True) == "23.08.2026 16:30:00"
+    assert format_german_datetime(iso_str) == "23.08.2026 16:30 Uhr"
+    assert format_german_datetime(iso_str, with_uhr=False) == "23.08.2026 16:30"
+    assert format_german_datetime(iso_str, include_seconds=True) == "23.08.2026 16:30:00 Uhr"
 
     parsed = parse_german_date("23.08.2026 16:30")
     assert parsed == "2026-08-23T16:30:00"

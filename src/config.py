@@ -70,6 +70,9 @@ class AppConfig:
             if isinstance(val, str) and val.strip():
                 setattr(self, attr, Path(val))
 
+        from utils.security import load_env_file
+        load_env_file(self.workspace_dir / ".env")
+
     @property
     def data_dir(self) -> Path:
         return self.workspace_dir / "data"

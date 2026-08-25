@@ -48,3 +48,20 @@ def test_wiki_sync_full_offline(tmp_path: Path):
     results = service.search("ERR_DB_902")
     assert len(results) >= 1
     assert "ERR_DB_902" in results[0]["title"]
+
+
+def test_env_file_loading_and_secret_resolution(tmp_path: Path):
+    import os
+    from utils.security import load_env_file, resolve_secret
+
+    env_file = tmp_path / ".env"
+    env_file.write_text("ENV_BOOKSTACK_TOKEN_ID=test_id_123\nBOOKSTACK_TOKEN_SECRET=test_secret_456\n", encoding="utf-8")
+
+    load_env_file(env_file)
+
+    assert os.environ.get("ENV_BOOKSTACK_TOKEN_ID") == "test_id_123"
+    assert os.environ.get("BOOKSTACK_TOKEN_SECRET") == "test_secret_456"
+
+    assert resolve_secret("ENV_BOOKSTACK_TOKEN_ID") == "test_id_123"
+    assert resolve_secret("ENV_BOOKSTACK_TOKEN_SECRET") == "test_secret_456"
+

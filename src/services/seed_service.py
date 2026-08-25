@@ -89,6 +89,17 @@ class SeedService:
     def create_seed_schemas(self) -> list[QuestionSchema]:
         return [
             QuestionSchema(
+                schema_id="schema_quick",
+                display_name="⚡ Schnellerfassung / Allgemeiner Vorgang",
+                description="Für die rasche Erfassung von Anfragen und Problemen ohne detaillierte Vorab-Spezifizierung.",
+                default_suggested_exports=["mail_kunden_rueckmeldung"],
+                fields=[
+                    SchemaField(field_id="module_name", label="Betroffenes Modul / Programmbereich (optional)", field_type=FieldType.TEXT, required=False, placeholder="z. B. Abrechnung, Terminkalender, Schnittstelle...", order=1),
+                    SchemaField(field_id="short_description", label="Kurzbeschreibung / Stichwort (optional)", field_type=FieldType.TEXT, required=False, placeholder="z. B. Rückfrage zu Rezeptimport", order=2),
+                    SchemaField(field_id="unformatted_description", label="Unformatierte Informationen / Beschreibung", field_type=FieldType.TEXT, required=False, placeholder="Hier alle ungefilterten Informationen, Mails oder Stichpunkte eingeben...", order=3),
+                ],
+            ),
+            QuestionSchema(
                 schema_id="schema_internal_task",
                 display_name="🏢 Interne Aufgabe / Notiz",
                 description="Für interne Aufgaben, Systemwartung, Prozessverbesserungen oder Notizen ohne Kundenbezug.",

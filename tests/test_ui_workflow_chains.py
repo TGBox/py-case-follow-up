@@ -319,3 +319,78 @@ def test_new_case_dialog_manual_creation_date_validation():
     assert len(created_cases) == 0
     assert "Zukunft" in dialog.error_label.val
 
+
+def test_quick_schema_creation_and_conversion_chain(tmp_path: Path):
+    """UI Workflow Chain 9: Create case with schema_quick -> convert schema -> verify timeline backup."""
+    from typing import Any
+    from config import AppConfig
+    from services.storage_service import StorageService
+    from services.seed_service import SeedService
+    from models.case import Case, Classification
+    from ui.dialogs.convert_schema_dialog import ConvertSchemaDialog
+    from utils.datetime_utils import now_iso
+
+    config = AppConfig(workspace_dir=tmp_path, username="test_agent")
+    storage = StorageService(config)
+    seed_service = SeedService(storage)
+    seed_service.run_seed(force=True)
+
+    schemas = storage.load_schemas()
+    quick_schema = next((s for s in schemas if s.schema_id == "schema_quick"), None)
+    assert quick_schema is not None
+    assert len(quick_schema.fields) == 3
+
+    # 1. Create case with schema_quick
+    quick_case = Case(
+        case_id="T-2026-8888",
+        created_at=now_iso(),
+        updated_at=now_iso(),
+        created_by="Daniel Rösch",
+        classification=Classification(
+            schema_id="schema_quick",
+            title="Schnell erfasste Rezeptdruck-Störung",
+        ),
+        form_data={
+            "module_name": "Rezeptdruck",
+            "short_description": "Drucker druckt nicht",
+            "unformatted_description": "Kunde hat angerufen. Drucker spuckt leere Seiten aus seit Update v2026.2.",
+        },
+    )
+    cases = storage.load_cases()
+    cases.append(quick_case)
+    storage.save_cases(cases)
+
+    # 2. Simulate ConvertSchemaDialog conversion to schema_bug_report
+    converted_cases = []
+    def on_schema_converted(c: Case, new_s):
+        converted_cases.append((c, new_s))
+
+    dialog: Any = ConvertSchemaDialog.__new__(ConvertSchemaDialog)
+    dialog.case = quick_case
+    dialog.schemas = schemas
+    dialog.author_name = "Daniel Rösch"
+    dialog.on_schema_converted = on_schema_converted
+    dialog.destroy = lambda: None
+    dialog.current_schema = quick_schema
+
+    bug_schema = next(s for s in schemas if s.schema_id == "schema_bug_report")
+    class MockCombo:
+        def get(self):
+            return f"{bug_schema.display_name} [{bug_schema.schema_id}]"
+
+    dialog.schema_combo = MockCombo()
+    dialog.error_label = MockCombo()
+
+    dialog.on_convert()
+
+    assert len(converted_cases) == 1
+    c_conv, new_s = converted_cases[0]
+    assert c_conv.classification.schema_id == "schema_bug_report"
+    assert c_conv.form_data.get("module_name") == "Rezeptdruck"
+    assert len(c_conv.timeline) >= 1
+
+    latest_timeline = c_conv.timeline[-1]
+    assert "Formular umgewandelt" in latest_timeline.note
+    assert "Drucker spuckt leere Seiten aus" in latest_timeline.note
+
+

@@ -1,3 +1,4 @@
+from utils.datetime_utils import format_german_datetime
 import customtkinter as ctk
 from datetime import timedelta
 from typing import Callable
@@ -52,9 +53,10 @@ class FollowupDialog(ctk.CTkToplevel):
         btn_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame1.pack(fill="x", padx=10, pady=2)
 
-        ctk.CTkButton(btn_frame1, text="Heute 11:30 (vor Mittag)", width=155, command=self.set_preset_today_before_lunch, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame1, text="Heute 13:30 (nach Mittag)", width=155, command=self.set_preset_today_after_lunch, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
-        ctk.CTkButton(btn_frame1, text="Morgen 08:00 Uhr", width=140, command=self.set_preset_tomorrow_8am, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="+ 1 Std.", width=75, command=lambda: self.set_preset_hours(1), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="+ 2 Std.", width=75, command=lambda: self.set_preset_hours(2), fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="Heute 16:30", width=100, command=self.set_preset_today_1630, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
+        ctk.CTkButton(btn_frame1, text="Morgen 08:00", width=110, command=self.set_preset_tomorrow_8am, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")).pack(side="left", padx=2)
 
         btn_frame2 = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame2.pack(fill="x", padx=10, pady=(2, 5))
@@ -118,6 +120,16 @@ class FollowupDialog(ctk.CTkToplevel):
             fg_color=("gray70", "gray40"),
             width=90
         ).pack(side="left", padx=5)
+
+    def set_preset_hours(self, hours: int):
+        target_dt = get_local_now() + timedelta(hours=hours)
+        german_str = format_german_datetime(target_dt)
+        self.date_picker.set_date(german_str)
+
+    def set_preset_today_1630(self):
+        now = get_local_now()
+        german_str = f"{format_german_date(now)} 16:30"
+        self.date_picker.set_date(german_str)
 
     def set_preset_today_before_lunch(self):
         now = get_local_now()

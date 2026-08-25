@@ -42,7 +42,7 @@ class CockpitView(ctk.CTkFrame):
         storage_service: StorageService | None = None,
         on_manage_module_tags: Callable[[], None] | None = None,
         on_open_email_calendar: Callable[[Case], None] | None = None,
-        on_open_email: Callable[[Case], None] | None = None,
+        on_open_email: Callable[[Case | None], None] | None = None,
         on_open_calendar: Callable[[Case], None] | None = None,
         on_open_snippet_picker: Callable[[Any], None] | None = None,
     ):
@@ -365,16 +365,21 @@ class CockpitView(ctk.CTkFrame):
             CasePrintDialog(self, self.current_case, attachment_service=self.attachment_service)
 
     def on_click_email(self):
-        if self.current_case:
-            if self.on_open_email:
-                self.on_open_email(self.current_case)
-            elif self.on_open_email_calendar:
-                self.on_open_email_calendar(self.current_case)
-            else:
-                from ui.dialogs.email_draft_dialog import EmailDraftDialog
-                from services.calendar_email_service import CalendarEmailService
-                svc = CalendarEmailService(self.app_config)
-                EmailDraftDialog(self, self.current_case, calendar_email_service=svc, user_name=self.author_name)
+        if self.on_open_email:
+            self.on_open_email(self.current_case)
+        elif self.on_open_email_calendar and self.current_case:
+            self.on_open_email_calendar(self.current_case)
+        else:
+            from ui.dialogs.email_draft_dialog import EmailDraftDialog
+            from services.calendar_email_service import CalendarEmailService
+            svc = CalendarEmailService(self.app_config)
+            EmailDraftDialog(
+                self,
+                case=self.current_case,
+                calendar_email_service=svc,
+                user_name=self.author_name,
+                storage_service=self.storage_service,
+            )
 
     def on_click_calendar(self):
         if self.current_case:

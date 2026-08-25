@@ -65,9 +65,11 @@ class SupportCockpitApp(ctk.CTk):
         self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
         self.geometry("1440x880")
         self.minsize(1024, 700)
-        from utils.ui_utils import center_window
-        center_window(self, 1440, 880)
-        self.after(10, self._maximize_window)
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
+        self.after(150, self._maximize_window)
 
         # Set Theme
         theme_mode = self.profile.ui_settings.theme

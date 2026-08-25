@@ -9,6 +9,36 @@ APP_WINDOW_TITLE = "Support-Cockpit & Ticket Management"
 APP_MIN_WIDTH = 900
 APP_MIN_HEIGHT = 650
 
+# --- Enum Display Names & Labels ---
+DISPLAY_CHANNEL_NAMES = {
+    "PHONE_INBOUND": "Telefon (Eingang)",
+    "PHONE_OUTBOUND": "Telefon (Ausgang)",
+    "EMAIL": "E-Mail",
+    "DEV_TICKET": "Entwickler-Ticket",
+    "INTERNAL_NOTE": "Interne Notiz",
+}
+
+DISPLAY_ACTOR_NAMES = {
+    "SUPPORT": "Support",
+    "DEVELOPMENT": "Entwicklung",
+    "TECH": "Technik",
+    "CUSTOMER": "Kunde",
+}
+
+DISPLAY_LAYOUT_NAMES = {
+    "COCKPIT": "Cockpit (Einzel-Fall)",
+    "BOARD": "Kanban-Board (Zuständigkeiten)",
+    "TABLE": "Tabelle & Details (Sortier-Matrix)",
+}
+
+DISPLAY_BOARD_COLUMN_NAMES = {
+    "NEW": "Neu",
+    "ACTION_REQUIRED": "Aktion erforderlich",
+    "WAITING": "Warten auf Kunde",
+    "IN_PROGRESS": "In Bearbeitung",
+    "DONE": "Erledigt",
+}
+
 # --- Dialog Titles & Window Headers ---
 DIALOG_TITLES = {
     "new_case": "Neuen Support-Fall anlegen",
@@ -84,6 +114,10 @@ VALIDATION_MESSAGES = {
     "title_required": "title is required.",
     "username_required": "Kürzel / Username ist erforderlich.",
     "name_required": "Name ist erforderlich.",
+    "field_id_required": "Field ID is required.",
+    "label_required": "Label is required.",
+    "schema_id_caps_required": "Schema ID is required.",
+    "display_name_required": "Display name is required.",
 }
 
 # --- Default Layout Dimensions & Column Widths ---

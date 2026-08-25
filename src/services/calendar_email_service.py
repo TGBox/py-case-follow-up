@@ -16,8 +16,13 @@ def format_utc_ics_timestamp(dt: datetime) -> str:
 class CalendarEmailService:
     """Service for generating iCalendar (.ics) files and structured E-mail drafts."""
 
-    def __init__(self, workspace_dir: Path | str | None = None):
-        self.workspace_dir = Path(workspace_dir) if workspace_dir else Path.cwd()
+    def __init__(self, workspace_dir: Any = None):
+        if hasattr(workspace_dir, "workspace_dir"):
+            self.workspace_dir = Path(workspace_dir.workspace_dir)
+        elif workspace_dir:
+            self.workspace_dir = Path(workspace_dir)
+        else:
+            self.workspace_dir = Path.cwd()
 
     def generate_ics_content(self, case: Case, user_name: str = "") -> str:
         """Generates RFC 5545 compliant iCalendar string for a case deadline/followup."""
@@ -102,6 +107,8 @@ class CalendarEmailService:
         ]
 
         return "\r\n".join(ics_lines)
+
+    generate_ics = generate_ics_content
 
     def generate_ics_file(self, case: Case, target_dir: Path | str | None = None, user_name: str = "") -> Path:
         """Saves generated iCalendar content to a .ics file in target_dir or scratch dir."""

@@ -32,6 +32,34 @@ DEFAULT_SNIPPETS = [
         content="Vielen Dank für Ihre Rückmeldung. Das Anliegen konnte erfolgreich gelöst werden. Wir schließen diesen Vorgang.",
         tags=["abschluss", "danke", "erledigt"],
     ),
+    Snippet(
+        snippet_id="SNIP-05",
+        title="🩺 Telematikinfrastruktur: Konnektor & SMC-B Prüfung",
+        category="Telematik (TI)",
+        content="Schritte zur TI-Entstörung:\n1. Status der SMC-B Karte im Kartenterminal prüfen (grüne LED).\n2. Konnektor über Web-Oberfläche oder Schalter kurz stromlos machen (30 Sek. warten).\n3. PVS-Dienst neu starten und TI-Verbindungstest in der Administration ausführen.",
+        tags=["ti", "telematik", "konnektor", "smc-b"],
+    ),
+    Snippet(
+        snippet_id="SNIP-06",
+        title="📑 Abrechnung: Zuzahlungs- & ESOL-Korrektur weitergeleitet",
+        category="Abrechnung",
+        content="Sehr geehrte Praxisleitung,\n\ndie angeforderte Korrekturdatei bzw. Nachberechnung für die ESOL-Abrechnung wurde an unsere Entwicklungsabteilung weitergeleitet. Sobald die korrigierten Datensätze vorliegen, stellen wir Ihnen diese zur Verfügung.",
+        tags=["abrechnung", "zuzahlung", "esol", "korrektur"],
+    ),
+    Snippet(
+        snippet_id="SNIP-07",
+        title="💾 Backup-Anforderung für Fehleranalyse",
+        category="System",
+        content="Für die detaillierte Fehleranalyse benötigen wir ein aktuelles Datenbank-Backup (.backup). Bitte legen Sie die Datei im gesicherten Fallordner oder Transferverzeichnis ab.",
+        tags=["backup", "datenbank", "analyse"],
+    ),
+    Snippet(
+        snippet_id="SNIP-08",
+        title="🔄 Quartalsupdate Hinweis & Vorbereitung",
+        category="Wartung",
+        content="Vor Einspielen des Quartalsupdates bitte sicherstellen:\n1. Vollständige Datensicherung durchführen.\n2. Alle Arbeitsplätze schließen.\n3. Server-Dienste beenden und Update-Installer als Administrator ausführen.",
+        tags=["quartalsupdate", "update", "wartung"],
+    ),
 ]
 
 

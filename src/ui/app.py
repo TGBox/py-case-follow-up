@@ -108,6 +108,8 @@ class SupportCockpitApp(ctk.CTk):
             storage_service=self.storage_service,
             on_manage_module_tags=self.open_module_tag_management_dialog,
             on_open_email_calendar=self.open_email_calendar_dialog,
+            on_open_email=self.open_email_draft_dialog,
+            on_open_calendar=self.open_calendar_export_dialog,
             on_open_snippet_picker=self.open_snippet_picker_dialog,
         )
         self.board_view = BoardView(
@@ -620,6 +622,24 @@ class SupportCockpitApp(ctk.CTk):
             calendar_email_service=self.calendar_email_service,
             user_name=self.profile.user.name,
             snippet_service=self.snippet_service,
+        )
+
+    def open_email_draft_dialog(self, case: Case):
+        from ui.dialogs.email_draft_dialog import EmailDraftDialog
+        EmailDraftDialog(
+            self,
+            case=case,
+            calendar_email_service=self.calendar_email_service,
+            user_name=self.profile.user.name,
+            snippet_service=self.snippet_service,
+        )
+
+    def open_calendar_export_dialog(self, case: Case):
+        from ui.dialogs.calendar_export_dialog import CalendarExportDialog
+        CalendarExportDialog(
+            self,
+            case=case,
+            calendar_email_service=self.calendar_email_service,
         )
 
     def open_snippet_picker_dialog(self, callback: Any):

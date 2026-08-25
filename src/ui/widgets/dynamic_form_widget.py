@@ -114,26 +114,29 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
 
         if not filtered:
             ctk.CTkLabel(self.scroll_frame, text="Kein Programmbereich gefunden.", text_color="gray").pack(pady=15)
-            return
+        else:
+            for tag in filtered:
+                is_on = tag in self.selected_tags
+                bvar = ctk.BooleanVar(value=is_on)
 
-        for tag in filtered:
-            is_on = tag in self.selected_tags
-            bvar = ctk.BooleanVar(value=is_on)
+                def make_chk_cb(t=tag, v=bvar):
+                    if v.get():
+                        self.selected_tags.add(t)
+                    else:
+                        self.selected_tags.discard(t)
 
-            def make_chk_cb(t=tag, v=bvar):
-                if v.get():
-                    self.selected_tags.add(t)
-                else:
-                    self.selected_tags.discard(t)
+                chk = ctk.CTkCheckBox(
+                    self.scroll_frame,
+                    text=tag,
+                    variable=bvar,
+                    command=make_chk_cb,
+                    font=ctk.CTkFont(size=12),
+                )
+                chk.pack(anchor="w", pady=4, padx=5)
 
-            chk = ctk.CTkCheckBox(
-                self.scroll_frame,
-                text=tag,
-                variable=bvar,
-                command=make_chk_cb,
-                font=ctk.CTkFont(size=12),
-            )
-            chk.pack(anchor="w", pady=4, padx=5)
+        canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
+        if canvas:
+            canvas.yview_moveto(0.0)
 
     def select_all(self):
         for t in self.available_tags:

@@ -395,12 +395,12 @@ def test_quick_schema_creation_and_conversion_chain(tmp_path: Path):
 
 
 def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
-    """UI Workflow Chain 10: Drag Cockpit sidebar splitters -> update column_widths -> persist to user profile."""
+    """UI Workflow Chain 10: PanedWindow sash position change -> update column_widths -> persist to user profile."""
     from typing import Any
     from config import AppConfig
     from services.storage_service import StorageService
     from services.seed_service import SeedService
-    from ui.views.cockpit_view import CockpitColumnSplitter
+    from ui.views.cockpit_view import CockpitView
 
     config = AppConfig(workspace_dir=tmp_path, username="test_agent")
     storage = StorageService(config)
@@ -408,50 +408,29 @@ def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
     seed_service.run_seed(force=True)
 
     profile = storage.load_profile()
-    initial_left = profile.ui_settings.column_widths.get("cockpit_left", 300)
-    initial_right = profile.ui_settings.column_widths.get("cockpit_right", 320)
 
-    # 1. Simulate dragging left sidebar splitter handle (column_key="cockpit_left")
-    class MockEvent:
-        def __init__(self, x_root):
-            self.x_root = x_root
+    class MockPaned:
+        def winfo_width(self):
+            return 1000
+        def sash_coord(self, index):
+            if index == 0:
+                return (350, 0)
+            return (680, 0)
 
-    resized_widths = {}
-    def on_width_changed(key, w_side, w_center):
-        resized_widths[key] = w_side
-        resized_widths["cockpit_center"] = w_center
+    view: Any = CockpitView.__new__(CockpitView)
+    view.profile = profile
+    view.storage_service = storage
+    view.paned = MockPaned()
 
-    splitter_left: Any = CockpitColumnSplitter.__new__(CockpitColumnSplitter)
-    splitter_left.column_key = "cockpit_left"
-    splitter_left.profile = profile
-    splitter_left.storage_service = storage
-    splitter_left.on_width_changed = on_width_changed
+    view.on_paned_sash_released()
 
-    splitter_left.on_press(MockEvent(x_root=100))
-    splitter_left.on_drag(MockEvent(x_root=150))  # Drag right +50px
-    splitter_left.on_release(MockEvent(x_root=150))
+    assert profile.ui_settings.column_widths["cockpit_left"] == 350
+    assert profile.ui_settings.column_widths["cockpit_right"] == 320
 
-    assert profile.ui_settings.column_widths["cockpit_left"] == initial_left + 50
-    assert resized_widths["cockpit_left"] == initial_left + 50
-
-    # Reload profile from storage to verify persistence
     reloaded_profile = storage.load_profile()
-    assert reloaded_profile.ui_settings.column_widths["cockpit_left"] == initial_left + 50
+    assert reloaded_profile.ui_settings.column_widths["cockpit_left"] == 350
+    assert reloaded_profile.ui_settings.column_widths["cockpit_right"] == 320
 
-    # 2. Simulate dragging right sidebar splitter handle (column_key="cockpit_right")
-    splitter_right: Any = CockpitColumnSplitter.__new__(CockpitColumnSplitter)
-    splitter_right.column_key = "cockpit_right"
-    splitter_right.profile = profile
-    splitter_right.storage_service = storage
-    splitter_right.on_width_changed = on_width_changed
-
-    splitter_right.on_press(MockEvent(x_root=500))
-    splitter_right.on_drag(MockEvent(x_root=450))  # Drag left +50px for right sidebar width
-    splitter_right.on_release(MockEvent(x_root=450))
-
-    assert profile.ui_settings.column_widths["cockpit_right"] == initial_right + 50
-    reloaded_profile2 = storage.load_profile()
-    assert reloaded_profile2.ui_settings.column_widths["cockpit_right"] == initial_right + 50
 
 
 

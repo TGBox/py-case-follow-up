@@ -3,16 +3,9 @@ from typing import Callable
 from models.case import Case
 from models.profile import Colleague
 from enums import ACTOR_DISPLAY, get_actor_val_from_display, get_actor_display
+from constants import DEFAULT_HANDOVER_CHANNELS, DIALOG_DIMENSIONS, DIALOG_TITLES
 
-
-HANDOVER_CHANNELS = [
-    "Persönliche Absprache",
-    "E-Mail",
-    "Telefonanruf",
-    "Slacknachricht / Chat",
-    "GitLab Issue / Ticket",
-    "Sonstiges",
-]
+HANDOVER_CHANNELS = DEFAULT_HANDOVER_CHANNELS
 
 
 class HandoverDialog(ctk.CTkToplevel):
@@ -37,11 +30,12 @@ class HandoverDialog(ctk.CTkToplevel):
 
         self.on_handover_confirmed = on_handover_confirmed
 
-        self.title(f"👤 Zuständigkeit übergeben (Fall {case.case_id})")
-        self.geometry("580x520")
+        w, h = DIALOG_DIMENSIONS["handover"]
+        self.title(f"{DIALOG_TITLES['handover']} (Fall {case.case_id})")
+        self.geometry(f"{w}x{h}")
         self.minsize(520, 460)
         from utils.ui_utils import center_window
-        center_window(self, 580, 520)
+        center_window(self, w, h)
         self.transient(parent)
         self.grab_set()
 

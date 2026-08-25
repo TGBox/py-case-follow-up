@@ -23,16 +23,19 @@ DIALOG_TITLES = {
     "new_template": "➕ Neue Export-Vorlage",
     "schema_builder": "In-App Formular-Baukasten (Schemata verwalten)",
     "new_schema": "🆕 Neues Formular (Schema) erstellen",
-    "convert_schema": "🔄 Fall in anderes Formular konvertieren",
-    "followup_flyout": "⏰ Wiedervorlage & Frist verwalten",
-    "handover": "🤝 Fall an Kollege / Abteilung übergeben",
-    "zip_import": "📦 Datenbanksicherung (ZIP) importieren",
+    "convert_schema": "🔄 Formular-Schema umwandeln",
+    "followup_flyout": "🔔 Fällige Wiedervorlagen & Deadlines",
+    "handover": "👤 Zuständigkeit übergeben",
+    "zip_import": "📥 Datensicherung Importieren — Zielpfade festlegen",
     "snippet_mgmt": "📝 Textbausteine verwalten",
     "snippet_picker": "🧩 Textbaustein auswählen & einfügen",
-    "email_draft": "✉ E-Mail verfassen & Vorschau",
+    "email_draft": "✉ E-Mail verfassen",
     "calendar_export": "📅 Kalendereintrag (.ics) erstellen",
-    "help": "❓ Support-Cockpit Hilfe & Dokumentation",
-    "cobra_import": "🐍 COBRA CRM Import",
+    "help": "📖 Handbuch & Anwendungsdokumentation",
+    "cobra_import": "🐍 Cobra CRM Praxen-Import (CSV / TXT / JSON)",
+    "export": "Übergabe- & Export-Assistent",
+    "p2p_diff": "Multi-User P2P-Sync & Kollegendaten-Abgleich",
+    "email_calendar": "✉ E-Mail & 📅 Kalender-Entwurf",
 }
 
 # --- Button Labels & UI Action Texts ---
@@ -65,6 +68,24 @@ STATUS_MESSAGES = {
     "profile_saved": "✓ Profil & Einstellungen gespeichert.",
 }
 
+# --- Validation Error Messages ---
+VALIDATION_MESSAGES = {
+    "snippet_id_required": "Snippet ID is required.",
+    "snippet_title_required": "Snippet title is required.",
+    "snippet_content_required": "Snippet content cannot be empty.",
+    "contact_name_required": "Contact name is required.",
+    "customer_id_required": "Customer ID is required.",
+    "practice_name_required": "Practice name is required.",
+    "case_customer_id_required": "Case customer_id is required.",
+    "case_practice_name_required": "Case practice_name is required.",
+    "timeline_timestamp_required": "Timeline entry timestamp is required.",
+    "timeline_author_required": "Timeline entry author is required.",
+    "schema_id_required": "schema_id is required.",
+    "title_required": "title is required.",
+    "username_required": "Kürzel / Username ist erforderlich.",
+    "name_required": "Name ist erforderlich.",
+}
+
 # --- Default Layout Dimensions & Column Widths ---
 DEFAULT_COLUMN_WIDTHS = {
     "cockpit_left": 300,
@@ -92,16 +113,19 @@ DIALOG_DIMENSIONS = {
     "edit_template": (880, 740),
     "schema_builder": (940, 720),
     "new_schema": (440, 320),
-    "convert_schema": (580, 520),
-    "followup_flyout": (650, 480),
-    "handover": (520, 460),
-    "zip_import": (560, 380),
+    "convert_schema": (520, 400),
+    "followup_flyout": (680, 560),
+    "handover": (580, 520),
+    "zip_import": (840, 620),
     "snippet_mgmt": (820, 600),
     "snippet_picker": (640, 480),
-    "email_draft": (720, 640),
-    "calendar_export": (540, 420),
-    "help": (760, 620),
-    "cobra_import": (640, 480),
+    "email_draft": (760, 640),
+    "calendar_export": (640, 520),
+    "help": (1080, 720),
+    "cobra_import": (860, 680),
+    "export": (820, 760),
+    "p2p_diff": (920, 720),
+    "email_calendar": (760, 660),
 }
 
 # --- Design System Color Tokens ---
@@ -170,6 +194,31 @@ DEFAULT_DEPARTMENTS = [
     "Geschäftsführung",
     "Sonstige",
 ]
+
+DEFAULT_HANDOVER_CHANNELS = [
+    "Persönliche Absprache",
+    "E-Mail",
+    "Telefonanruf",
+    "Slacknachricht / Chat",
+    "GitLab Issue / Ticket",
+    "Sonstiges",
+]
+
+DEFAULT_SNIPPET_CATEGORY = "Allgemein"
+
+# --- Cobra CRM Field Aliases ---
+COBRA_FIELD_ALIAS_MAP = {
+    "customer_id": ["kunden_nr", "kundennr", "kunden-nr", "id", "kdnr", "kunden_id", "customer_id", "kunden nummer", "debitor"],
+    "practice_name": ["firma", "praxis", "praxisname", "name1", "name", "firmenname", "practice_name", "organisation", "unternehmen"],
+    "contact_person": ["ansprechpartner", "ansprechpartnerin", "kontakt", "name2", "contact_person", "kontaktperson", "arzt", "ärztin"],
+    "phone": ["telefon", "tel", "telefonnummer", "tel.nr", "fon", "phone", "mobil", "telefon_nr"],
+    "email": ["email", "e-mail", "mail", "elektronische post", "e_mail"],
+    "is_vip": ["vip", "wichtig", "priorität", "vip_kunde", "is_vip", "prio"],
+    "system_version": ["version", "system", "systemversion", "pvs-version", "pvs_version", "release"],
+    "vm_number": ["vm", "vm_nr", "vm-nr", "vm_nummer", "vm_number"],
+    "instance_number": ["instanz", "instanz_nr", "mandant", "instance_number", "instanz_nummer"],
+    "general_notes": ["notizen", "bemerkung", "kommentar", "hinweis", "general_notes", "memo", "beschreibung"],
+}
 
 # --- Supported File Extensions ---
 IMAGE_FILE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}

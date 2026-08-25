@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Callable, Any
 from services.zip_backup_service import ZipBackupService
 from utils.ui_utils import center_window
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class ZipImportPathDialog(ctk.CTkToplevel):
@@ -23,10 +24,11 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         self.default_attachments_dir = default_attachments_dir
         self.on_import_confirmed = on_import_confirmed
 
-        self.title("📥 Datensicherung Importieren — Zielpfade festlegen")
-        self.geometry("840x620")
+        w, h = DIALOG_DIMENSIONS["zip_import"]
+        self.title(DIALOG_TITLES["zip_import"])
+        self.geometry(f"{w}x{h}")
         self.minsize(760, 540)
-        center_window(self, 840, 620)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

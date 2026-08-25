@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
+from constants import VALIDATION_MESSAGES
 
 
 @dataclass
@@ -13,7 +14,7 @@ class Contact:
     def validate(self) -> list[str]:
         errors = []
         if not self.name.strip():
-            errors.append("Contact name is required.")
+            errors.append(VALIDATION_MESSAGES["contact_name_required"])
         return errors
 
     def to_dict(self) -> dict[str, Any]:
@@ -57,9 +58,9 @@ class Customer:
     def validate(self) -> list[str]:
         errors = []
         if not self.customer_id.strip():
-            errors.append("Customer ID is required.")
+            errors.append(VALIDATION_MESSAGES["customer_id_required"])
         if not self.practice_name.strip():
-            errors.append("Practice name is required.")
+            errors.append(VALIDATION_MESSAGES["practice_name_required"])
         for contact in self.contacts:
             errors.extend(contact.validate())
         return errors

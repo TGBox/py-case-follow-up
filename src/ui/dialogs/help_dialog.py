@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 HELP_ARTICLES = [
@@ -324,11 +325,12 @@ Die Zeitauswahl in Kalender- und Wiedervorlage-Dialogen ist speziell auf Praxis-
 class HelpDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("📖 Handbuch & Anwendungsdokumentation")
-        self.geometry("1080x720")
+        w, h = DIALOG_DIMENSIONS["help"]
+        self.title(DIALOG_TITLES["help"])
+        self.geometry(f"{w}x{h}")
         self.minsize(960, 600)
         from utils.ui_utils import center_window
-        center_window(self, 1080, 720)
+        center_window(self, w, h)
 
         # Make modal window
         self.transient(parent)

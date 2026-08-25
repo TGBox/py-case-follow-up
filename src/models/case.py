@@ -2,6 +2,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import UrgencyLevel, BoardColumn, Actor, Channel
 from utils.datetime_utils import parse_iso, format_german_datetime
+from constants import VALIDATION_MESSAGES
 
 
 @dataclass
@@ -15,14 +16,14 @@ class TimelineEntry:
     def validate(self) -> list[str]:
         errors = []
         if not self.timestamp:
-            errors.append("Timeline entry timestamp is required.")
+            errors.append(VALIDATION_MESSAGES["timeline_timestamp_required"])
         else:
             try:
                 parse_iso(self.timestamp)
             except Exception:
                 errors.append(f"Invalid timestamp format: '{self.timestamp}'.")
         if not self.author.strip():
-            errors.append("Timeline entry author is required.")
+            errors.append(VALIDATION_MESSAGES["timeline_author_required"])
         return errors
 
     def to_dict(self) -> dict[str, Any]:
@@ -53,9 +54,9 @@ class CaseCustomer:
         if self.customer_id == "INTERNAL":
             return []
         if not self.customer_id.strip():
-            errors.append("Case customer_id is required.")
+            errors.append(VALIDATION_MESSAGES["case_customer_id_required"])
         if not self.practice_name.strip():
-            errors.append("Case practice_name is required.")
+            errors.append(VALIDATION_MESSAGES["case_practice_name_required"])
         return errors
 
     def to_dict(self) -> dict[str, Any]:
@@ -85,9 +86,9 @@ class Classification:
     def validate(self) -> list[str]:
         errors = []
         if not self.schema_id.strip():
-            errors.append("schema_id is required.")
+            errors.append(VALIDATION_MESSAGES["schema_id_required"])
         if not self.title.strip():
-            errors.append("title is required.")
+            errors.append(VALIDATION_MESSAGES["title_required"])
         valid_urgencies = [u.value for u in UrgencyLevel]
         if self.urgency_level not in valid_urgencies:
             errors.append(f"Invalid urgency_level '{self.urgency_level}'. Must be one of {valid_urgencies}.")

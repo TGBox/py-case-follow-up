@@ -54,34 +54,17 @@ class LayoutMode(StrEnum):
     TABLE = "TABLE"
 
 
-CHANNEL_DISPLAY = {
-    Channel.PHONE_INBOUND.value: "Telefon (Eingang)",
-    Channel.PHONE_OUTBOUND.value: "Telefon (Ausgang)",
-    Channel.EMAIL.value: "E-Mail",
-    Channel.DEV_TICKET.value: "Entwickler-Ticket",
-    Channel.INTERNAL_NOTE.value: "Interne Notiz",
-}
+from constants import (
+    DISPLAY_CHANNEL_NAMES,
+    DISPLAY_ACTOR_NAMES,
+    DISPLAY_LAYOUT_NAMES,
+    DISPLAY_BOARD_COLUMN_NAMES,
+)
 
-ACTOR_DISPLAY = {
-    Actor.SUPPORT.value: "Support",
-    Actor.DEVELOPMENT.value: "Entwicklung",
-    Actor.TECH.value: "Technik",
-    Actor.CUSTOMER.value: "Kunde",
-}
-
-LAYOUT_DISPLAY = {
-    LayoutMode.COCKPIT.value: "Cockpit (Einzel-Fall)",
-    LayoutMode.BOARD.value: "Kanban-Board (Zuständigkeiten)",
-    LayoutMode.TABLE.value: "Tabelle & Details (Sortier-Matrix)",
-}
-
-BOARD_COLUMN_DISPLAY = {
-    BoardColumn.NEW.value: "Neu",
-    BoardColumn.ACTION_REQUIRED.value: "Aktion erforderlich",
-    BoardColumn.WAITING.value: "Warten auf Kunde",
-    BoardColumn.IN_PROGRESS.value: "In Bearbeitung",
-    BoardColumn.DONE.value: "Erledigt",
-}
+CHANNEL_DISPLAY = DISPLAY_CHANNEL_NAMES
+ACTOR_DISPLAY = DISPLAY_ACTOR_NAMES
+LAYOUT_DISPLAY = DISPLAY_LAYOUT_NAMES
+BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
 
 
 def get_channel_display(val: str) -> str:

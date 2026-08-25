@@ -629,14 +629,17 @@ class SupportCockpitApp(ctk.CTk):
             snippet_service=self.snippet_service,
         )
 
-    def open_email_draft_dialog(self, case: Case):
+    def open_email_draft_dialog(self, case: Case | None = None):
         from ui.dialogs.email_draft_dialog import EmailDraftDialog
+        customers = self.storage_service.load_customers() if self.storage_service else []
         EmailDraftDialog(
             self,
             case=case,
             calendar_email_service=self.calendar_email_service,
             user_name=self.profile.user.name,
             snippet_service=self.snippet_service,
+            customers=customers,
+            storage_service=self.storage_service,
         )
 
     def open_calendar_export_dialog(self, case: Case):

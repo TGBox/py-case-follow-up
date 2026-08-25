@@ -77,5 +77,5 @@ def test_calendar_email_service_email_draft():
     assert draft["to"] == "weber@musterpraxis.de"
     assert "T-2026-9999" in draft["subject"]
     assert "Zuzahlungsdatei" in draft["subject"]
-    assert "Hallo Frau/Herr Dr. Anna Weber" in draft["body"]
+    assert "Sehr geehrte(r) Dr. Anna Weber," in draft["body"]
     assert "DaniBani" in draft["body"]

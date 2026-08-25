@@ -580,7 +580,7 @@ def test_multiline_info_bar_and_card_tooltip(tmp_path: Path):
         return "\n".join(lines)
 
     tooltip = CTkTooltip(mw, build_tooltip)
-    txt = tooltip.text_or_func() if callable(tooltip.text_or_func) else str(tooltip.text_or_func)
+    txt = tooltip.text_or_func() if callable(tooltip.text_or_func) else tooltip.text_or_func
     assert "📌 Fall:" in txt
     assert case.customer.practice_name in txt
     assert "VIP, Dringend" in txt

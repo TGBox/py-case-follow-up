@@ -9,6 +9,7 @@ from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.attachment_service import AttachmentService
 from enums import FieldType
+from constants import DEFAULT_MODULE_TAGS
 
 
 class TextboxResizeHandle(ctk.CTkFrame):
@@ -285,7 +286,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                         command=self.on_manage_module_tags,
                     ).pack(side="right", padx=5)
 
-                available_mods = self.profile.available_module_tags if self.profile else ["Fakturaübersicht", "Rezeptdruck", "Labor", "eRezept / Verordnung", "System"]
+                available_mods = self.profile.available_module_tags if self.profile else list(DEFAULT_MODULE_TAGS)
                 selected_mods = [m.strip() for m in str(val).split(",") if m.strip()] if val else []
 
                 mod_container = ctk.CTkFrame(row_frame, fg_color="transparent")

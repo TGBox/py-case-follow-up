@@ -2,20 +2,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import SyncMode, LayoutMode
 from utils.security import normalize_url
-
-
-DEFAULT_COLUMN_WIDTHS = {
-    "cockpit_left": 300,
-    "cockpit_center": 420,
-    "cockpit_right": 320,
-    "board_column": 280,
-    "table_col_id": 120,
-    "table_col_practice": 220,
-    "table_col_title": 280,
-    "table_col_actor": 130,
-    "table_col_followup": 150,
-    "table_col_score": 90,
-}
+from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS
 
 
 @dataclass
@@ -238,7 +225,7 @@ class UserProfile:
     reminder_settings: ReminderSettings = field(default_factory=ReminderSettings)
     scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
-    available_tags: list[str] = field(default_factory=lambda: ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"])
+    available_tags: list[str] = field(default_factory=lambda: list(DEFAULT_TAGS))
     available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
     def to_dict(self) -> dict[str, Any]:
@@ -255,9 +242,8 @@ class UserProfile:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "UserProfile":
-        default_tags = ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort", "Rezept", "Netzwerk"]
-        tags_raw = data.get("available_tags", default_tags)
-        tags = list(tags_raw) if isinstance(tags_raw, list) else default_tags
+        tags_raw = data.get("available_tags", DEFAULT_TAGS)
+        tags = list(tags_raw) if isinstance(tags_raw, list) else list(DEFAULT_TAGS)
         mod_tags_raw = data.get("available_module_tags", DEFAULT_MODULE_TAGS)
         mod_tags = list(mod_tags_raw) if isinstance(mod_tags_raw, list) else list(DEFAULT_MODULE_TAGS)
         return cls(

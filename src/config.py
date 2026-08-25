@@ -4,6 +4,7 @@ import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from constants import DEFAULT_COLUMN_WIDTHS
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -53,12 +54,7 @@ class AppConfig:
     custom_export_templates_path: Path | None = None
     custom_wiki_db_path: Path | None = None
     column_widths: dict[str, int] = field(
-        default_factory=lambda: {
-            "cockpit_left": 300,
-            "cockpit_center": 420,
-            "cockpit_right": 320,
-            "board_column": 280,
-        }
+        default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
 
     def __post_init__(self):

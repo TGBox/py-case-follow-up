@@ -7,6 +7,7 @@ from typing import Any
 from enums import get_actor_display, get_board_column_display
 from models.case import Case
 from utils.datetime_utils import format_german_datetime
+from constants import DIALOG_DIMENSIONS
 
 
 class CasePrintDialog(ctk.CTkToplevel):
@@ -17,12 +18,13 @@ class CasePrintDialog(ctk.CTkToplevel):
         self.case = case
         self.attachment_service = attachment_service
 
+        w, h = DIALOG_DIMENSIONS["print_report"]
         self.title(f"🖨 Fall-Akte Druck- & HTML Export: {case.case_id}")
-        self.geometry("680x600")
+        self.geometry(f"{w}x{h}")
         self.minsize(620, 500)
 
         from utils.ui_utils import center_window
-        center_window(self, 680, 600)
+        center_window(self, w, h)
 
         try:
             self.transient(parent)

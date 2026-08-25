@@ -250,3 +250,72 @@ def test_multi_view_search_and_layout_refresh_chain(tmp_path: Path):
     filtered = SearchService.filter_cases(all_cases, search_query)
     assert len(filtered) >= 1
     assert all("Müller" in c.customer.practice_name or "Müller" in c.created_by or "Müller" in c.assigned_to or any("Müller" in ct.name for ct in getattr(c.customer, "contacts", [])) for c in filtered)
+
+
+def test_new_case_dialog_manual_creation_date_validation():
+    """UI Workflow Chain 8: Test manual creation date selection (past date allowed, future date rejected)."""
+    from datetime import datetime, timedelta
+    from typing import Any
+    from models.customer import Customer
+    from models.schema import QuestionSchema
+    from models.case import Case
+    from ui.dialogs.new_case_dialog import NewCaseDialog
+    from utils.datetime_utils import parse_iso, get_local_now
+
+    cust = Customer(customer_id="K-10001", practice_name="Test Praxis")
+    schema = QuestionSchema(schema_id="default", display_name="Default Schema")
+    created_cases = []
+
+    def on_case_created(c: Case):
+        created_cases.append(c)
+
+    dialog: Any = NewCaseDialog.__new__(NewCaseDialog)
+    dialog.customers = [cust]
+    dialog.schemas = [schema]
+    dialog.created_by = "Tester"
+    dialog.on_case_created = on_case_created
+    dialog.destroy = lambda: None
+
+    # Mock GUI widgets
+    class MockWidget:
+        def __init__(self, val=""):
+            self.val = val
+        def get(self, *args):
+            return self.val
+        def get_iso(self):
+            if "." in self.val:
+                from utils.datetime_utils import parse_german_date
+                return parse_german_date(self.val)
+            return self.val
+        def configure(self, **kwargs):
+            if "text" in kwargs:
+                self.val = kwargs["text"]
+        def cget(self, attr):
+            return [self.val]
+
+    dialog.title_entry = MockWidget("Fall aus Vergangenheit")
+    dialog.created_at_picker = MockWidget("20.08.2026 10:00")
+    dialog.error_label = MockWidget()
+    dialog.is_internal_var = MockWidget(False)
+    dialog.customer_combo = MockWidget("Test Praxis (K-10001)")
+    dialog.schema_combo = MockWidget("Default Schema [default]")
+    dialog.selected_tags_vars = {}
+    dialog.note_textbox = MockWidget("Initiale Notiz")
+    dialog.deadline_picker = MockWidget("")
+
+    # 1. Past date -> Should succeed
+    dialog.on_save()
+    assert len(created_cases) == 1
+    c_past = created_cases[0]
+    assert "2026-08-20T10:00" in c_past.created_at
+    assert c_past.workflow_status.actor_since == c_past.created_at
+    assert c_past.timeline[0].timestamp == c_past.created_at
+    assert c_past.case_id.startswith("T-2026-")
+
+    # 2. Future date -> Should fail validation
+    created_cases.clear()
+    dialog.created_at_picker = MockWidget("31.12.2099 12:00")
+    dialog.on_save()
+    assert len(created_cases) == 0
+    assert "Zukunft" in dialog.error_label.val
+

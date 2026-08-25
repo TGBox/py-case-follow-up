@@ -1,11 +1,11 @@
 import customtkinter as ctk
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Callable
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from models.customer import Customer, Contact
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, UrgencyLevel, Channel
-from utils.datetime_utils import now_iso
+from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
 
 
 class QuickAddCustomerDialog(ctk.CTkToplevel):
@@ -162,6 +162,18 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen")
         self.title_entry.pack(fill="x", pady=(0, 6))
 
+        # Creation Date (defaulting to current time)
+        ctk.CTkLabel(form_scroll, text="Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        from ui.widgets.date_picker import DatePickerWidget
+        self.created_at_picker = DatePickerWidget(
+            form_scroll,
+            placeholder_text="z. B. 25.08.2026 09:30",
+            include_time=True,
+            initial_value=format_german_datetime(now_iso()),
+            width=380,
+        )
+        self.created_at_picker.pack(fill="x", pady=(0, 6))
+
         # Schema selection
         ctk.CTkLabel(form_scroll, text="Formular-Schema:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
@@ -297,8 +309,8 @@ class NewCaseDialog(ctk.CTkToplevel):
             self.customer_combo.configure(state="normal")
             self.add_cust_btn.configure(state="normal")
 
-    def generate_case_id(self) -> str:
-        year = datetime.now().year
+    def generate_case_id(self, ref_year: int | None = None) -> str:
+        year = ref_year or datetime.now().year
         timestamp_part = datetime.now().strftime("%M%S")
         return f"T-{year}-{timestamp_part}"
 
@@ -308,7 +320,30 @@ class NewCaseDialog(ctk.CTkToplevel):
             self.error_label.configure(text="Bitte einen Titel für den Fall eingeben.")
             return
 
+        # Parse & validate creation date
+        created_at_str = self.created_at_picker.get()
+        if created_at_str:
+            try:
+                created_at_iso = self.created_at_picker.get_iso()
+                if not created_at_iso:
+                    self.error_label.configure(text="Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).")
+                    return
+                created_dt = parse_iso(created_at_iso)
+            except Exception:
+                self.error_label.configure(text="Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).")
+                return
+        else:
+            created_at_iso = now_iso()
+            created_dt = get_local_now()
+
+        # Disallow future creation date (with 1 minute tolerance for clock drift)
+        now_dt = get_local_now()
+        if created_dt > now_dt + timedelta(minutes=1):
+            self.error_label.configure(text="Das Erstellungsdatum darf nicht in der Zukunft liegen.")
+            return
+
         is_internal = self.is_internal_var.get()
+        case_id = self.generate_case_id(created_dt.year)
 
         if is_internal:
             case_customer = CaseCustomer(
@@ -318,7 +353,7 @@ class NewCaseDialog(ctk.CTkToplevel):
                 contact_person="",
                 phone="",
             )
-            att_folder = f"attachments/{self.generate_case_id()}_Intern"
+            att_folder = f"attachments/{case_id}_Intern"
         else:
             selected_cust_idx = self.customer_combo.cget("values").index(self.customer_combo.get()) if self.customer_combo.get() in self.customer_combo.cget("values") else 0
             customer_obj = self.customers[selected_cust_idx] if selected_cust_idx < len(self.customers) else Customer(customer_id="K-10000", practice_name="Standard Praxis")
@@ -329,7 +364,7 @@ class NewCaseDialog(ctk.CTkToplevel):
                 contact_person=customer_obj.contacts[0].name if customer_obj.contacts else "",
                 phone=customer_obj.contacts[0].phone if customer_obj.contacts else "",
             )
-            att_folder = f"attachments/{self.generate_case_id()}_{customer_obj.practice_name.replace(' ', '_')}"
+            att_folder = f"attachments/{case_id}_{customer_obj.practice_name.replace(' ', '_')}"
 
         # Get selected schema
         selected_schema_idx = self.schema_combo.cget("values").index(self.schema_combo.get()) if self.schema_combo.get() in self.schema_combo.cget("values") else 0
@@ -339,13 +374,12 @@ class NewCaseDialog(ctk.CTkToplevel):
         selected_tags = [tag for tag, var in self.selected_tags_vars.items() if var.get()]
 
         now_str = now_iso()
-        case_id = self.generate_case_id()
 
         initial_note = self.note_textbox.get("1.0", "end-1c").strip()
         timeline = []
         if initial_note:
             timeline.append(TimelineEntry(
-                timestamp=now_str,
+                timestamp=created_at_iso,
                 author=self.created_by,
                 channel=Channel.PHONE_INBOUND,
                 note=initial_note,
@@ -354,7 +388,7 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         new_case = Case(
             case_id=case_id,
-            created_at=now_str,
+            created_at=created_at_iso,
             updated_at=now_str,
             created_by=self.created_by,
             assigned_to=self.created_by,
@@ -370,7 +404,7 @@ class NewCaseDialog(ctk.CTkToplevel):
                 is_archived=False,
                 board_column=BoardColumn.ACTION_REQUIRED,
                 current_actor=Actor.SUPPORT,
-                actor_since=now_str,
+                actor_since=created_at_iso,
             ),
             form_data={},
             missing_required_fields=[],

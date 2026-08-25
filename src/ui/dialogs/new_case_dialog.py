@@ -243,6 +243,10 @@ class NewCaseDialog(ctk.CTkToplevel):
         )
         add_tag_btn.pack(side="left", padx=3, pady=2)
 
+        canvas = getattr(self.tags_frame, "_parent_canvas", getattr(self.tags_frame, "_canvas", None))
+        if canvas:
+            canvas.yview_moveto(0.0)
+
     def toggle_tag(self, tag_name: str):
         if tag_name in self.selected_tags_vars:
             curr = self.selected_tags_vars[tag_name].get()

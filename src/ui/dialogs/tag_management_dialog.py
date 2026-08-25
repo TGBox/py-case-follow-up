@@ -20,11 +20,11 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.initial_tab = initial_tab
 
         self.title("🏷️ Tags & Programmbereiche Verwaltung")
-        self.geometry("680x600")
-        self.minsize(580, 500)
+        self.geometry("680x640")
+        self.minsize(580, 520)
         from utils.ui_utils import center_window
 
-        center_window(self, 680, 600)
+        center_window(self, 680, 640)
 
         self.transient(parent)
         self.grab_set()
@@ -48,8 +48,18 @@ class TagManagementDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=(5, 10))
 
-        # Tabview
-        self.tabview = ctk.CTkTabview(main_frame)
+        # Footer Status & Close (PINNED AT BOTTOM)
+        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_frame.pack(side="bottom", fill="x", pady=(5, 0))
+
+        self.status_lbl = ctk.CTkLabel(btn_frame, text="", text_color="green")
+        self.status_lbl.pack(side="left")
+
+        close_btn = ctk.CTkButton(btn_frame, text="Schließen", command=self.destroy, width=120)
+        close_btn.pack(side="right")
+
+        # Tabview (Fills remaining space above footer)
+        self.tabview = ctk.CTkTabview(main_frame, command=self._on_tab_changed)
         self.tabview.pack(fill="both", expand=True, pady=(0, 5))
 
         tab_tags = self.tabview.add("🏷️ Allgemeine Tags")
@@ -99,15 +109,24 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.modules_scroll.pack(fill="both", expand=True, padx=5, pady=5)
         enable_auto_hiding_scrollbar(self.modules_scroll)
 
-        # Footer Status & Close
-        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(5, 0))
+    def _reset_scroll_to_top(self, scroll_frame: ctk.CTkScrollableFrame):
+        def _do_reset():
+            try:
+                canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
+                if canvas:
+                    canvas.yview_moveto(0.0)
+            except Exception:
+                pass
+        _do_reset()
+        self.after(50, _do_reset)
+        self.after(200, _do_reset)
 
-        self.status_lbl = ctk.CTkLabel(btn_frame, text="", text_color="green")
-        self.status_lbl.pack(side="left")
-
-        close_btn = ctk.CTkButton(btn_frame, text="Schließen", command=self.destroy, width=120)
-        close_btn.pack(side="right")
+    def _on_tab_changed(self):
+        curr = self.tabview.get()
+        if "Programmbereiche" in curr:
+            self._reset_scroll_to_top(self.modules_scroll)
+        else:
+            self._reset_scroll_to_top(self.tags_scroll)
 
     # --- TAGS LOGIC ---
     def render_tags_list(self):
@@ -119,16 +138,17 @@ class TagManagementDialog(ctk.CTkToplevel):
 
         if not tags:
             ctk.CTkLabel(self.tags_scroll, text="Keine Tags gefunden.", text_color="gray").pack(pady=20)
-            return
+        else:
+            for idx, tag in enumerate(tags):
+                row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+                row.pack(fill="x", pady=2, padx=5)
 
-        for idx, tag in enumerate(tags):
-            row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
-            row.pack(fill="x", pady=2, padx=5)
+                ctk.CTkLabel(row, text=f"🏷️  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-            ctk.CTkLabel(row, text=f"🏷️  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+                del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
+                del_btn.pack(side="right", padx=5, pady=3)
 
-            del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
-            del_btn.pack(side="right", padx=5, pady=3)
+        self._reset_scroll_to_top(self.tags_scroll)
 
     def on_add_tag(self):
         new_tag = self.new_tag_entry.get().strip()
@@ -168,16 +188,17 @@ class TagManagementDialog(ctk.CTkToplevel):
 
         if not mods:
             ctk.CTkLabel(self.modules_scroll, text="Keine Programmbereiche gefunden.", text_color="gray").pack(pady=20)
-            return
+        else:
+            for idx, mod in enumerate(mods):
+                row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+                row.pack(fill="x", pady=2, padx=5)
 
-        for idx, mod in enumerate(mods):
-            row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
-            row.pack(fill="x", pady=2, padx=5)
+                ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-            ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+                del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
+                del_btn.pack(side="right", padx=5, pady=3)
 
-            del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
-            del_btn.pack(side="right", padx=5, pady=3)
+        self._reset_scroll_to_top(self.modules_scroll)
 
     def on_add_module(self):
         new_mod = self.new_mod_entry.get().strip()

@@ -52,6 +52,16 @@ class CaseListWidget(ctk.CTkFrame):
         )
         self.deep_btn.pack(side="left", padx=2)
 
+        # Header Info
+        self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+        self.count_label.pack(fill="x", padx=15, pady=(0, 5))
+
+        # Scrollable Cases Container
+        self.scroll_frame = ctk.CTkScrollableFrame(self)
+        self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        from utils.ui_utils import enable_auto_hiding_scrollbar
+        enable_auto_hiding_scrollbar(self.scroll_frame)
+
     def toggle_deep_search(self):
         self.is_deep_search_active = not self.is_deep_search_active
         if self.is_deep_search_active:
@@ -62,16 +72,6 @@ class CaseListWidget(ctk.CTkFrame):
         if self.on_toggle_deep_search:
             self.on_toggle_deep_search(self.is_deep_search_active)
         self.on_search_changed(self.search_entry.get())
-
-        # Header Info
-        self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
-        self.count_label.pack(fill="x", padx=15, pady=(0, 5))
-
-        # Scrollable Cases Container
-        self.scroll_frame = ctk.CTkScrollableFrame(self)
-        self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
-        from utils.ui_utils import enable_auto_hiding_scrollbar
-        enable_auto_hiding_scrollbar(self.scroll_frame)
 
     def apply_quick_filter(self, filter_token: str):
         self.search_entry.delete(0, "end")

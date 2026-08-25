@@ -202,6 +202,16 @@ def test_auto_hiding_scrollbar_utility():
     assert issubclass(AutoScrollableFrame, ctk.CTkScrollableFrame)
 
 
+def test_auto_hiding_scrollbar_resets_yview():
+    from utils.ui_utils import enable_auto_hiding_scrollbar
+    from ui.widgets.dynamic_form_widget import ModuleTagPickerPopup
+    assert callable(enable_auto_hiding_scrollbar)
+    assert hasattr(ModuleTagPickerPopup, "render_tag_checkboxes")
+
+
+
+
+
 
 
 

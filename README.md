@@ -8,10 +8,15 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 
 * **3-Spalten Cockpit, Board & Tabellenmatrix:** Flexible UI-Layouts mit CustomTkinter Flat-Optik, flüssigen Animationen und dynamischem **Dark- & Light-Mode**.
 * **🏢 Interne Vorgänge & Aufgaben (ohne Kunde):** Erfassung rein interner Vorgänge (Systemwartung, Notizen, Entwicklungsaufgaben) ohne Kundenelement mit automatischer Umschaltung auf das Schema *"🏢 Interne Aufgabe / Notiz"* und blauem `🏢 INTERN`-Badge.
+* **🐍 Cobra CRM Praxen-Import:** Assistent zum Importieren von Kundendatenbanken aus Cobra CRM Exporte im Format CSV, TXT oder JSON mit automatischer Spaltenerkennung (`COBRA_FIELD_ALIAS_MAP`).
+* **📝 Textbausteine & Snippet-Manager:** Zentrale Verwaltung von Bausteinen mit Kategorien und Tags sowie Schnellauswahl-Dialog (`SnippetPickerDialog`) zum direkten Einfügen in Fallnotizen.
 * **🔔 Live-Wiedervorlagen & Background Toast-Popups:**
   - Glocken-Badge (`🔔 3`) in der Kopfzeile mit Live-Zähler fälliger Fristen.
   - Periodische Fristenprüfung im Hintergrund mit unaufdringlichen Toast-Notifications am Bildschirmrand.
   - **Wiedervorlagen-Flyout** zum schnellen Verfolgen, Erledigen oder Verschieben (`+ 1 Tag`, `+ 1 Woche`).
+* **✉️ E-Mail-Entwurf & 📅 Kalender-Export (.ics):**
+  - Vorbereitung von Support-Mails mit praxisnahen Anreden und Bausteinen (`EmailDraftDialog`).
+  - Erzeugung von iCalendar (`.ics`) Fristterminen für MS Outlook, Thunderbird & Apple Calendar (`CalendarExportDialog`).
 * **⏱️ Datumswahl mit Uhrzeit & Schnellauswahl:**
   - Kalender-Widget mit Datums- und Uhrzeitwahl (HH:MM).
   - Schnellauswahl-Buttons: *"Morgen 08:00 Uhr"*, *"Heute 11:30 (vor Mittag)"*, *"Heute 13:30 (nach Mittag)"*.
@@ -19,13 +24,16 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - Übersicht über Gesamtfälle, offene/erledigte/archivierte Vorgänge.
   - Dringlichkeits-Scoring Verteilung (`Rot` / `Gelb` / `Grün`).
   - Top 5 Praxen-Ranking nach Fallaufkommen & Abteilungs-Auslastung.
-* **🖨️ Fall-Akte PDF/Druck-Export (`CasePrintDialog`):**
+* **🖨️ Fall-Akte PDF/Druck- & HTML-Export (`CasePrintDialog`):**
   - Druckauswahl-Dialog mit Checkboxen zum gezielten Abwählen einzelner Timeline-Einträge oder Kundendaten.
-  - Erzeugt saubere HTML/PDF-Druckberichte und öffnet diese direkt im Browser.
+  - Getrennte Knöpfe für **🌐 HTML-Bericht im Browser öffnen** und **🖨️ PDF-Bericht drucken** (mit nativem Druckdialog).
+* **🛠 Formular-Baukasten & Schema-Konverter:** In-App Formular-Builder zur Erstellung eigener Erfassungsmasken sowie Schema-Umwandler für bestehende Fälle.
 * **📂 Dateianhängs-Vorschau & OS-Integration:**
   - Live-Text- und Bild-Vorschau für Anhänge (PNG, JPG, Logfiles, JSON).
   - Direktes Öffnen von Anhängen im OS-Standardprogramm und Speichern von Screenshots per `Strg+V`.
 * **⚠️ Mitarbeiter-Abwesenheiten & Urlaubsnotizen:** Erfassen von Urlaub/Krankheit in der Mitarbeiterverwaltung mit automatischem Warnhinweis im Übergabe-Dialog bei Auswahl abwesender Kollegen.
+* **🎨 Centralized Constants & Design System (`src/constants.py`):**
+  - Zentrale Verwaltung aller Farb-Tokens, Dialog-Dimensionen, Validierungsmeldungen, Button-Texte und Alias-Zuordnungen.
 * **🔍 Erweitertes Suchsystem & Schnellfilter:**
   - Tokens wie `is:internal`, `is:customer`, `vip:true`, `reminder:due`, `actor:dev`, `status:open`, `error:...`.
   - Schnellfilter-Buttons (`[Alle]`, `[🔥 Dringend]`, `[🔔 Wiedervorlagen]`, `[🏢 Intern]`) über der Fallliste.
@@ -104,7 +112,7 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **85 automatisierte Tests** in der pytest Testsuite:
+Das Projekt verfügt über **204 automatisierte Tests** in der pytest Testsuite:
 
 ```bash
 .\.venv\Scripts\python -m pytest
@@ -112,14 +120,18 @@ Das Projekt verfügt über **85 automatisierte Tests** in der pytest Testsuite:
 
 Abgedeckte Testbereiche:
 * `test_internal_cases.py`: Erfassung & Suche interner Vorgänge ohne Kundenelement.
-* `test_priority_a.py`: Wiedervorlage-Fristen, Presets, Toast-Notifications & Notiz-Protokollierung.
-* `test_priority_b.py`: Abwesenheiten, Quick-Filter Tokens & Hotkey-Konfliktprüfung.
-* `test_priority_c.py`: Auswertungs-Dashboard KPIs & Druck-Export Formatierung.
-* `test_priority_d.py`: E-Mail-Draft Import & GitLab/Jira Webhook Payloads.
+* `test_cobra_import.py`: Cobra CRM Kunden- & Praxenimport mit Spaltenerkennung.
+* `test_snippets.py` & `test_seeded_support_snippets.py`: Textbausteine-Verwaltung & Einfüge-Mechanik.
+* `test_email_and_calendar_dialog_separation.py`: Eigenständige Dialoge für E-Mail & .ics Kalenderexport.
+* `test_case_print_dialog.py` & `test_case_print_export_options.py`: HTML-Browseranzeige & PDF-Druck.
+* `test_followup_and_relative_dates.py`: Fristen, Relativdaten & Toast-Benachrichtigungen.
+* `test_colleague_absence.py`: Abwesenheiten & Vertretungswarnungen.
+* `test_unicode_cleanliness_anti_regression.py`: Schutz vor Unicode Variation-Selectors.
+* `test_analytics_metrics.py`: Auswertungs-Dashboard KPIs & Metriken.
 * `test_zip_backup.py`: ZIP-Komplettsicherung & Entpackungs-Workflow.
 * `test_storage.py`: Atomares Schreiben, Backups, Archivierung & Crash-Recovery.
 * `test_scoring.py`: Urgency-Score Formel & Ampelschwellen.
-* `test_search_parser.py`: Token-Parsing (`is:internal`, `vip:true`, `actor:dev`, `status:open`, `error:...`).
+* `test_search_parser.py` & `test_quick_filter_search.py`: Token-Parsing & Schnellauswahl.
 * `test_export_engine.py`: Jinja2 Rendering, In-Place Validierung & Force-Export.
-* `test_p2p_sync.py`: Diff-Berechnung & selektiver P2P-Import.
-* `test_ui_integration.py`: Integrationstest der GUI-Workflowskette.
+* `test_p2p_sync.py` & `test_p2p_advanced.py`: Diff-Berechnung & selektiver P2P-Import.
+* `test_ui_integration.py` & `test_ui_workflow_chains.py`: E2E-Integrationstests aller GUI-Workflows.

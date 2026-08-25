@@ -9,6 +9,62 @@ APP_WINDOW_TITLE = "Support-Cockpit & Ticket Management"
 APP_MIN_WIDTH = 900
 APP_MIN_HEIGHT = 650
 
+# --- Dialog Titles & Window Headers ---
+DIALOG_TITLES = {
+    "new_case": "Neuen Support-Fall anlegen",
+    "quick_customer": "🏥 Neue Praxis schnell anlegen",
+    "print_report": "🖨 Fall-Akte Druck- & HTML Export",
+    "customer_mgmt": "🏥 Praxis- & Kundenverwaltung",
+    "colleague_mgmt": "👥 Mitarbeiter- & Kollegeneinträge",
+    "tag_mgmt": "🏷 Tags & Programmbereiche Verwaltung",
+    "profile_settings": "⚙ Profil & Einstellungen",
+    "template_mgmt": "📄 Export-Vorlagen verwalten",
+    "edit_template": "✏ Vorlage bearbeiten",
+    "new_template": "➕ Neue Export-Vorlage",
+    "schema_builder": "In-App Formular-Baukasten (Schemata verwalten)",
+    "new_schema": "🆕 Neues Formular (Schema) erstellen",
+    "convert_schema": "🔄 Fall in anderes Formular konvertieren",
+    "followup_flyout": "⏰ Wiedervorlage & Frist verwalten",
+    "handover": "🤝 Fall an Kollege / Abteilung übergeben",
+    "zip_import": "📦 Datenbanksicherung (ZIP) importieren",
+    "snippet_mgmt": "📝 Textbausteine verwalten",
+    "snippet_picker": "🧩 Textbaustein auswählen & einfügen",
+    "email_draft": "✉ E-Mail verfassen & Vorschau",
+    "calendar_export": "📅 Kalendereintrag (.ics) erstellen",
+    "help": "❓ Support-Cockpit Hilfe & Dokumentation",
+    "cobra_import": "🐍 COBRA CRM Import",
+}
+
+# --- Button Labels & UI Action Texts ---
+UI_BUTTON_TEXTS = {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "close": "Schließen",
+    "create": "Erstellen",
+    "apply": "Übernehmen",
+    "search": "Suchen",
+    "import": "Importieren",
+    "export": "Exportieren",
+    "new_case": "+ Neuer Fall",
+    "new_snippet": "+ Neuer Textbaustein",
+    "new_customer": "+ Neue Praxis",
+    "new_colleague": "+ Kollege",
+    "print_pdf": "🖨 PDF-Bericht drucken",
+    "open_html": "🌐 HTML-Bericht",
+    "save_file": "💾 Speichern...",
+}
+
+# --- Status & Feedback Messages ---
+STATUS_MESSAGES = {
+    "snippet_saved": "✓ Textbaustein gespeichert.",
+    "snippet_deleted": "✓ Textbaustein gelöscht.",
+    "customer_saved": "✓ Praxis-Eintrag erfolgreich gespeichert.",
+    "colleague_saved": "✓ Kollegendaten erfolgreich gespeichert.",
+    "tags_updated": "✓ Tags erfolgreich aktualisiert.",
+    "profile_saved": "✓ Profil & Einstellungen gespeichert.",
+}
+
 # --- Default Layout Dimensions & Column Widths ---
 DEFAULT_COLUMN_WIDTHS = {
     "cockpit_left": 300,

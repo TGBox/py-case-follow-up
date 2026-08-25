@@ -2,7 +2,7 @@ import customtkinter as ctk
 from typing import Callable, Any
 from models.customer import Customer, Contact
 from services.customer_service import CustomerService
-from constants import DIALOG_DIMENSIONS
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class CustomerManagementDialog(ctk.CTkToplevel):
@@ -12,7 +12,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.on_customers_updated = on_customers_updated
 
         w, h = DIALOG_DIMENSIONS["customer_mgmt"]
-        self.title("🏥 Praxis- & Kundenverwaltung")
+        self.title(DIALOG_TITLES["customer_mgmt"])
         self.geometry(f"{w}x{h}")
         self.minsize(900, 600)
         from utils.ui_utils import center_window

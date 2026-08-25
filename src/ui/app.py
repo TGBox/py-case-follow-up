@@ -67,6 +67,7 @@ class SupportCockpitApp(ctk.CTk):
         self.minsize(1024, 700)
         from utils.ui_utils import center_window
         center_window(self, 1440, 880)
+        self.after(10, self._maximize_window)
 
         # Set Theme
         theme_mode = self.profile.ui_settings.theme
@@ -170,14 +171,14 @@ class SupportCockpitApp(ctk.CTk):
 
         # Layout Switcher
         ctk.CTkLabel(menu_frame, text="Layout:").pack(side="left", padx=(12, 5), pady=4)
-        layout_combo = ctk.CTkOptionMenu(
+        self.layout_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=list(LAYOUT_DISPLAY.values()),
             command=self.switch_layout,
             width=120,
         )
-        layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        layout_combo.pack(side="left", padx=5, pady=4)
+        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        self.layout_combo.pack(side="left", padx=5, pady=4)
 
         # Action Buttons
         new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
@@ -324,6 +325,9 @@ class SupportCockpitApp(ctk.CTk):
             self.cockpit_view.pack(fill="both", expand=True)
             self.active_view = self.cockpit_view
 
+        if self.__dict__.get("layout_combo"):
+            self.layout_combo.set(get_layout_display(val))
+
         self.profile.ui_settings.default_layout = val
         self.refresh_views()
 
@@ -357,7 +361,7 @@ class SupportCockpitApp(ctk.CTk):
         else:
             show_demo = not has_user_cases
 
-        if hasattr(self, "demo_toggle_btn"):
+        if self.__dict__.get("demo_toggle_btn"):
             if show_demo:
                 self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AN", fg_color="darkblue")
             else:
@@ -624,6 +628,12 @@ class SupportCockpitApp(ctk.CTk):
         from ui.dialogs.snippet_management_dialog import SnippetManagementDialog
         SnippetManagementDialog(self, snippet_service=self.snippet_service)
 
+    def _maximize_window(self):
+        try:
+            self.state("zoomed")
+        except Exception as e:
+            logger.warning(f"Could not maximize window: {e}")
+
     def toggle_theme(self):
         curr = ctk.get_appearance_mode()
         new_theme = "Light" if curr == "Dark" else "Dark"
@@ -747,5 +757,7 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_closing(self):
         logger.info("Saving application settings and profile before exit...")
+        if hasattr(self, "cockpit_view"):
+            self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
         self.destroy()

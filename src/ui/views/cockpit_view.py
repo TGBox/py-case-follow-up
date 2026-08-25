@@ -73,24 +73,56 @@ class CockpitView(ctk.CTkFrame):
             try:
                 self.paned.paneconfigure(self.left_frame, width=w_left)
                 self.paned.paneconfigure(self.right_tabview, width=w_right)
+                total_w = self.paned.winfo_width()
+                if total_w > 100:
+                    self.paned.sash_place(0, w_left, 0)
+                    self.paned.sash_place(1, max(w_left + 150, total_w - w_right), 0)
             except Exception:
                 pass
 
-    def on_paned_sash_released(self, event=None):
+    def restore_sash_positions(self):
         try:
+            if not hasattr(self, "paned") or not self.paned.winfo_exists():
+                return
             total_w = self.paned.winfo_width()
-            if total_w <= 10:
+            if total_w <= 50:
+                self.after(50, self.restore_sash_positions)
+                return
+
+            widths = {}
+            if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
+                widths = self.profile.ui_settings.column_widths
+            elif self.app_config and hasattr(self.app_config, "column_widths"):
+                widths = self.app_config.column_widths
+
+            w_left = widths.get("cockpit_left", 300)
+            w_right = widths.get("cockpit_right", 320)
+
+            self.paned.sash_place(0, w_left, 0)
+            self.paned.sash_place(1, max(w_left + 150, total_w - w_right), 0)
+        except Exception as e:
+            logger.warning(f"Could not restore sash positions: {e}")
+
+    def on_paned_sash_released(self, event=None):
+        self.save_sash_widths()
+
+    def save_sash_widths(self):
+        try:
+            if not hasattr(self, "paned") or not self.paned.winfo_exists():
+                return
+            total_w = self.paned.winfo_width()
+            if total_w <= 50:
                 return
 
             sash0 = self.paned.sash_coord(0)
             sash1 = self.paned.sash_coord(1)
 
-            if sash0 and len(sash0) > 0:
+            if sash0 and len(sash0) > 0 and sash0[0] > 0:
                 w_left = max(100, sash0[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_left"] = w_left
 
-            if sash1 and len(sash1) > 0:
+            if sash1 and len(sash1) > 0 and sash1[0] > 0:
                 w_right = max(100, total_w - sash1[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_right"] = w_right
@@ -251,6 +283,9 @@ class CockpitView(ctk.CTkFrame):
         self.paned.add(self.left_frame, minsize=120, width=w_left)
         self.paned.add(self.center_frame, minsize=150)
         self.paned.add(self.right_tabview, minsize=120, width=w_right)
+
+        self.after(100, self.restore_sash_positions)
+        self.after(500, self.restore_sash_positions)
 
     def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
         self.left_frame.set_cases(cases, deep_results=deep_results)

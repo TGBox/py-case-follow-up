@@ -410,6 +410,8 @@ def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
     profile = storage.load_profile()
 
     class MockPaned:
+        def winfo_exists(self):
+            return True
         def winfo_width(self):
             return 1000
         def sash_coord(self, index):
@@ -481,6 +483,64 @@ def test_notification_badge_updates_immediately_on_followup_or_complete(tmp_path
     # Bell badge turns back to grey 🔔 0 immediately
     assert app.bell_btn.text == "🔔 0"
     assert app.bell_btn.fg_color == "gray30"
+
+
+def test_layout_combo_updates_on_view_redirect(tmp_path: Path):
+    """UI Workflow Chain 12: Redirecting to Cockpit view updates layout_combo display text immediately."""
+    from typing import Any
+    from config import AppConfig
+    from services.storage_service import StorageService
+    from services.seed_service import SeedService
+    from ui.app import SupportCockpitApp
+    from enums import LayoutMode, get_layout_display
+
+    config = AppConfig(workspace_dir=tmp_path, username="test_agent")
+    storage = StorageService(config)
+    seed_service = SeedService(storage)
+    seed_service.run_seed(force=True)
+
+    profile = storage.load_profile()
+    cases = storage.load_cases()
+
+    class MockOptionMenu:
+        def __init__(self, val=""):
+            self.value = val
+        def set(self, val):
+            self.value = val
+        def get(self):
+            return self.value
+
+    class MockView:
+        def pack(self, **kwargs): pass
+        def pack_forget(self): pass
+        def set_schemas(self, s): pass
+        def set_cases(self, c, **kwargs): pass
+        def on_select_case_from_list(self, c): pass
+
+    app: Any = SupportCockpitApp.__new__(SupportCockpitApp)
+    app.profile = profile
+    app.cases = cases
+    app.active_case = cases[0]
+    app.search_query = ""
+    app.layout_combo = MockOptionMenu(get_layout_display(LayoutMode.BOARD.value))
+    app.board_view = MockView()
+    app.table_view = MockView()
+    app.cockpit_view = MockView()
+    app.analytics_view = MockView()
+    app.active_view = app.board_view
+    app.schemas = []
+    app.get_filtered_cases = lambda: app.cases
+    app.check_due_followups = lambda: None
+    app.deep_search_service = Any
+
+    # Currently in Board view
+    assert app.layout_combo.get() == get_layout_display(LayoutMode.BOARD.value)
+
+    # Redirect to Cockpit view (e.g. from Kanban card click)
+    app.switch_to_cockpit_view_for_case(cases[0])
+
+    # layout_combo text immediately updates to Cockpit
+    assert app.layout_combo.get() == get_layout_display(LayoutMode.COCKPIT.value)
 
 
 

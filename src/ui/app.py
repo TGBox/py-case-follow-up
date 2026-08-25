@@ -70,9 +70,6 @@ class SupportCockpitApp(ctk.CTk):
         except Exception:
             pass
 
-        self.bind("<Map>", self._on_window_mapped)
-        self.after(100, self._maximize_window)
-        self.after(400, self._maximize_window)
 
         # Set Theme
         theme_mode = self.profile.ui_settings.theme

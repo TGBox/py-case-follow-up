@@ -125,7 +125,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         reset_schema_btn = ctk.CTkButton(top_frame, text="🔄 Standard-Formulare", command=self.on_reset_schemas, fg_color="gray30", width=150)
         reset_schema_btn.pack(side="left", padx=(0, 5))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
+        del_schema_btn = ctk.CTkButton(top_frame, text="🗑 Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()

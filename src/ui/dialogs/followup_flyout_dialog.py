@@ -54,7 +54,7 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 lbl_title = ctk.CTkLabel(top_row, text=title_str, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
                 lbl_title.pack(side="left", fill="x", expand=True)
 
-                btn_select = ctk.CTkButton(top_row, text="👁️ Öffnen", width=80, command=lambda c=case: self.select_case(c))
+                btn_select = ctk.CTkButton(top_row, text="👁 Öffnen", width=80, command=lambda c=case: self.select_case(c))
                 btn_select.pack(side="right")
 
                 info_str = f"Kunde: {case.customer.practice_name} | Fällig seit: {format_german_datetime(case.workflow_status.followup_at)}"

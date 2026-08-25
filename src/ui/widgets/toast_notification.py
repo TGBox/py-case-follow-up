@@ -21,8 +21,8 @@ class ToastNotification(ctk.CTkToplevel):
         screen_w = self.winfo_screenwidth()
         screen_h = self.winfo_screenheight()
 
-        width = 380 if on_open else 340
-        height = 80
+        width = 420 if on_open else 360
+        height = 84
         x = screen_w - width - 20
         y = screen_h - height - 60
 
@@ -31,24 +31,28 @@ class ToastNotification(ctk.CTkToplevel):
         frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), border_width=2, border_color="dodgerblue", corner_radius=8)
         frame.pack(fill="both", expand=True)
 
+        if on_open:
+            btn_open = ctk.CTkButton(
+                frame,
+                text="👁 Öffnen",
+                width=95,
+                height=32,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                fg_color="dodgerblue",
+                hover_color="deepskyblue",
+                command=self.handle_open,
+            )
+            btn_open.pack(side="right", padx=(6, 12), pady=12)
+
         content_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        content_frame.pack(side="left", fill="both", expand=True, padx=(12, 4), pady=6)
+        content_frame.pack(side="left", fill="both", expand=True, padx=(12, 6), pady=8)
 
         lbl_title = ctk.CTkLabel(content_frame, text=title, font=ctk.CTkFont(size=13, weight="bold"), text_color="dodgerblue", anchor="w")
-        lbl_title.pack(anchor="w", pady=(2, 2))
+        lbl_title.pack(anchor="w", pady=(0, 2))
 
         lbl_msg = ctk.CTkLabel(content_frame, text=message, font=ctk.CTkFont(size=11), text_color=("gray10", "white"), anchor="w")
         lbl_msg.pack(anchor="w", pady=(0, 2))
 
-        if on_open:
-            btn_open = ctk.CTkButton(
-                frame,
-                text="👁️ Öffnen",
-                width=80,
-                height=30,
-                command=self.handle_open
-            )
-            btn_open.pack(side="right", padx=(4, 10), pady=10)
 
         # 2. Lift and force topmost Z-order above maximized parent windows
         try:

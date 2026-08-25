@@ -19,7 +19,7 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.on_tags_updated = on_tags_updated
         self.initial_tab = initial_tab
 
-        self.title("🏷️ Tags & Programmbereiche Verwaltung")
+        self.title("🏷 Tags & Programmbereiche Verwaltung")
         self.geometry("680x640")
         self.minsize(580, 520)
         from utils.ui_utils import center_window
@@ -33,7 +33,7 @@ class TagManagementDialog(ctk.CTkToplevel):
         if initial_tab == "modules":
             self.tabview.set("🧩 Programmbereiche")
         else:
-            self.tabview.set("🏷️ Allgemeine Tags")
+            self.tabview.set("🏷 Allgemeine Tags")
 
         self.render_tags_list()
         self.render_modules_list()
@@ -43,7 +43,7 @@ class TagManagementDialog(ctk.CTkToplevel):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="🏷️ System-Tags & Programmbereiche", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text="🏷 System-Tags & Programmbereiche", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=(5, 10))
@@ -62,7 +62,7 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.tabview = ctk.CTkTabview(main_frame, command=self._on_tab_changed)
         self.tabview.pack(fill="both", expand=True, pady=(0, 5))
 
-        tab_tags = self.tabview.add("🏷️ Allgemeine Tags")
+        tab_tags = self.tabview.add("🏷 Allgemeine Tags")
         tab_modules = self.tabview.add("🧩 Programmbereiche")
 
         # --- TAB 1: ALLGEMEINE TAGS ---
@@ -143,9 +143,9 @@ class TagManagementDialog(ctk.CTkToplevel):
                 row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
                 row.pack(fill="x", pady=2, padx=5)
 
-                ctk.CTkLabel(row, text=f"🏷️  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+                ctk.CTkLabel(row, text=f"🏷  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
+                del_btn = ctk.CTkButton(row, text="🗑 Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.tags_scroll)
@@ -153,11 +153,11 @@ class TagManagementDialog(ctk.CTkToplevel):
     def on_add_tag(self):
         new_tag = self.new_tag_entry.get().strip()
         if not new_tag:
-            self.status_lbl.configure(text="⚠️ Tag Name darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text="⚠ Tag Name darf nicht leer sein!", text_color="red")
             return
 
         if new_tag in self.profile.available_tags:
-            self.status_lbl.configure(text="⚠️ Tag existiert bereits!", text_color="red")
+            self.status_lbl.configure(text="⚠ Tag existiert bereits!", text_color="red")
             return
 
         self.profile.available_tags.append(new_tag)
@@ -195,7 +195,7 @@ class TagManagementDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text="🗑️ Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
+                del_btn = ctk.CTkButton(row, text="🗑 Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.modules_scroll)
@@ -203,11 +203,11 @@ class TagManagementDialog(ctk.CTkToplevel):
     def on_add_module(self):
         new_mod = self.new_mod_entry.get().strip()
         if not new_mod:
-            self.status_lbl.configure(text="⚠️ Programmbereich darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text="⚠ Programmbereich darf nicht leer sein!", text_color="red")
             return
 
         if new_mod in self.profile.available_module_tags:
-            self.status_lbl.configure(text="⚠️ Programmbereich existiert bereits!", text_color="red")
+            self.status_lbl.configure(text="⚠ Programmbereich existiert bereits!", text_color="red")
             return
 
         self.profile.available_module_tags.append(new_mod)

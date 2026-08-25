@@ -12,7 +12,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.storage_service = storage_service
         self.on_profile_updated = on_profile_updated
 
-        self.title("⚙️ Profil & Einstellungen")
+        self.title("⚙ Profil & Einstellungen")
         self.geometry("960x780")
         self.minsize(880, 680)
         from utils.ui_utils import center_window
@@ -28,7 +28,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="⚙️ Profil & Anwendungseinstellungen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text="⚙ Profil & Anwendungseinstellungen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         # Tabview
         self.tabview = ctk.CTkTabview(self)
@@ -38,7 +38,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.tab_ui = self.tabview.add("🎨 Erscheinungsbild")
         self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
         self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
-        self.tab_scoring = self.tabview.add("⌨️ Tastenkürzel & Scoring")
+        self.tab_scoring = self.tabview.add("⌨ Tastenkürzel & Scoring")
         self.tab_backup = self.tabview.add("💾 Datensicherung")
 
         self.setup_user_tab()
@@ -357,7 +357,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         from pathlib import Path
         name = self.user_name_entry.get().strip()
         if not name:
-            self.status_lbl.configure(text="⚠️ Benutzername darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text="⚠ Benutzername darf nicht leer sein!", text_color="red")
             return
 
         # Update User
@@ -404,7 +404,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         keys_list = [k for k in (hk_new_val, hk_exp_val, hk_search_val) if k]
         if len(keys_list) != len(set(keys_list)):
-            self.status_lbl.configure(text="⚠️ Shortcut-Konflikt: Ein Hotkey darf nicht mehrfach zugewiesen werden!", text_color="red")
+            self.status_lbl.configure(text="⚠ Shortcut-Konflikt: Ein Hotkey darf nicht mehrfach zugewiesen werden!", text_color="red")
             return
 
         self.profile.shortcuts.new_case = hk_new_val

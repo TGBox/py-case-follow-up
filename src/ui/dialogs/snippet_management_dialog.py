@@ -96,7 +96,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         self.delete_btn = ctk.CTkButton(
             btn_row,
-            text="🗑️ Löschen",
+            text="🗑 Löschen",
             fg_color="crimson",
             hover_color="darkred",
             command=self.on_click_delete,
@@ -179,10 +179,10 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
 
         if not title:
-            self.status_lbl.configure(text="⚠️ Bitte einen Titel eingeben.", text_color="crimson")
+            self.status_lbl.configure(text="⚠ Bitte einen Titel eingeben.", text_color="crimson")
             return
         if not content:
-            self.status_lbl.configure(text="⚠️ Der Inhalt darf nicht leer sein.", text_color="crimson")
+            self.status_lbl.configure(text="⚠ Der Inhalt darf nicht leer sein.", text_color="crimson")
             return
 
         sid = self.selected_snippet.snippet_id if self.selected_snippet else ""

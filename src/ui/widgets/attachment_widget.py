@@ -69,7 +69,7 @@ class AttachmentWidget(ctk.CTkFrame):
             f_frame.pack(fill="x", pady=2, padx=2)
 
             is_img = f.suffix.lower() in (".png", ".jpg", ".jpeg", ".bmp", ".gif")
-            icon = "🖼️" if is_img else "📄"
+            icon = "🖼" if is_img else "📄"
             lbl_str = f"{icon} {f.name} ({f.stat().st_size / 1024:.1f} KB)"
 
             btn_lbl = ctk.CTkButton(
@@ -95,7 +95,7 @@ class AttachmentWidget(ctk.CTkFrame):
 
             btn_del = ctk.CTkButton(
                 f_frame,
-                text="🗑️",
+                text="🗑",
                 width=30,
                 fg_color="darkred",
                 hover_color="firebrick",
@@ -110,7 +110,7 @@ class AttachmentWidget(ctk.CTkFrame):
         if ext in (".png", ".jpg", ".jpeg", ".bmp", ".gif"):
             try:
                 pil_img = Image.open(filepath)
-                lbl = ctk.CTkLabel(self.preview_frame, text=f"🖼️ Bild Vorschau: {filepath.name}\nAuflösung: {pil_img.width} x {pil_img.height} px | Format: {pil_img.format}", font=ctk.CTkFont(size=12, weight="bold"))
+                lbl = ctk.CTkLabel(self.preview_frame, text=f"🖼 Bild Vorschau: {filepath.name}\nAuflösung: {pil_img.width} x {pil_img.height} px | Format: {pil_img.format}", font=ctk.CTkFont(size=12, weight="bold"))
                 lbl.pack(expand=True, pady=10)
             except Exception as err:
                 ctk.CTkLabel(self.preview_frame, text=f"Bild-Vorschau nicht verfügbar: {err}").pack(pady=10)

@@ -24,7 +24,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.on_save = on_save
 
         is_new = template is None
-        self.title("✏️ Vorlage bearbeiten" if not is_new else "➕ Neue Export-Vorlage")
+        self.title("✏ Vorlage bearbeiten" if not is_new else "➕ Neue Export-Vorlage")
         self.geometry("880x740")
         self.minsize(800, 640)
         from utils.ui_utils import center_window
@@ -42,7 +42,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        title_txt = "➕ Neue Export-Vorlage erstellen" if is_new else f"✏️ Vorlage bearbeiten: {self.template.display_name if self.template else ''}"
+        title_txt = "➕ Neue Export-Vorlage erstellen" if is_new else f"✏ Vorlage bearbeiten: {self.template.display_name if self.template else ''}"
         ctk.CTkLabel(top_bar, text=title_txt, font=ctk.CTkFont(size=15, weight="bold")).pack(side="left", padx=10)
 
         scroll_frame = ctk.CTkScrollableFrame(self)
@@ -127,7 +127,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
             self.template_textbox.insert("1.0", self.template.template_string)
 
         # Live Preview Panel
-        preview_btn = ctk.CTkButton(scroll_frame, text="👁️ Live-Vorschau rendern", command=self.render_preview, fg_color="dodgerblue")
+        preview_btn = ctk.CTkButton(scroll_frame, text="👁 Live-Vorschau rendern", command=self.render_preview, fg_color="dodgerblue")
         preview_btn.pack(anchor="w", pady=4)
 
         self.preview_textbox = ctk.CTkTextbox(scroll_frame, height=120, font=ctk.CTkFont(family="Consolas", size=11))
@@ -272,10 +272,10 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             id_lbl.pack(side="left", padx=8)
 
-            btn_del = ctk.CTkButton(top_row, text="🗑️ Löschen", width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
+            btn_del = ctk.CTkButton(top_row, text="🗑 Löschen", width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
             btn_del.pack(side="right", padx=4)
 
-            btn_edit = ctk.CTkButton(top_row, text="✏️ Bearbeiten", width=100, command=lambda t=tmpl: self.on_edit_template(t))
+            btn_edit = ctk.CTkButton(top_row, text="✏ Bearbeiten", width=100, command=lambda t=tmpl: self.on_edit_template(t))
             btn_edit.pack(side="right", padx=4)
 
             is_already_saved = any(

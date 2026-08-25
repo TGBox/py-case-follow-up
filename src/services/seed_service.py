@@ -123,8 +123,9 @@ class SeedService:
                     SchemaField(field_id="prescription_date", label="Datum der Verordnung", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=5),
                     SchemaField(field_id="patient_names", label="Namen der betroffenen Patienten", field_type=FieldType.TEXT, required=True, placeholder="z. B. Max Mustermann", order=6),
                     SchemaField(field_id="esol_filename", label="Name der originalen ESOL-Datei", field_type=FieldType.TEXT, required=True, placeholder="z. B. ESOL_20260801.dat", order=7),
-                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=8),
-                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=9),
+                    SchemaField(field_id="requested_files", label="Angeforderte Dateien & Korrekturdateien (Dateiname, Rechnungs-/VO-Nr., Patient, Grund je Zeile)", field_type=FieldType.TEXT, required=False, placeholder="z. B.\nESOL_20260801.dat | RE-2026-0815 | Max Mustermann | Fehlende Zuzahlung\nESOL_20260802.dat | RE-2026-0816 | Erika Muster | Falscher Kostenträger", order=8),
+                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=9),
+                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=10),
                 ],
             ),
             QuestionSchema(

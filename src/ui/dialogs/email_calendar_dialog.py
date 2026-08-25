@@ -23,7 +23,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.user_name = user_name
         self.snippet_service = snippet_service
 
-        self.title(f"✉️ E-Mail & 📅 Kalender-Entwurf - Fall {case.case_id}")
+        self.title(f"✉ E-Mail & 📅 Kalender-Entwurf - Fall {case.case_id}")
         self.geometry("760x660")
         self.minsize(720, 540)
 
@@ -46,7 +46,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             hdr_frame,
-            text=f"✉️ E-Mail-Entwurf & 📅 Kalender-Export (Fall {self.case.case_id})",
+            text=f"✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {self.case.case_id})",
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(anchor="w")
 
@@ -114,7 +114,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row1_btns,
-            text="✉️ Im Mail-Client öffnen",
+            text="✉ Im Mail-Client öffnen",
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,

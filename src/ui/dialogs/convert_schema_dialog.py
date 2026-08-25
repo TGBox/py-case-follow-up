@@ -87,7 +87,7 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         notice_frame.pack(fill="x", pady=(0, 15))
 
         notice_text = (
-            "ℹ️ Datensicherung:\n"
+            "ℹ Datensicherung:\n"
             "Beim Umwandeln werden bisher eingegebene Formular-Informationen als neue "
             "Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. "
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."

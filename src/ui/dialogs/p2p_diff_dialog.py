@@ -3,6 +3,7 @@ from typing import Callable
 from models.profile import Colleague
 from models.case import Case
 from services.p2p_sync_service import P2PSyncService, CaseDiffItem
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class P2PDiffDialog(ctk.CTkToplevel):
@@ -14,11 +15,12 @@ class P2PDiffDialog(ctk.CTkToplevel):
         on_sync_completed: Callable[[], None],
     ):
         super().__init__(parent)
-        self.title("Multi-User P2P-Sync & Kollegendaten-Abgleich")
-        self.geometry("920x720")
+        w, h = DIALOG_DIMENSIONS["p2p_diff"]
+        self.title(DIALOG_TITLES["p2p_diff"])
+        self.geometry(f"{w}x{h}")
         self.minsize(820, 620)
         from utils.ui_utils import center_window
-        center_window(self, 920, 720)
+        center_window(self, w, h)
 
         self.colleagues = colleagues
         self.p2p_service = p2p_service

@@ -8,6 +8,7 @@ from models.case import Case
 from models.customer import Customer
 from services.calendar_email_service import CalendarEmailService, format_german_salutation
 from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class EmailDraftDialog(ctk.CTkToplevel):
@@ -67,12 +68,13 @@ class EmailDraftDialog(ctk.CTkToplevel):
                     "search_key": f"{p_name} {c.email} {c_id}".lower(),
                 })
 
-        dialog_title = f"✉ E-Mail verfassen - Fall {case.case_id}" if case else "✉ E-Mail verfassen (Neuer Entwurf)"
+        dialog_title = f"{DIALOG_TITLES['email_draft']} - Fall {case.case_id}" if case else f"{DIALOG_TITLES['email_draft']} (Neuer Entwurf)"
         self.title(dialog_title)
-        self.geometry("760x640")
+        w, h = DIALOG_DIMENSIONS["email_draft"]
+        self.geometry(f"{w}x{h}")
         self.minsize(700, 520)
 
-        center_window(self, 760, 640)
+        center_window(self, w, h)
 
         try:
             self.transient(parent)

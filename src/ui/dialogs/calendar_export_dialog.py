@@ -6,6 +6,7 @@ from tkinter import filedialog
 from models.case import Case
 from services.calendar_email_service import CalendarEmailService
 from utils.datetime_utils import format_german_datetime
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class CalendarExportDialog(ctk.CTkToplevel):
@@ -21,12 +22,13 @@ class CalendarExportDialog(ctk.CTkToplevel):
         self.case = case
         self.service = calendar_email_service
 
-        self.title(f"📅 Kalendereintrag erstellen (.ics) - Fall {case.case_id}")
-        self.geometry("640x520")
+        w, h = DIALOG_DIMENSIONS["calendar_export"]
+        self.title(f"{DIALOG_TITLES['calendar_export']} - Fall {case.case_id}")
+        self.geometry(f"{w}x{h}")
         self.minsize(580, 440)
 
         from utils.ui_utils import center_window
-        center_window(self, 640, 520)
+        center_window(self, w, h)
 
         try:
             self.transient(parent)

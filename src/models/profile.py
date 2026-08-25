@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import SyncMode, LayoutMode
 from utils.security import normalize_url
-from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS
+from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS, VALIDATION_MESSAGES
 
 
 @dataclass
@@ -274,9 +274,9 @@ class Colleague:
     def validate(self) -> list[str]:
         errors = []
         if not self.username.strip():
-            errors.append("Kürzel / Username ist erforderlich.")
+            errors.append(VALIDATION_MESSAGES["username_required"])
         if not self.name.strip():
-            errors.append("Name ist erforderlich.")
+            errors.append(VALIDATION_MESSAGES["name_required"])
         return errors
 
     def to_dict(self) -> dict[str, Any]:

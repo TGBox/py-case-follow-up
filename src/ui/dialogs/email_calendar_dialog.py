@@ -4,6 +4,7 @@ from tkinter import filedialog
 from typing import Any
 from models.case import Case
 from services.calendar_email_service import CalendarEmailService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class EmailCalendarDialog(ctk.CTkToplevel):
@@ -23,12 +24,13 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.user_name = user_name
         self.snippet_service = snippet_service
 
-        self.title(f"✉ E-Mail & 📅 Kalender-Entwurf - Fall {case.case_id}")
-        self.geometry("760x660")
+        w, h = DIALOG_DIMENSIONS["email_calendar"]
+        self.title(f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}")
+        self.geometry(f"{w}x{h}")
         self.minsize(720, 540)
 
         from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
-        center_window(self, 760, 660)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

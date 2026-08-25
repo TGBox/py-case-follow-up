@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Callable
 from models.case import Case
 from utils.datetime_utils import format_german_datetime, parse_iso, get_local_now, format_german_date
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class FollowupFlyoutDialog(ctk.CTkToplevel):
@@ -14,12 +15,13 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         self.on_case_selected = on_case_selected
         self.on_refresh = on_refresh
 
-        self.title("🔔 Fällige Wiedervorlagen & Deadlines")
-        self.geometry("680x560")
+        w, h = DIALOG_DIMENSIONS["followup_flyout"]
+        self.title(DIALOG_TITLES["followup_flyout"])
+        self.geometry(f"{w}x{h}")
         self.minsize(640, 480)
 
         from utils.ui_utils import center_window
-        center_window(self, 680, 560)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

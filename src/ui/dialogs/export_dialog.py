@@ -6,6 +6,7 @@ from models.case import Case
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema
 from services.export_service import ExportService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class ExportDialog(ctk.CTkToplevel):
@@ -19,11 +20,12 @@ class ExportDialog(ctk.CTkToplevel):
         on_case_updated: Callable[[Case], None],
     ):
         super().__init__(parent)
-        self.title(f"Übergabe- & Export-Assistent — {case.case_id}")
-        self.geometry("820x760")
+        w, h = DIALOG_DIMENSIONS["export"]
+        self.title(f"{DIALOG_TITLES['export']} — {case.case_id}")
+        self.geometry(f"{w}x{h}")
         self.minsize(740, 660)
         from utils.ui_utils import center_window
-        center_window(self, 820, 760)
+        center_window(self, w, h)
 
         self.case = case
         self.templates = templates

@@ -4,6 +4,7 @@ from tkinter import filedialog
 from typing import Callable, Any
 from models.customer import Customer
 from services.cobra_crm_import_service import CobraCrmImportService, FIELD_ALIAS_MAP
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class CobraImportDialog(ctk.CTkToplevel):
@@ -14,12 +15,13 @@ class CobraImportDialog(ctk.CTkToplevel):
         self.existing_customers = existing_customers
         self.on_import_completed = on_import_completed
 
-        self.title("🐍 Cobra CRM Praxen-Import (CSV / TXT / JSON)")
-        self.geometry("860x680")
+        w, h = DIALOG_DIMENSIONS["cobra_import"]
+        self.title(DIALOG_TITLES["cobra_import"])
+        self.geometry(f"{w}x{h}")
         self.minsize(760, 540)
 
         from utils.ui_utils import center_window
-        center_window(self, 860, 680)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

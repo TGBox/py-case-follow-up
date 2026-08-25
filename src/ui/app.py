@@ -69,7 +69,10 @@ class SupportCockpitApp(ctk.CTk):
             self.state("zoomed")
         except Exception:
             pass
-        self.after(150, self._maximize_window)
+
+        self.bind("<Map>", self._on_window_mapped)
+        self.after(100, self._maximize_window)
+        self.after(400, self._maximize_window)
 
         # Set Theme
         theme_mode = self.profile.ui_settings.theme
@@ -629,6 +632,10 @@ class SupportCockpitApp(ctk.CTk):
     def open_snippet_management_dialog(self):
         from ui.dialogs.snippet_management_dialog import SnippetManagementDialog
         SnippetManagementDialog(self, snippet_service=self.snippet_service)
+
+    def _on_window_mapped(self, event=None):
+        if event and event.widget == self:
+            self._maximize_window()
 
     def _maximize_window(self):
         try:

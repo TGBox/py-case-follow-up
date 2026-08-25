@@ -85,11 +85,12 @@ def format_german_date(val: str | datetime | None) -> str:
         return val_str
 
 
-def format_german_datetime(val: str | datetime | None, include_seconds: bool = False) -> str:
-    """Formats ISO string or datetime to German format DD.MM.YYYY HH:MM (:SS)."""
+def format_german_time(val: str | datetime | None, include_seconds: bool = False, with_uhr: bool = True) -> str:
+    """Formats ISO string or datetime to German time format HH:MM(:SS) [Uhr]."""
     if not val:
         return ""
-    fmt = "%d.%m.%Y %H:%M:%S" if include_seconds else "%d.%m.%Y %H:%M"
+    suffix = " Uhr" if with_uhr else ""
+    fmt = f"%H:%M:%S{suffix}" if include_seconds else f"%H:%M{suffix}"
     if isinstance(val, datetime):
         return val.strftime(fmt)
     val_str = val.strip()
@@ -99,6 +100,34 @@ def format_german_datetime(val: str | datetime | None, include_seconds: bool = F
         dt = parse_iso(val_str)
         return dt.strftime(fmt)
     except Exception:
+        clean = val_str.replace("Uhr", "").strip()
+        if re.match(r"^\d{1,2}:\d{2}", clean):
+            return f"{clean[:5]}{suffix}"
+        return val_str
+
+
+def format_german_datetime(
+    val: str | datetime | None,
+    include_seconds: bool = False,
+    with_uhr: bool = True,
+) -> str:
+    """Formats ISO string or datetime to German format DD.MM.YYYY HH:MM(:SS) [Uhr]."""
+    if not val:
+        return ""
+    suffix = " Uhr" if with_uhr else ""
+    fmt = f"%d.%m.%Y %H:%M:%S{suffix}" if include_seconds else f"%d.%m.%Y %H:%M{suffix}"
+    if isinstance(val, datetime):
+        return val.strftime(fmt)
+    val_str = val.strip()
+    if not val_str:
+        return ""
+    try:
+        dt = parse_iso(val_str)
+        return dt.strftime(fmt)
+    except Exception:
+        clean = val_str.replace("Uhr", "").strip()
+        if re.match(r"^\d{2}\.\d{2}\.\d{4}\s+\d{1,2}:\d{2}", clean):
+            return f"{clean}{suffix}"
         return val_str
 
 
@@ -106,7 +135,7 @@ def parse_german_date(german_str: str) -> str:
     """Parses German format DD.MM.YYYY [HH:MM] into ISO format string YYYY-MM-DD[THH:MM:SS]."""
     if not german_str or not german_str.strip():
         return ""
-    cleaned = german_str.strip()
+    cleaned = german_str.replace("Uhr", "").strip()
     # Try DD.MM.YYYY HH:MM:SS
     for fmt, iso_fmt in [
         ("%d.%m.%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"),
@@ -121,3 +150,4 @@ def parse_german_date(german_str: str) -> str:
         except ValueError:
             continue
     return cleaned
+

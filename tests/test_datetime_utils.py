@@ -16,7 +16,8 @@ def test_format_german_date_and_datetime():
     assert g_date == "23.08.2026"
 
     g_dt = format_german_datetime(dt)
-    assert g_dt == "23.08.2026 14:30"
+    assert g_dt == "23.08.2026 14:30 Uhr"
+    assert format_german_datetime(dt, with_uhr=False) == "23.08.2026 14:30"
 
 
 def test_parse_german_date_to_iso():

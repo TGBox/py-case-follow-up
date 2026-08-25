@@ -2,8 +2,9 @@ import customtkinter as ctk
 from typing import Callable, Any
 from models.profile import Colleague
 from services.storage_service import StorageService
+from constants import DEFAULT_DEPARTMENTS, DIALOG_DIMENSIONS
 
-DEPARTMENTS = ["Support", "Entwicklung", "Technik", "Vertrieb", "Buchhaltung", "Geschäftsführung", "Sonstige"]
+DEPARTMENTS = DEFAULT_DEPARTMENTS
 
 
 class ColleagueManagementDialog(ctk.CTkToplevel):
@@ -19,11 +20,12 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.storage_service = storage_service
         self.on_colleagues_updated = on_colleagues_updated
 
+        w, h = DIALOG_DIMENSIONS["colleague_mgmt"]
         self.title("👥 Mitarbeiter- & Kollegeneinträge")
-        self.geometry("1024x720")
+        self.geometry(f"{w}x{h}")
         self.minsize(900, 600)
         from utils.ui_utils import center_window
-        center_window(self, 1024, 720)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

@@ -20,7 +20,7 @@ class CalendarDialog(ctk.CTkToplevel):
         self.include_time = include_time
 
         self.title("📅 Datum auswählen")
-        self.geometry("380x440" if include_time else "380x380")
+        self.geometry("420x460" if include_time else "380x380")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -42,10 +42,30 @@ class CalendarDialog(ctk.CTkToplevel):
         self.current_month = self.selected_dt.month
         self.selected_day = self.selected_dt.day
 
-        self.hour_var = ctk.StringVar(value=f"{self.selected_dt.hour:02d}")
+        # Clamp initial hour between 7 and 20
+        clamped_hour = max(7, min(20, self.selected_dt.hour))
+        self.hour_var = ctk.StringVar(value=f"{clamped_hour:02d}")
         self.minute_var = ctk.StringVar(value=f"{self.selected_dt.minute:02d}")
 
         self.create_widgets()
+
+    def step_hour(self, delta: int):
+        try:
+            curr = int(self.hour_var.get())
+        except Exception:
+            curr = 8
+        new_val = max(7, min(20, curr + delta))
+        self.hour_var.set(f"{new_val:02d}")
+
+    def step_minute(self, delta_mins: int):
+        try:
+            curr = int(self.minute_var.get())
+        except Exception:
+            curr = 0
+        new_val = (curr + delta_mins) % 60
+        # Round to nearest 5 minutes
+        new_val = (new_val // 5) * 5
+        self.minute_var.set(f"{new_val:02d}")
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -84,29 +104,58 @@ class CalendarDialog(ctk.CTkToplevel):
         self.days_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         self.days_frame.pack(fill="both", expand=True)
 
-        # Time Picker Row if enabled
+        # Time Picker Row with 07-20 range and steppers
         if self.include_time:
             time_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
             time_frame.pack(fill="x", pady=(10, 5))
 
-            ctk.CTkLabel(time_frame, text="Uhrzeit:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(5, 10))
+            ctk.CTkLabel(time_frame, text="Uhrzeit:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(5, 8))
 
-            hours = [f"{h:02d}" for h in range(24)]
+            # Hours: 07 to 20
+            hours = [f"{h:02d}" for h in range(7, 21)]
+            if self.hour_var.get() not in hours:
+                self.hour_var.set("08")
+
+            btn_h_down = ctk.CTkButton(
+                time_frame, text="▼", width=26, height=28, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.step_hour(-1)
+            )
+            btn_h_down.pack(side="left", padx=(0, 2))
+
             self.hour_menu = ctk.CTkOptionMenu(
-                time_frame, values=hours, variable=self.hour_var, width=70
+                time_frame, values=hours, variable=self.hour_var, width=65
             )
             self.hour_menu.pack(side="left", padx=2)
 
-            ctk.CTkLabel(time_frame, text=":", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=2)
+            btn_h_up = ctk.CTkButton(
+                time_frame, text="▲", width=26, height=28, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.step_hour(1)
+            )
+            btn_h_up.pack(side="left", padx=(2, 6))
 
+            ctk.CTkLabel(time_frame, text=":", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=2)
+
+            # Minutes: 00 to 55 in 5 min steps
             minutes = [f"{m:02d}" for m in range(0, 60, 5)]
             if self.minute_var.get() not in minutes:
                 minutes.append(self.minute_var.get())
                 minutes.sort()
+
+            btn_m_down = ctk.CTkButton(
+                time_frame, text="▼", width=26, height=28, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.step_minute(-5)
+            )
+            btn_m_down.pack(side="left", padx=(6, 2))
+
             self.min_menu = ctk.CTkOptionMenu(
-                time_frame, values=minutes, variable=self.minute_var, width=70
+                time_frame, values=minutes, variable=self.minute_var, width=65
             )
             self.min_menu.pack(side="left", padx=2)
+
+            btn_m_up = ctk.CTkButton(
+                time_frame, text="▲", width=26, height=28, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.step_minute(5)
+            )
+            btn_m_up.pack(side="left", padx=(2, 0))
+
+            ctk.CTkLabel(time_frame, text="Uhr", font=ctk.CTkFont(size=11)).pack(side="left", padx=(6, 0))
+
 
         # Presets Rows
         presets_frame1 = ctk.CTkFrame(main_frame, fg_color="transparent")

@@ -417,8 +417,9 @@ def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
             self.x_root = x_root
 
     resized_widths = {}
-    def on_width_changed(key, w):
-        resized_widths[key] = w
+    def on_width_changed(key, w_side, w_center):
+        resized_widths[key] = w_side
+        resized_widths["cockpit_center"] = w_center
 
     splitter_left: Any = CockpitColumnSplitter.__new__(CockpitColumnSplitter)
     splitter_left.column_key = "cockpit_left"

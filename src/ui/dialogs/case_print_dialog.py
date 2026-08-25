@@ -71,11 +71,43 @@ class CasePrintDialog(ctk.CTkToplevel):
 
         # Action bar
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", side="bottom")
+        btn_frame.pack(fill="x", side="bottom", pady=(5, 0))
 
-        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_destroy, width=90).pack(side="left")
-        ctk.CTkButton(btn_frame, text="💾 Als HTML/PDF-Bericht speichern...", fg_color="royalblue", hover_color="blue", command=self.generate_and_save_file, width=220).pack(side="right", padx=(6, 0))
-        ctk.CTkButton(btn_frame, text="🖨 Im Browser öffnen & Drucken", fg_color="forestgreen", hover_color="darkgreen", command=self.generate_and_open_html, width=210).pack(side="right")
+        ctk.CTkButton(
+            btn_frame,
+            text="Abbrechen",
+            fg_color=("gray70", "gray40"),
+            hover_color=("gray60", "gray50"),
+            command=self.safe_destroy,
+            width=90,
+        ).pack(side="left")
+
+        ctk.CTkButton(
+            btn_frame,
+            text="🖨 PDF-Bericht drucken",
+            fg_color="forestgreen",
+            hover_color="darkgreen",
+            command=self.generate_and_print_pdf,
+            width=175,
+        ).pack(side="right", padx=(6, 0))
+
+        ctk.CTkButton(
+            btn_frame,
+            text="🌐 HTML-Bericht",
+            fg_color="#2563eb",
+            hover_color="#1d4ed8",
+            command=self.generate_and_open_html,
+            width=135,
+        ).pack(side="right", padx=(6, 0))
+
+        ctk.CTkButton(
+            btn_frame,
+            text="💾 Speichern...",
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            command=self.generate_and_save_file,
+            width=110,
+        ).pack(side="right")
 
     def safe_destroy(self):
         try:
@@ -93,7 +125,7 @@ class CasePrintDialog(ctk.CTkToplevel):
         except Exception:
             pass
 
-    def build_html_content(self, auto_print: bool = True) -> str:
+    def build_html_content(self, auto_print: bool = False) -> str:
         selected_entries = [self.case.timeline[idx] for var, idx in self.timeline_vars if var.get()]
 
         status_disp = get_board_column_display(self.case.workflow_status.board_column)
@@ -107,6 +139,12 @@ window.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() { window.print(); }, 400);
 });
 </script>""" if auto_print else ""
+
+        banner_text = (
+            "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“."
+            if auto_print
+            else f"<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {self.case.case_id}."
+        )
 
         html_lines = [
             "<!DOCTYPE html>",
@@ -131,8 +169,8 @@ window.addEventListener('DOMContentLoaded', function() {
             print_script,
             "</head><body>",
             "<div class='no-print'>",
-            "  <div><strong>Druckansicht Fall-Akte</strong> — Klicken Sie auf Drucken oder speichern Sie die Datei als PDF.</div>",
-            "  <button class='print-btn' onclick='window.print()'>🖨 Als PDF speichern / Drucken</button>",
+            f"  <div>{banner_text}</div>",
+            "  <button class='print-btn' onclick='window.print()'>🖨 Drucken / Als PDF speichern</button>",
             "</div>",
             f"<h1>Fall-Akte: {self.case.case_id} — {self.case.classification.title}</h1>",
             "<table>",
@@ -208,15 +246,27 @@ window.addEventListener('DOMContentLoaded', function() {
         return "\n".join(html_lines)
 
     def generate_and_open_html(self):
+        """Generates clean HTML report and opens it in the default browser without triggering print."""
+        html_content = self.build_html_content(auto_print=False)
+        temp_dir = Path(tempfile.gettempdir())
+        html_file = temp_dir / f"Fallbericht_{self.case.case_id}.html"
+        html_file.write_text(html_content, encoding="utf-8")
+
+        webbrowser.open(html_file.as_uri())
+        self.safe_destroy()
+
+    def generate_and_print_pdf(self):
+        """Generates printable report and automatically triggers the print/Save-to-PDF dialog."""
         html_content = self.build_html_content(auto_print=True)
         temp_dir = Path(tempfile.gettempdir())
-        html_file = temp_dir / f"Case_{self.case.case_id}_Print.html"
+        html_file = temp_dir / f"Fallbericht_{self.case.case_id}_Print.html"
         html_file.write_text(html_content, encoding="utf-8")
 
         webbrowser.open(html_file.as_uri())
         self.safe_destroy()
 
     def generate_and_save_file(self):
+        """Prompts user to save the static HTML report file."""
         from tkinter import filedialog
         file_path = filedialog.asksaveasfilename(
             parent=self,

@@ -44,5 +44,21 @@ def test_case_print_build_html_content(tmp_path: Path):
     assert "window.addEventListener('DOMContentLoaded'" not in html_static
     assert "T-2026-PRINT-OPT" in html_static
 
-    dialog.destroy()
+    # Test generate_and_open_html and generate_and_print_pdf
+    opened_uris = []
+    import webbrowser
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(webbrowser, "open", lambda uri: opened_uris.append(uri))
+
+    dialog.generate_and_open_html()
+    assert len(opened_uris) == 1
+    assert "Fallbericht_T-2026-PRINT-OPT.html" in opened_uris[0]
+
+    # Recreate dialog for print test
+    dialog2 = CasePrintDialog(app, case, attachment_service=att_service)
+    dialog2.generate_and_print_pdf()
+    assert len(opened_uris) == 2
+    assert "Fallbericht_T-2026-PRINT-OPT_Print.html" in opened_uris[1]
+
+    monkeypatch.undo()
     app.destroy()

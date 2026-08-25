@@ -216,6 +216,7 @@ def test_p2p_diff_dialog_lifecycle(ui_fixture):
     dialog.update_idletasks()
 
     assert dialog.winfo_exists()
+    assert dialog.active_colleague is not None
     assert dialog.active_colleague.username == "col1"
 
     dialog.destroy()
@@ -238,6 +239,7 @@ def test_export_dialog_lifecycle(ui_fixture):
     dialog.update_idletasks()
 
     assert dialog.winfo_exists()
+    assert dialog.active_template is not None
     assert dialog.active_template.template_id == "t1"
 
     dialog.destroy()
@@ -276,7 +278,7 @@ def test_tag_management_and_profile_settings_dialogs_lifecycle(ui_fixture):
         app,
         profile=profile,
         storage_service=storage,
-        on_profile_updated=lambda p: None,
+        on_profile_updated=lambda: None,
     )
     dlg_profile.update_idletasks()
     assert dlg_profile.winfo_exists()

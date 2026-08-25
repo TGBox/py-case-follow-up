@@ -18,6 +18,54 @@ from ui.widgets.attachment_widget import AttachmentWidget
 from ui.widgets.wiki_widget import WikiWidget
 
 
+class CockpitColumnSplitter(ctk.CTkFrame):
+    """Interactive vertical splitter bar to drag and resize Cockpit sidebars."""
+
+    def __init__(
+        self,
+        parent,
+        column_key: str,
+        profile: UserProfile | None,
+        storage_service: StorageService | None,
+        on_width_changed: Callable[[str, int], None] | None = None,
+    ):
+        super().__init__(parent, fg_color=("gray75", "gray35"), width=5, cursor="sb_h_double_arrow")
+        self.column_key = column_key
+        self.profile = profile
+        self.storage_service = storage_service
+        self.on_width_changed = on_width_changed
+        self.start_x = 0
+        self.start_width = 300
+
+        self.bind("<Button-1>", self.on_press)
+        self.bind("<B1-Motion>", self.on_drag)
+        self.bind("<ButtonRelease-1>", self.on_release)
+
+    def on_press(self, event):
+        self.start_x = event.x_root
+        if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
+            self.start_width = self.profile.ui_settings.column_widths.get(self.column_key, 300)
+        else:
+            self.start_width = 300
+
+    def on_drag(self, event):
+        delta = event.x_root - self.start_x
+        if self.column_key == "cockpit_right":
+            new_w = max(200, min(650, self.start_width - delta))
+        else:
+            new_w = max(180, min(600, self.start_width + delta))
+
+        if self.profile and hasattr(self.profile, "ui_settings"):
+            self.profile.ui_settings.column_widths[self.column_key] = new_w
+
+        if self.on_width_changed:
+            self.on_width_changed(self.column_key, new_w)
+
+    def on_release(self, event):
+        if self.profile and self.storage_service:
+            self.storage_service.save_profile(self.profile)
+
+
 class CockpitView(ctk.CTkFrame):
     def __init__(
         self,
@@ -65,18 +113,34 @@ class CockpitView(ctk.CTkFrame):
         w_center = widths.get("cockpit_center", 420)
         w_right = widths.get("cockpit_right", 320)
         self.grid_columnconfigure(0, weight=w_left, minsize=180)
-        self.grid_columnconfigure(1, weight=w_center, minsize=260)
-        self.grid_columnconfigure(2, weight=w_right, minsize=200)
+        self.grid_columnconfigure(1, weight=0)
+        self.grid_columnconfigure(2, weight=w_center, minsize=260)
+        self.grid_columnconfigure(3, weight=0)
+        self.grid_columnconfigure(4, weight=w_right, minsize=200)
+
+    def on_splitter_width_changed(self, column_key: str, new_width: int):
+        if column_key == "cockpit_left":
+            self.grid_columnconfigure(0, weight=new_width)
+        elif column_key == "cockpit_right":
+            self.grid_columnconfigure(4, weight=new_width)
 
     def create_layout(self):
-        # 3-Column Layout with configurable weights
-        w_left = self.app_config.column_widths.get("cockpit_left", 300) if (self.app_config and hasattr(self.app_config, "column_widths")) else 300
-        w_center = self.app_config.column_widths.get("cockpit_center", 420) if (self.app_config and hasattr(self.app_config, "column_widths")) else 420
-        w_right = self.app_config.column_widths.get("cockpit_right", 320) if (self.app_config and hasattr(self.app_config, "column_widths")) else 320
+        # 5-Column Layout with splitters (Col 0: Left, Col 1: Splitter L, Col 2: Center, Col 3: Splitter R, Col 4: Right)
+        widths = {}
+        if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
+            widths = self.profile.ui_settings.column_widths
+        elif self.app_config and hasattr(self.app_config, "column_widths"):
+            widths = self.app_config.column_widths
+
+        w_left = widths.get("cockpit_left", 300)
+        w_center = widths.get("cockpit_center", 420)
+        w_right = widths.get("cockpit_right", 320)
 
         self.grid_columnconfigure(0, weight=w_left, minsize=180)
-        self.grid_columnconfigure(1, weight=w_center, minsize=260)
-        self.grid_columnconfigure(2, weight=w_right, minsize=200)
+        self.grid_columnconfigure(1, weight=0)
+        self.grid_columnconfigure(2, weight=w_center, minsize=260)
+        self.grid_columnconfigure(3, weight=0)
+        self.grid_columnconfigure(4, weight=w_right, minsize=200)
         self.grid_rowconfigure(0, weight=1)
 
         # 1. Left Column: Case List
@@ -86,11 +150,21 @@ class CockpitView(ctk.CTkFrame):
             on_search_changed=self.on_search_changed,
             on_toggle_deep_search=lambda active: self.on_search_changed(self.left_frame.search_entry.get()),
         )
-        self.left_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        self.left_frame.grid(row=0, column=0, sticky="nsew", padx=(5, 1), pady=5)
+
+        # Splitter 1: Left / Center
+        self.splitter_left = CockpitColumnSplitter(
+            self,
+            column_key="cockpit_left",
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_width_changed=self.on_splitter_width_changed,
+        )
+        self.splitter_left.grid(row=0, column=1, sticky="ns", padx=1, pady=5)
 
         # 2. Center Column: Case Details & Dynamic Form
         self.center_frame = ctk.CTkFrame(self)
-        self.center_frame.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
+        self.center_frame.grid(row=0, column=2, sticky="nsew", padx=1, pady=5)
 
         # Center Header Controls
         self.center_header = ctk.CTkFrame(self.center_frame, fg_color="transparent")
@@ -172,9 +246,19 @@ class CockpitView(ctk.CTkFrame):
         )
         self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
 
+        # Splitter 2: Center / Right
+        self.splitter_right = CockpitColumnSplitter(
+            self,
+            column_key="cockpit_right",
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_width_changed=self.on_splitter_width_changed,
+        )
+        self.splitter_right.grid(row=0, column=3, sticky="ns", padx=1, pady=5)
+
         # 3. Right Column: Tabbed Sidebar (Timeline, Attachments, Wiki)
         self.right_tabview = ctk.CTkTabview(self)
-        self.right_tabview.grid(row=0, column=2, sticky="nsew", padx=5, pady=5)
+        self.right_tabview.grid(row=0, column=4, sticky="nsew", padx=(1, 5), pady=5)
 
         tab_timeline = self.right_tabview.add("Zeitleiste")
         tab_attachments = self.right_tabview.add("Anhänge")

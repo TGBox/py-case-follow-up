@@ -180,12 +180,12 @@ class CockpitView(ctk.CTkFrame):
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
         self.print_btn = ctk.CTkButton(
-            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=90, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            self.center_header, text="🖨 Drucken", command=self.on_click_print, width=90, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         self.print_btn.pack(side="right", padx=3)
 
         self.email_cal_btn = ctk.CTkButton(
-            self.center_header, text="✉️ E-Mail/Kalender", command=self.on_click_email_calendar, width=125, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
+            self.center_header, text="✉ E-Mail/Kalender", command=self.on_click_email_calendar, width=125, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
         )
         self.email_cal_btn.pack(side="right", padx=3)
 
@@ -319,7 +319,7 @@ class CockpitView(ctk.CTkFrame):
     def on_click_print(self):
         if self.current_case:
             from ui.dialogs.case_print_dialog import CasePrintDialog
-            CasePrintDialog(self, self.current_case)
+            CasePrintDialog(self, self.current_case, attachment_service=self.attachment_service)
 
     def on_click_email_calendar(self):
         if self.current_case and self.on_open_email_calendar:

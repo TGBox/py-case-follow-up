@@ -13,7 +13,7 @@ DEFAULT_SNIPPETS = [
     ),
     Snippet(
         snippet_id="SNIP-02",
-        title="🛠️ Ersthilfe: PVS & Support-Dienst neustarten",
+        title="🛠 Ersthilfe: PVS & Support-Dienst neustarten",
         category="Anleitung",
         content="Schritte zur Ersthilfe:\n1. PVS an allen Arbeitsplätzen beenden.\n2. Support-Dienst auf dem Hauptserver neustarten.\n3. PVS erneut öffnen und Funktion testen.",
         tags=["ersthilfe", "neustart", "pvs"],

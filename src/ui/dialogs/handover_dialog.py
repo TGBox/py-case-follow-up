@@ -137,7 +137,7 @@ class HandoverDialog(ctk.CTkToplevel):
                 if c.name == name_part:
                     if c.is_absent:
                         reason = f" ({c.absence_reason})" if c.absence_reason else ""
-                        self.absence_warn_lbl.configure(text=f"⚠️ ACHTUNG: {c.name} ist aktuell abwesend{reason}!", text_color="darkorange")
+                        self.absence_warn_lbl.configure(text=f"⚠ ACHTUNG: {c.name} ist aktuell abwesend{reason}!", text_color="darkorange")
                     break
 
             col = next((c for c in self.colleagues if c.name == name_part), None)

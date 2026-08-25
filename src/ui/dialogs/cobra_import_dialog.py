@@ -118,7 +118,7 @@ class CobraImportDialog(ctk.CTkToplevel):
         try:
             self.raw_rows, self.headers = CobraCrmImportService.parse_file(fp)
             if not self.raw_rows:
-                self.summary_lbl.configure(text="⚠️ Keine Datensätze in der Datei gefunden.", text_color="crimson")
+                self.summary_lbl.configure(text="⚠ Keine Datensätze in der Datei gefunden.", text_color="crimson")
                 return
 
             self.mapping = CobraCrmImportService.auto_detect_mapping(self.headers)
@@ -185,7 +185,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         mode_str = self.mode_combo.get()
 
-        msg = f"✓ {tot} Praxen erkannt  |  🆕 {new_cnt} neue Praxen  |  ⚠️ {dup_cnt} bereits vorhandene Praxen (Duplikate)"
+        msg = f"✓ {tot} Praxen erkannt  |  🆕 {new_cnt} neue Praxen  |  ⚠ {dup_cnt} bereits vorhandene Praxen (Duplikate)"
         self.summary_lbl.configure(text=msg, text_color="limegreen" if new_cnt > 0 else "dodgerblue")
 
         # Render preview items
@@ -194,7 +194,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         for c in self.mapped_customers[:15]:
             is_dup = any(d["imported"].customer_id == c.customer_id for d in diff["duplicates"])
-            badge = "⚠️ Duplikat" if is_dup else "🆕 Neu"
+            badge = "⚠ Duplikat" if is_dup else "🆕 Neu"
             badge_color = "darkorange" if is_dup else "limegreen"
 
             row_f = ctk.CTkFrame(self.preview_box, fg_color=("gray90", "gray15"), corner_radius=4)

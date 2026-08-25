@@ -277,7 +277,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                 if self.on_manage_module_tags:
                     ctk.CTkButton(
                         label_row,
-                        text="⚙️ Programmbereiche verwalten",
+                        text="⚙ Programmbereiche verwalten",
                         width=140,
                         height=22,
                         fg_color=("gray75", "gray30"),
@@ -459,7 +459,8 @@ class DynamicFormWidget(ctk.CTkFrame):
             # 7. MULTILINE TEXTBOX FIELD
             elif any(k in fid_lower or k in flabel_lower for k in (
                 "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
-                "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung"
+                "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
+                "dateien", "dateianfragen", "files", "anfragen", "liste", "korrekturdateien"
             )):
                 saved_height = 90
                 if self.profile and self.profile.ui_settings:
@@ -588,14 +589,14 @@ class DynamicFormWidget(ctk.CTkFrame):
             frow.pack(fill="x", pady=2)
 
             is_backup = f_name == "data-al.backup"
-            icon = "🗄️" if is_backup else "📄"
+            icon = "🗄" if is_backup else "📄"
 
             lbl_txt = f"{icon} {f_name} ({size_kb:.1f} KB)"
             ctk.CTkLabel(frow, text=lbl_txt, font=ctk.CTkFont(size=11), anchor="w").pack(side="left", padx=8, expand=True, fill="x")
 
             ctk.CTkButton(
                 frow,
-                text="👁️ Öffnen",
+                text="👁 Öffnen",
                 width=65,
                 height=20,
                 fg_color="gray35",

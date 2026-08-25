@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
 import re
 
 
@@ -83,6 +83,80 @@ def format_german_date(val: str | datetime | None) -> str:
         if re.match(r"^\d{2}\.\d{2}\.\d{4}", val_str):
             return val_str[:10]
         return val_str
+
+
+def get_relative_date_text(val: str | datetime | None, ref_date: date | datetime | None = None) -> str:
+    """Calculates relative German date description such as 'heute', 'morgen', 'übermorgen',
+    'gestern', 'vorgestern', 'diese Woche', 'nächste Woche', 'letzte Woche', 'in X Tagen', 'vor X Tagen'.
+    """
+    if not val:
+        return ""
+    try:
+        if isinstance(val, datetime):
+            target_dt = val
+        elif isinstance(val, date):
+            target_dt = datetime.combine(val, datetime.min.time())
+        else:
+            val_str = val.strip()
+            if not val_str:
+                return ""
+            target_dt = parse_iso(val_str)
+    except Exception:
+        clean = val.replace("Uhr", "").strip() if isinstance(val, str) else ""
+        if re.match(r"^\d{2}\.\d{2}\.\d{4}", clean):
+            try:
+                target_dt = datetime.strptime(clean[:10], "%d.%m.%Y")
+            except Exception:
+                return ""
+        else:
+            return ""
+
+    if ref_date is None:
+        today = get_local_now().date()
+    elif isinstance(ref_date, datetime):
+        today = ref_date.date()
+    else:
+        today = ref_date
+
+    target_date = target_dt.date() if isinstance(target_dt, datetime) else target_dt
+    diff_days = (target_date - today).days
+
+    if diff_days == 0:
+        return "heute"
+    if diff_days == 1:
+        return "morgen"
+    if diff_days == 2:
+        return "übermorgen"
+    if diff_days == -1:
+        return "gestern"
+    if diff_days == -2:
+        return "vorgestern"
+
+    target_year, target_week, _ = target_date.isocalendar()
+    today_year, today_week, _ = today.isocalendar()
+
+    if diff_days > 2:
+        if target_year == today_year and target_week == today_week:
+            return "diese Woche"
+        if (target_year == today_year and target_week == today_week + 1) or (target_year == today_year + 1 and today_week >= 52 and target_week == 1):
+            return "nächste Woche"
+        return f"in {diff_days} Tagen"
+    else:
+        if target_year == today_year and target_week == today_week:
+            return "diese Woche"
+        if (target_year == today_year and target_week == today_week - 1) or (target_year == today_year - 1 and today_week == 1 and target_week >= 52):
+            return "letzte Woche"
+        return f"vor {abs(diff_days)} Tagen"
+
+
+def format_german_date_with_relative(val: str | datetime | None, ref_date: date | datetime | None = None) -> str:
+    """Formats date to 'DD.MM.YYYY (Relativ)' e.g. '26.08.2026 (morgen)'."""
+    d_str = format_german_date(val)
+    if not d_str:
+        return ""
+    rel = get_relative_date_text(val, ref_date=ref_date)
+    return f"{d_str} ({rel})" if rel else d_str
+
 
 
 def format_german_time(val: str | datetime | None, include_seconds: bool = False, with_uhr: bool = True) -> str:

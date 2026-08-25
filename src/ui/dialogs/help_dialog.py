@@ -44,7 +44,7 @@ In der oberen Menüleiste können Sie jederzeit zwischen 3 Ansichten umschalten:
 #### 1. 📅 Deutsche Datumsformatierung
 - Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.
 
-#### 2. 🗓️ Interaktiver Kalender-Picker
+#### 2. 🗓 Interaktiver Kalender-Picker
 - Bei allen Datumseingaben (z. B. Wiedervorlage einplanen, Rückruf-Deadline festlegen) steht ein interaktiver Kalender-Dialog zur Verfügung.
 - Klicken Sie neben dem Eingabefeld auf **📅 Kalender**, um den Monatskalender zu öffnen und das gewünschte Datum bequem per Klick auszuwählen.
 - Schnellauswahl-Tasten für *Heute*, *+ 1 Tag* und *+ 1 Woche* beschleunigen die Eingabe.
@@ -105,7 +105,7 @@ Ein Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich.
 Unterschiedliche Support-Typen (z.B. Hardware-Tausch, Abrechnungsfrage, Schnittstellen-Problem) erfordern unterschiedliche Informationen.
 
 #### Eigene Formulare erstellen & anpassen
-1. Klicken Sie in der Menüleiste auf **🛠️ Formular-Baukasten**.
+1. Klicken Sie in der Menüleiste auf **🛠 Formular-Baukasten**.
 2. Erstellen Sie ein neues Schema (z.B. *"PVS-Schnittstelle"*) oder bearbeiten Sie ein bestehendes.
 3. Fügen Sie eigene Felder hinzu:
    - **Text-Felder** (z.B. Fehlermeldung)
@@ -171,10 +171,10 @@ Arbeiten Sie mit Kollegen ohne zentralen Server zusammen! Die P2P-Sync ermöglic
     },
     {
         "id": "shortcuts",
-        "title": "⌨️ Tastenkürzel & Hotkeys",
+        "title": "⌨ Tastenkürzel & Hotkeys",
         "category": "Tastenkürzel",
         "content": """
-### ⌨️ Tastenkürzel (Shortcuts)
+### ⌨ Tastenkürzel (Shortcuts)
 
 Arbeiten Sie noch schneller mit folgenden Hotkeys:
 
@@ -224,14 +224,14 @@ Das **Support-Cockpit** speichert Arbeitsdaten getrennt von Programmdateien. Die
 Im **Export-Vorlagen-Editor** können Sie bestehende Übergabevorlagen anpassen oder völlig neue Exportformate definieren.
 
 #### Vorlagen-Manager öffnen
-- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠️ Vorlagen verwalten**.
+- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠 Vorlagen verwalten**.
 
 #### Vorlage konfigurieren
 1. **Name & ID**: Vergeben Sie eine eindeutige ID und einen lesbaren Anzeigenamen.
 2. **Ziel-Aktion**: Wählen Sie zwischen Zwischenablage-Text und Datei-Export.
 3. **Zugeordnete Formulare**: Aktivieren Sie die Häkchen bei den Formular-Schemas, für die die Vorlage angeboten werden soll.
 4. **Erforderliche Pflichtfelder**: Legen Sie fest, welche Felder im Fall ausgefüllt sein müssen, bevor exportiert werden darf.
-5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁️ Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!
+5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁 Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!
 """
     },
     {

@@ -85,7 +85,7 @@ class P2PDiffDialog(ctk.CTkToplevel):
 
         success, msg, remote_cases = self.p2p_service.read_colleague_cases(self.active_colleague)
         if not success:
-            self.status_label.configure(text=f"⚠️ {msg}", text_color="red")
+            self.status_label.configure(text=f"⚠ {msg}", text_color="red")
             self.render_diff_list([])
             return
 

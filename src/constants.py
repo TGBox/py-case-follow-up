@@ -40,6 +40,7 @@ DIALOG_DIMENSIONS = {
     "handover": (520, 460),
     "zip_import": (560, 380),
     "snippet_mgmt": (820, 600),
+    "snippet_picker": (640, 480),
     "email_draft": (720, 640),
     "calendar_export": (540, 420),
     "help": (760, 620),
@@ -54,6 +55,10 @@ COLOR_SUCCESS_HOVER = "darkgreen"
 COLOR_CANCEL = ("gray70", "gray40")
 COLOR_CANCEL_HOVER = ("gray60", "gray50")
 COLOR_DANGER = "crimson"
+COLOR_MUTED_GRAY = ("gray75", "gray30")
+COLOR_MUTED_HOVER = ("gray65", "gray40")
+COLOR_SASH_DARK = "#2b2b2b"
+COLOR_SASH_LIGHT = "#d0d0d0"
 
 COLOR_URGENCY_RED = "#dc2626"
 COLOR_URGENCY_YELLOW = "#d97706"
@@ -99,6 +104,10 @@ DEFAULT_INTERNAL_TASK_CATEGORIES = [
     "Sonstiges",
 ]
 
+# --- Supported File Extensions ---
+IMAGE_FILE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+TEXT_FILE_EXTENSIONS = {".txt", ".log", ".json", ".sql", ".xml", ".csv", ".ini", ".md"}
+
 # --- Default Scoring Matrix ---
 DEFAULT_SCORING_MATRIX = {
     "vip_bonus_points": 50,
@@ -114,6 +123,7 @@ DEFAULT_SCORING_MATRIX = {
 AUTO_ARCHIVE_THRESHOLD_DAYS = 30
 HOURLY_TIMER_MS = 3600000
 FOLLOWUP_CHECK_INITIAL_DELAY_MS = 2000
+TOAST_DURATION_DEFAULT_MS = 5000
 
 # --- Date & Time Formats ---
 GERMAN_DATE_FORMAT = "%d.%m.%Y"

@@ -1,11 +1,12 @@
 import customtkinter as ctk
 from typing import Callable
+from constants import TOAST_DURATION_DEFAULT_MS
 
 
 class ToastNotification(ctk.CTkToplevel):
     """Non-intrusive toast popup notification displayed in the bottom-right corner."""
 
-    def __init__(self, parent, title: str, message: str, duration_ms: int = 5000, on_open: Callable[[], None] | None = None):
+    def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None):
         super().__init__(parent)
         self.title("Erinnerung")
         self.on_open = on_open

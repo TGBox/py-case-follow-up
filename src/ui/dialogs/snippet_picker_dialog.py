@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
+from constants import DIALOG_DIMENSIONS
 
 
 class SnippetPickerDialog(ctk.CTkToplevel):
@@ -18,12 +19,13 @@ class SnippetPickerDialog(ctk.CTkToplevel):
         self.on_snippet_selected = on_snippet_selected
         self.selected_snippet: Snippet | None = None
 
+        w, h = DIALOG_DIMENSIONS["snippet_picker"]
         self.title("🧩 Textbaustein auswählen & einfügen")
-        self.geometry("780x560")
+        self.geometry(f"{w}x{h}")
         self.minsize(680, 480)
 
         from utils.ui_utils import center_window
-        center_window(self, 780, 560)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

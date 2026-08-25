@@ -71,8 +71,9 @@ def test_customer_management_dialog_full_crud(app_and_storage):
     dialog.save_current_customer()
     dialog.update_idletasks()
 
+    assert dialog.selected_customer is not None
     assert dialog.selected_customer.practice_name == "Praxis Dr. Alpha-Beta"
-    assert dialog.selected_customer.is_vip is True
+    assert dialog.selected_customer.is_vip
 
     # 3. Add a new customer
     dialog.on_click_new_customer()
@@ -132,7 +133,8 @@ def test_colleague_management_dialog_full_crud(app_and_storage):
     dialog.on_click_save()
     dialog.update_idletasks()
 
-    assert dialog.selected_colleague.is_absent is True
+    assert dialog.selected_colleague is not None
+    assert dialog.selected_colleague.is_absent
     assert dialog.selected_colleague.absence_reason == "Im Urlaub bis Freitag"
 
     # 3. Add new colleague
@@ -216,6 +218,7 @@ def test_schema_builder_dialog(app_and_storage):
     new_diag.on_save()
 
     assert any(s.schema_id == "schema_test_custom" for s in dialog.schemas)
+    assert dialog.selected_schema is not None
     assert dialog.selected_schema.schema_id == "schema_test_custom"
 
     # 2. Add field
@@ -227,6 +230,7 @@ def test_schema_builder_dialog(app_and_storage):
     dialog.on_add_field()
     dialog.update_idletasks()
 
+    assert dialog.selected_schema is not None
     assert len(dialog.selected_schema.fields) >= 1
     assert dialog.selected_schema.fields[0].field_id == "test_field_1"
 
@@ -246,7 +250,7 @@ def test_export_dialog_filtering_and_generation(app_and_storage):
         )
     ]
     schemas = storage.load_schemas()
-    export_svc = ExportService(config)
+    export_svc = ExportService(storage)
 
     case = Case(
         case_id="T-EXP-01",
@@ -437,6 +441,6 @@ def test_profile_settings_dialog(app_and_storage):
     dialog.update_idletasks()
 
     dialog.save_settings()
-    assert updated is True
+    assert updated
 
     dialog.destroy()

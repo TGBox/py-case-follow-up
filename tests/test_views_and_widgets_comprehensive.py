@@ -93,10 +93,10 @@ def test_board_view_rendering_and_interactions(test_env):
     # Test column toggling
     board.toggle_column_collapse("support")
     board.update_idletasks()
-    assert board.collapsed_states["support"] is True
+    assert board.collapsed_states["support"]
     board.toggle_column_collapse("support")
     board.update_idletasks()
-    assert board.collapsed_states["support"] is False
+    assert not board.collapsed_states["support"]
 
     board.destroy()
 

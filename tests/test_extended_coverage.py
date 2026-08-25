@@ -20,7 +20,7 @@ from services.wiki_sync_service import WikiSyncService
 def ext_env(tmp_path: Path):
     config = AppConfig(workspace_dir=tmp_path)
     storage = StorageService(config)
-    export_svc = ExportService(config)
+    export_svc = ExportService(storage)
     p2p_svc = P2PSyncService(storage)
     wiki_svc = WikiSyncService(config)
 
@@ -139,7 +139,7 @@ def test_p2p_diff_dialog(ext_env, tmp_path: Path):
 
     # Select and import
     dialog.on_import_selected()
-    assert synced is True
+    assert synced
     assert len(storage.load_cases()) == 1
 
     dialog.destroy()

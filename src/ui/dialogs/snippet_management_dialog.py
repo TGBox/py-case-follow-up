@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
+from constants import DIALOG_DIMENSIONS
 
 
 class SnippetManagementDialog(ctk.CTkToplevel):
@@ -13,12 +14,13 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.on_snippets_updated = on_snippets_updated
         self.selected_snippet: Snippet | None = None
 
+        w, h = DIALOG_DIMENSIONS["snippet_mgmt"]
         self.title("📝 Textbausteine verwalten")
-        self.geometry("820x600")
+        self.geometry(f"{w}x{h}")
         self.minsize(720, 500)
 
         from utils.ui_utils import center_window
-        center_window(self, 820, 600)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

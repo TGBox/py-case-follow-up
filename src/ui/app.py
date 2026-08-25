@@ -13,6 +13,13 @@ from models.customer import Customer
 from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
 from models.profile import UserProfile, Colleague
+from constants import (
+    APP_WINDOW_TITLE,
+    APP_MIN_WIDTH,
+    APP_MIN_HEIGHT,
+    FOLLOWUP_CHECK_INITIAL_DELAY_MS,
+    AUTO_ARCHIVE_THRESHOLD_DAYS,
+)
 
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
@@ -71,9 +78,9 @@ class SupportCockpitApp(ctk.CTk):
         ctk.set_appearance_mode(theme_mode)
 
         # Configure Window directly in maximized mode
-        self.title("Support Follow-Up & Ticket-Cockpit v1.0.0")
+        self.title(APP_WINDOW_TITLE)
         self.geometry("1440x880")
-        self.minsize(1024, 700)
+        self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
         try:
             self.state("zoomed")
         except Exception:
@@ -157,7 +164,7 @@ class SupportCockpitApp(ctk.CTk):
 
         # Scoring Timer (every hour) & Followup Timer
         self.schedule_hourly_scoring()
-        self.after(2000, self.check_due_followups)
+        self.after(FOLLOWUP_CHECK_INITIAL_DELAY_MS, self.check_due_followups)
 
     def load_all_data(self):
         self.cases = self.storage_service.load_cases()

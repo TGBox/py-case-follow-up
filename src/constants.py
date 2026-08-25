@@ -1,0 +1,121 @@
+"""Centralized application constants, design tokens, layout dimensions, default datasets, and system strings."""
+
+from pathlib import Path
+
+# --- App Metadata & Titles ---
+APP_NAME = "SupportCockpit"
+APP_TITLE = "🩺 Support-Cockpit"
+APP_WINDOW_TITLE = "Support-Cockpit & Ticket Management"
+APP_MIN_WIDTH = 900
+APP_MIN_HEIGHT = 650
+
+# --- Default Layout Dimensions & Column Widths ---
+DEFAULT_COLUMN_WIDTHS = {
+    "cockpit_left": 300,
+    "cockpit_center": 420,
+    "cockpit_right": 320,
+    "board_column": 280,
+    "table_col_id": 120,
+    "table_col_practice": 220,
+    "table_col_title": 280,
+    "table_col_actor": 130,
+    "table_col_followup": 150,
+    "table_col_score": 90,
+}
+
+# Dialog Sizes (Width x Height)
+DIALOG_DIMENSIONS = {
+    "new_case": (760, 860),
+    "quick_customer": (420, 360),
+    "print_report": (680, 600),
+    "customer_mgmt": (780, 620),
+    "colleague_mgmt": (680, 580),
+    "tag_mgmt": (620, 520),
+    "profile_settings": (720, 680),
+    "template_mgmt": (740, 600),
+    "edit_template": (680, 580),
+    "schema_builder": (750, 640),
+    "convert_schema": (580, 520),
+    "followup_flyout": (650, 480),
+    "handover": (520, 460),
+    "zip_import": (560, 380),
+    "snippet_mgmt": (820, 600),
+    "email_draft": (720, 640),
+    "calendar_export": (540, 420),
+    "help": (760, 620),
+    "cobra_import": (640, 480),
+}
+
+# --- Design System Color Tokens ---
+COLOR_PRIMARY = "#2563eb"
+COLOR_PRIMARY_HOVER = "#1d4ed8"
+COLOR_SUCCESS = "forestgreen"
+COLOR_SUCCESS_HOVER = "darkgreen"
+COLOR_CANCEL = ("gray70", "gray40")
+COLOR_CANCEL_HOVER = ("gray60", "gray50")
+COLOR_DANGER = "crimson"
+
+COLOR_URGENCY_RED = "#dc2626"
+COLOR_URGENCY_YELLOW = "#d97706"
+COLOR_URGENCY_GREEN = "#16a34a"
+
+# --- Default Application Tags & Lists ---
+DEFAULT_TAGS = [
+    "Abrechnung",
+    "Hardware",
+    "Berechtigung",
+    "Windows",
+    "Schnittstelle",
+    "Dringend",
+    "Kürzung",
+    "Ablehnung",
+    "Verordnung",
+    "Netzwerk",
+    "Datenbank",
+    "Fehler",
+    "Rechnung",
+    "Kündigung",
+    "Rückmeldung",
+    "Informationen",
+    "Rezept",
+    "PVS",
+]
+
+DEFAULT_MODULE_TAGS = [
+    "Fakturaübersicht",
+    "Rezeptdruck",
+    "Labor",
+    "eRezept / Verordnung",
+    "System",
+    "Terminkalender",
+    "Patientenkartei",
+]
+
+DEFAULT_INTERNAL_TASK_CATEGORIES = [
+    "Systemwartung",
+    "Dokumentation",
+    "Entwicklungsaufgabe",
+    "Prozessverbesserung",
+    "Sonstiges",
+]
+
+# --- Default Scoring Matrix ---
+DEFAULT_SCORING_MATRIX = {
+    "vip_bonus_points": 50,
+    "points_per_idle_day": 15,
+    "deadline_close_hours": 2,
+    "deadline_close_bonus": 40,
+    "deadline_overdue_bonus": 100,
+    "threshold_yellow": 50,
+    "threshold_red": 100,
+}
+
+# --- System Timeouts & Thresholds ---
+AUTO_ARCHIVE_THRESHOLD_DAYS = 30
+HOURLY_TIMER_MS = 3600000
+FOLLOWUP_CHECK_INITIAL_DELAY_MS = 2000
+
+# --- Date & Time Formats ---
+GERMAN_DATE_FORMAT = "%d.%m.%Y"
+GERMAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M"
+ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"

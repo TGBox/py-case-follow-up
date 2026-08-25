@@ -6,13 +6,15 @@ from models.customer import Customer, Contact
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, UrgencyLevel, Channel
 from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
+from constants import DEFAULT_TAGS, DIALOG_DIMENSIONS
 
 
 class QuickAddCustomerDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_customer_created: Callable[[Customer], None]):
         super().__init__(parent)
+        w, h = DIALOG_DIMENSIONS["quick_customer"]
         self.title("🏥 Neue Praxis schnell anlegen")
-        self.geometry("420x360")
+        self.geometry(f"{w}x{h}")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -83,18 +85,19 @@ class NewCaseDialog(ctk.CTkToplevel):
         on_tag_added: Callable[[str], None] | None = None,
     ):
         super().__init__(parent)
+        w, h = DIALOG_DIMENSIONS["new_case"]
         self.title("Neuen Support-Fall anlegen")
-        self.geometry("760x860")
+        self.geometry(f"{w}x{h}")
         self.minsize(700, 780)
         from utils.ui_utils import center_window
-        center_window(self, 760, 860)
+        center_window(self, w, h)
 
         self.customers = list(customers)
         self.schemas = schemas
         self.created_by = created_by
         self.on_case_created = on_case_created
         self.on_customer_added = on_customer_added
-        self.available_tags = list(available_tags) if available_tags else ["PVS", "Abrechnung", "Hardware", "Schnittstelle", "Dringend", "Vor-Ort"]
+        self.available_tags = list(available_tags) if available_tags else list(DEFAULT_TAGS)
         self.on_tag_added = on_tag_added
 
         self.selected_tags_vars: dict[str, ctk.BooleanVar] = {}

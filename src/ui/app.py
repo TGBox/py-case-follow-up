@@ -135,9 +135,15 @@ class SupportCockpitApp(ctk.CTk):
         self.register_shortcuts()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # Startup Wiki Sync if enabled
+        # Startup Wiki Sync in background thread if enabled
         if self.profile.wiki_settings.sync_on_startup:
-            self.after(1000, lambda: self.wiki_service.sync_from_bookstack())
+            def _on_startup_sync_done(success: bool, msg: str):
+                def _update_ui():
+                    if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "wiki_widget"):
+                        self.cockpit_view.wiki_widget.on_sync_finished(success, msg)
+                self.after(0, _update_ui)
+
+            self.after(1000, lambda: self.wiki_service.sync_from_bookstack_async(callback=_on_startup_sync_done))
 
         # Scoring Timer (every hour) & Followup Timer
         self.schedule_hourly_scoring()

@@ -65,3 +65,25 @@ def test_env_file_loading_and_secret_resolution(tmp_path: Path):
     assert resolve_secret("ENV_BOOKSTACK_TOKEN_ID") == "test_id_123"
     assert resolve_secret("ENV_BOOKSTACK_TOKEN_SECRET") == "test_secret_456"
 
+
+def test_clean_html_snippet_and_link_sanitization(tmp_path: Path):
+    from services.wiki_sync_service import clean_html_snippet
+
+    raw_html = "<b>Erster</b> Kontakt mit dem Kunden<br><p>Um die Einrichtung &amp; Registrierung...</p>"
+    cleaned = clean_html_snippet(raw_html)
+    assert "<b>" not in cleaned
+    assert "<br>" not in cleaned
+    assert "Erster Kontakt mit dem Kunden Um die Einrichtung & Registrierung..." == cleaned
+
+    config = AppConfig(workspace_dir=tmp_path)
+    settings = WikiSettings(api_url="https://wiki.data-al.de", sync_mode=SyncMode.METADATA_ONLY)
+    service = WikiSyncService(config, settings)
+
+    mock_client = MockBookStackClient()
+    service.sync_from_bookstack(mock_client=mock_client)
+    results = service.search("Abrechnung")
+
+    assert len(results) >= 1
+    assert "https://wiki.data-al.de/link/1" in results[0]["url"]
+
+

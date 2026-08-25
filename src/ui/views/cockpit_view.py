@@ -27,7 +27,7 @@ class CockpitColumnSplitter(ctk.CTkFrame):
         column_key: str,
         profile: UserProfile | None,
         storage_service: StorageService | None,
-        on_width_changed: Callable[[str, int], None] | None = None,
+        on_width_changed: Callable[[str, int, int], None] | None = None,
     ):
         super().__init__(parent, fg_color=("gray75", "gray35"), width=5, cursor="sb_h_double_arrow")
         self.column_key = column_key
@@ -35,31 +35,36 @@ class CockpitColumnSplitter(ctk.CTkFrame):
         self.storage_service = storage_service
         self.on_width_changed = on_width_changed
         self.start_x = 0
-        self.start_width = 300
-
-        self.bind("<Button-1>", self.on_press)
-        self.bind("<B1-Motion>", self.on_drag)
-        self.bind("<ButtonRelease-1>", self.on_release)
+        self.start_w_side = 300
+        self.start_w_center = 420
 
     def on_press(self, event):
         self.start_x = event.x_root
         if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
-            self.start_width = self.profile.ui_settings.column_widths.get(self.column_key, 300)
+            widths = self.profile.ui_settings.column_widths
+            self.start_w_side = widths.get(self.column_key, 300)
+            self.start_w_center = widths.get("cockpit_center", 420)
         else:
-            self.start_width = 300
+            self.start_w_side = 300
+            self.start_w_center = 420
 
     def on_drag(self, event):
         delta = event.x_root - self.start_x
         if self.column_key == "cockpit_right":
-            new_w = max(200, min(650, self.start_width - delta))
+            # Dragging right splitter: moving left (delta < 0) expands right column & shrinks center
+            new_w_side = max(100, min(750, self.start_w_side - delta))
+            new_w_center = max(100, min(1000, self.start_w_center + delta))
         else:
-            new_w = max(180, min(600, self.start_width + delta))
+            # Dragging left splitter: moving right (delta > 0) expands left column & shrinks center
+            new_w_side = max(100, min(750, self.start_w_side + delta))
+            new_w_center = max(100, min(1000, self.start_w_center - delta))
 
         if self.profile and hasattr(self.profile, "ui_settings"):
-            self.profile.ui_settings.column_widths[self.column_key] = new_w
+            self.profile.ui_settings.column_widths[self.column_key] = new_w_side
+            self.profile.ui_settings.column_widths["cockpit_center"] = new_w_center
 
         if self.on_width_changed:
-            self.on_width_changed(self.column_key, new_w)
+            self.on_width_changed(self.column_key, new_w_side, new_w_center)
 
     def on_release(self, event):
         if self.profile and self.storage_service:
@@ -112,17 +117,19 @@ class CockpitView(ctk.CTkFrame):
         w_left = widths.get("cockpit_left", 300)
         w_center = widths.get("cockpit_center", 420)
         w_right = widths.get("cockpit_right", 320)
-        self.grid_columnconfigure(0, weight=w_left, minsize=180)
+        self.grid_columnconfigure(0, weight=w_left, minsize=100)
         self.grid_columnconfigure(1, weight=0)
-        self.grid_columnconfigure(2, weight=w_center, minsize=260)
+        self.grid_columnconfigure(2, weight=w_center, minsize=100)
         self.grid_columnconfigure(3, weight=0)
-        self.grid_columnconfigure(4, weight=w_right, minsize=200)
+        self.grid_columnconfigure(4, weight=w_right, minsize=100)
 
-    def on_splitter_width_changed(self, column_key: str, new_width: int):
+    def on_splitter_width_changed(self, column_key: str, new_side_width: int, new_center_width: int):
         if column_key == "cockpit_left":
-            self.grid_columnconfigure(0, weight=new_width)
+            self.grid_columnconfigure(0, weight=new_side_width)
+            self.grid_columnconfigure(2, weight=new_center_width)
         elif column_key == "cockpit_right":
-            self.grid_columnconfigure(4, weight=new_width)
+            self.grid_columnconfigure(4, weight=new_side_width)
+            self.grid_columnconfigure(2, weight=new_center_width)
 
     def create_layout(self):
         # 5-Column Layout with splitters (Col 0: Left, Col 1: Splitter L, Col 2: Center, Col 3: Splitter R, Col 4: Right)
@@ -136,11 +143,11 @@ class CockpitView(ctk.CTkFrame):
         w_center = widths.get("cockpit_center", 420)
         w_right = widths.get("cockpit_right", 320)
 
-        self.grid_columnconfigure(0, weight=w_left, minsize=180)
+        self.grid_columnconfigure(0, weight=w_left, minsize=100)
         self.grid_columnconfigure(1, weight=0)
-        self.grid_columnconfigure(2, weight=w_center, minsize=260)
+        self.grid_columnconfigure(2, weight=w_center, minsize=100)
         self.grid_columnconfigure(3, weight=0)
-        self.grid_columnconfigure(4, weight=w_right, minsize=200)
+        self.grid_columnconfigure(4, weight=w_right, minsize=100)
         self.grid_rowconfigure(0, weight=1)
 
         # 1. Left Column: Case List
@@ -176,65 +183,72 @@ class CockpitView(ctk.CTkFrame):
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
         self.print_btn = ctk.CTkButton(
-            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=100, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=90, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
-        self.print_btn.pack(side="right", padx=5)
+        self.print_btn.pack(side="right", padx=3)
 
         self.email_cal_btn = ctk.CTkButton(
-            self.center_header, text="✉️ E-Mail / Kalender", command=self.on_click_email_calendar, width=145, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
+            self.center_header, text="✉️ E-Mail/Kalender", command=self.on_click_email_calendar, width=125, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
         )
-        self.email_cal_btn.pack(side="right", padx=5)
+        self.email_cal_btn.pack(side="right", padx=3)
 
         self.export_btn = ctk.CTkButton(
-            self.center_header, text="📤 Export", command=self.on_click_export, width=100, state="disabled"
+            self.center_header, text="📤 Export", command=self.on_click_export, width=85, state="disabled"
         )
-        self.export_btn.pack(side="right", padx=5)
+        self.export_btn.pack(side="right", padx=3)
 
         self.save_btn = ctk.CTkButton(
-            self.center_header, text="💾 Speichern", command=self.on_click_save, width=100, state="disabled"
+            self.center_header, text="💾 Speichern", command=self.on_click_save, width=90, state="disabled"
         )
-        self.save_btn.pack(side="right", padx=5)
+        self.save_btn.pack(side="right", padx=3)
 
-        # Customer & Status Info Bar
+        # Customer & Status Info Bar (2 Compact Rows for flexible column resizing)
         self.info_bar = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=6)
         self.info_bar.pack(fill="x", padx=10, pady=(0, 10))
 
-        self.info_label = ctk.CTkLabel(self.info_bar, text="", font=ctk.CTkFont(size=12), anchor="w")
-        self.info_label.pack(side="left", padx=10, pady=6)
+        # Row 1: Case Info & Main Workflow Status
+        self.info_row1 = ctk.CTkFrame(self.info_bar, fg_color="transparent")
+        self.info_row1.pack(fill="x", padx=6, pady=(4, 2))
 
-        # Actor Selector, Followup & Action Buttons
-        self.actor_combo = ctk.CTkOptionMenu(
-            self.info_bar,
-            values=list(ACTOR_DISPLAY.values()),
-            command=self.on_actor_changed,
-            width=130,
-        )
-        self.actor_combo.pack(side="right", padx=5, pady=4)
-
-        self.convert_schema_btn = ctk.CTkButton(
-            self.info_bar, text="🔄 Formular umwandeln...", command=self.open_convert_schema_dialog, width=150, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled"
-        )
-        self.convert_schema_btn.pack(side="right", padx=5, pady=4)
-
-        self.add_note_btn = ctk.CTkButton(
-            self.info_bar, text="📝 Notiz / Ereignis", command=self.focus_timeline_note, width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
-        )
-        self.add_note_btn.pack(side="right", padx=5, pady=4)
-
-        self.followup_btn = ctk.CTkButton(
-            self.info_bar, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=120, fg_color="darkblue"
-        )
-        self.followup_btn.pack(side="right", padx=5, pady=4)
-
-        self.complete_btn = ctk.CTkButton(
-            self.info_bar, text="✓ Erledigt", command=self.on_toggle_complete, width=90, fg_color="green"
-        )
-        self.complete_btn.pack(side="right", padx=5, pady=4)
+        self.info_label = ctk.CTkLabel(self.info_row1, text="", font=ctk.CTkFont(size=12), anchor="w")
+        self.info_label.pack(side="left", padx=5, pady=2)
 
         self.archive_btn = ctk.CTkButton(
-            self.info_bar, text="📦 Archivieren", command=self.on_click_archive, width=100, fg_color="darkred"
+            self.info_row1, text="📦 Archivieren", command=self.on_click_archive, width=90, fg_color="darkred"
         )
-        self.archive_btn.pack(side="right", padx=5, pady=4)
+        self.archive_btn.pack(side="right", padx=3, pady=2)
+
+        self.complete_btn = ctk.CTkButton(
+            self.info_row1, text="✓ Erledigt", command=self.on_toggle_complete, width=85, fg_color="green"
+        )
+        self.complete_btn.pack(side="right", padx=3, pady=2)
+
+        self.actor_combo = ctk.CTkOptionMenu(
+            self.info_row1,
+            values=list(ACTOR_DISPLAY.values()),
+            command=self.on_actor_changed,
+            width=120,
+        )
+        self.actor_combo.pack(side="right", padx=3, pady=2)
+
+        # Row 2: Actions & Form Conversion
+        self.info_row2 = ctk.CTkFrame(self.info_bar, fg_color="transparent")
+        self.info_row2.pack(fill="x", padx=6, pady=(2, 4))
+
+        self.convert_schema_btn = ctk.CTkButton(
+            self.info_row2, text="🔄 Formular umwandeln", command=self.open_convert_schema_dialog, width=140, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled"
+        )
+        self.convert_schema_btn.pack(side="right", padx=3, pady=2)
+
+        self.add_note_btn = ctk.CTkButton(
+            self.info_row2, text="📝 Notiz", command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+        )
+        self.add_note_btn.pack(side="right", padx=3, pady=2)
+
+        self.followup_btn = ctk.CTkButton(
+            self.info_row2, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=110, fg_color="darkblue"
+        )
+        self.followup_btn.pack(side="right", padx=3, pady=2)
 
         # Dynamic Form
         self.form_widget = DynamicFormWidget(

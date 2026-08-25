@@ -1,5 +1,7 @@
+import html
 import json
 import logging
+import re
 import shutil
 import sqlite3
 import urllib.request
@@ -12,6 +14,19 @@ from models.profile import WikiSettings
 from utils.security import resolve_secret, normalize_url
 
 logger = logging.getLogger("SupportCockpit")
+
+
+def clean_html_snippet(text: str) -> str:
+    """Removes HTML control tags and decodes HTML entities for clean plain text display."""
+    if not text:
+        return ""
+    # Replace HTML tags with space so tag-delimited text doesn't run together
+    cleaned = re.sub(r"<[^>]+>", " ", text)
+    # Decode HTML entities (&nbsp;, &amp;, &lt;, &gt;, etc.)
+    cleaned = html.unescape(cleaned)
+    # Normalize multiple whitespace characters
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
 
 
 class WikiSyncService:
@@ -74,6 +89,25 @@ class WikiSyncService:
             conn.close()
             return False
 
+    def sync_from_bookstack_async(
+        self,
+        callback: Any | None = None,
+        mock_client: Any | None = None,
+    ) -> None:
+        """Synchronizes articles asynchronously in a background daemon thread to keep GUI 100% responsive."""
+        import threading
+
+        def run_sync():
+            success, msg = self.sync_from_bookstack(mock_client=mock_client)
+            if callback:
+                try:
+                    callback(success, msg)
+                except Exception as cb_err:
+                    logger.error(f"Async wiki sync callback error: {cb_err}")
+
+        thread = threading.Thread(target=run_sync, daemon=True)
+        thread.start()
+
     def sync_from_bookstack(self, mock_client: Any | None = None) -> tuple[bool, str]:
         """Synchronizes articles from BookStack REST API according to configured sync mode.
         Accepts optional mock_client for unit testing.
@@ -113,19 +147,33 @@ class WikiSyncService:
                 book_id = item.get("book_id", 0)
                 title = item.get("name", item.get("title", ""))
                 slug = item.get("slug", "")
-                url = item.get("url", f"{api_url}/pages/{slug}")
+
+                # Use official BookStack short link as primary fallback (/link/{id})
+                raw_url = item.get("url", "")
+                url = raw_url if (raw_url and "/pages/" not in raw_url) else f"{api_url}/link/{page_id}"
+                if url.startswith("/"):
+                    url = f"{api_url}{url}"
+
                 updated_at = item.get("updated_at", "")
                 content = ""
 
-                if self.settings.sync_mode == SyncMode.FULL_OFFLINE:
-                    if mock_client:
-                        content = mock_client.get_page_content(page_id)
-                    else:
+                if mock_client:
+                    content = mock_client.get_page_content(page_id)
+                else:
+                    try:
                         page_endpoint = f"{api_url}/api/pages/{page_id}"
                         p_req = urllib.request.Request(page_endpoint, headers=headers)
                         with urllib.request.urlopen(p_req, timeout=10) as p_res:
                             p_json = json.loads(p_res.read().decode("utf-8"))
+                            detail_url = p_json.get("url", "")
+                            if detail_url and "/pages/" not in detail_url:
+                                if detail_url.startswith("/"):
+                                    detail_url = f"{api_url}{detail_url}"
+                                url = detail_url
+
                             content = p_json.get("markdown", p_json.get("html", ""))
+                    except Exception as detail_err:
+                        logger.warning(f"Could not fetch detail for page {page_id}: {detail_err}")
 
                 cursor.execute("""
                     INSERT OR REPLACE INTO wiki_pages (page_id, book_id, title, slug, url, updated_at, content_markdown)
@@ -149,22 +197,23 @@ class WikiSyncService:
 
     def search(self, query: str) -> list[dict[str, Any]]:
         """Searches offline SQLite wiki database.
-        Returns list of matching page results.
+        Returns list of matching page results with cleaned URLs and HTML-stripped snippets.
         """
         if not query or not query.strip():
             return []
 
         cleaned_query = query.strip()
+        api_url = normalize_url(self.settings.api_url)
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         results = []
 
         if self.is_fts5_available():
             try:
-                # FTS5 Match query
+                # FTS5 Match query with plain snippet separator
                 fts_pattern = f'"{cleaned_query}"*'
                 cursor.execute("""
-                    SELECT p.page_id, p.title, p.url, snippet(wiki_fts, 2, '<b>', '</b>', '...', 10)
+                    SELECT p.page_id, p.title, p.url, snippet(wiki_fts, 2, '', '', '...', 15)
                     FROM wiki_fts f
                     JOIN wiki_pages p ON f.page_id = p.page_id
                     WHERE wiki_fts MATCH ?
@@ -172,11 +221,18 @@ class WikiSyncService:
                 """, (fts_pattern,))
                 rows = cursor.fetchall()
                 for row in rows:
+                    p_id, raw_title, raw_url, raw_snip = row[0], row[1], row[2], row[3]
+
+                    # Sanitize URL if cached entry contains broken /pages/ format
+                    url = raw_url
+                    if not url or "/pages/" in url:
+                        url = f"{api_url}/link/{p_id}" if api_url else (url or "")
+
                     results.append({
-                        "page_id": row[0],
-                        "title": row[1],
-                        "url": row[2],
-                        "snippet": row[3] or row[1],
+                        "page_id": p_id,
+                        "title": clean_html_snippet(raw_title),
+                        "url": url,
+                        "snippet": clean_html_snippet(raw_snip or raw_title),
                     })
                 conn.close()
                 return results
@@ -193,12 +249,18 @@ class WikiSyncService:
         """, (like_pattern, like_pattern))
         rows = cursor.fetchall()
         for row in rows:
-            content_snippet = (row[3] or row[1])[:100]
+            p_id, raw_title, raw_url, content_raw = row[0], row[1], row[2], row[3]
+
+            url = raw_url
+            if not url or "/pages/" in url:
+                url = f"{api_url}/link/{p_id}" if api_url else (url or "")
+
+            content_snippet = (content_raw or raw_title)[:120]
             results.append({
-                "page_id": row[0],
-                "title": row[1],
-                "url": row[2],
-                "snippet": content_snippet,
+                "page_id": p_id,
+                "title": clean_html_snippet(raw_title),
+                "url": url,
+                "snippet": clean_html_snippet(content_snippet),
             })
 
         conn.close()

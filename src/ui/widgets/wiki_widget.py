@@ -73,10 +73,18 @@ class WikiWidget(ctk.CTkFrame):
                 snip_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
     def on_sync_wiki(self):
-        self.status_label.configure(text="⏳ Synchronisiere mit BookStack...", text_color="orange")
-        self.update()
+        if getattr(self, "_is_syncing", False):
+            return
+        self._is_syncing = True
+        self.status_label.configure(text="⏳ Synchronisiere Wiki im Hintergrund...", text_color="orange")
 
-        success, msg = self.wiki_service.sync_from_bookstack()
+        def _completion_cb(success: bool, msg: str):
+            self.after(0, lambda: self.on_sync_finished(success, msg))
+
+        self.wiki_service.sync_from_bookstack_async(callback=_completion_cb)
+
+    def on_sync_finished(self, success: bool, msg: str):
+        self._is_syncing = False
         if success:
             self.status_label.configure(text=f"✅ {msg}", text_color="green")
         else:

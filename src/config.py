@@ -10,11 +10,14 @@ logger = logging.getLogger("SupportCockpit")
 
 def get_global_config_dir() -> Path:
     """Returns the persistent user appdata folder for SupportCockpit."""
-    if os.name == "nt":
+    if "SUPPORTCOCKPIT_CONFIG_DIR" in os.environ and os.environ["SUPPORTCOCKPIT_CONFIG_DIR"].strip():
+        config_dir = Path(os.environ["SUPPORTCOCKPIT_CONFIG_DIR"])
+    elif os.name == "nt":
         base = Path(os.environ.get("APPDATA", Path.home()))
+        config_dir = base / "SupportCockpit"
     else:
         base = Path.home() / ".config"
-    config_dir = base / "SupportCockpit"
+        config_dir = base / "SupportCockpit"
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir
 

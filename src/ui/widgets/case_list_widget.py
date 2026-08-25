@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
+from constants import COLOR_MUTED_GRAY, COLOR_MUTED_HOVER
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -38,9 +39,9 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
         
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,

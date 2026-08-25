@@ -363,6 +363,8 @@ class SupportCockpitApp(ctk.CTk):
             else:
                 self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AUS", fg_color="gray40")
 
+        self.check_due_followups()
+
     def switch_to_cockpit_view_for_case(self, case: Case):
         self.active_case = case
         if self.active_view != self.cockpit_view:
@@ -708,7 +710,13 @@ class SupportCockpitApp(ctk.CTk):
             self.bell_btn.configure(text="🔔 0", fg_color="gray30")
             self._last_notified_due_count = 0
 
-        self.after(60000, self.check_due_followups)
+        _timer_id = self.__dict__.get("_followup_timer_id")
+        if _timer_id:
+            try:
+                self.after_cancel(_timer_id)
+            except Exception:
+                pass
+        self._followup_timer_id = self.after(60000, self.check_due_followups)
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog

@@ -432,5 +432,57 @@ def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
     assert reloaded_profile.ui_settings.column_widths["cockpit_right"] == 320
 
 
+def test_notification_badge_updates_immediately_on_followup_or_complete(tmp_path: Path):
+    """UI Workflow Chain 11: Setting future followup or marking completed updates notification bell badge instantly."""
+    from typing import Any
+    from config import AppConfig
+    from services.storage_service import StorageService
+    from services.seed_service import SeedService
+    from ui.app import SupportCockpitApp
+
+    config = AppConfig(workspace_dir=tmp_path, username="test_agent")
+    storage = StorageService(config)
+    seed_service = SeedService(storage)
+    seed_service.run_seed(force=True)
+
+    cases = storage.load_cases()
+    due_case = cases[0]
+    due_case.workflow_status.followup_at = "2020-01-01T10:00:00"
+    due_case.workflow_status.is_completed = False
+
+    class MockButton:
+        def __init__(self):
+            self.text = ""
+            self.fg_color = ""
+        def configure(self, text=None, fg_color=None):
+            if text is not None:
+                self.text = text
+            if fg_color is not None:
+                self.fg_color = fg_color
+
+    app: Any = SupportCockpitApp.__new__(SupportCockpitApp)
+    app.cases = cases
+    app.search_query = ""
+    app.bell_btn = MockButton()
+    app._last_notified_due_count = 1
+    app.get_filtered_cases = lambda: [due_case]
+    app.after = lambda delay, func: "timer_id"
+    app.after_cancel = lambda timer_id: None
+
+    # Initial check -> due_case triggers red bell
+    app.check_due_followups()
+    assert app.bell_btn.text == "🔔 1"
+    assert app.bell_btn.fg_color == "darkred"
+
+    # User updates followup date to future date
+    due_case.workflow_status.followup_at = "2035-01-01T10:00:00"
+    app.check_due_followups()
+
+    # Bell badge turns back to grey 🔔 0 immediately
+    assert app.bell_btn.text == "🔔 0"
+    assert app.bell_btn.fg_color == "gray30"
+
+
+
 
 

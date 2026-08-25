@@ -8,3 +8,4 @@ data/
 agent-todo.md
 attachments/
 .vscode/
+.env

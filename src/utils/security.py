@@ -1,5 +1,31 @@
 import os
 import re
+from pathlib import Path
+
+
+def load_env_file(env_path: Path | str | None = None) -> None:
+    """Loads environment variables from a .env file into os.environ if present."""
+    if env_path is None:
+        target_path = Path.cwd() / ".env"
+    else:
+        target_path = Path(env_path)
+
+    if not target_path.exists():
+        return
+
+    try:
+        with open(target_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, _, value = line.partition("=")
+                key = key.strip()
+                value = value.strip().strip("'\"")
+                if key:
+                    os.environ[key] = value
+    except Exception:
+        pass
 
 
 def normalize_url(url_str: str) -> str:
@@ -26,7 +52,8 @@ def resolve_secret(secret_ref: str) -> str:
     
     if secret_ref.startswith("ENV_"):
         env_var_name = secret_ref[4:]
-        return os.environ.get(env_var_name, "")
+        val = os.environ.get(env_var_name, "") or os.environ.get(secret_ref, "")
+        return val
     
     return secret_ref
 

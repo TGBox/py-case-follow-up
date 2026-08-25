@@ -186,9 +186,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         # Tags Selection
         ctk.CTkLabel(form_scroll, text="Tags / Stichworte zuweisen:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         
-        self.tags_frame = ctk.CTkScrollableFrame(form_scroll, height=100, fg_color="transparent")
+        self.tags_frame = ctk.CTkFrame(form_scroll, fg_color="transparent")
         self.tags_frame.pack(fill="x", pady=(0, 6))
-        enable_auto_hiding_scrollbar(self.tags_frame)
 
         self.render_tags_checkboxes()
 
@@ -256,10 +255,6 @@ class NewCaseDialog(ctk.CTkToplevel):
             command=self.open_quick_add_tag,
         )
         add_tag_btn.grid(row=r, column=c, padx=3, pady=2, sticky="ew")
-
-        canvas = getattr(self.tags_frame, "_parent_canvas", getattr(self.tags_frame, "_canvas", None))
-        if canvas:
-            canvas.yview_moveto(0.0)
 
     def toggle_tag(self, tag_name: str):
         if tag_name in self.selected_tags_vars:

@@ -528,9 +528,30 @@ class CockpitView(ctk.CTkFrame):
             self.current_case.timeline = entries
             self.on_click_save()
 
+    _last_info_w: int = 0
+    _updating_info: bool = False
+
     def _on_info_frame_configure(self, event=None):
-        if self.current_case and self.current_case.workflow_status.followup_at:
-            self._update_wiedervorlage_display()
+        if self._updating_info:
+            return
+        if not self.current_case or not self.current_case.workflow_status.followup_at:
+            return
+        try:
+            if not self.info_left_frame.winfo_exists():
+                return
+            w = self.info_left_frame.winfo_width()
+            if w > 50 and abs(w - self._last_info_w) > 8:
+                self._last_info_w = w
+                self._updating_info = True
+                wrap_w = max(180, w - 10)
+                self.wv_hdr_label.configure(wraplength=wrap_w)
+                self.wv_date_label.configure(wraplength=wrap_w)
+                self.wv_time_label.configure(wraplength=wrap_w)
+                self.wv_note_label.configure(wraplength=wrap_w)
+        except Exception:
+            pass
+        finally:
+            self._updating_info = False
 
     def _get_wiedervorlage_tooltip_text(self) -> str:
         if self._wiedervorlage_full_text:
@@ -567,6 +588,7 @@ class CockpitView(ctk.CTkFrame):
         else:
             w = max(200, w - 10)
 
+        self._last_info_w = w
         self.wv_hdr_label.configure(text="🔔 Nachfragen am:", wraplength=w)
         self.wv_date_label.configure(text=f"  {fw_date_str}", wraplength=w)
         self.wv_time_label.configure(text=f"  {fw_time_str}", wraplength=w)

@@ -137,6 +137,11 @@ class CockpitView(ctk.CTkFrame):
         )
         self.actor_combo.pack(side="right", padx=5, pady=4)
 
+        self.convert_schema_btn = ctk.CTkButton(
+            self.info_bar, text="🔄 Formular umwandeln...", command=self.open_convert_schema_dialog, width=150, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled"
+        )
+        self.convert_schema_btn.pack(side="right", padx=5, pady=4)
+
         self.add_note_btn = ctk.CTkButton(
             self.info_bar, text="📝 Notiz / Ereignis", command=self.focus_timeline_note, width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
@@ -220,6 +225,7 @@ class CockpitView(ctk.CTkFrame):
         self.email_cal_btn.configure(state="normal")
         self.export_btn.configure(state="normal")
         self.save_btn.configure(state="normal")
+        self.convert_schema_btn.configure(state="normal")
 
         from utils.datetime_utils import format_german_datetime
         vip_str = " ★ VIP" if case.customer.is_vip else ""
@@ -239,6 +245,26 @@ class CockpitView(ctk.CTkFrame):
         # Load right sidebar
         self.timeline_widget.load_timeline(case.timeline)
         self.attachment_widget.load_attachments(case)
+
+    def open_convert_schema_dialog(self):
+        if not self.current_case:
+            return
+        from ui.dialogs.convert_schema_dialog import ConvertSchemaDialog
+        ConvertSchemaDialog(
+            self,
+            case=self.current_case,
+            schemas=self.schemas,
+            author_name=self.author_name,
+            on_schema_converted=self.on_schema_converted,
+        )
+
+    def on_schema_converted(self, case: Case, new_schema: QuestionSchema):
+        SchemaService.update_case_completion(case, new_schema)
+        if self.scoring_service:
+            self.scoring_service.update_case_scoring(case)
+        self.on_select_case_from_list(case)
+        if self.on_case_updated:
+            self.on_case_updated(case)
 
     def on_click_save(self):
         if not self.current_case:

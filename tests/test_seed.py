@@ -15,7 +15,7 @@ def test_seed_generation(tmp_path: Path):
 
     assert summary["customers"] == 5
     assert summary["cases"] == 12
-    assert summary["schemas"] == 4
+    assert summary["schemas"] == 5
     assert summary["templates"] == 4
 
     # Check files exist

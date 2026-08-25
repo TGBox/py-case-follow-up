@@ -178,6 +178,9 @@ class NewCaseDialog(ctk.CTkToplevel):
         ctk.CTkLabel(form_scroll, text="Formular-Schema:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
         self.schema_combo = ctk.CTkOptionMenu(form_scroll, values=schema_names if schema_names else ["Standard"])
+        quick_opt = next((name for name in schema_names if "schema_quick" in name or "Schnellerfassung" in name), None)
+        if quick_opt:
+            self.schema_combo.set(quick_opt)
         self.schema_combo.pack(fill="x", pady=(0, 6))
 
         # Tags Selection

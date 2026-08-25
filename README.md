@@ -112,7 +112,7 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **214 automatisierte Tests** in der pytest Testsuite:
+Das Projekt verfügt über **224 automatisierte Tests** in der pytest Testsuite:
 
 ```bash
 .\.venv\Scripts\python -m pytest

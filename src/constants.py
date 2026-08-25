@@ -195,20 +195,37 @@ DEFAULT_TAGS = [
     "Fehler",
     "Rechnung",
     "Kündigung",
+    "Zuzahlungsnachforderung",
+    "Kunde Wütend",
+    "Kundenwunsch",
+    "Fragen",
     "Rückmeldung",
     "Informationen",
-    "Rezept",
-    "PVS",
+    "HelloCloud"
 ]
 
 DEFAULT_MODULE_TAGS = [
     "Fakturaübersicht",
-    "Rezeptdruck",
-    "Labor",
-    "eRezept / Verordnung",
-    "System",
     "Terminkalender",
-    "Patientenkartei",
+    "System allgemein",
+    "Benutzerverwaltung und Einstellungen",
+    "Go2Doc",
+    "Heilmittelkatalog",
+    "Kostenträgerliste",
+    "Heilmittelpreisliste",
+    "Fabius",
+    "Termed",
+    "Benutzerrechte",
+    "Patientenstamm",
+    "Terminabrechnung",
+    "Rezeptnachvervollgung",
+    "Ausgangsbelege",
+    "Kassenbuch",
+    "Statistiken",
+    "Kartei",
+    "Terminarten",
+    "Ressourcen",
+    "Datenbank"
 ]
 
 DEFAULT_INTERNAL_TASK_CATEGORIES = [

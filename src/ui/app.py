@@ -186,31 +186,31 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["⚙ Stammdaten ▾", "🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
+            values=["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
             command=self._on_stammdaten_selected,
-            width=165,
+            width=150,
         )
-        self.stammdaten_combo.set("⚙ Stammdaten ▾")
+        self.stammdaten_combo.set("⚙ Stammdaten")
         self.stammdaten_combo.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["📄 Vorlagen & Formulare ▾", "🛠 Formulare", "📄 Vorlagen"],
+            values=["🛠 Formulare", "📄 Vorlagen"],
             command=self._on_vorlagen_selected,
-            width=175,
+            width=165,
         )
-        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
+        self.vorlagen_combo.set("📄 Vorlagen & Formulare")
         self.vorlagen_combo.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["🔄 Datenaustausch ▾", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
+            values=["📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
             command=self._on_datenaustausch_selected,
-            width=155,
+            width=145,
         )
-        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
+        self.datenaustausch_combo.set("🔄 Datenaustausch")
         self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
 
         # Right side: User, Bell Badge & Theme Toggle
@@ -248,7 +248,7 @@ class SupportCockpitApp(ctk.CTk):
         self.user_btn.pack(side="right", padx=6, pady=4)
 
     def _on_stammdaten_selected(self, choice: str):
-        self.stammdaten_combo.set("⚙ Stammdaten ▾")
+        self.stammdaten_combo.set("⚙ Stammdaten")
         if choice == "🏥 Praxen":
             self.open_customer_management_dialog()
         elif choice.startswith("🐍"):
@@ -263,14 +263,14 @@ class SupportCockpitApp(ctk.CTk):
             self.open_snippet_management_dialog()
 
     def _on_vorlagen_selected(self, choice: str):
-        self.vorlagen_combo.set("📄 Vorlagen & Formulare ▾")
+        self.vorlagen_combo.set("📄 Vorlagen & Formulare")
         if choice.startswith("🛠"):
             self.open_schema_builder_dialog()
         elif choice == "📄 Vorlagen":
             self.open_template_manager_dialog()
 
     def _on_datenaustausch_selected(self, choice: str):
-        self.datenaustausch_combo.set("🔄 Datenaustausch ▾")
+        self.datenaustausch_combo.set("🔄 Datenaustausch")
         if choice.startswith("📤 Export"):
             self.open_export_dialog(self.active_case)
         elif choice == "📦 ZIP-Backup":

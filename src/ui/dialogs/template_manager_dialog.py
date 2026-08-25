@@ -6,6 +6,7 @@ from models.case import Case
 from enums import TargetType
 from services.export_service import ExportService
 from services.storage_service import StorageService
+from constants import DIALOG_DIMENSIONS
 
 
 class EditTemplateDialog(ctk.CTkToplevel):
@@ -24,11 +25,12 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.on_save = on_save
 
         is_new = template is None
+        w, h = DIALOG_DIMENSIONS["edit_template"]
         self.title("✏ Vorlage bearbeiten" if not is_new else "➕ Neue Export-Vorlage")
-        self.geometry("880x740")
+        self.geometry(f"{w}x{h}")
         self.minsize(800, 640)
         from utils.ui_utils import center_window
-        center_window(self, 880, 740)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -208,11 +210,12 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         self.export_service = export_service
         self.on_templates_updated = on_templates_updated
 
+        w, h = DIALOG_DIMENSIONS["template_mgmt"]
         self.title("📄 Export-Vorlagen verwalten")
-        self.geometry("980x720")
+        self.geometry(f"{w}x{h}")
         self.minsize(880, 640)
         from utils.ui_utils import center_window
-        center_window(self, 980, 720)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

@@ -3,6 +3,7 @@ from typing import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
+from constants import DIALOG_DIMENSIONS
 
 
 class ProfileSettingsDialog(ctk.CTkToplevel):
@@ -12,11 +13,12 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.storage_service = storage_service
         self.on_profile_updated = on_profile_updated
 
+        w, h = DIALOG_DIMENSIONS["profile_settings"]
         self.title("⚙ Profil & Einstellungen")
-        self.geometry("960x780")
+        self.geometry(f"{w}x{h}")
         self.minsize(880, 680)
         from utils.ui_utils import center_window
-        center_window(self, 960, 780)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

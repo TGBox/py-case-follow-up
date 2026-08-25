@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
+from constants import DIALOG_DIMENSIONS
 
 
 class TagManagementDialog(ctk.CTkToplevel):
@@ -19,12 +20,13 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.on_tags_updated = on_tags_updated
         self.initial_tab = initial_tab
 
+        w, h = DIALOG_DIMENSIONS["tag_mgmt"]
         self.title("🏷 Tags & Programmbereiche Verwaltung")
-        self.geometry("680x640")
+        self.geometry(f"{w}x{h}")
         self.minsize(580, 520)
         from utils.ui_utils import center_window
 
-        center_window(self, 680, 640)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()

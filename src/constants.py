@@ -28,13 +28,14 @@ DIALOG_DIMENSIONS = {
     "new_case": (760, 860),
     "quick_customer": (420, 360),
     "print_report": (680, 600),
-    "customer_mgmt": (780, 620),
-    "colleague_mgmt": (680, 580),
+    "customer_mgmt": (1024, 720),
+    "colleague_mgmt": (1024, 720),
     "tag_mgmt": (620, 520),
-    "profile_settings": (720, 680),
-    "template_mgmt": (740, 600),
-    "edit_template": (680, 580),
-    "schema_builder": (750, 640),
+    "profile_settings": (960, 780),
+    "template_mgmt": (980, 720),
+    "edit_template": (880, 740),
+    "schema_builder": (940, 720),
+    "new_schema": (440, 320),
     "convert_schema": (580, 520),
     "followup_flyout": (650, 480),
     "handover": (520, 460),
@@ -102,6 +103,16 @@ DEFAULT_INTERNAL_TASK_CATEGORIES = [
     "Entwicklungsaufgabe",
     "Prozessverbesserung",
     "Sonstiges",
+]
+
+DEFAULT_DEPARTMENTS = [
+    "Support",
+    "Entwicklung",
+    "Technik",
+    "Vertrieb",
+    "Buchhaltung",
+    "Geschäftsführung",
+    "Sonstige",
 ]
 
 # --- Supported File Extensions ---

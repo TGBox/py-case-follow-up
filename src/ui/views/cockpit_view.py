@@ -211,10 +211,27 @@ class CockpitView(ctk.CTkFrame):
         self.kunde_label.pack(fill="x", anchor="w")
 
         self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w")
-        self.ansprechpartner_label.pack(fill="x", anchor="w")
-
-        self.wiedervorlage_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11, weight="bold"), text_color="darkorange", anchor="w")
+        self.wiedervorlage_label = ctk.CTkLabel(
+            self.info_left_frame,
+            text="",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            wraplength=350,
+        )
         self.wiedervorlage_label.pack(fill="x", anchor="w")
+
+        # Full untruncated follow-up text & hover tooltip overlay
+        self._wiedervorlage_full_text: str = ""
+        self._wiedervorlage_is_truncated: bool = False
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        self.wiedervorlage_tooltip = CTkTooltip(
+            self.wiedervorlage_label,
+            self._get_wiedervorlage_tooltip_text,
+            delay_ms=250,
+        )
+        self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
         # Right Column: Action Buttons Container
         self.info_right_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
@@ -327,14 +344,7 @@ class CockpitView(ctk.CTkFrame):
 
         self.ansprechpartner_label.configure(text=f"👤 Ansprechpartner: {case.customer.contact_person}")
 
-        if case.workflow_status.followup_at:
-            fw_dt_str = format_german_datetime(case.workflow_status.followup_at)
-            note_suffix = f" ({case.workflow_status.followup_note})" if case.workflow_status.followup_note else ""
-            self.wiedervorlage_label.configure(text=f"🔔 Wiedervorlage: {fw_dt_str}{note_suffix}")
-            self.wiedervorlage_label.pack(fill="x", anchor="w")
-        else:
-            self.wiedervorlage_label.configure(text="")
-            self.wiedervorlage_label.pack_forget()
+        self._update_wiedervorlage_display()
 
         self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
         self.complete_btn.configure(text="✓ Wieder öffnen" if case.workflow_status.is_completed else "✓ Erledigen")
@@ -450,3 +460,48 @@ class CockpitView(ctk.CTkFrame):
         if self.current_case:
             self.current_case.timeline = entries
             self.on_click_save()
+
+    def _on_info_frame_configure(self, event=None):
+        if self.current_case and self.current_case.workflow_status.followup_at:
+            self._update_wiedervorlage_display()
+
+    def _get_wiedervorlage_tooltip_text(self) -> str:
+        if self._wiedervorlage_is_truncated and self._wiedervorlage_full_text:
+            return self._wiedervorlage_full_text
+        return ""
+
+    def _update_wiedervorlage_display(self):
+        if not self.current_case or not self.current_case.workflow_status.followup_at:
+            self._wiedervorlage_full_text = ""
+            self._wiedervorlage_is_truncated = False
+            self.wiedervorlage_label.configure(text="")
+            self.wiedervorlage_label.pack_forget()
+            return
+
+        from utils.datetime_utils import format_german_datetime
+        from utils.ui_utils import wrap_and_truncate_text
+
+        fw_dt_str = format_german_datetime(self.current_case.workflow_status.followup_at)
+        note_suffix = f" ({self.current_case.workflow_status.followup_note})" if self.current_case.workflow_status.followup_note else ""
+        full_text = f"🔔 Wiedervorlage: {fw_dt_str}{note_suffix}"
+        self._wiedervorlage_full_text = full_text
+
+        # Compute available pixel width in info_left_frame
+        w = self.info_left_frame.winfo_width()
+        if w <= 50:
+            bar_w = self.info_bar.winfo_width()
+            right_w = self.info_right_frame.winfo_reqwidth()
+            w = max(250, (bar_w - right_w - 30) if bar_w > right_w + 50 else 380)
+        else:
+            w = max(200, w - 10)
+
+        disp_text, is_trunc = wrap_and_truncate_text(
+            full_text,
+            font=self.wiedervorlage_label.cget("font"),
+            max_width=w,
+            max_lines=2,
+        )
+        self._wiedervorlage_is_truncated = is_trunc
+        self.wiedervorlage_label.configure(text=disp_text, wraplength=w)
+        self.wiedervorlage_label.pack(fill="x", anchor="w")
+

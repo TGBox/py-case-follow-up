@@ -259,6 +259,19 @@ class CalendarDialog(ctk.CTkToplevel):
         self.selected_dt = dt
         self.render_calendar()
 
+    def safe_destroy(self):
+        try:
+            self.grab_release()
+        except Exception:
+            pass
+        self.after(1, self._do_destroy)
+
+    def _do_destroy(self):
+        try:
+            self.destroy()
+        except Exception:
+            pass
+
     def on_apply(self):
         h = int(self.hour_var.get())
         m = int(self.minute_var.get())
@@ -271,7 +284,7 @@ class CalendarDialog(ctk.CTkToplevel):
 
         if self.on_date_selected:
             self.on_date_selected(result_str)
-        self.destroy()
+        self.safe_destroy()
 
 
 class DatePickerWidget(ctk.CTkFrame):

@@ -114,7 +114,7 @@ class FollowupDialog(ctk.CTkToplevel):
         ctk.CTkButton(
             bottom_frame,
             text="Abbrechen",
-            command=self.destroy,
+            command=self.safe_destroy,
             fg_color=("gray70", "gray40"),
             width=90
         ).pack(side="left", padx=5)
@@ -139,13 +139,26 @@ class FollowupDialog(ctk.CTkToplevel):
         german_str = format_german_date(target_dt) + " 09:00"
         self.date_picker.set_date(german_str)
 
+    def safe_destroy(self):
+        try:
+            self.grab_release()
+        except Exception:
+            pass
+        self.after(1, self._do_destroy)
+
+    def _do_destroy(self):
+        try:
+            self.destroy()
+        except Exception:
+            pass
+
     def on_save(self):
         iso_val = self.date_picker.get_iso()
         note = self.note_entry.get().strip()
         if iso_val:
             self.on_followup_set(iso_val, note)
-        self.destroy()
+        self.safe_destroy()
 
     def on_clear(self):
         self.on_followup_set("", "")
-        self.destroy()
+        self.safe_destroy()

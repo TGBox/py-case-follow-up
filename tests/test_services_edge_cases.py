@@ -194,7 +194,7 @@ def test_wiki_sync_service_cache_and_offline(service_env, tmp_path: Path):
 def test_export_service_rendering(service_env):
     """Test ExportService template string substitution and formatting."""
     config, storage, tmp_path = service_env
-    export_svc = ExportService(config)
+    export_svc = ExportService(storage)
 
     template = ExportTemplate(
         template_id="tpl_test",

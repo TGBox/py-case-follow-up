@@ -305,8 +305,46 @@ Erstellen Sie vollständige Aktenübersichten für die Archivierung oder Besprec
 """
     },
     {
+        "id": "ai_ollama_management",
+        "title": "🤖 KI-Assistent, Ollama Server & Modell-Verwaltung",
+        "category": "KI & Ollama",
+        "content": """
+### 🤖 Lokaler KI-Assistent & Ollama Server-Steuerung
+
+Das Support-Cockpit bietet eine vollständige, datenschutzkonforme KI-Unterstützung auf Basis lokaler Open-Source Sprachmodelle (z. B. Ollama mit Qwen2.5 / Llama3). Sämtliche Anfragen bleiben 100% auf Ihrem PC!
+
+#### 1. ⚙ Ollama Server-Steuerung (Start & Beenden aus der App)
+Unter **Profil & Einstellungen** (`👤`) -> Reiter **🤖 KI & NLP** können Sie den Ollama-Server direkt aus der Anwendung bedienen:
+- **`▶ Ollama Server Starten`**: Startet den Ollama-Hintergrundprozess (`ollama serve`), ohne dass Sie ein Terminal öffnen müssen.
+- **`🛑 Server Beenden`**: Beendet den Ollama-Serverprozess sauber und gibt belegten Speicherplatz sofort frei.
+- **`🌐 Download-Links`**: Sollte Ollama noch nicht installiert sein oder fehlen lokale Modelle, bietet die App direkte Download-Links zu `ollama.com`, `qwen2.5` und `llama3`.
+
+#### 2. ⚡ PVS-Support Modell per Klick erstellen
+- Über den Button **`⚡ PVS-Support Modell aus Modelfile erstellen`** wird automatisch ein spezialisiertes KI-Modell (`pvs-support`) aus dem hinterlegten `Modelfile` generiert.
+- Dieses Modell ist speziell auf deutschen IT-Support im Gesundheitswesen (PVS, TI-Konnektoren, GKV-Abrechnung, KV-SafeNet) vorbereitet.
+
+#### 3. 🎚 Globaler KI-Schalter & Automatisches Entladen
+- Über den Schalter **`🤖 KI Global Aktiv`** (oben rechts in KI-Dialogen und Profil) können Sie die KI jederzeit global deaktivieren.
+- Beim Deaktivieren wird das aktuell geladene KI-Modell automatisch aus dem RAM/VRAM entladen.
+- Alle KI-Generierungs-Buttons werden bei inaktivem Schalter geschützt deaktiviert.
+
+#### 4. 🚦 Präzise Status-Farbcodierung
+Der KI-Status wird durch eindeutige Farbcodes angezeigt:
+- **`🔴 Rot`**: Ollama Offline oder Server nicht erreichbar.
+- **`⚪ Grau`**: Ollama Online, aber KI ist global ausgeschaltet (Schalter OFF).
+- **`🔵 Blau`**: Ollama Online & KI Aktiv, aber Standby (kein Modell im RAM).
+- **`🟢 Grün`**: Ollama Online & KI Aktiv und Modell einsatzbereit im RAM geladen.
+
+#### 5. 🎯 Hierarchische Prompt-Regeln & Sonderanweisungen
+Bei jeder KI-Generierung gilt eine strikte Prioritäten-Hierarchie:
+1. **Globale Basis-Regeln** (Grundregeln im Benutzerprofil).
+2. **Praxis-Spezifische Vorrang-Regeln** (In den Praxisdetails hinterlegt, übersteuern Basis-Regeln).
+3. **⚡ Priorisierte Sonderanweisung** (Im Dialog eingegebene Einzeldirektive, hat **allerhöchste Priorität**).
+"""
+    },
+    {
         "id": "stepper_time_picker",
-        "title": "⏱ Zeitauswahl (07:00–20:00) & Stepper",
+        "title": "⏱ Zeitauswahl (07:00-20:00) & Stepper",
         "category": "Benutzeroberfläche",
         "content": """
 ### ⏱ Zeitauswahl & Stepper-Pfeile
@@ -317,6 +355,152 @@ Die Zeitauswahl in Kalender- und Wiedervorlage-Dialogen ist speziell auf Praxis-
 - **Schnelle Stepper-Buttons**: Neben den Dropdown-Menüs stehen Pfeiltasten (`▲` / `▼`) zur Verfügung:
   - Stunden: Schrittweise um `+/- 1 Stunde` anpassen.
   - Minuten: Schrittweise im 5-Minuten-Takt (`+/- 5 Min.`) anpassen.
+"""
+    },
+    {
+        "id": "internal_cases",
+        "title": "🏢 Interne Vorgänge & Aufgaben (ohne Kunde)",
+        "category": "Workflow",
+        "content": """
+### 🏢 Interne Vorgänge & Aufgaben
+
+Neben kundenbezogenen Support-Fällen können Sie im Cockpit auch **rein interne Vorgänge** (z. B. Server-Wartung, System-Updates, Notizen oder Entwicklungsaufgaben) verwalten.
+
+#### Funktionen:
+- **Kein Kunde erforderlich**: Beim Erstellen eines neuen Falls (`+ Neuer Fall` / `Strg+N`) kann das Feld Praxis/Kunde leer gelassen oder auf *"🏢 Interner Vorgang / Keine Praxis"* gesetzt werden.
+- **Automatische Schema-Anpassung**: Das Formular schaltet automatisch auf das Schema *"🏢 Interne Aufgabe / Notiz"* um.
+- **Optische Hervorhebung**: Interne Fälle erhalten in der Fallliste ein prägnantes blaues **`🏢 INTERN`**-Badge.
+- **Suchfilter**: Mit dem Schnellfilter **`[🏢 Intern]`** oder dem Suchtoken `is:internal` filtern Sie auf einen Klick alle internen Vorgänge heraus.
+"""
+    },
+    {
+        "id": "cobra_crm_import",
+        "title": "🐍 Cobra CRM Praxen- & Kundenimport",
+        "category": "Kunden",
+        "content": """
+### 🐍 Cobra CRM Praxen- & Kundenimport
+
+Importieren Sie Ihre bestehende Praxendatenbank direkt aus Cobra CRM in das Support-Cockpit.
+
+#### Ablauf:
+1. Öffnen Sie die Praxenverwaltung (**🏥 Praxen**).
+2. Klicken Sie auf **🐍 Cobra CRM Import...**.
+3. Wählen Sie Ihre Export-Datei aus (unterstützt `.csv`, `.txt`, `.json`).
+4. **Automatische Spaltenerkennung**: Das System erkennt Cobra-Felder (wie Kundennummer, Praxisname, Ansprechpartner, E-Mail, Telefon, VIP-Kennzeichnung) automatisch per Aliasing.
+5. Nach Bestätigung stehen alle Praxen sofort zur Fall-Zuordnung bereit.
+"""
+    },
+    {
+        "id": "snippets_manager",
+        "title": "📝 Textbausteine & Snippet-Manager",
+        "category": "Kommunikation",
+        "content": """
+### 📝 Textbausteine (Snippets) verwalten & einfügen
+
+Sparen Sie Zeit bei wiederkehrenden Antworten und Standardnotizen durch den integrierten Textbaustein-Manager.
+
+#### 1. Textbausteine verwalten
+- Klicken Sie im Hauptmenü auf **📝 Textbausteine**.
+- Erstellen Sie neue Bausteine mit Titel, Kategorie (z.B. *Abrechnung*, *Hardware*, *TI-Entstörung*), Tags und Vorlagentext.
+
+#### 2. Bausteine in Notizen oder E-Mails einfügen
+- Im Notizfeld oder im E-Mail-Dialog (`✉ E-Mail`): Klicken Sie auf **🧩 Textbaustein**.
+- Es öffnet sich der `SnippetPickerDialog` mit Suchfeld und Kategoriefilter.
+- Wählen Sie den gewünschten Baustein aus - der Text wird an der aktuellen Cursor-Position eingefügt!
+"""
+    },
+    {
+        "id": "analytics_kpi_dashboard",
+        "title": "📊 Auswertungs- & KPI-Dashboard",
+        "category": "Auswertungen",
+        "content": """
+### 📊 Auswertungs- & KPI-Dashboard
+
+Erhalten Sie einen schnellen Überblick über Ihre Support-Kennzahlen und Auslastungen.
+
+#### Dashboard öffnen:
+- Klicken Sie in der Menüleiste auf **📊 Auswertungen**.
+
+#### Enthaltene Metriken & Visualisierungen:
+- **Gesamt-Kennzahlen**: Offene Fälle, Erledigte Fälle, Archivierte Fälle, Durchschnittliche Bearbeitungszeit.
+- **Dringlichkeits-Verteilung**: Ampelanzeige für `🔴 Kritisch`, `🟡 Hoch`, `🟢 Normal`.
+- **Top 5 Praxen-Ranking**: Praxen mit dem höchsten Fallaufkommen zur frühzeitigen Problemidentifikation.
+- **Abteilungs-Auslastung**: Verteilung der Fälle auf Support, Technik, Entwicklung und Buchhaltung.
+"""
+    },
+    {
+        "id": "advanced_search_filters",
+        "title": "🔍 Erweitertes Suchsystem & Such-Tokens",
+        "category": "Grundlagen",
+        "content": """
+### 🔍 Erweitertes Suchsystem & Such-Tokens
+
+Die Suchleiste im Cockpit unterstützt neben Freitextsuche auch leistungsfähige Filter-Tokens.
+
+#### 1. Schnellfilter-Buttons
+Über der Fallliste finden Sie praktische Schnellfilter:
+- **`[Alle]`**: Alle Fälle anzeigen.
+- **`[🔥 Dringend]`**: Zeigt nur Fälle mit hohem Urgency-Score.
+- **`[🔔 Wiedervorlagen]`**: Zeigt fällige Wiedervorlagen.
+- **`[🏢 Intern]`**: Zeigt rein interne Vorgänge.
+
+#### 2. Such-Tokens für die Suchleiste (`Strg+F`):
+Kombinierbare Tokens zur präzisen Eingrenzung:
+- `is:internal` / `is:customer`: Nur interne oder kundenbezogene Fälle.
+- `vip:true`: Nur VIP-Praxen.
+- `reminder:due`: Nur fällige Wiedervorlagen.
+- `actor:dev` / `actor:support` / `actor:tech`: Nach Zuständigkeit filtern.
+- `status:open` / `status:closed`: Nach Status filtern.
+- `error:XYZ`: Nach Fehlercodes oder Freitext in Notizen suchen.
+"""
+    },
+    {
+        "id": "attachments_and_screenshots",
+        "title": "📂 Dateianhänge & Screenshots (Strg+V)",
+        "category": "Dokumente",
+        "content": """
+### 📂 Dateianhänge, Screenshots & Vorschau
+
+Verwalten Sie Logfiles, Screenshots und Dokumente direkt im Fall.
+
+#### 1. Screenshots direkt per `Strg+V` einfügen
+- Erstellen Sie einen Screenshot (z. B. mit `Win+Shift+S`).
+- Drücken Sie im Cockpit einfach **`Strg + V`**: Das Bild wird automatisch im Fallordner gespeichert und in die Zeitleiste eingebunden!
+
+#### 2. Live-Vorschau & OS-Öffnung
+- Bilddateien (`.png`, `.jpg`, `.webp`) und Text-Anhangsdateien (`.log`, `.json`, `.txt`) können in der Anhänge-Leiste direkt per Vorschau betrachtet werden.
+- Ein Doppelklick öffnet die Datei im Standardprogramm Ihres Betriebssystems.
+"""
+    },
+    {
+        "id": "zip_backup_restore",
+        "title": "📦 Komplett-ZIP Backup & Import/Export",
+        "category": "Konfiguration",
+        "content": """
+### 📦 Komplett-ZIP Backup & Import/Export
+
+Sichern Sie Ihren gesamten Datenbestand inkl. aller Fälle, Kundendaten, Formulare und Dateianhänge in einer einzigen ZIP-Datei.
+
+#### Ablauf:
+1. Öffnen Sie **Profil & Einstellungen** (`👤`) -> **📦 Sicherung & Wiederherstellung**.
+2. **`💾 Komplett-Backup erstellen...`**: Speichert alle JSON-Dateien und den Anhänge-Ordner als ZIP-Archiv.
+3. **`📥 Backup wiederherstellen...`**: Entpackt und stellt einen früheren Datenstand wieder her (inkl. Sicherheits-Sicherung des aktuellen Stands).
+"""
+    },
+    {
+        "id": "email_webhook_integration",
+        "title": "🔌 E-Mail-Import & REST Webhooks (Jira/GitLab)",
+        "category": "Integrationen",
+        "content": """
+### 🔌 E-Mail-Import & REST Webhooks
+
+Binden Sie das Support-Cockpit an externe Systeme an.
+
+#### 1. 📬 Automatische E-Mail-Import (IMAP)
+- Das System kann ein Support-Postfach per IMAP abfragen und neue E-Mails automatisch als Fall-Entwürfe im Cockpit anlegen.
+
+#### 2. 🔗 REST Webhook Integration (GitLab / Jira)
+- Konfigurieren Sie Webhook-URLs unter Einstellungen, um bei Erstellung oder Übergabe eines Falls automatisch Issue-Payloads an GitLab, Jira oder eigene APIs zu senden.
 """
     }
 ]

@@ -114,6 +114,11 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
         self.user_mobile_entry.pack(fill="x", pady=(0, 10))
 
+        ctk.CTkLabel(self.tab_user, text="E-Mail Signatur (für E-Mail-Entwürfe):").pack(anchor="w", pady=(5, 2))
+        self.user_sig_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)")
+        self.user_sig_entry.insert(0, self.profile.user.email_signature)
+        self.user_sig_entry.pack(fill="x", pady=(0, 10))
+
     def open_create_profile_dialog(self):
         dialog = ctk.CTkInputDialog(
             text="Geben Sie den Namen des neuen Mitarbeiters ein:",
@@ -159,6 +164,10 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         self.user_mobile_entry.delete(0, "end")
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
+
+        if hasattr(self, "user_sig_entry"):
+            self.user_sig_entry.delete(0, "end")
+            self.user_sig_entry.insert(0, self.profile.user.email_signature)
 
         self.theme_combo.set(self.profile.ui_settings.theme)
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))

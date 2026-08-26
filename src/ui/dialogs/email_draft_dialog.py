@@ -23,6 +23,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         snippet_service: Any | None = None,
         customers: list[Customer] | None = None,
         storage_service: Any | None = None,
+        profile: Any | None = None,
     ):
         super().__init__(parent)
         self.case = case
@@ -30,6 +31,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.user_name = user_name
         self.snippet_service = snippet_service
         self.storage_service = storage_service
+        self.profile = profile
 
         # Load customers for Praxiskartei autocomplete if not passed
         if customers is not None:
@@ -82,7 +84,8 @@ class EmailDraftDialog(ctk.CTkToplevel):
         except Exception:
             pass
 
-        self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name, customers=self.customers)
+        sig = self.profile.user.email_signature if (self.profile and hasattr(self.profile, "user") and hasattr(self.profile.user, "email_signature")) else ""
+        self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name, customers=self.customers, signature=sig)
         self.create_widgets()
 
     def create_widgets(self):

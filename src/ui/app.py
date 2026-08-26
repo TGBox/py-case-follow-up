@@ -231,7 +231,7 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
+            values=["📥 E-Mail Ingest", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
             command=self._on_datenaustausch_selected,
             width=145,
         )
@@ -243,7 +243,7 @@ class SupportCockpitApp(ctk.CTk):
         quit_btn.pack(side="right", padx=6, pady=4)
 
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
-        theme_btn.pack(side="right", padx=6, pady=4)
+        theme_btn.pack(side="right", padx=4, pady=4)
 
         self.bell_btn = ctk.CTkButton(
             menu_frame,
@@ -299,7 +299,9 @@ class SupportCockpitApp(ctk.CTk):
 
     def _on_datenaustausch_selected(self, choice: str):
         self.datenaustausch_combo.set("🔄 Datenaustausch")
-        if choice.startswith("📤 Export"):
+        if choice.startswith("📥 E-Mail"):
+            self.open_email_import_dialog()
+        elif choice.startswith("📤 Export"):
             self.open_export_dialog(self.active_case)
         elif choice == "📦 ZIP-Backup":
             self.open_zip_export_dialog()
@@ -658,6 +660,17 @@ class SupportCockpitApp(ctk.CTk):
             snippet_service=self.snippet_service,
             customers=customers,
             storage_service=self.storage_service,
+            profile=self.profile,
+        )
+
+    def open_email_import_dialog(self):
+        from ui.dialogs.email_import_dialog import EmailImportDialog
+        EmailImportDialog(
+            self,
+            cases=self.cases,
+            on_case_created=self.on_case_created,
+            on_case_updated=self.on_case_updated,
+            author_name=self.profile.user.name,
         )
 
     def open_calendar_export_dialog(self, case: Case):

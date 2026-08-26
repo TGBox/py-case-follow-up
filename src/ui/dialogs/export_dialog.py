@@ -6,6 +6,7 @@ from models.case import Case
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema
 from services.export_service import ExportService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class ExportDialog(ctk.CTkToplevel):
@@ -19,11 +20,12 @@ class ExportDialog(ctk.CTkToplevel):
         on_case_updated: Callable[[Case], None],
     ):
         super().__init__(parent)
-        self.title(f"Übergabe- & Export-Assistent — {case.case_id}")
-        self.geometry("820x760")
+        w, h = DIALOG_DIMENSIONS["export"]
+        self.title(f"{DIALOG_TITLES['export']} — {case.case_id}")
+        self.geometry(f"{w}x{h}")
         self.minsize(740, 660)
         from utils.ui_utils import center_window
-        center_window(self, 820, 760)
+        center_window(self, w, h)
 
         self.case = case
         self.templates = templates
@@ -71,7 +73,7 @@ class ExportDialog(ctk.CTkToplevel):
 
         btn_manage = ctk.CTkButton(
             tpl_frame,
-            text="🛠️ Vorlagen verwalten",
+            text="🛠 Vorlagen verwalten",
             command=self.on_open_template_manager,
             width=150,
             fg_color=("gray75", "gray30"),
@@ -141,7 +143,7 @@ class ExportDialog(ctk.CTkToplevel):
 
         if missing_fields:
             ctk.CTkLabel(
-                self.inplace_frame, text="⚠️ Fehlende Pflichtfelder direkt ergänzen:", font=ctk.CTkFont(weight="bold"), text_color="orange"
+                self.inplace_frame, text="⚠ Fehlende Pflichtfelder direkt ergänzen:", font=ctk.CTkFont(weight="bold"), text_color="orange"
             ).pack(anchor="w", padx=10, pady=(5, 5))
 
             for fid in missing_fields:
@@ -183,7 +185,7 @@ class ExportDialog(ctk.CTkToplevel):
             missing_names = [self.schema.fields[i].label if self.schema else m for m in missing for i, f in enumerate(self.schema.fields) if f.field_id == m] if self.schema else missing
             self.preview_textbox.insert("1.0", f"[FEHLENDE PFLICHTFELDER: {', '.join(missing)}]")
             self.status_label.configure(
-                text=f"⚠️ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.", text_color="red"
+                text=f"⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.", text_color="red"
             )
 
     def apply_inplace_values_to_case(self):

@@ -3,19 +3,9 @@ import json
 from pathlib import Path
 from typing import Any
 from models.customer import Customer, Contact
+from constants import COBRA_FIELD_ALIAS_MAP
 
-FIELD_ALIAS_MAP = {
-    "customer_id": ["kunden_nr", "kundennr", "kunden-nr", "id", "kdnr", "kunden_id", "customer_id", "kunden nummer", "debitor"],
-    "practice_name": ["firma", "praxis", "praxisname", "name1", "name", "firmenname", "practice_name", "organisation", "unternehmen"],
-    "contact_person": ["ansprechpartner", "ansprechpartnerin", "kontakt", "name2", "contact_person", "kontaktperson", "arzt", "ärztin"],
-    "phone": ["telefon", "tel", "telefonnummer", "tel.nr", "fon", "phone", "mobil", "telefon_nr"],
-    "email": ["email", "e-mail", "mail", "elektronische post", "e_mail"],
-    "is_vip": ["vip", "wichtig", "priorität", "vip_kunde", "is_vip", "prio"],
-    "system_version": ["version", "system", "systemversion", "pvs-version", "pvs_version", "release"],
-    "vm_number": ["vm", "vm_nr", "vm-nr", "vm_nummer", "vm_number"],
-    "instance_number": ["instanz", "instanz_nr", "mandant", "instance_number", "instanz_nummer"],
-    "general_notes": ["notizen", "bemerkung", "kommentar", "hinweis", "general_notes", "memo", "beschreibung"],
-}
+FIELD_ALIAS_MAP = COBRA_FIELD_ALIAS_MAP
 
 
 class CobraCrmImportService:

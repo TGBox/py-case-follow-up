@@ -1,4 +1,4 @@
-"""Unit and integration tests for Wiedervorlage 2-line text wrapping, truncation, and hover tooltip behavior."""
+"""Unit and integration tests for Wiedervorlage multi-line formatting, compact line spacing, and hover tooltip behavior."""
 
 import pytest
 import customtkinter as ctk
@@ -12,6 +12,7 @@ from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
 from ui.views.cockpit_view import CockpitView
+from ui.widgets.case_list_widget import CaseListWidget
 
 
 def test_wrap_and_truncate_empty_and_short():
@@ -62,7 +63,7 @@ def test_wrap_and_truncate_super_long_unbroken_word():
 
 
 def test_cockpit_view_wiedervorlage_tooltip_integration(tmp_path: Path):
-    """Test CockpitView followup label text wrapping, 2-line capping, and tooltip resolution."""
+    """Test CockpitView multi-line followup display, compact labels, and tooltip resolution."""
     config = AppConfig(workspace_dir=tmp_path)
     storage = StorageService(config)
     scoring = ScoringService()
@@ -95,10 +96,9 @@ def test_cockpit_view_wiedervorlage_tooltip_integration(tmp_path: Path):
     )
     cockpit.on_select_case_from_list(case_no_fw)
     assert cockpit._wiedervorlage_full_text == ""
-    assert not cockpit._wiedervorlage_is_truncated
     assert cockpit._get_wiedervorlage_tooltip_text() == ""
 
-    # 2. Case with short follow-up (fits without truncation)
+    # 2. Case with follow-up and note
     case_short_fw = Case(
         case_id="F-101",
         customer=CaseCustomer(customer_id="K-2", practice_name="Praxis B", contact_person="Dr. B"),
@@ -106,16 +106,19 @@ def test_cockpit_view_wiedervorlage_tooltip_integration(tmp_path: Path):
         workflow_status=WorkflowStatus(
             current_actor=Actor.SUPPORT,
             followup_at="2026-08-25T14:00:00",
-            followup_note="Kurz",
+            followup_note="Kurze Notiz",
         ),
     )
     cockpit.on_select_case_from_list(case_short_fw)
-    assert "🔔 Wiedervorlage:" in cockpit._wiedervorlage_full_text
-    assert "Kurz" in cockpit._wiedervorlage_full_text
-    # When not truncated, tooltip returns empty string
-    assert cockpit._get_wiedervorlage_tooltip_text() == ""
+    assert "🔔 Nachfragen am:" in cockpit._wiedervorlage_full_text
+    assert "Kurze Notiz" in cockpit._wiedervorlage_full_text
+    assert cockpit.wv_hdr_label.cget("text") == "🔔 Nachfragen am:"
+    assert "25.08.2026" in cockpit.wv_date_label.cget("text")
+    assert "14:00" in cockpit.wv_time_label.cget("text")
+    assert "Kurze Notiz" in cockpit.wv_note_label.cget("text")
+    assert cockpit._get_wiedervorlage_tooltip_text() == cockpit._wiedervorlage_full_text
 
-    # 3. Case with very long follow-up note (exceeds 2 lines)
+    # 3. Case with very long follow-up note
     very_long_note = (
         "Kunde hat gemeldet, dass der Cobra-Export seit dem letzten Update auf Version 4.2 abbricht "
         "und die SQL-Verbindung zum Server im Minutentakt getrennt wird. Dringend mit IT-Leiter klären!"
@@ -130,17 +133,39 @@ def test_cockpit_view_wiedervorlage_tooltip_integration(tmp_path: Path):
             followup_note=very_long_note,
         ),
     )
-    # Simulate narrow container width to test wrapping and truncation
     cockpit.info_left_frame.winfo_width = lambda: 280  # type: ignore
     cockpit.on_select_case_from_list(case_long_fw)
 
-    assert cockpit._wiedervorlage_is_truncated
-    lines = cockpit.wiedervorlage_label.cget("text").splitlines()
-    assert len(lines) <= 2
-    assert lines[-1].endswith("...")
-    # Tooltip must return the complete full text
+    assert "🔔 Nachfragen am:" in cockpit.wv_hdr_label.cget("text")
+    assert very_long_note in cockpit.wv_note_label.cget("text")
     full_tt = cockpit._get_wiedervorlage_tooltip_text()
     assert very_long_note in full_tt
-    assert full_tt == cockpit._wiedervorlage_full_text
+
+    app.destroy()
+
+
+def test_case_list_widget_wiedervorlage_compact_labels(tmp_path: Path):
+    """Test CaseListWidget multi-line Wiedervorlage labels with newline before note."""
+    app = ctk.CTk()
+    app.withdraw()
+    widget = CaseListWidget(app, on_case_selected=lambda c: None, on_search_changed=lambda s: None)
+    case_fw = Case(
+        case_id="F-200",
+        customer=CaseCustomer(customer_id="K-1", practice_name="Praxis Test"),
+        classification=Classification(title="Thema"),
+        workflow_status=WorkflowStatus(
+            current_actor=Actor.SUPPORT,
+            followup_at="2026-08-25T09:00:00",
+            followup_note="Wichtige Nachfrage",
+        ),
+    )
+    widget.set_cases([case_fw])
+    app.update()
+
+    lbl_texts = [lbl.cget("text") for lbl in widget.wrap_labels]
+    assert "🔔 Nachfragen am:" in lbl_texts
+    assert any("25.08.2026" in t for t in lbl_texts)
+    assert any("09:00" in t for t in lbl_texts)
+    assert any("Wichtige Nachfrage" in t for t in lbl_texts)
 
     app.destroy()

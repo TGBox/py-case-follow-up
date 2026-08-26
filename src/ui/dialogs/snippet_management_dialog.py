@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, STATUS_MESSAGES
 
 
 class SnippetManagementDialog(ctk.CTkToplevel):
@@ -13,12 +14,13 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.on_snippets_updated = on_snippets_updated
         self.selected_snippet: Snippet | None = None
 
-        self.title("📝 Textbausteine verwalten")
-        self.geometry("820x600")
+        w, h = DIALOG_DIMENSIONS["snippet_mgmt"]
+        self.title(DIALOG_TITLES["snippet_mgmt"])
+        self.geometry(f"{w}x{h}")
         self.minsize(720, 500)
 
         from utils.ui_utils import center_window
-        center_window(self, 820, 600)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -96,7 +98,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         self.delete_btn = ctk.CTkButton(
             btn_row,
-            text="🗑️ Löschen",
+            text="🗑 Löschen",
             fg_color="crimson",
             hover_color="darkred",
             command=self.on_click_delete,
@@ -179,10 +181,10 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
 
         if not title:
-            self.status_lbl.configure(text="⚠️ Bitte einen Titel eingeben.", text_color="crimson")
+            self.status_lbl.configure(text="⚠ Bitte einen Titel eingeben.", text_color="crimson")
             return
         if not content:
-            self.status_lbl.configure(text="⚠️ Der Inhalt darf nicht leer sein.", text_color="crimson")
+            self.status_lbl.configure(text="⚠ Der Inhalt darf nicht leer sein.", text_color="crimson")
             return
 
         sid = self.selected_snippet.snippet_id if self.selected_snippet else ""
@@ -197,7 +199,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.service.add_or_update_snippet(snip)
         self.selected_snippet = snip
         self.delete_btn.configure(state="normal")
-        self.status_lbl.configure(text="✓ Textbaustein gespeichert.", text_color="limegreen")
+        self.status_lbl.configure(text=STATUS_MESSAGES["snippet_saved"], text_color="limegreen")
         self.refresh_list()
 
         if self.on_snippets_updated:
@@ -206,7 +208,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
     def on_click_delete(self):
         if self.selected_snippet:
             self.service.delete_snippet(self.selected_snippet.snippet_id)
-            self.status_lbl.configure(text="✓ Textbaustein gelöscht.", text_color="limegreen")
+            self.status_lbl.configure(text=STATUS_MESSAGES["snippet_deleted"], text_color="limegreen")
             self.on_click_new()
             if self.on_snippets_updated:
                 self.on_snippets_updated()

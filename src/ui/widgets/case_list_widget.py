@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
+from constants import COLOR_MUTED_GRAY, COLOR_MUTED_HOVER
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -38,9 +39,9 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
         
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
@@ -61,6 +62,22 @@ class CaseListWidget(ctk.CTkFrame):
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
         from utils.ui_utils import enable_auto_hiding_scrollbar
         enable_auto_hiding_scrollbar(self.scroll_frame)
+
+        self.wrap_labels: list[ctk.CTkLabel] = []
+        self._last_wrap_width: int = 250
+        self.bind("<Configure>", self._on_widget_configure)
+
+    def _on_widget_configure(self, event=None):
+        w = self.winfo_width()
+        if w > 50:
+            target_wrap = max(160, w - 40)
+            if abs(target_wrap - self._last_wrap_width) > 6:
+                self._last_wrap_width = target_wrap
+                for lbl in self.wrap_labels:
+                    try:
+                        lbl.configure(wraplength=target_wrap)
+                    except Exception:
+                        pass
 
     def toggle_deep_search(self):
         self.is_deep_search_active = not self.is_deep_search_active
@@ -90,23 +107,28 @@ class CaseListWidget(ctk.CTkFrame):
     def render_list(self):
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
+        self.wrap_labels.clear()
 
         if not self.cases:
             ctk.CTkLabel(self.scroll_frame, text="Keine Fälle gefunden.").pack(pady=20)
             return
+
+        w = self.winfo_width()
+        current_wrap = max(160, (w - 40) if w > 50 else 250)
+        self._last_wrap_width = current_wrap
 
         for case in self.cases:
             is_selected = case.case_id == self.selected_case_id
             row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
 
             card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, cursor="hand2")
-            card.pack(fill="x", pady=4, padx=4)
+            card.pack(fill="x", pady=4, padx=(4, 6))
 
             # Click binding
             card.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             top_row = ctk.CTkFrame(card, fg_color="transparent")
-            top_row.pack(fill="x", padx=8, pady=(6, 2))
+            top_row.pack(fill="x", padx=(8, 10), pady=(6, 2))
             top_row.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Urgency Dot Indicator
@@ -114,13 +136,15 @@ class CaseListWidget(ctk.CTkFrame):
             dot_color = "red" if urg == UrgencyLevel.RED else ("gold" if urg == UrgencyLevel.YELLOW else "limegreen")
             dot = ctk.CTkLabel(top_row, text="●", text_color=dot_color, font=ctk.CTkFont(size=16))
             dot.pack(side="left", padx=(0, 5))
+            dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
             case_id_lbl.pack(side="left")
             case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            score_lbl = ctk.CTkLabel(top_row, text=f"Pts: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
-            score_lbl.pack(side="right")
+            score_lbl = ctk.CTkLabel(top_row, text=f"Pkt.: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+            score_lbl.pack(side="right", padx=(0, 6))
+            score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Practice Name / Internal Badge
             if case.is_internal:
@@ -139,12 +163,13 @@ class CaseListWidget(ctk.CTkFrame):
                 text=disp_prac,
                 anchor="w",
                 justify="left",
-                wraplength=250,
+                wraplength=current_wrap,
                 font=ctk.CTkFont(size=12, weight="bold"),
                 text_color=prac_color,
             )
             prac_lbl.pack(fill="x", padx=12, pady=(0, 2))
             prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(prac_lbl)
 
             # Title & Actor
             sub_str = f"{case.classification.title} | Zuständig: {get_actor_display(case.workflow_status.current_actor)}"
@@ -155,12 +180,13 @@ class CaseListWidget(ctk.CTkFrame):
                 text=disp_sub,
                 anchor="w",
                 justify="left",
-                wraplength=250,
+                wraplength=current_wrap,
                 font=ctk.CTkFont(size=11),
                 text_color=("gray40", "gray70"),
             )
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
             sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(sub_lbl)
 
             # Deep Search Match Badges
             if self.is_deep_search_active and case.case_id in self.deep_search_results:
@@ -176,12 +202,13 @@ class CaseListWidget(ctk.CTkFrame):
                         text=att_text,
                         anchor="w",
                         justify="left",
-                        wraplength=250,
+                        wraplength=current_wrap,
                         font=ctk.CTkFont(size=10, weight="bold"),
                         text_color="plum",
                     )
                     att_lbl.pack(fill="x", padx=12, pady=(0, 2))
                     att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                    self.wrap_labels.append(att_lbl)
 
                 if wiki_m:
                     w0 = wiki_m[0]
@@ -191,47 +218,100 @@ class CaseListWidget(ctk.CTkFrame):
                         text=wiki_text,
                         anchor="w",
                         justify="left",
-                        wraplength=250,
+                        wraplength=current_wrap,
                         font=ctk.CTkFont(size=10, weight="bold"),
                         text_color="orchid",
                     )
                     wiki_lbl.pack(fill="x", padx=12, pady=(0, 2))
                     wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                    self.wrap_labels.append(wiki_lbl)
 
             if case.workflow_status.followup_at:
-                from utils.datetime_utils import format_german_datetime
-                fw_dt_str = format_german_datetime(case.workflow_status.followup_at)
-                fw_lbl = ctk.CTkLabel(
-                    card,
-                    text=f"🔔 Nachfragen am: {fw_dt_str}",
+                from utils.datetime_utils import format_german_date_with_relative, format_german_time
+                fw_date_str = format_german_date_with_relative(case.workflow_status.followup_at)
+                fw_time_str = format_german_time(case.workflow_status.followup_at, with_uhr=True)
+
+                fw_frame = ctk.CTkFrame(card, fg_color="transparent")
+                fw_frame.pack(fill="x", padx=12, pady=(0, 3))
+                fw_frame.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+                lbl_h = ctk.CTkLabel(
+                    fw_frame,
+                    text="🔔 Nachfragen am:",
+                    height=0,
                     anchor="w",
                     justify="left",
-                    wraplength=250,
+                    wraplength=current_wrap,
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color="darkorange"
                 )
-                fw_lbl.pack(fill="x", padx=12, pady=(0, 2))
-                fw_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                lbl_h.pack(fill="x", pady=0)
+                lbl_h.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(lbl_h)
+
+                lbl_d = ctk.CTkLabel(
+                    fw_frame,
+                    text=f"  {fw_date_str}",
+                    height=0,
+                    anchor="w",
+                    justify="left",
+                    wraplength=current_wrap,
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="darkorange"
+                )
+                lbl_d.pack(fill="x", pady=0)
+                lbl_d.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(lbl_d)
+
+                lbl_t = ctk.CTkLabel(
+                    fw_frame,
+                    text=f"  {fw_time_str}",
+                    height=0,
+                    anchor="w",
+                    justify="left",
+                    wraplength=current_wrap,
+                    font=ctk.CTkFont(size=10),
+                    text_color="darkorange"
+                )
+                lbl_t.pack(fill="x", pady=0)
+                lbl_t.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(lbl_t)
+
+                if case.workflow_status.followup_note:
+                    lbl_n = ctk.CTkLabel(
+                        fw_frame,
+                        text=f"  {case.workflow_status.followup_note}",
+                        height=0,
+                        anchor="w",
+                        justify="left",
+                        wraplength=current_wrap,
+                        font=ctk.CTkFont(size=10),
+                        text_color="darkorange"
+                    )
+                    lbl_n.pack(fill="x", pady=0)
+                    lbl_n.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                    self.wrap_labels.append(lbl_n)
 
             if case.classification.tags:
-                tags_str = "🏷️ " + ", ".join(case.classification.tags)
+                tags_str = "🏷 " + ", ".join(case.classification.tags)
                 tag_lbl = ctk.CTkLabel(
                     card,
                     text=tags_str,
                     anchor="w",
                     justify="left",
-                    wraplength=250,
+                    wraplength=current_wrap,
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color=("dodgerblue", "cyan"),
                 )
                 tag_lbl.pack(fill="x", padx=12, pady=(0, 6))
                 tag_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(tag_lbl)
 
             # CTkTooltip hover overlay for full untruncated details
             from ui.widgets.ctk_tooltip import CTkTooltip
             def build_tooltip(c: Case = case) -> str:
                 lines = [
-                    f"📌 Fall: {c.case_id} (Priorität: {c.classification.calculated_score:.0f} Pts)",
+                    f"📌 Fall: {c.case_id} (Priorität: {c.classification.calculated_score:.0f} Pkt.)",
                 ]
                 if c.is_internal:
                     lines.append(f"🏢 Kunde: INTERNE AUFGABE ({c.customer.customer_id})")
@@ -244,17 +324,18 @@ class CaseListWidget(ctk.CTkFrame):
                 lines.append(f"👤 Zuständig: {get_actor_display(c.workflow_status.current_actor)}")
 
                 if c.workflow_status.followup_at:
-                    from utils.datetime_utils import format_german_datetime
-                    fw_t = format_german_datetime(c.workflow_status.followup_at)
+                    from utils.datetime_utils import format_german_date_with_relative, format_german_time
+                    fw_d = format_german_date_with_relative(c.workflow_status.followup_at)
+                    fw_tm = format_german_time(c.workflow_status.followup_at, with_uhr=True)
                     note_t = f" ({c.workflow_status.followup_note})" if c.workflow_status.followup_note else ""
-                    lines.append(f"🔔 Wiedervorlage: {fw_t}{note_t}")
+                    lines.append(f"🔔 Wiedervorlage: {fw_d} um {fw_tm}{note_t}")
 
                 if c.classification.tags:
-                    lines.append(f"🏷️ Tags: {', '.join(c.classification.tags)}")
+                    lines.append(f"🏷 Tags: {', '.join(c.classification.tags)}")
 
                 return "\n".join(lines)
 
-            CTkTooltip(card, build_tooltip, delay_ms=300)
+            CTkTooltip(card, text_or_func=lambda c=case: build_tooltip(c), delay_ms=400)
 
     def select_case(self, case: Case):
         from ui.widgets.ctk_tooltip import CTkTooltip

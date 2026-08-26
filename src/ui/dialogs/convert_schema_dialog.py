@@ -4,6 +4,7 @@ from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
 from enums import Channel
 from utils.datetime_utils import now_iso
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class ConvertSchemaDialog(ctk.CTkToplevel):
@@ -23,11 +24,12 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         self.author_name = author_name
         self.on_schema_converted = on_schema_converted
 
-        self.title("🔄 Formular-Schema umwandeln")
-        self.geometry("520x400")
+        w, h = DIALOG_DIMENSIONS["convert_schema"]
+        self.title(DIALOG_TITLES["convert_schema"])
+        self.geometry(f"{w}x{h}")
         self.resizable(False, False)
         from utils.ui_utils import center_window
-        center_window(self, 520, 400)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -87,7 +89,7 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         notice_frame.pack(fill="x", pady=(0, 15))
 
         notice_text = (
-            "ℹ️ Datensicherung:\n"
+            "ℹ Datensicherung:\n"
             "Beim Umwandeln werden bisher eingegebene Formular-Informationen als neue "
             "Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. "
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."

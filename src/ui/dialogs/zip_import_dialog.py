@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Callable, Any
 from services.zip_backup_service import ZipBackupService
 from utils.ui_utils import center_window
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class ZipImportPathDialog(ctk.CTkToplevel):
@@ -23,10 +24,11 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         self.default_attachments_dir = default_attachments_dir
         self.on_import_confirmed = on_import_confirmed
 
-        self.title("📥 Datensicherung Importieren — Zielpfade festlegen")
-        self.geometry("840x620")
+        w, h = DIALOG_DIMENSIONS["zip_import"]
+        self.title(DIALOG_TITLES["zip_import"])
+        self.geometry(f"{w}x{h}")
         self.minsize(760, 540)
-        center_window(self, 840, 620)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -92,7 +94,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
         self.btn_mode_custom = ctk.CTkButton(
             mode_frame,
-            text="⚙️ Einzelne Pfade anpassen",
+            text="⚙ Einzelne Pfade anpassen",
             command=self.set_mode_custom,
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
@@ -109,7 +111,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         # Status / Warning Info
         warn_lbl = ctk.CTkLabel(
             main_frame,
-            text="⚠️ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.",
+            text="⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.",
             font=ctk.CTkFont(size=11),
             text_color=("darkgoldenrod", "gold"),
             anchor="w",

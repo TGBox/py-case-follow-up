@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 HELP_ARTICLES = [
@@ -44,7 +45,7 @@ In der oberen Menüleiste können Sie jederzeit zwischen 3 Ansichten umschalten:
 #### 1. 📅 Deutsche Datumsformatierung
 - Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.
 
-#### 2. 🗓️ Interaktiver Kalender-Picker
+#### 2. 🗓 Interaktiver Kalender-Picker
 - Bei allen Datumseingaben (z. B. Wiedervorlage einplanen, Rückruf-Deadline festlegen) steht ein interaktiver Kalender-Dialog zur Verfügung.
 - Klicken Sie neben dem Eingabefeld auf **📅 Kalender**, um den Monatskalender zu öffnen und das gewünschte Datum bequem per Klick auszuwählen.
 - Schnellauswahl-Tasten für *Heute*, *+ 1 Tag* und *+ 1 Woche* beschleunigen die Eingabe.
@@ -105,7 +106,7 @@ Ein Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich.
 Unterschiedliche Support-Typen (z.B. Hardware-Tausch, Abrechnungsfrage, Schnittstellen-Problem) erfordern unterschiedliche Informationen.
 
 #### Eigene Formulare erstellen & anpassen
-1. Klicken Sie in der Menüleiste auf **🛠️ Formular-Baukasten**.
+1. Klicken Sie in der Menüleiste auf **🛠 Formular-Baukasten**.
 2. Erstellen Sie ein neues Schema (z.B. *"PVS-Schnittstelle"*) oder bearbeiten Sie ein bestehendes.
 3. Fügen Sie eigene Felder hinzu:
    - **Text-Felder** (z.B. Fehlermeldung)
@@ -171,10 +172,10 @@ Arbeiten Sie mit Kollegen ohne zentralen Server zusammen! Die P2P-Sync ermöglic
     },
     {
         "id": "shortcuts",
-        "title": "⌨️ Tastenkürzel & Hotkeys",
+        "title": "⌨ Tastenkürzel & Hotkeys",
         "category": "Tastenkürzel",
         "content": """
-### ⌨️ Tastenkürzel (Shortcuts)
+### ⌨ Tastenkürzel (Shortcuts)
 
 Arbeiten Sie noch schneller mit folgenden Hotkeys:
 
@@ -224,14 +225,14 @@ Das **Support-Cockpit** speichert Arbeitsdaten getrennt von Programmdateien. Die
 Im **Export-Vorlagen-Editor** können Sie bestehende Übergabevorlagen anpassen oder völlig neue Exportformate definieren.
 
 #### Vorlagen-Manager öffnen
-- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠️ Vorlagen verwalten**.
+- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠 Vorlagen verwalten**.
 
 #### Vorlage konfigurieren
 1. **Name & ID**: Vergeben Sie eine eindeutige ID und einen lesbaren Anzeigenamen.
 2. **Ziel-Aktion**: Wählen Sie zwischen Zwischenablage-Text und Datei-Export.
 3. **Zugeordnete Formulare**: Aktivieren Sie die Häkchen bei den Formular-Schemas, für die die Vorlage angeboten werden soll.
 4. **Erforderliche Pflichtfelder**: Legen Sie fest, welche Felder im Fall ausgefüllt sein müssen, bevor exportiert werden darf.
-5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁️ Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!
+5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁 Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!
 """
     },
     {
@@ -253,7 +254,69 @@ Behalten Sie stets den Überblick darüber, wann ein Fall an wen übergeben wurd
 - Beim Wechsel der Zuständigkeit öffnet sich automatisch der Dialog **🔔 Wiedervorlage einplanen**.
 - Oder klicken Sie in den Falldetails jederzeit auf den Button **🔔 Wiedervorlage**.
 - Wählen Sie ein Schnell-Preset (`+ 1 Tag`, `+ 2 Tage`, `+ 1 Woche`) oder ein freies Datum mit Notiz.
-- Fälle mit aktiver Wiedervorlage werden in der Fallliste mit einem orangen **🔔 Nachfragen am: YYYY-MM-DD** Hinweis hervorgehoben!
+- Fälle mit aktiver Wiedervorlage werden in der Fallliste 3-zeilig hervorgehoben (Nachfragen am, Datum mit Relativangabe `(morgen)` / `(heute)` / `(in X Tagen)`, Uhrzeit).
+"""
+    },
+    {
+        "id": "email_calendar_outlook",
+        "title": "✉ E-Mail, Kalender (.ics) & Outlook",
+        "category": "Kommunikation",
+        "content": """
+### ✉ E-Mail-Verfassen, Kalender-Export & Microsoft Outlook Integration
+
+Im Cockpit stehen Ihnen zwei getrennte Funktionen zur Verfügung:
+
+#### 1. ✉ E-Mail verfassen
+- Klicken Sie auf **✉ E-Mail**, um den E-Mail-Entwurf für den aktuellen Fall zu öffnen.
+- Empfänger und Betreff sind anhand der Praxisdaten und des Themas vorausgefüllt.
+- Über **🧩 Textbaustein** können Sie vorgefertigte Support-Vorlagen (z. B. TI-Entstörung, Abrechnungskorrektur) per Klick einfügen.
+- **In Outlook übertragen**: Öffnet die E-Mail direkt in Microsoft Outlook mit allen Feldern.
+- **In Standard-Mail-App öffnen**: Startet Ihren Standard-Mail-Client über das `mailto:`-Protokoll.
+
+#### 2. 📅 Kalendereintrag erstellen (.ics)
+- Klicken Sie auf **📅 Kalender**, um einen Kalendertermin für Wiedervorlagen oder Rückruf-Deadlines zu erzeugen.
+- **Direkt im Kalender öffnen**: Erzeugt eine temporäre `.ics`-Datei und öffnet Ihren Kalender (Outlook / Thunderbird).
+- **Als .ics Datei speichern...**: Speichert die Termindatei an einem beliebigen Ort.
+
+#### 3. 📬 Outlook Add-in / Makro (E-Mails in Support-Cockpit übertragen)
+- Mit dem integrierten Outlook-Makro können Sie empfangene Kundenmails direkt aus Outlook an das Support-Cockpit übergeben, um automatisch einen neuen Fall anzulegen oder eine Notiz zur Zeitleiste hinzuzufügen.
+"""
+    },
+    {
+        "id": "case_print_reporting",
+        "title": "🖨 Fall-Druckansicht, PDF & Bilder",
+        "category": "Export",
+        "content": """
+### 🖨 Fall-Druckansicht, PDF-Export & Bildanhänge
+
+Erstellen Sie vollständige Aktenübersichten für die Archivierung oder Besprechungen.
+
+#### 1. Druckdialog öffnen
+- Klicken Sie im Cockpit auf **🖨 Drucken**.
+- Wählen Sie aus, welche Bereiche enthalten sein sollen (Kundendaten, Formularfelder, Zeitleisteneinträge, Bilder).
+
+#### 2. Bilder & Screenshots am Dokumentende
+- Alle Bilddateien (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) aus dem Fallordner werden automatisch am Ende der Seite eingebettet.
+- Sie können die Screenshots durch einfaches Scrollen im Bericht sofort betrachten und mit ausdrucken.
+
+#### 3. Export-Möglichkeiten
+- **🖨 Im Browser öffnen & Drucken**: Öffnet die Seite im Standardbrowser und startet automatisch den Druck- bzw. PDF-Exportdialog.
+- **💾 Als HTML/PDF-Bericht speichern...**: Speichert die vollständige, eigenständige HTML-Akte auf Ihrer Festplatte.
+"""
+    },
+    {
+        "id": "stepper_time_picker",
+        "title": "⏱ Zeitauswahl (07:00–20:00) & Stepper",
+        "category": "Benutzeroberfläche",
+        "content": """
+### ⏱ Zeitauswahl & Stepper-Pfeile
+
+Die Zeitauswahl in Kalender- und Wiedervorlage-Dialogen ist speziell auf Praxis-Arbeitszeiten optimiert:
+
+- **Praxisnaher Zeitbereich**: Stunden sind auf die Kernarbeitszeit von **07:00 Uhr bis 20:00 Uhr** fokussiert.
+- **Schnelle Stepper-Buttons**: Neben den Dropdown-Menüs stehen Pfeiltasten (`▲` / `▼`) zur Verfügung:
+  - Stunden: Schrittweise um `+/- 1 Stunde` anpassen.
+  - Minuten: Schrittweise im 5-Minuten-Takt (`+/- 5 Min.`) anpassen.
 """
     }
 ]
@@ -262,11 +325,12 @@ Behalten Sie stets den Überblick darüber, wann ein Fall an wen übergeben wurd
 class HelpDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
-        self.title("📖 Handbuch & Anwendungsdokumentation")
-        self.geometry("1080x720")
+        w, h = DIALOG_DIMENSIONS["help"]
+        self.title(DIALOG_TITLES["help"])
+        self.geometry(f"{w}x{h}")
         self.minsize(960, 600)
         from utils.ui_utils import center_window
-        center_window(self, 1080, 720)
+        center_window(self, w, h)
 
         # Make modal window
         self.transient(parent)

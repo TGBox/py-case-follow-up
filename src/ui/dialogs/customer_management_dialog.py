@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable, Any
 from models.customer import Customer, Contact
 from services.customer_service import CustomerService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class CustomerManagementDialog(ctk.CTkToplevel):
@@ -10,11 +11,12 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.customer_service = customer_service
         self.on_customers_updated = on_customers_updated
 
-        self.title("🏥 Praxis- & Kundenverwaltung")
-        self.geometry("1024x720")
+        w, h = DIALOG_DIMENSIONS["customer_mgmt"]
+        self.title(DIALOG_TITLES["customer_mgmt"])
+        self.geometry(f"{w}x{h}")
         self.minsize(900, 600)
         from utils.ui_utils import center_window
-        center_window(self, 1024, 720)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -122,7 +124,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         # VM Number Column
         vm_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=110)
         vm_col.pack(side="left", fill="x", padx=5)
-        ctk.CTkLabel(vm_col, text="🖥️ VM-Nr.:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(vm_col, text="🖥 VM-Nr.:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
         self.vm_entry = ctk.CTkEntry(vm_col, placeholder_text="z.B. 104", width=90)
         self.vm_entry.pack(fill="x")
 
@@ -161,7 +163,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
     def open_website_in_browser(self):
         url = self.website_entry.get().strip()
         if not url:
-            self.status_lbl.configure(text="⚠️ Keine Webseite eingetragen!", text_color="orange")
+            self.status_lbl.configure(text="⚠ Keine Webseite eingetragen!", text_color="orange")
             return
         if not (url.startswith("http://") or url.startswith("https://")):
             url = "https://" + url
@@ -196,7 +198,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
 
         remove_btn = ctk.CTkButton(
             header,
-            text="🗑️ Entfernen",
+            text="🗑 Entfernen",
             width=80,
             height=22,
             fg_color="gray40",
@@ -379,7 +381,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         name = self.name_entry.get().strip()
 
         if not cust_id or not name:
-            self.status_lbl.configure(text="⚠️ ID und Praxisname erforderlich!", text_color="red")
+            self.status_lbl.configure(text="⚠ ID und Praxisname erforderlich!", text_color="red")
             return
 
         website = self.website_entry.get().strip()

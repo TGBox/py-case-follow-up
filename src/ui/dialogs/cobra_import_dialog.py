@@ -4,6 +4,7 @@ from tkinter import filedialog
 from typing import Callable, Any
 from models.customer import Customer
 from services.cobra_crm_import_service import CobraCrmImportService, FIELD_ALIAS_MAP
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
 class CobraImportDialog(ctk.CTkToplevel):
@@ -14,12 +15,13 @@ class CobraImportDialog(ctk.CTkToplevel):
         self.existing_customers = existing_customers
         self.on_import_completed = on_import_completed
 
-        self.title("🐍 Cobra CRM Praxen-Import (CSV / TXT / JSON)")
-        self.geometry("860x680")
+        w, h = DIALOG_DIMENSIONS["cobra_import"]
+        self.title(DIALOG_TITLES["cobra_import"])
+        self.geometry(f"{w}x{h}")
         self.minsize(760, 540)
 
         from utils.ui_utils import center_window
-        center_window(self, 860, 680)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -118,7 +120,7 @@ class CobraImportDialog(ctk.CTkToplevel):
         try:
             self.raw_rows, self.headers = CobraCrmImportService.parse_file(fp)
             if not self.raw_rows:
-                self.summary_lbl.configure(text="⚠️ Keine Datensätze in der Datei gefunden.", text_color="crimson")
+                self.summary_lbl.configure(text="⚠ Keine Datensätze in der Datei gefunden.", text_color="crimson")
                 return
 
             self.mapping = CobraCrmImportService.auto_detect_mapping(self.headers)
@@ -185,7 +187,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         mode_str = self.mode_combo.get()
 
-        msg = f"✓ {tot} Praxen erkannt  |  🆕 {new_cnt} neue Praxen  |  ⚠️ {dup_cnt} bereits vorhandene Praxen (Duplikate)"
+        msg = f"✓ {tot} Praxen erkannt  |  🆕 {new_cnt} neue Praxen  |  ⚠ {dup_cnt} bereits vorhandene Praxen (Duplikate)"
         self.summary_lbl.configure(text=msg, text_color="limegreen" if new_cnt > 0 else "dodgerblue")
 
         # Render preview items
@@ -194,7 +196,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         for c in self.mapped_customers[:15]:
             is_dup = any(d["imported"].customer_id == c.customer_id for d in diff["duplicates"])
-            badge = "⚠️ Duplikat" if is_dup else "🆕 Neu"
+            badge = "⚠ Duplikat" if is_dup else "🆕 Neu"
             badge_color = "darkorange" if is_dup else "limegreen"
 
             row_f = ctk.CTkFrame(self.preview_box, fg_color=("gray90", "gray15"), corner_radius=4)

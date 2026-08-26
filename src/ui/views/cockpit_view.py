@@ -16,6 +16,7 @@ from ui.widgets.dynamic_form_widget import DynamicFormWidget
 from ui.widgets.timeline_widget import TimelineWidget
 from ui.widgets.attachment_widget import AttachmentWidget
 from ui.widgets.wiki_widget import WikiWidget
+from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
 
 
 import logging
@@ -32,33 +33,37 @@ class CockpitView(ctk.CTkFrame):
         scoring_service: ScoringService,
         attachment_service: AttachmentService,
         wiki_service: WikiSyncService,
-        on_case_updated: Callable[[Case], None],
-        on_case_selected: Callable[[Case], None],
-        on_search_changed: Callable[[str], None],
-        on_open_export_dialog: Callable[[Case], None],
-        on_archive_case: Callable[[Case], None],
+        on_case_updated: Callable[[Case], None] | None = None,
+        on_case_selected: Callable[[Case], None] | None = None,
+        on_search_changed: Callable[[str], None] | None = None,
+        on_open_export_dialog: Callable[[Case], None] | None = None,
+        on_archive_case: Callable[[Case], None] | None = None,
         app_config: Any | None = None,
         profile: UserProfile | None = None,
         storage_service: StorageService | None = None,
         on_manage_module_tags: Callable[[], None] | None = None,
         on_open_email_calendar: Callable[[Case], None] | None = None,
-        on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
+        on_open_email: Callable[[Case | None], None] | None = None,
+        on_open_calendar: Callable[[Case], None] | None = None,
+        on_open_snippet_picker: Callable[[Any], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
         self.scoring_service = scoring_service
         self.attachment_service = attachment_service
         self.wiki_service = wiki_service
-        self.on_case_updated = on_case_updated
-        self.on_case_selected = on_case_selected
-        self.on_search_changed = on_search_changed
-        self.on_open_export_dialog = on_open_export_dialog
-        self.on_archive_case = on_archive_case
+        self.on_case_updated: Callable[[Case], None] = on_case_updated if on_case_updated is not None else (lambda c: None)
+        self.on_case_selected: Callable[[Case], None] = on_case_selected if on_case_selected is not None else (lambda c: None)
+        self.on_search_changed: Callable[[str], None] = on_search_changed if on_search_changed is not None else (lambda s: None)
+        self.on_open_export_dialog: Callable[[Case], None] = on_open_export_dialog if on_open_export_dialog is not None else (lambda c: None)
+        self.on_archive_case: Callable[[Case], None] = on_archive_case if on_archive_case is not None else (lambda c: None)
         self.app_config = app_config
         self.profile = profile
         self.storage_service = storage_service
         self.on_manage_module_tags = on_manage_module_tags
         self.on_open_email_calendar = on_open_email_calendar
+        self.on_open_email = on_open_email
+        self.on_open_calendar = on_open_calendar
         self.on_open_snippet_picker = on_open_snippet_picker
 
         self.current_case: Case | None = None
@@ -142,7 +147,7 @@ class CockpitView(ctk.CTkFrame):
         w_right = widths.get("cockpit_right", 320)
 
         is_dark = ctk.get_appearance_mode() == "Dark"
-        sash_bg = "#2b2b2b" if is_dark else "#d0d0d0"
+        sash_bg = COLOR_SASH_DARK if is_dark else COLOR_SASH_LIGHT
 
         # Native PanedWindow for 100% reliable 60fps drag resizing
         self.paned = tk.PanedWindow(
@@ -180,24 +185,29 @@ class CockpitView(ctk.CTkFrame):
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
         self.print_btn = ctk.CTkButton(
-            self.center_header, text="🖨️ Drucken", command=self.on_click_print, width=90, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            self.center_header, text="🖨 Drucken", command=self.on_click_print, width=85, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
-        self.print_btn.pack(side="right", padx=3)
+        self.print_btn.pack(side="right", padx=2)
 
-        self.email_cal_btn = ctk.CTkButton(
-            self.center_header, text="✉️ E-Mail/Kalender", command=self.on_click_email_calendar, width=125, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
+        self.cal_btn = ctk.CTkButton(
+            self.center_header, text="📅 Kalender", command=self.on_click_calendar, width=88, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
         )
-        self.email_cal_btn.pack(side="right", padx=3)
+        self.cal_btn.pack(side="right", padx=2)
+
+        self.email_btn = ctk.CTkButton(
+            self.center_header, text="✉ E-Mail", command=self.on_click_email, width=80, state="disabled", fg_color="royalblue", hover_color="blue"
+        )
+        self.email_btn.pack(side="right", padx=2)
 
         self.export_btn = ctk.CTkButton(
-            self.center_header, text="📤 Export", command=self.on_click_export, width=85, state="disabled"
+            self.center_header, text="📤 Export", command=self.on_click_export, width=80, state="disabled"
         )
-        self.export_btn.pack(side="right", padx=3)
+        self.export_btn.pack(side="right", padx=2)
 
         self.save_btn = ctk.CTkButton(
-            self.center_header, text="💾 Speichern", command=self.on_click_save, width=90, state="disabled"
+            self.center_header, text="💾 Speichern", command=self.on_click_save, width=85, state="disabled"
         )
-        self.save_btn.pack(side="right", padx=3)
+        self.save_btn.pack(side="right", padx=2)
 
         # Customer & Status Info Bar (3 vertical info lines on left + action buttons on right)
         self.info_bar = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=6)
@@ -207,30 +217,64 @@ class CockpitView(ctk.CTkFrame):
         self.info_left_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
         self.info_left_frame.pack(side="left", fill="both", expand=True, padx=8, pady=6)
 
-        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w", height=0)
         self.kunde_label.pack(fill="x", anchor="w")
 
-        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w")
-        self.wiedervorlage_label = ctk.CTkLabel(
-            self.info_left_frame,
+        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w", height=0)
+
+        # Multi-line Wiedervorlage container in Cockpit Center Pane
+        self.wiedervorlage_frame = ctk.CTkFrame(self.info_left_frame, fg_color="transparent")
+
+        self.wv_hdr_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="🔔 Nachfragen am:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wv_date_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
             text="",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="darkorange",
             anchor="w",
             justify="left",
-            wraplength=350,
+            height=0,
         )
-        self.wiedervorlage_label.pack(fill="x", anchor="w")
+        self.wv_time_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wv_note_label = ctk.CTkLabel(
+            self.wiedervorlage_frame,
+            text="",
+            font=ctk.CTkFont(size=11),
+            text_color="darkorange",
+            anchor="w",
+            justify="left",
+            height=0,
+        )
+        self.wiedervorlage_label = self.wv_hdr_label
 
         # Full untruncated follow-up text & hover tooltip overlay
         self._wiedervorlage_full_text: str = ""
         self._wiedervorlage_is_truncated: bool = False
         from ui.widgets.ctk_tooltip import CTkTooltip
         self.wiedervorlage_tooltip = CTkTooltip(
-            self.wiedervorlage_label,
+            self.wiedervorlage_frame,
             self._get_wiedervorlage_tooltip_text,
             delay_ms=250,
         )
+        for _lbl in (self.wv_hdr_label, self.wv_date_label, self.wv_time_label, self.wv_note_label):
+            CTkTooltip(_lbl, self._get_wiedervorlage_tooltip_text, delay_ms=250)
+
         self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
         # Right Column: Action Buttons Container
@@ -319,18 +363,47 @@ class CockpitView(ctk.CTkFrame):
     def on_click_print(self):
         if self.current_case:
             from ui.dialogs.case_print_dialog import CasePrintDialog
-            CasePrintDialog(self, self.current_case)
+            CasePrintDialog(self, self.current_case, attachment_service=self.attachment_service)
+
+    def on_click_email(self):
+        if self.on_open_email:
+            self.on_open_email(self.current_case)
+        elif self.on_open_email_calendar and self.current_case:
+            self.on_open_email_calendar(self.current_case)
+        else:
+            from ui.dialogs.email_draft_dialog import EmailDraftDialog
+            from services.calendar_email_service import CalendarEmailService
+            svc = CalendarEmailService(self.app_config)
+            EmailDraftDialog(
+                self,
+                case=self.current_case,
+                calendar_email_service=svc,
+                user_name=self.author_name,
+                storage_service=self.storage_service,
+            )
+
+    def on_click_calendar(self):
+        if self.current_case:
+            if self.on_open_calendar:
+                self.on_open_calendar(self.current_case)
+            elif self.on_open_email_calendar:
+                self.on_open_email_calendar(self.current_case)
+            else:
+                from ui.dialogs.calendar_export_dialog import CalendarExportDialog
+                from services.calendar_email_service import CalendarEmailService
+                svc = CalendarEmailService(self.app_config)
+                CalendarExportDialog(self, self.current_case, calendar_email_service=svc)
 
     def on_click_email_calendar(self):
-        if self.current_case and self.on_open_email_calendar:
-            self.on_open_email_calendar(self.current_case)
+        self.on_click_email()
 
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
 
         self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
         self.print_btn.configure(state="normal")
-        self.email_cal_btn.configure(state="normal")
+        self.email_btn.configure(state="normal")
+        self.cal_btn.configure(state="normal")
         self.export_btn.configure(state="normal")
         self.save_btn.configure(state="normal")
         self.convert_schema_btn.configure(state="normal")
@@ -461,12 +534,33 @@ class CockpitView(ctk.CTkFrame):
             self.current_case.timeline = entries
             self.on_click_save()
 
+    _last_info_w: int = 0
+    _updating_info: bool = False
+
     def _on_info_frame_configure(self, event=None):
-        if self.current_case and self.current_case.workflow_status.followup_at:
-            self._update_wiedervorlage_display()
+        if self._updating_info:
+            return
+        if not self.current_case or not self.current_case.workflow_status.followup_at:
+            return
+        try:
+            if not self.info_left_frame.winfo_exists():
+                return
+            w = self.info_left_frame.winfo_width()
+            if w > 50 and abs(w - self._last_info_w) > 8:
+                self._last_info_w = w
+                self._updating_info = True
+                wrap_w = max(180, w - 10)
+                self.wv_hdr_label.configure(wraplength=wrap_w)
+                self.wv_date_label.configure(wraplength=wrap_w)
+                self.wv_time_label.configure(wraplength=wrap_w)
+                self.wv_note_label.configure(wraplength=wrap_w)
+        except Exception:
+            pass
+        finally:
+            self._updating_info = False
 
     def _get_wiedervorlage_tooltip_text(self) -> str:
-        if self._wiedervorlage_is_truncated and self._wiedervorlage_full_text:
+        if self._wiedervorlage_full_text:
             return self._wiedervorlage_full_text
         return ""
 
@@ -474,17 +568,22 @@ class CockpitView(ctk.CTkFrame):
         if not self.current_case or not self.current_case.workflow_status.followup_at:
             self._wiedervorlage_full_text = ""
             self._wiedervorlage_is_truncated = False
-            self.wiedervorlage_label.configure(text="")
-            self.wiedervorlage_label.pack_forget()
+            self.wv_hdr_label.configure(text="")
+            self.wv_date_label.configure(text="")
+            self.wv_time_label.configure(text="")
+            self.wv_note_label.configure(text="")
+            self.wiedervorlage_frame.pack_forget()
             return
 
-        from utils.datetime_utils import format_german_datetime
-        from utils.ui_utils import wrap_and_truncate_text
+        from utils.datetime_utils import format_german_date_with_relative, format_german_time, format_german_datetime
+
+        fw_date_str = format_german_date_with_relative(self.current_case.workflow_status.followup_at)
+        fw_time_str = format_german_time(self.current_case.workflow_status.followup_at, with_uhr=True)
+        note = self.current_case.workflow_status.followup_note or ""
 
         fw_dt_str = format_german_datetime(self.current_case.workflow_status.followup_at)
-        note_suffix = f" ({self.current_case.workflow_status.followup_note})" if self.current_case.workflow_status.followup_note else ""
-        full_text = f"🔔 Wiedervorlage: {fw_dt_str}{note_suffix}"
-        self._wiedervorlage_full_text = full_text
+        note_suffix = f" ({note})" if note else ""
+        self._wiedervorlage_full_text = f"🔔 Nachfragen am: {fw_date_str}, {fw_time_str}{note_suffix}"
 
         # Compute available pixel width in info_left_frame
         w = self.info_left_frame.winfo_width()
@@ -495,13 +594,20 @@ class CockpitView(ctk.CTkFrame):
         else:
             w = max(200, w - 10)
 
-        disp_text, is_trunc = wrap_and_truncate_text(
-            full_text,
-            font=self.wiedervorlage_label.cget("font"),
-            max_width=w,
-            max_lines=2,
-        )
-        self._wiedervorlage_is_truncated = is_trunc
-        self.wiedervorlage_label.configure(text=disp_text, wraplength=w)
-        self.wiedervorlage_label.pack(fill="x", anchor="w")
+        self._last_info_w = w
+        self.wv_hdr_label.configure(text="🔔 Nachfragen am:", wraplength=w)
+        self.wv_date_label.configure(text=f"  {fw_date_str}", wraplength=w)
+        self.wv_time_label.configure(text=f"  {fw_time_str}", wraplength=w)
+
+        self.wv_hdr_label.pack(fill="x", anchor="w", pady=0)
+        self.wv_date_label.pack(fill="x", anchor="w", pady=0)
+        self.wv_time_label.pack(fill="x", anchor="w", pady=0)
+
+        if note:
+            self.wv_note_label.configure(text=f"  {note}", wraplength=w)
+            self.wv_note_label.pack(fill="x", anchor="w", pady=0)
+        else:
+            self.wv_note_label.pack_forget()
+
+        self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(2, 0))
 

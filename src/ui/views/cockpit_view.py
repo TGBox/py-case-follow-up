@@ -185,6 +185,11 @@ class CockpitView(ctk.CTkFrame):
         )
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
+        self.ai_btn = ctk.CTkButton(
+            self.center_header, text="🤖 KI-Assistent", command=self.on_click_ai, width=110, state="disabled", fg_color="purple", hover_color="darkmagenta"
+        )
+        self.ai_btn.pack(side="right", padx=2)
+
         self.print_btn = ctk.CTkButton(
             self.center_header, text="🖨 Drucken", command=self.on_click_print, width=85, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
@@ -383,6 +388,26 @@ class CockpitView(ctk.CTkFrame):
                 storage_service=self.storage_service,
             )
 
+    def on_click_ai(self):
+        if not self.current_case:
+            return
+        from ui.dialogs.ai_assistant_dialog import AiAssistantDialog
+        wiki_articles = []
+        if self.storage_service:
+            try:
+                wiki_articles = [a.to_dict() for a in self.storage_service.load_wiki_articles()]
+            except Exception:
+                pass
+
+        AiAssistantDialog(
+            self.winfo_toplevel(),
+            case=self.current_case,
+            profile=self.profile,
+            on_case_updated=self.on_case_updated,
+            on_open_email_draft=self.on_click_email,
+            wiki_articles=wiki_articles,
+        )
+
     def on_click_calendar(self):
         if self.current_case:
             if self.on_open_calendar:
@@ -402,6 +427,7 @@ class CockpitView(ctk.CTkFrame):
         self.current_case = case
 
         self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
+        self.ai_btn.configure(state="normal")
         self.print_btn.configure(state="normal")
         self.email_btn.configure(state="normal")
         self.cal_btn.configure(state="normal")

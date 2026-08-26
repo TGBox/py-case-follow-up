@@ -40,6 +40,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.tab_ui = self.tabview.add("🎨 Erscheinungsbild")
         self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
         self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
+        self.tab_ai = self.tabview.add("🤖 KI & NLP")
         self.tab_scoring = self.tabview.add("⌨ Tastenkürzel & Scoring")
         self.tab_backup = self.tabview.add("💾 Datensicherung")
 
@@ -47,6 +48,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.setup_ui_tab()
         self.setup_paths_tab()
         self.setup_wiki_tab()
+        self.setup_ai_tab()
         self.setup_scoring_tab()
         self.setup_backup_tab()
 
@@ -331,6 +333,44 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.sync_startup_var = ctk.BooleanVar(value=self.profile.wiki_settings.sync_on_startup)
         ctk.CTkCheckBox(self.tab_wiki, text="Wiki-Inhalte beim Anwendungsstart synchronisieren", variable=self.sync_startup_var).pack(anchor="w", pady=5)
 
+    def setup_ai_tab(self):
+        ctk.CTkLabel(
+            self.tab_ai,
+            text="🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Fallback)",
+            font=ctk.CTkFont(size=14, weight="bold"),
+        ).pack(anchor="w", pady=(10, 5))
+
+        desc_str = (
+            "Konfigurieren Sie die Anbindung an Ihren lokalen Ollama LLM Server (0 € Token-Kosten, 100 % DSGVO-konform). "
+            "Falls Ollama auf Ihrem PC nicht läuft, schaltet das System automatisch auf das regelbasierte NLP-System um."
+        )
+        ctk.CTkLabel(
+            self.tab_ai,
+            text=desc_str,
+            font=ctk.CTkFont(size=11),
+            text_color=("gray30", "gray80"),
+            justify="left",
+            anchor="w",
+            wraplength=800,
+        ).pack(anchor="w", pady=(0, 15))
+
+        ctk.CTkLabel(self.tab_ai, text="Ollama Server REST URL:").pack(anchor="w", pady=(5, 2))
+        self.ai_url_entry = ctk.CTkEntry(self.tab_ai, placeholder_text="http://localhost:11434")
+        self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
+        self.ai_url_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_ai, text="Modell-Name (z. B. llama3, mistral, qwen):").pack(anchor="w", pady=(5, 2))
+        self.ai_model_entry = ctk.CTkEntry(self.tab_ai, placeholder_text="llama3")
+        self.ai_model_entry.insert(0, self.profile.ai_settings.model_name)
+        self.ai_model_entry.pack(fill="x", pady=(0, 15))
+
+        self.ai_enable_chk = ctk.CTkCheckBox(self.tab_ai, text="KI- & NLP-Unterstützung im Cockpit aktivieren")
+        if self.profile.ai_settings.enable_ai:
+            self.ai_enable_chk.select()
+        else:
+            self.ai_enable_chk.deselect()
+        self.ai_enable_chk.pack(anchor="w", pady=(0, 10))
+
     def setup_scoring_tab(self):
         ctk.CTkLabel(self.tab_scoring, text="Tastenkürzel (Hotkeys)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
@@ -407,6 +447,11 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.wiki_settings.token_secret = self.wiki_token_secret_entry.get().strip()
         self.profile.wiki_settings.sync_mode = self.sync_mode_combo.get()
         self.profile.wiki_settings.sync_on_startup = self.sync_startup_var.get()
+
+        # Update AI Settings
+        self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
+        self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
+        self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
 
         # Update Shortcuts & Scoring with conflict validation
         hk_new_val = self.hk_new.get().strip()

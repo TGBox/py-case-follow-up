@@ -116,6 +116,75 @@ class OutlookIntegrationService:
         return entry
 
     @staticmethod
+    def find_matching_case(subject: str, body: str, cases: list[Case]) -> Case | None:
+        """Finds a matching case by scanning subject and body for case IDs (e.g. FALL-2026-0042, MAIL-123)."""
+        search_text = f"{subject} {body}"
+        # Try finding explicit case ID match in search text
+        for case in cases:
+            if case.case_id and case.case_id.lower() in search_text.lower():
+                return case
+
+        # Regex fallback for patterns like FALL-\d+ or MAIL-\d+
+        match = re.search(r"\b((?:FALL|MAIL|TICKET)-\d+(?:-\d+)?)\b", search_text, re.IGNORECASE)
+        if match:
+            target_id = match.group(1).upper()
+            for case in cases:
+                if case.case_id.upper() == target_id:
+                    return case
+
+        return None
+
+    @staticmethod
+    def fetch_recent_emails(max_count: int = 15) -> list[dict[str, Any]]:
+        """Fetches recent incoming emails from Microsoft Outlook via COM automation or provides demo emails."""
+        emails = []
+        try:
+            import win32com.client  # type: ignore
+            outlook = win32com.client.Dispatch("Outlook.Application")
+            namespace = outlook.GetNamespace("MAPI")
+            inbox = namespace.GetDefaultFolder(6)  # 6 = olFolderInbox
+            messages = inbox.Items
+            messages.Sort("[ReceivedTime]", True)  # Sort descending
+
+            count = 0
+            for item in messages:
+                if count >= max_count:
+                    break
+                try:
+                    # Verify item is mail
+                    if hasattr(item, "Subject") and hasattr(item, "SenderEmailAddress"):
+                        recv_time = str(item.ReceivedTime) if hasattr(item, "ReceivedTime") else now_iso()
+                        emails.append({
+                            "subject": str(item.Subject or "E-Mail ohne Betreff"),
+                            "sender_name": str(getattr(item, "SenderName", "")),
+                            "sender_email": str(getattr(item, "SenderEmailAddress", "")),
+                            "body": str(getattr(item, "Body", "")),
+                            "received_time": recv_time,
+                        })
+                        count += 1
+                except Exception:
+                    pass
+        except Exception:
+            # Fallback mock emails for demonstration/non-Windows environments
+            emails = [
+                {
+                    "subject": "Dringend: Schnittstelle meldet Fehler (Ref: FALL-2026-0001)",
+                    "sender_name": "Dr. Weber",
+                    "sender_email": "praxis.weber@beispiel-med.de",
+                    "body": "Hallo Support-Team,\n\nunsere COBRA-Schnittstelle bricht beim Datenimport ab. Bitte prüfen Sie den Vorfall.\n\nViele Grüße,\nDr. Weber",
+                    "received_time": now_iso(),
+                },
+                {
+                    "subject": "Neue Anfrage zu Abrechnung & Quartalsupdate",
+                    "sender_name": "Praxis Dr. Müller",
+                    "sender_email": "empfang@mueller-praxis.de",
+                    "body": "Guten Tag,\n\nwir benötigen Hilfe bei der Konfiguration des neuen Abrechnungsmoduls.\n\nMit freundlichen Grüßen,\nFr. Schmidt",
+                    "received_time": now_iso(),
+                },
+            ]
+        return emails
+
+    @staticmethod
     def get_outlook_vba_macro_code() -> str:
         """Returns VBA Macro code for Outlook Ribbon toolbar button to transfer emails into Support-Cockpit."""
         return (

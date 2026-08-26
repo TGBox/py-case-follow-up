@@ -152,8 +152,12 @@ class CalendarEmailService:
         case: Case | None = None,
         user_name: str = "",
         customers: list[Any] | None = None,
+        signature: str = "",
     ) -> dict[str, str]:
         """Generates structured email draft components (to, subject, body)."""
+        closing_name = user_name or (case.created_by if case else "Ihr Support-Team")
+        sign_block = f"\n\n{signature}" if signature and signature.strip() else ""
+
         if not case:
             salutation = "Sehr geehrte Damen und Herren,"
             body_lines = [
@@ -161,8 +165,8 @@ class CalendarEmailService:
                 "",
                 "",
                 "",
-                "Mit freundlichen Grüßen",
-                user_name or "Ihr Support-Team",
+                "Mit freundlichen Grüßen,",
+                closing_name + sign_block,
             ]
             return {
                 "to": "",
@@ -217,8 +221,8 @@ class CalendarEmailService:
             "",
             "Geben Sie uns gerne Bescheid, wenn Sie hierzu Rückfragen haben oder uns weitere Informationen zur Verfügung stellen möchten.",
             "",
-            "Mit freundlichen Grüßen",
-            user_name or case.created_by or "Ihr Support-Team",
+            "Mit freundlichen Grüßen,",
+            closing_name + sign_block,
         ])
 
         return {

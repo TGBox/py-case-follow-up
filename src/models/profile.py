@@ -12,6 +12,7 @@ class UserInfo:
     extension: str = ""
     email: str = ""
     mobile: str = ""
+    email_signature: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -24,6 +25,7 @@ class UserInfo:
             extension=data.get("extension", ""),
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),
+            email_signature=data.get("email_signature", ""),
         )
 
 

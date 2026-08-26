@@ -90,7 +90,8 @@ class CockpitView(ctk.CTkFrame):
             if not hasattr(self, "paned") or not self.paned.winfo_exists():
                 return
             total_w = self.paned.winfo_width()
-            if total_w <= 50:
+            if total_w <= 100:
+                self.after(100, self.restore_sash_positions)
                 return
 
             widths = {}
@@ -115,7 +116,7 @@ class CockpitView(ctk.CTkFrame):
             if not hasattr(self, "paned") or not self.paned.winfo_exists():
                 return
             total_w = self.paned.winfo_width()
-            if total_w <= 50:
+            if total_w <= 100:
                 return
 
             sash0 = self.paned.sash_coord(0)

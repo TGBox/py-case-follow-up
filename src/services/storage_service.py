@@ -109,32 +109,75 @@ class StorageService:
         self.config.ensure_directories()
         setup_logging(self.config.log_file_path)
 
+        self._cases_cache: list[Case] | None = None
+        self._archive_cache: list[Case] | None = None
+        self._profile_cache: UserProfile | None = None
+        self._customers_cache: list[Customer] | None = None
+        self._schemas_cache: list[QuestionSchema] | None = None
+        self._templates_cache: list[ExportTemplate] | None = None
+        self._colleagues_cache: list[Colleague] | None = None
+
+    def invalidate_cache(self) -> None:
+        """Clears all in-memory caches to force fresh disk reads."""
+        self._cases_cache = None
+        self._archive_cache = None
+        self._profile_cache = None
+        self._customers_cache = None
+        self._schemas_cache = None
+        self._templates_cache = None
+        self._colleagues_cache = None
+
     # --- Cases & Archive ---
-    def load_cases(self) -> list[Case]:
+    def load_cases(self, use_cache: bool = True) -> list[Case]:
+        if use_cache and self._cases_cache is not None:
+            return self._cases_cache
+
         data = safe_read_json(
             self.config.cases_path,
             default_factory=list,
             example_path=self.config.get_example_path("cases.json")
         )
         if isinstance(data, list):
-            return [Case.from_dict(item) for item in data if isinstance(item, dict)]
-        return []
+            self._cases_cache = [Case.from_dict(item) for item in data if isinstance(item, dict)]
+        else:
+            self._cases_cache = []
+        return self._cases_cache
 
     def save_cases(self, cases: list[Case]) -> None:
+        self._cases_cache = cases
         data = [case.to_dict() for case in cases]
         atomic_save_json(self.config.cases_path, data)
 
-    def load_archive(self) -> list[Case]:
+    def update_single_case(self, case: Case) -> None:
+        """Updates or adds a single case in the cache and persists the cases file."""
+        cases = self.load_cases(use_cache=True)
+        updated = False
+        for idx, existing in enumerate(cases):
+            if existing.case_id == case.case_id:
+                cases[idx] = case
+                updated = True
+                break
+        if not updated:
+            cases.append(case)
+        self.save_cases(cases)
+
+    def load_archive(self, use_cache: bool = True) -> list[Case]:
+        if use_cache and self._archive_cache is not None:
+            return self._archive_cache
+
         data = safe_read_json(
             self.config.archive_path,
             default_factory=list,
             example_path=self.config.get_example_path("archive.json")
         )
         if isinstance(data, list):
-            return [Case.from_dict(item) for item in data if isinstance(item, dict)]
-        return []
+            self._archive_cache = [Case.from_dict(item) for item in data if isinstance(item, dict)]
+        else:
+            self._archive_cache = []
+        return self._archive_cache
 
     def save_archive(self, cases: list[Case]) -> None:
+        self._archive_cache = cases
         data = [case.to_dict() for case in cases]
         atomic_save_json(self.config.archive_path, data)
 
@@ -209,17 +252,23 @@ class StorageService:
         return None
 
     # --- Customers ---
-    def load_customers(self) -> list[Customer]:
+    def load_customers(self, use_cache: bool = True) -> list[Customer]:
+        if use_cache and self._customers_cache is not None:
+            return self._customers_cache
+
         data = safe_read_json(
             self.config.customers_path,
             default_factory=list,
             example_path=self.config.get_example_path("customers.json")
         )
         if isinstance(data, list):
-            return [Customer.from_dict(item) for item in data if isinstance(item, dict)]
-        return []
+            self._customers_cache = [Customer.from_dict(item) for item in data if isinstance(item, dict)]
+        else:
+            self._customers_cache = []
+        return self._customers_cache
 
     def save_customers(self, customers: list[Customer]) -> None:
+        self._customers_cache = customers
         data = [c.to_dict() for c in customers]
         atomic_save_json(self.config.customers_path, data)
 
@@ -246,15 +295,20 @@ class StorageService:
                     pass
         return profiles
 
-    def load_profile(self) -> UserProfile:
+    def load_profile(self, use_cache: bool = True) -> UserProfile:
+        if use_cache and self._profile_cache is not None:
+            return self._profile_cache
+
         data = safe_read_json(
             self.config.app_profile_path,
             default_factory=dict,
             example_path=self.config.get_example_path("app_profile.json")
         )
         if isinstance(data, dict):
-            return UserProfile.from_dict(data)
-        return UserProfile()
+            self._profile_cache = UserProfile.from_dict(data)
+        else:
+            self._profile_cache = UserProfile()
+        return self._profile_cache
 
     def load_profile_by_name(self, profile_name: str) -> UserProfile:
         """Loads UserProfile by user name from profiles_dir or falls back to active profile."""
@@ -269,6 +323,7 @@ class StorageService:
         return self.load_profile()
 
     def save_profile(self, profile: UserProfile) -> None:
+        self._profile_cache = profile
         atomic_save_json(self.config.app_profile_path, profile.to_dict())
         safe_filename = "".join(c for c in profile.user.name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
         if safe_filename:
@@ -276,7 +331,10 @@ class StorageService:
             atomic_save_json(target_path, profile.to_dict())
 
     # --- Schemas ---
-    def load_schemas(self) -> list[QuestionSchema]:
+    def load_schemas(self, use_cache: bool = True) -> list[QuestionSchema]:
+        if use_cache and self._schemas_cache is not None:
+            return self._schemas_cache
+
         data = safe_read_json(
             self.config.question_schemas_path,
             default_factory=lambda: {"schemas": []},
@@ -305,22 +363,28 @@ class StorageService:
             except Exception as e:
                 logger.warning(f"Failed to auto-merge example schemas: {e}")
 
-        return loaded_schemas
+        self._schemas_cache = loaded_schemas
+        return self._schemas_cache
 
     def save_schemas(self, schemas: list[QuestionSchema]) -> None:
+        self._schemas_cache = schemas
         data = {"schemas": [s.to_dict() for s in schemas]}
         atomic_save_json(self.config.question_schemas_path, data)
 
     def reset_schemas_to_defaults(self) -> list[QuestionSchema]:
         """Overwrites working schemas with data_examples/question_schemas.json."""
+        self._schemas_cache = None
         example_path = self.config.get_example_path("question_schemas.json")
         if example_path and example_path.exists():
             shutil.copy2(example_path, self.config.question_schemas_path)
             logger.info(f"Reset {self.config.question_schemas_path.name} from example template.")
-        return self.load_schemas()
+        return self.load_schemas(use_cache=False)
 
     # --- Templates ---
-    def load_templates(self) -> list[ExportTemplate]:
+    def load_templates(self, use_cache: bool = True) -> list[ExportTemplate]:
+        if use_cache and self._templates_cache is not None:
+            return self._templates_cache
+
         data = safe_read_json(
             self.config.export_templates_path,
             default_factory=lambda: {"templates": []},
@@ -349,31 +413,40 @@ class StorageService:
             except Exception as e:
                 logger.warning(f"Failed to auto-merge example templates: {e}")
 
-        return loaded_templates
+        self._templates_cache = loaded_templates
+        return self._templates_cache
 
     def save_templates(self, templates: list[ExportTemplate]) -> None:
+        self._templates_cache = templates
         data = {"templates": [t.to_dict() for t in templates]}
         atomic_save_json(self.config.export_templates_path, data)
 
     def reset_templates_to_defaults(self) -> list[ExportTemplate]:
         """Overwrites working templates with data_examples/export_templates.json."""
+        self._templates_cache = None
         example_path = self.config.get_example_path("export_templates.json")
         if example_path and example_path.exists():
             shutil.copy2(example_path, self.config.export_templates_path)
             logger.info(f"Reset {self.config.export_templates_path.name} from example template.")
-        return self.load_templates()
+        return self.load_templates(use_cache=False)
 
     # --- Colleagues ---
-    def load_colleagues(self) -> list[Colleague]:
+    def load_colleagues(self, use_cache: bool = True) -> list[Colleague]:
+        if use_cache and self._colleagues_cache is not None:
+            return self._colleagues_cache
+
         data = safe_read_json(
             self.config.colleagues_path,
             default_factory=list,
             example_path=self.config.get_example_path("colleagues.json")
         )
         if isinstance(data, list):
-            return [Colleague.from_dict(item) for item in data if isinstance(item, dict)]
-        return []
+            self._colleagues_cache = [Colleague.from_dict(item) for item in data if isinstance(item, dict)]
+        else:
+            self._colleagues_cache = []
+        return self._colleagues_cache
 
     def save_colleagues(self, colleagues: list[Colleague]) -> None:
+        self._colleagues_cache = colleagues
         data = [c.to_dict() for c in colleagues]
         atomic_save_json(self.config.colleagues_path, data)

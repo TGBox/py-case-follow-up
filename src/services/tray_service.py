@@ -80,6 +80,10 @@ class TrayService:
         self._on_restore = on_restore
         self._on_quit = on_quit
 
+        if self._thread and self._thread.is_alive():
+            logger.debug("System tray icon thread is already running.")
+            return
+
         menu = pystray.Menu(
             pystray.MenuItem("Öffnen", self._handle_restore, default=True),
             pystray.Menu.SEPARATOR,
@@ -101,9 +105,12 @@ class TrayService:
     def update_badge(self, count: int) -> None:
         """Update the tray icon badge with the current notification count."""
         self._badge_count = count
-        if self._icon and self._icon.visible:
-            self._icon.icon = _create_tray_icon_image(count)
-            self._icon.title = self._get_tooltip()
+        if self._icon:
+            try:
+                self._icon.icon = _create_tray_icon_image(count)
+                self._icon.title = self._get_tooltip()
+            except Exception:
+                pass
 
     def stop(self) -> None:
         """Remove the tray icon and stop the background thread."""
@@ -113,6 +120,7 @@ class TrayService:
             except Exception:
                 pass
             self._icon = None
+        self._thread = None
         logger.info("System tray icon stopped.")
 
     def _get_tooltip(self) -> str:

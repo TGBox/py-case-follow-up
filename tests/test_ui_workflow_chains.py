@@ -579,7 +579,7 @@ def test_multiline_info_bar_and_card_tooltip(tmp_path: Path):
         lines.append(f"🏥 Kunde: {case.customer.practice_name}")
         lines.append(f"👤 Ansprechpartner: {case.customer.contact_person}")
         if case.classification.tags:
-            lines.append(f"🏷️ Tags: {', '.join(case.classification.tags)}")
+            lines.append(f"🏷 Tags: {', '.join(case.classification.tags)}")
         return "\n".join(lines)
 
     tooltip = CTkTooltip(mw, build_tooltip)

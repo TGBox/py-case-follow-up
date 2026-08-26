@@ -293,8 +293,6 @@ class SupportCockpitApp(ctk.CTk):
             self.open_tag_management_dialog(initial_tab="tags")
         elif choice.startswith("🧩"):
             self.open_module_tag_management_dialog()
-        elif choice.startswith("📝"):
-            self.open_snippet_management_dialog()
 
     def _on_vorlagen_selected(self, choice: str):
         self.vorlagen_combo.set("📄 Vorlagen & Formulare")
@@ -302,6 +300,8 @@ class SupportCockpitApp(ctk.CTk):
             self.open_schema_builder_dialog()
         elif choice == "📄 Vorlagen":
             self.open_template_manager_dialog()
+        elif choice.startswith("📝"):
+            self.open_snippet_management_dialog()
 
     def _on_datenaustausch_selected(self, choice: str):
         self.datenaustausch_combo.set("🔄 Datenaustausch")

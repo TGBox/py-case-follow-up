@@ -86,8 +86,8 @@ DIALOG_HEADERS = {
 }
 
 # --- Dropdown Menu & Navigation Option Lists ---
-MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"]
-MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen"]
+MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche"]
+MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine"]
 MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"]
 
 # --- Button Labels & UI Action Texts ---

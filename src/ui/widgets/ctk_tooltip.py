@@ -1,6 +1,14 @@
 import customtkinter as ctk
 import tkinter as tk
 from typing import Any, Callable
+from constants import (
+    TOOLTIP_DEFAULT_DELAY_MS,
+    TOOLTIP_POINTER_OFFSET_X,
+    TOOLTIP_POINTER_OFFSET_Y,
+    COLOR_TOOLTIP_BG,
+    COLOR_TOOLTIP_BORDER,
+    COLOR_TOOLTIP_TEXT,
+)
 
 
 class CTkTooltip:
@@ -19,7 +27,7 @@ class CTkTooltip:
         self,
         widget: Any,
         text_or_func: str | Callable[[], str],
-        delay_ms: int = 300,
+        delay_ms: int = TOOLTIP_DEFAULT_DELAY_MS,
     ):
         self.widget = widget
         self.text_or_func = text_or_func
@@ -94,8 +102,8 @@ class CTkTooltip:
             if not (wx <= px <= wx + ww and wy <= py <= wy + wh):
                 return
 
-            x = px + 15
-            y = py + 15
+            x = px + TOOLTIP_POINTER_OFFSET_X
+            y = py + TOOLTIP_POINTER_OFFSET_Y
 
             toplevel = self.widget.winfo_toplevel()
             self.tooltip_window = ctk.CTkToplevel(toplevel)
@@ -113,8 +121,8 @@ class CTkTooltip:
 
             frame = ctk.CTkFrame(
                 self.tooltip_window,
-                fg_color=("gray20", "gray10"),
-                border_color=("gray60", "gray40"),
+                fg_color=COLOR_TOOLTIP_BG,
+                border_color=COLOR_TOOLTIP_BORDER,
                 border_width=1,
                 corner_radius=8,
             )
@@ -126,7 +134,7 @@ class CTkTooltip:
                 justify="left",
                 anchor="w",
                 font=ctk.CTkFont(size=11),
-                text_color=("gray95", "gray95"),
+                text_color=COLOR_TOOLTIP_TEXT,
             )
             lbl.pack(padx=10, pady=8)
 

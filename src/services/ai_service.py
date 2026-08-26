@@ -8,6 +8,9 @@ from enums import get_actor_display, get_board_column_display
 from constants import (
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    DEFAULT_MODELFILE_PATH,
+    DEFAULT_PVS_MODEL_NAME,
+    OLLAMA_FALLBACK_BASE_MODELS,
     OLLAMA_TIMEOUT_STATUS,
     OLLAMA_TIMEOUT_GENERATE,
     AI_USER_AGENT,
@@ -90,7 +93,7 @@ class AiService:
             return False, f"Fehler beim Entladen von '{target_model}': {e}"
         return False, f"Modell '{target_model}' konnte nicht entladen werden."
 
-    def create_pvs_support_model(self, modelfile_path: str = "ollama/Modelfile", base_model_override: str | None = None) -> tuple[bool, str]:
+    def create_pvs_support_model(self, modelfile_path: str = DEFAULT_MODELFILE_PATH, base_model_override: str | None = None) -> tuple[bool, str]:
         """Creates/updates the custom 'pvs-support' model via Ollama REST API /api/create."""
         from pathlib import Path
         p = Path(modelfile_path)
@@ -106,7 +109,7 @@ class AiService:
                         base_model = line.strip().split(maxsplit=1)[1].strip()
                         break
             if base_model and available and base_model not in available:
-                for fallback in ["qwen3.5:9b", "llama3:latest", "llama3"]:
+                for fallback in OLLAMA_FALLBACK_BASE_MODELS:
                     if any(fallback in m for m in available):
                         base_model = [m for m in available if fallback in m][0]
                         break
@@ -114,7 +117,7 @@ class AiService:
                     base_model = available[0]
 
             payload = {
-                "name": "pvs-support",
+                "name": DEFAULT_PVS_MODEL_NAME,
                 "modelfile": content,
                 "stream": False,
             }
@@ -140,6 +143,35 @@ class AiService:
         except Exception as e:
             return False, f"Fehler bei Erstellung: {e}"
         return False, "Unbekannter Fehler bei der Erstellung."
+
+    def start_ollama_server(self) -> tuple[bool, str]:
+        """Starts the local Ollama server process in background."""
+        import subprocess
+        import shutil
+        ollama_bin = shutil.which("ollama")
+        if not ollama_bin:
+            return False, "Ollama ausführbare Datei ('ollama.exe') im System-PATH nicht gefunden."
+
+        try:
+            creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+            subprocess.Popen([ollama_bin, "serve"], creationflags=creationflags)
+            return True, "Ollama Server-Prozess gestartet ('ollama serve')."
+        except Exception as e:
+            return False, f"Fehler beim Starten des Ollama-Servers: {e}"
+
+    def stop_ollama_server(self) -> tuple[bool, str]:
+        """Terminates running local Ollama server processes."""
+        import subprocess
+        import sys
+        try:
+            if sys.platform == "win32":
+                subprocess.run(["taskkill", "/F", "/IM", "ollama.exe", "/T"], capture_output=True)
+                subprocess.run(["taskkill", "/F", "/IM", "ollama app.exe", "/T"], capture_output=True)
+            else:
+                subprocess.run(["pkill", "-f", "ollama"], capture_output=True)
+            return True, "Ollama Server-Prozess beendet."
+        except Exception as e:
+            return False, f"Fehler beim Beenden des Ollama-Servers: {e}"
 
     def _query_ollama(self, prompt: str, system_prompt: str = "") -> str | None:
         """Sends a generation request to the local Ollama LLM API."""

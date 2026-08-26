@@ -202,6 +202,12 @@ DIALOG_DIMENSIONS = {
 # --- AI & LLM Service Configuration & Prompts ---
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
+DEFAULT_MODELFILE_PATH = "ollama/Modelfile"
+DEFAULT_PVS_MODEL_NAME = "pvs-support"
+OLLAMA_FALLBACK_BASE_MODELS = ["qwen3.5:9b", "llama3:latest", "llama3"]
+OLLAMA_DOWNLOAD_URL = "https://ollama.com/download"
+OLLAMA_LIBRARY_QWEN_URL = "https://ollama.com/library/qwen2.5"
+OLLAMA_LIBRARY_LLAMA_URL = "https://ollama.com/library/llama3"
 OLLAMA_TIMEOUT_STATUS = 1.5
 OLLAMA_TIMEOUT_GENERATE = 120.0
 AI_USER_AGENT = "SupportCockpit/1.0"
@@ -215,18 +221,103 @@ AI_PROMPT_OVERRIDE_NOTICE = "WICHTIGER HINWEIS: Die folgenden Praxis-Regeln habe
 AI_PROMPT_CUSTOM_INSTRUCTION_HEADER = "--- BENUTZERDEFINIERTE SONDERANWEISUNG (ALLERHÖCHSTE PRIORITÄT!) ---"
 AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE = "WICHTIGER HINWEIS: Die folgende Anweisung wurde vom Benutzer für diesen Generierungslauf vorgegeben. Sie hat ALLERHÖCHSTE PRIORITÄT und übersteuert im Konfliktfall sowohl Basis-Regeln als auch Praxis-Regeln. Du MUSST dich strikt daran halten:"
 
+# --- AI Status & Action Messages ---
+AI_STATUS_ONLINE_LOADED = "🟢 Ollama Server Online ({count} Modelle installiert | Geladen im Speicher: {models})"
+AI_STATUS_ONLINE_STANDBY = "🔵 Ollama Server Online ({count} Modelle installiert | Standby — Kein Modell im Speicher)"
+AI_STATUS_ONLINE_DISABLED = "⚪ Ollama Server Online ({count} Modelle installiert | KI global deaktiviert)"
+AI_STATUS_OFFLINE_LABEL = "🔴 Ollama Server nicht erreichbar / Offline (unter {url})"
+AI_STATUS_CHECKING = "🔍 Prüfe Ollama-Status im Hintergrund..."
+AI_STATUS_UNLOADING = "⏳ Deaktiviere KI global & entlade Modelle aus Arbeitsspeicher..."
+AI_STATUS_UNLOADED = "⚡ KI global deaktiviert & Modelle aus Arbeitsspeicher entladen."
+AI_STATUS_ACTIVATED = "✅ KI global aktiviert."
+AI_STATUS_STARTING = "⏳ Versuche Ollama Server im Hintergrund zu starten..."
+AI_STATUS_STOPPING = "⏳ Beende Ollama Server-Prozess..."
+
+AI_NO_MODELS_TITLE = "⚠ Keine KI-Modelle in Ollama installiert!"
+AI_NO_MODELS_DESC = "Bitte laden Sie ein Modell wie qwen2.5:7b oder llama3 über die Ollama-Bibliothek herunter:"
+
+AI_BADGE_ACTIVE = "🟢 Ollama Local LLM aktiv ({model})"
+AI_BADGE_STANDBY = "🔵 Ollama Standby ({model})"
+AI_BADGE_DISABLED = "⚪ KI global deaktiviert (Schalter OFF)"
+AI_BADGE_NLP_FALLBACK = "⚡ Regelbasierter NLP-Modus (Ollama offline)"
+
+# --- AI Button Labels & UI Action Texts ---
+AI_BTN_GENERATE_DRAFT = "🤖 KI-Entwurf generieren"
+AI_BTN_GENERATE_DRAFT_DISABLED = "🤖 KI-Entwurf (KI global inaktiv)"
+AI_BTN_GLOBAL_TOGGLE = "🤖 KI- & NLP-Unterstützung global aktivieren"
+AI_BTN_GLOBAL_TOGGLE_HEADER = "🤖 KI Global Aktiv"
+AI_BTN_START_SERVER = "▶ Ollama Server Starten"
+AI_BTN_STOP_SERVER = "🛑 Server Beenden"
+AI_BTN_DOWNLOAD_OLLAMA = "🌐 Ollama Herunterladen & Installieren (ollama.com/download)"
+AI_BTN_DOWNLOAD_QWEN = "🌐 qwen2.5 Download (ollama.com/library/qwen2.5)"
+AI_BTN_DOWNLOAD_LLAMA = "🌐 llama3 Download (ollama.com/library/llama3)"
+AI_BTN_CREATE_PVS_MODEL = "⚡ PVS-Support Modell aus Modelfile erstellen"
+AI_BTN_PRELOAD_MODEL = "▶ Modell Laden (Preload)"
+AI_BTN_UNLOAD_MODEL = "⏹ Modell Entladen"
+
+# --- Text Widget Paragraph Line Spacing ---
+TEXTBOX_SPACING1_PARAGRAPH = 4
+TEXTBOX_SPACING3_PARAGRAPH = 6
+TEXTBOX_SPACING2_PARAGRAPH = 1
+
 # --- Design System Color Tokens ---
 COLOR_PRIMARY = "#2563eb"
 COLOR_PRIMARY_HOVER = "#1d4ed8"
+COLOR_AI_PURPLE = "#6366f1"
+COLOR_AI_PURPLE_HOVER = "#4f46e5"
+COLOR_BADGE_GREEN = "forestgreen"
+COLOR_BADGE_BLUE = "dodgerblue"
+COLOR_BADGE_GRAY = "gray"
 COLOR_SUCCESS = "forestgreen"
 COLOR_SUCCESS_HOVER = "darkgreen"
 COLOR_CANCEL = ("gray70", "gray40")
 COLOR_CANCEL_HOVER = ("gray60", "gray50")
 COLOR_DANGER = "crimson"
+COLOR_DANGER_HOVER = "darkred"
 COLOR_MUTED_GRAY = ("gray75", "gray30")
 COLOR_MUTED_HOVER = ("gray65", "gray40")
 COLOR_SASH_DARK = "#2b2b2b"
 COLOR_SASH_LIGHT = "#d0d0d0"
+
+# --- Additional AI UI Labels & Instructions ---
+AI_OFFLINE_DESC = (
+    "Ollama Server ist auf diesem PC (unter http://localhost:11434) aktuell offline oder nicht erreichbar.\n"
+    "Sie können den Server direkt starten oder Ollama kostenlos herunterladen:"
+)
+AI_LABEL_BASE_RULES_TITLE = "📋 Globale Basis-Regeln & Prompt-Anweisungen (1 Regel pro Zeile):"
+AI_LABEL_BASE_RULES_HINT = "z. B. 'Immer im Sie-Stil antworten', 'Keine internen Fachbegriffe ohne Erklärung nutzen', 'Freundliche E-Mail-Signatur verwenden'"
+AI_LABEL_SELECT_MODEL = "Installiertes Modell auswählen:"
+AI_LABEL_OLLAMA_URL = "Ollama URL:"
+AI_LABEL_CUSTOM_INSTRUCTION = "⚡ Priorisierte KI-Sonderanweisung für diesen Lauf:"
+AI_HINT_CUSTOM_INSTRUCTION = "z.B. Nur Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen..."
+AI_LABEL_EMAIL_CUSTOM_INSTRUCTION = "⚡ Priorisierte KI-Sonderanweisung:"
+AI_HINT_EMAIL_CUSTOM_INSTRUCTION = "z.B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen..."
+AI_STATUS_DISABLED_HINT = "⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert."
+
+AI_BTN_SUMMARY = "🤖 KI-Zusammenfassung generieren"
+AI_BTN_SOLUTIONS = "💡 Lösungsansätze suchen"
+AI_BTN_DRAFT = "✉ Antwort-Entwurf erstellen"
+AI_BTN_SUMMARY_RERUN = "🔄 Zusammenfassung neu generieren"
+AI_BTN_COPY = "📋 Kopieren"
+AI_BTN_TIMELINE = "📌 In Zeitleiste"
+AI_BTN_OPEN_ASSISTANT = "🤖 KI-Assistent öffnen"
+
+# --- Additional Color Tokens ---
+COLOR_TEXT_RED = "red"
+COLOR_TEXT_GREEN = "green"
+COLOR_TEXT_ORANGE = "orange"
+COLOR_TEXT_GRAY = "gray"
+COLOR_TEXT_BLUE = "dodgerblue"
+COLOR_PURPLE_DARK = "darkviolet"
+COLOR_PRIMARY_BLUE = "dodgerblue"
+COLOR_BTN_GRAY = "gray40"
+COLOR_MUTED_LABEL = ("gray40", "gray70")
+COLOR_MUTED_DISABLED = ("gray50", "gray70")
+COLOR_MUTED_BODY = ("gray30", "gray80")
+
+COLOR_TOOLTIP_BG = ("gray20", "gray10")
+COLOR_TOOLTIP_BORDER = ("gray60", "gray40")
+COLOR_TOOLTIP_TEXT = ("gray95", "gray95")
 
 COLOR_URGENCY_RED = "#dc2626"
 COLOR_URGENCY_YELLOW = "#d97706"
@@ -346,6 +437,9 @@ AUTO_ARCHIVE_THRESHOLD_DAYS = 30
 HOURLY_TIMER_MS = 3600000
 FOLLOWUP_CHECK_INITIAL_DELAY_MS = 2000
 TOAST_DURATION_DEFAULT_MS = 5000
+TOOLTIP_DEFAULT_DELAY_MS = 300
+TOOLTIP_POINTER_OFFSET_X = 15
+TOOLTIP_POINTER_OFFSET_Y = 15
 
 # --- Date & Time Formats ---
 GERMAN_DATE_FORMAT = "%d.%m.%Y"

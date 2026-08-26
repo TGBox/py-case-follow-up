@@ -15,6 +15,27 @@ from constants import (
     STATUS_MESSAGES,
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    AI_BADGE_ACTIVE,
+    AI_BADGE_STANDBY,
+    AI_BADGE_DISABLED,
+    AI_BADGE_NLP_FALLBACK,
+    AI_STATUS_UNLOADING,
+    AI_STATUS_UNLOADED,
+    AI_STATUS_ACTIVATED,
+    AI_BTN_GLOBAL_TOGGLE_HEADER,
+    AI_LABEL_CUSTOM_INSTRUCTION,
+    AI_HINT_CUSTOM_INSTRUCTION,
+    AI_STATUS_DISABLED_HINT,
+    COLOR_BADGE_GREEN,
+    COLOR_BADGE_BLUE,
+    COLOR_BADGE_GRAY,
+    COLOR_TEXT_BLUE,
+    COLOR_TEXT_ORANGE,
+    COLOR_TEXT_GRAY,
+    COLOR_TEXT_GREEN,
+    COLOR_TEXT_RED,
+    COLOR_MUTED_GRAY,
+    COLOR_MUTED_HOVER,
 )
 
 
@@ -76,7 +97,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         # Global AI Toggle Switch
         self.ai_toggle_switch = ctk.CTkSwitch(
             hdr_frame,
-            text="🤖 KI Global Aktiv",
+            text=AI_BTN_GLOBAL_TOGGLE_HEADER,
             command=self.on_toggle_global_ai,
             font=ctk.CTkFont(size=11, weight="bold"),
         )
@@ -90,7 +111,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
             hdr_frame,
             text="Prüfe Status...",
             font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="gray",
+            text_color=COLOR_TEXT_GRAY,
         )
         self.status_badge.pack(side="right", padx=(0, 10))
 
@@ -100,14 +121,14 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             ci_frame,
-            text="⚡ Priorisierte Sonderanweisung:",
+            text=AI_LABEL_CUSTOM_INSTRUCTION,
             font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="dodgerblue",
+            text_color=COLOR_TEXT_BLUE,
         ).pack(side="left", padx=(10, 4), pady=4)
 
         self.custom_instruction_entry = ctk.CTkEntry(
             ci_frame,
-            placeholder_text="z.B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen...",
+            placeholder_text=AI_HINT_CUSTOM_INSTRUCTION,
             height=28,
             font=ctk.CTkFont(size=11),
         )
@@ -131,7 +152,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         footer = ctk.CTkFrame(main_frame, fg_color="transparent")
         footer.pack(fill="x", pady=(4, 0))
 
-        self.status_lbl = ctk.CTkLabel(footer, text="", font=ctk.CTkFont(size=11), text_color="dodgerblue")
+        self.status_lbl = ctk.CTkLabel(footer, text="", font=ctk.CTkFont(size=11), text_color=COLOR_TEXT_BLUE)
         self.status_lbl.pack(side="left")
 
         ctk.CTkButton(
@@ -139,8 +160,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
             text="Schließen",
             width=100,
             height=30,
-            fg_color=("gray70", "gray40"),
-            hover_color=("gray60", "gray50"),
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
             command=self.destroy,
         ).pack(side="right")
 
@@ -212,21 +233,35 @@ class AiAssistantDialog(ctk.CTkToplevel):
         def thread_target():
             try:
                 is_online, models = self.ai_service.check_ollama_status()
+                running_models = self.ai_service.get_running_models() if is_online else []
             except Exception:
-                is_online, models = False, []
+                is_online, models, running_models = False, [], []
 
             def ui_callback():
                 if not self.winfo_exists():
                     return
-                if is_online:
+
+                ai_enabled = self.profile.ai_settings.enable_ai if (self.profile and hasattr(self.profile, "ai_settings")) else True
+
+                if not ai_enabled:
                     self.status_badge.configure(
-                        text=f"🟢 Ollama Local LLM aktiv ({self.ai_service.model_name})",
-                        text_color="forestgreen",
+                        text=AI_BADGE_DISABLED,
+                        text_color=COLOR_BADGE_GRAY,
+                    )
+                elif is_online and running_models:
+                    self.status_badge.configure(
+                        text=AI_BADGE_ACTIVE.format(model=self.ai_service.model_name),
+                        text_color=COLOR_BADGE_GREEN,
+                    )
+                elif is_online:
+                    self.status_badge.configure(
+                        text=AI_BADGE_STANDBY.format(model=self.ai_service.model_name),
+                        text_color=COLOR_BADGE_BLUE,
                     )
                 else:
                     self.status_badge.configure(
-                        text="⚡ Regelbasierter NLP-Modus (Ollama offline)",
-                        text_color="dodgerblue",
+                        text=AI_BADGE_NLP_FALLBACK,
+                        text_color=COLOR_BADGE_BLUE,
                     )
 
             try:
@@ -242,7 +277,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
             self.profile.ai_settings.enable_ai = enabled
 
         if not enabled:
-            self.status_lbl.configure(text="⏳ Deaktiviere KI global & entlade Modelle aus Arbeitsspeicher...", text_color="orange")
+            self.status_lbl.configure(text=AI_STATUS_UNLOADING, text_color="orange")
             def worker():
                 try:
                     self.ai_service.unload_model()
@@ -252,8 +287,9 @@ class AiAssistantDialog(ctk.CTkToplevel):
                 def done():
                     if not self.winfo_exists():
                         return
-                    self.status_lbl.configure(text="⚡ KI global deaktiviert & Modelle aus Arbeitsspeicher entladen.", text_color="gray")
+                    self.status_lbl.configure(text=AI_STATUS_UNLOADED, text_color="gray")
                     self.update_ai_buttons_state()
+                    self.update_status_header_async()
                     from ui.widgets.toast_notification import ToastNotification
                     ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
 
@@ -262,8 +298,9 @@ class AiAssistantDialog(ctk.CTkToplevel):
             import threading
             threading.Thread(target=worker, daemon=True).start()
         else:
-            self.status_lbl.configure(text="✅ KI global aktiviert.", text_color="green")
+            self.status_lbl.configure(text=AI_STATUS_ACTIVATED, text_color="green")
             self.update_ai_buttons_state()
+            self.update_status_header_async()
             from ui.widgets.toast_notification import ToastNotification
             ToastNotification(self, "KI-Status", "KI global aktiviert")
 

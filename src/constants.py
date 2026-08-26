@@ -203,7 +203,7 @@ DIALOG_DIMENSIONS = {
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 OLLAMA_TIMEOUT_STATUS = 1.5
-OLLAMA_TIMEOUT_GENERATE = 8.0
+OLLAMA_TIMEOUT_GENERATE = 120.0
 AI_USER_AGENT = "SupportCockpit/1.0"
 
 AI_SYSTEM_ROLE_DEFAULT = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen."

@@ -212,6 +212,8 @@ AI_SYSTEM_ROLE_EMAIL = "Du bist ein freundlicher IT-Support-Mitarbeiter im deuts
 AI_PROMPT_BASE_RULES_HEADER = "--- GLOBALE BASIS-REGELN ---"
 AI_PROMPT_PRACTICE_RULES_HEADER = "--- PRAXIS-SPEZIFISCHE REGELN (VORRANGIG UND BINDEND!) ---"
 AI_PROMPT_OVERRIDE_NOTICE = "WICHTIGER HINWEIS: Die folgenden Praxis-Regeln haben IMMER Vorrang vor den globalen Basis-Regeln! Falls eine Praxis-Regel einer Basis-Regel widerspricht, musst du dich ZWINGEND an die Praxis-Regel halten:"
+AI_PROMPT_CUSTOM_INSTRUCTION_HEADER = "--- BENUTZERDEFINIERTE SONDERANWEISUNG (ALLERHÖCHSTE PRIORITÄT!) ---"
+AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE = "WICHTIGER HINWEIS: Die folgende Anweisung wurde vom Benutzer für diesen Generierungslauf vorgegeben. Sie hat ALLERHÖCHSTE PRIORITÄT und übersteuert im Konfliktfall sowohl Basis-Regeln als auch Praxis-Regeln. Du MUSST dich strikt daran halten:"
 
 # --- Design System Color Tokens ---
 COLOR_PRIMARY = "#2563eb"

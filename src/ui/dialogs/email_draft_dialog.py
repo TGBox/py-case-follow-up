@@ -248,6 +248,25 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 command=self.open_snippet_picker,
             ).pack(side="right")
 
+        # Priority Custom Instruction Bar for Email KI
+        ci_frame = ctk.CTkFrame(content_scroll, fg_color=("gray90", "gray20"), corner_radius=6)
+        ci_frame.pack(fill="x", pady=(2, 4))
+
+        ctk.CTkLabel(
+            ci_frame,
+            text="⚡ Priorisierte KI-Sonderanweisung:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="dodgerblue",
+        ).pack(side="left", padx=(10, 4), pady=4)
+
+        self.custom_instruction_entry = ctk.CTkEntry(
+            ci_frame,
+            placeholder_text="z.B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen...",
+            height=28,
+            font=ctk.CTkFont(size=11),
+        )
+        self.custom_instruction_entry.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
+
         # KI Buttons Row
         ki_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         ki_row.pack(fill="x", pady=(2, 4))
@@ -615,11 +634,13 @@ class EmailDraftDialog(ctk.CTkToplevel):
             user_name = self.profile.user.name if (self.profile and hasattr(self.profile, 'user')) else self.user_name or "Ihr Support-Team"
             base_rules = self.profile.ai_settings.base_rules if (self.profile and hasattr(self.profile, 'ai_settings') and self.profile.ai_settings) else []
             practice_rules = getattr(self.case.customer, "custom_ai_rules", []) or []
+            custom_instruction = self.custom_instruction_entry.get().strip() if (hasattr(self, "custom_instruction_entry") and self.custom_instruction_entry) else ""
             return self.ai_service.generate_customer_response(
                 self.case,
                 user_name=user_name,
                 base_rules=base_rules,
                 practice_rules=practice_rules,
+                custom_instruction=custom_instruction,
             )
 
         def on_done():

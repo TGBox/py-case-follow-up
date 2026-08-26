@@ -81,6 +81,25 @@ class AiAssistantDialog(ctk.CTkToplevel):
         )
         self.status_badge.pack(side="right")
 
+        # Priority Custom Instruction Bar
+        ci_frame = ctk.CTkFrame(main_frame, fg_color=("gray90", "gray20"), corner_radius=6)
+        ci_frame.pack(fill="x", pady=(0, 6))
+
+        ctk.CTkLabel(
+            ci_frame,
+            text="⚡ Priorisierte Sonderanweisung:",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="dodgerblue",
+        ).pack(side="left", padx=(10, 4), pady=4)
+
+        self.custom_instruction_entry = ctk.CTkEntry(
+            ci_frame,
+            placeholder_text="z.B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen...",
+            height=28,
+            font=ctk.CTkFont(size=11),
+        )
+        self.custom_instruction_entry.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
+
         # Tabview for Features
         self.tabview = ctk.CTkTabview(main_frame)
         self.tabview.pack(fill="both", expand=True, pady=(0, 8))
@@ -240,6 +259,11 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.summary_textbox = ctk.CTkTextbox(self.tab_summary)
         self.summary_textbox.pack(fill="both", expand=True, pady=(4, 0))
 
+    def get_custom_instruction(self) -> str:
+        if hasattr(self, "custom_instruction_entry") and self.custom_instruction_entry:
+            return self.custom_instruction_entry.get().strip()
+        return ""
+
     def get_active_rules(self) -> tuple[list[str], list[str]]:
         base_rules = self.profile.ai_settings.base_rules if (self.profile and self.profile.ai_settings) else []
         practice_rules = getattr(self.case.customer, "custom_ai_rules", []) or []
@@ -248,13 +272,21 @@ class AiAssistantDialog(ctk.CTkToplevel):
     def generate_summary(self):
         def worker():
             base_rules, practice_rules = self.get_active_rules()
-            return self.ai_service.summarize_case(self.case, base_rules=base_rules, practice_rules=practice_rules)
+            custom_instruction = self.get_custom_instruction()
+            return self.ai_service.summarize_case(
+                self.case,
+                base_rules=base_rules,
+                practice_rules=practice_rules,
+                custom_instruction=custom_instruction,
+            )
 
         def on_success(summary_text: str):
             self.summary_textbox.delete("1.0", "end")
             self.summary_textbox.insert("1.0", summary_text)
             b_cnt, p_cnt = len(self.get_active_rules()[0]), len(self.get_active_rules()[1])
-            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln vorrangig)" if (b_cnt or p_cnt) else ""
+            has_ci = bool(self.get_custom_instruction())
+            ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
+            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
             self.status_lbl.configure(text=f"✓ Zusammenfassung erfolgreich generiert{info}.", text_color="dodgerblue")
 
         self._run_async(worker, on_success, "🤖 KI generiert Zusammenfassung... Bitte warten")
@@ -378,18 +410,22 @@ class AiAssistantDialog(ctk.CTkToplevel):
         def worker():
             user_name = self.profile.user.name if self.profile else "Ihr Support-Team"
             base_rules, practice_rules = self.get_active_rules()
+            custom_instruction = self.get_custom_instruction()
             return self.ai_service.generate_customer_response(
                 self.case,
                 user_name=user_name,
                 base_rules=base_rules,
                 practice_rules=practice_rules,
+                custom_instruction=custom_instruction,
             )
 
         def on_success(draft_text: str):
             self.draft_textbox.delete("1.0", "end")
             self.draft_textbox.insert("1.0", draft_text)
             b_cnt, p_cnt = len(self.get_active_rules()[0]), len(self.get_active_rules()[1])
-            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln vorrangig)" if (b_cnt or p_cnt) else ""
+            has_ci = bool(self.get_custom_instruction())
+            ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
+            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
             self.status_lbl.configure(text=f"✓ E-Mail-Antwort-Entwurf generiert{info}.", text_color="dodgerblue")
 
         self._run_async(worker, on_success, "✉ KI generiert E-Mail-Antwort... Bitte warten")

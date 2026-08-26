@@ -8,8 +8,12 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 
 * **3-Spalten Cockpit, Board & Tabellenmatrix:** Flexible UI-Layouts mit CustomTkinter Flat-Optik, flüssigen Animationen und dynamischem **Dark- & Light-Mode**.
 * **🤖 Hybride KI & Ollama LLM-Integration:**
-  - **Lokale LLM-Anbindung:** Nahtlose REST-API Integration mit lokal laufenden Ollama-Modellen (`qwen3.5:9b`, `llama3:latest`, `pvs-support`).
-  - **Dynamische Status-Badges:** Anzeigen des Ollama-Online-Status inklusive aktuellem Modellnamen (`🟢 Ollama Local LLM aktiv (qwen3.5:9b)`).
+  - **Lokale LLM-Anbindung:** Nahtlose REST-API Integration mit lokal laufenden Ollama-Modellen (`qwen2.5`, `qwen3.5:9b`, `llama3`, `pvs-support`).
+  - **In-App Ollama Server-Steuerung:** Direktes Starten (`▶ Ollama Server Starten`) per `ollama serve` und Beenden (`🛑 Server Beenden`) laufender Ollama-Prozesse direkt aus den Profileinstellungen.
+  - **⚡ PVS-Support Modell-Erstellung:** Ein-Klick-Generierung eines spezialisierten `pvs-support` Modells aus dem integrierten `Modelfile` für Medizin-IT Support.
+  - **🌐 Direct Download Links:** Automatische Hinweis-Container mit Direkt-Links zu `ollama.com`, `qwen2.5` und `llama3` bei fehlenden lokalen Modellen.
+  - **🎚 Globaler KI-Schalter & VRAM-Entladung:** Globaler `🤖 KI Global Aktiv`-Toggle mit automatischem Entladen des Modells aus dem RAM/VRAM beim Ausschalten.
+  - **🚦 Präzise Status-Farbcodierung:** Eindeutige Status-Badges (`🔴 Red` Offline | `⚪ Gray` Global Inaktiv | `🔵 Blue` Standby | `🟢 Green` Aktiv im RAM).
   - **Regelbasierter Zero-Token NLP Fallback:** Automatischer und robuster Fallback-Modus bei Offline-Ollama.
   - **Vereinter Button `✉ E-Mail & 🤖 KI`:** Kombinierter Schnellzugriff im Haupt-Cockpit für E-Mail-Erstellung und KI-gestützte Entwurfsorchestrierung.
   - **⚡ Priorisierte KI-Sonderanweisung:** Eingabefeld in den KI-Dialogen für spontane Einzeldirektiven, die im System-Prompt die **allerhöchste Priorität** erhalten und Basis- sowie Praxisregeln übersteuern.
@@ -131,7 +135,7 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **293 automatisierte Tests** in der pytest Testsuite:
+Das Projekt verfügt über **297 automatisierte Tests** in der pytest Testsuite:
 
 ```bash
 .\.venv\Scripts\python -m pytest
@@ -140,6 +144,7 @@ uv run pytest
 ```
 
 Abgedeckte Testbereiche:
+* `test_profile_and_ai_management.py`: Ollama Server Process Control (Start/Stop), Modell-Downloads, VRAM-Entladung & asynchroner Status-Scan.
 * `test_ai_text_generation_validation.py`: 45 Tests zur Validierung der LLM-Generierung, Prompt-Hierarchien, Sonderanweisungen, Fall-ID-Ausschluss und NLP-Fallbacks.
 * `test_ai_hierarchical_rules.py` & `test_ai_service_and_assistant.py`: Testen des AiService, Ollama REST API Queries und Regel-Priorisierung.
 * `test_internal_cases.py`: Erfassung & Suche interner Vorgänge ohne Kundenelement.

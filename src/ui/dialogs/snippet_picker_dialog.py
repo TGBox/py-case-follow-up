@@ -123,7 +123,8 @@ class SnippetPickerDialog(ctk.CTkToplevel):
             hdr_row.pack(fill="x", padx=8, pady=(6, 2))
             hdr_row.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-            title_lbl = ctk.CTkLabel(hdr_row, text=snip.title, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+            title_text = f"{snip.title} ⌨ {snip.shortcut}" if snip.shortcut else snip.title
+            title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
             title_lbl.pack(side="left", fill="x", expand=True)
             title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 

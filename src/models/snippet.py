@@ -10,6 +10,7 @@ class Snippet:
     category: str = DEFAULT_SNIPPET_CATEGORY
     content: str = ""
     tags: list[str] = field(default_factory=list)
+    shortcut: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -32,4 +33,5 @@ class Snippet:
             category=data.get("category", DEFAULT_SNIPPET_CATEGORY),
             content=data.get("content", ""),
             tags=list(data.get("tags", [])),
+            shortcut=data.get("shortcut", ""),
         )

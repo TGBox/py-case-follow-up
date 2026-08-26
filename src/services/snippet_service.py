@@ -10,6 +10,7 @@ DEFAULT_SNIPPETS = [
         category="Rückfrage",
         content="Bitte lassen Sie uns Screenshots der Fehlermeldung sowie das genaue Datum und die Uhrzeit des ersten Auftretens zukommen.",
         tags=["rückfrage", "screenshot", "fehler"],
+        shortcut="<Control-Alt-1>",
     ),
     Snippet(
         snippet_id="SNIP-02",
@@ -31,6 +32,7 @@ DEFAULT_SNIPPETS = [
         category="Standardantwort",
         content="Vielen Dank für Ihre Rückmeldung. Das Anliegen konnte erfolgreich gelöst werden. Wir schließen diesen Vorgang.",
         tags=["abschluss", "danke", "erledigt"],
+        shortcut="<Control-Alt-2>",
     ),
     Snippet(
         snippet_id="SNIP-05",

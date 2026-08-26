@@ -634,3 +634,13 @@ class CockpitView(ctk.CTkFrame):
 
         self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(2, 0))
 
+    def focus_wiki_search(self):
+        if hasattr(self, "wiki_widget") and hasattr(self.wiki_widget, "search_entry"):
+            self.wiki_widget.search_entry.focus()
+            self.wiki_widget.search_entry.select_range(0, "end")
+
+    def focus_customer_search(self):
+        if hasattr(self, "left_frame") and hasattr(self.left_frame, "search_entry"):
+            self.left_frame.search_entry.focus()
+            self.left_frame.search_entry.select_range(0, "end")
+

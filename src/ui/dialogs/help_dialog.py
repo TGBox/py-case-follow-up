@@ -179,14 +179,24 @@ Arbeiten Sie mit Kollegen ohne zentralen Server zusammen! Die P2P-Sync ermöglic
 
 Arbeiten Sie noch schneller mit folgenden Hotkeys:
 
-| Aktion | Tastenkürzel |
+| Aktion | Standard-Hotkey |
 | :--- | :--- |
 | **Neuer Fall** | `Strg + N` |
-| **Fall exportieren** | `Strg + E` |
 | **Fall speichern** | `Strg + S` |
-| **Wiki-Suche fokussieren** | `Strg + F` |
+| **Fall archivieren** | `Strg + Umschalt + A` |
+| **Fall exportieren** | `Strg + E` |
+| **Einstellungen öffnen** | `Strg + P` |
+| **Snippet-Picker öffnen** | `Strg + M` |
+| **Wiki-Suche fokussieren** | `Strg + W` |
+| **Kundensuche fokussieren** | `Strg + F` |
+| **Cockpit-Ansicht** | `Strg + 1` |
+| **Kanban-Board-Ansicht** | `Strg + 2` |
+| **Tabellen-Ansicht** | `Strg + 3` |
+| **Theme umschalten** | `Strg + T` |
+| **Hilfe-Dialog** | `F1` |
+| **Textbaustein-Makros** | e.g. `Strg + Alt + 1` |
 
-*Hinweis: Tastenkürzel können in den Einstellungen (`👤 Profil & Einstellungen`) angepasst werden.*
+*Hinweis: Alle Tastenkürzel und Textbaustein-Makros können in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) frei angepasst und per Taste erfasst werden.*
 """
     },
     {

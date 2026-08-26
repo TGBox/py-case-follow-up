@@ -9,3 +9,5 @@ agent-todo.md
 attachments/
 .vscode/
 .env
+dist
+build

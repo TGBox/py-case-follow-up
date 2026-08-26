@@ -16,6 +16,8 @@ from constants import (
     AI_PROMPT_BASE_RULES_HEADER,
     AI_PROMPT_PRACTICE_RULES_HEADER,
     AI_PROMPT_OVERRIDE_NOTICE,
+    AI_PROMPT_CUSTOM_INSTRUCTION_HEADER,
+    AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE,
 )
 
 
@@ -66,9 +68,10 @@ class AiService:
     def build_system_prompt(
         base_rules: list[str] | None = None,
         practice_rules: list[str] | None = None,
+        custom_instruction: str | None = None,
         default_role: str = AI_SYSTEM_ROLE_DEFAULT,
     ) -> str:
-        """Builds a hierarchical system prompt where practice-specific rules explicitly override global base rules."""
+        """Builds a hierarchical system prompt where practice rules override base rules and custom instructions take top priority."""
         prompt_parts = [default_role]
         base_rules = [r.strip() for r in (base_rules or []) if r.strip()]
         practice_rules = [r.strip() for r in (practice_rules or []) if r.strip()]
@@ -84,6 +87,11 @@ class AiService:
             for idx, r in enumerate(practice_rules, 1):
                 prompt_parts.append(f"{idx}. {r}")
 
+        if custom_instruction and custom_instruction.strip():
+            prompt_parts.append(f"\n{AI_PROMPT_CUSTOM_INSTRUCTION_HEADER}")
+            prompt_parts.append(AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE)
+            prompt_parts.append(custom_instruction.strip())
+
         return "\n".join(prompt_parts)
 
     def summarize_case(
@@ -91,6 +99,7 @@ class AiService:
         case: Case,
         base_rules: list[str] | None = None,
         practice_rules: list[str] | None = None,
+        custom_instruction: str | None = None,
     ) -> str:
         """Generates a concise bulleted summary of a support case using Ollama LLM or Rule-Based NLP."""
         is_online, _ = self.check_ollama_status()
@@ -109,7 +118,7 @@ class AiService:
                 f"2. Bisherige Maßnahmen\n"
                 f"3. Nächster erforderlicher Schritt"
             )
-            sys_prompt = self.build_system_prompt(base_rules, practice_rules)
+            sys_prompt = self.build_system_prompt(base_rules, practice_rules, custom_instruction=custom_instruction)
             res = self._query_ollama(prompt, system_prompt=sys_prompt)
             if res:
                 return res
@@ -213,6 +222,7 @@ class AiService:
         user_name: str = "Ihr Support-Team",
         base_rules: list[str] | None = None,
         practice_rules: list[str] | None = None,
+        custom_instruction: str | None = None,
     ) -> str:
         """Generates a polite German customer reply draft tailored to the case."""
         is_online, _ = self.check_ollama_status()
@@ -225,7 +235,12 @@ class AiService:
                 f"Nutzerwunsch/Ziel: {intent or 'Status-Update und nächste Schritte mitteilen'}\n"
                 f"Absender: {user_name}"
             )
-            sys_prompt = self.build_system_prompt(base_rules, practice_rules, default_role=AI_SYSTEM_ROLE_EMAIL)
+            sys_prompt = self.build_system_prompt(
+                base_rules,
+                practice_rules,
+                custom_instruction=custom_instruction,
+                default_role=AI_SYSTEM_ROLE_EMAIL,
+            )
             res = self._query_ollama(prompt, system_prompt=sys_prompt)
             if res:
                 return res

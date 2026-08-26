@@ -345,6 +345,26 @@ class TestSystemPromptBuilding:
         prompt = AiService.build_system_prompt(default_role=custom_role)
         assert custom_role in prompt
 
+    def test_prompt_includes_custom_instruction(self):
+        base_rules = ["Immer höflich bleiben."]
+        practice_rules = ["Praxis wünscht Anrede 'Moin'."]
+        custom_inst = "Antworte ausschließlich in Form von 3 Stichpunkten und beende mit 'Viele Grüße'."
+
+        prompt = AiService.build_system_prompt(
+            base_rules=base_rules,
+            practice_rules=practice_rules,
+            custom_instruction=custom_inst,
+        )
+
+        assert "--- BENUTZERDEFINIERTE SONDERANWEISUNG (ALLERHÖCHSTE PRIORITÄT!) ---" in prompt
+        assert "ALLERHÖCHSTE PRIORITÄT und übersteuert im Konfliktfall" in prompt
+        assert custom_inst in prompt
+        # Verify ordering: base rules < practice rules < custom instruction
+        pos_base = prompt.find("Immer höflich bleiben")
+        pos_practice = prompt.find("Praxis wünscht Anrede 'Moin'")
+        pos_custom = prompt.find(custom_inst)
+        assert pos_base < pos_practice < pos_custom
+
 
 # ============================================================
 # 5. Edge Cases

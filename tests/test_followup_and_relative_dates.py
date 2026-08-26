@@ -20,8 +20,8 @@ def test_followup_due_calculation():
     """Verify followup past and future due calculation."""
     now = get_local_now()
 
-    # Past due followup
-    past_dt = now - timedelta(hours=2)
+    # Past due followup – use yesterday to avoid flaky failures near midnight or early morning
+    past_dt = now - timedelta(days=1)
     c_due = Case(case_id="T-DUE-01")
     c_due.workflow_status.followup_at = format_german_date(past_dt) + " 09:00"
 

@@ -50,7 +50,36 @@ class AiService:
             pass
         return None
 
-    def summarize_case(self, case: Case) -> str:
+    @staticmethod
+    def build_system_prompt(
+        base_rules: list[str] | None = None,
+        practice_rules: list[str] | None = None,
+        default_role: str = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen.",
+    ) -> str:
+        """Builds a hierarchical system prompt where practice-specific rules explicitly override global base rules."""
+        prompt_parts = [default_role]
+        base_rules = [r.strip() for r in (base_rules or []) if r.strip()]
+        practice_rules = [r.strip() for r in (practice_rules or []) if r.strip()]
+
+        if base_rules:
+            prompt_parts.append("\n--- GLOBALE BASIS-REGELN ---")
+            for idx, r in enumerate(base_rules, 1):
+                prompt_parts.append(f"{idx}. {r}")
+
+        if practice_rules:
+            prompt_parts.append("\n--- PRAXIS-SPEZIFISCHE REGELN (VORRANGIG UND BINDEND!) ---")
+            prompt_parts.append("WICHTIGER HINWEIS: Die folgenden Praxis-Regeln haben IMMER Vorrang vor den globalen Basis-Regeln! Falls eine Praxis-Regel einer Basis-Regel widerspricht, musst du dich ZWINGEND an die Praxis-Regel halten:")
+            for idx, r in enumerate(practice_rules, 1):
+                prompt_parts.append(f"{idx}. {r}")
+
+        return "\n".join(prompt_parts)
+
+    def summarize_case(
+        self,
+        case: Case,
+        base_rules: list[str] | None = None,
+        practice_rules: list[str] | None = None,
+    ) -> str:
         """Generates a concise bulleted summary of a support case using Ollama LLM or Rule-Based NLP."""
         is_online, _ = self.check_ollama_status()
         if is_online:
@@ -68,7 +97,8 @@ class AiService:
                 f"2. Bisherige Maßnahmen\n"
                 f"3. Nächster erforderlicher Schritt"
             )
-            res = self._query_ollama(prompt, system_prompt="Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software.")
+            sys_prompt = self.build_system_prompt(base_rules, practice_rules)
+            res = self._query_ollama(prompt, system_prompt=sys_prompt)
             if res:
                 return res
 
@@ -164,7 +194,14 @@ class AiService:
 
         return solutions
 
-    def generate_customer_response(self, case: Case, intent: str = "", user_name: str = "Ihr Support-Team") -> str:
+    def generate_customer_response(
+        self,
+        case: Case,
+        intent: str = "",
+        user_name: str = "Ihr Support-Team",
+        base_rules: list[str] | None = None,
+        practice_rules: list[str] | None = None,
+    ) -> str:
         """Generates a polite German customer reply draft tailored to the case."""
         is_online, _ = self.check_ollama_status()
         if is_online:
@@ -176,7 +213,8 @@ class AiService:
                 f"Nutzerwunsch/Ziel: {intent or 'Status-Update und nächste Schritte mitteilen'}\n"
                 f"Absender: {user_name}"
             )
-            res = self._query_ollama(prompt, system_prompt="Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen.")
+            sys_prompt = self.build_system_prompt(base_rules, practice_rules, default_role="Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen.")
+            res = self._query_ollama(prompt, system_prompt=sys_prompt)
             if res:
                 return res
 

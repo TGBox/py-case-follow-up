@@ -371,6 +371,24 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             self.ai_enable_chk.deselect()
         self.ai_enable_chk.pack(anchor="w", pady=(0, 10))
 
+        ctk.CTkLabel(
+            self.tab_ai,
+            text="📋 Globale Basis-Regeln & Prompt-Anweisungen (1 Regel pro Zeile):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", pady=(10, 2))
+
+        ctk.CTkLabel(
+            self.tab_ai,
+            text="z. B. 'Immer im Sie-Stil antworten', 'Keine internen Fachbegriffe ohne Erklärung nutzen', 'Freundliche E-Mail-Signatur verwenden'",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+        ).pack(anchor="w", pady=(0, 5))
+
+        self.ai_base_rules_txt = ctk.CTkTextbox(self.tab_ai, height=90)
+        if self.profile.ai_settings.base_rules:
+            self.ai_base_rules_txt.insert("1.0", "\n".join(self.profile.ai_settings.base_rules))
+        self.ai_base_rules_txt.pack(fill="x", pady=(0, 10))
+
     def setup_scoring_tab(self):
         ctk.CTkLabel(self.tab_scoring, text="Tastenkürzel (Hotkeys)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
@@ -452,6 +470,8 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
         self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
         self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
+        raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
+        self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
 
         # Update Shortcuts & Scoring with conflict validation
         hk_new_val = self.hk_new.get().strip()

@@ -7,6 +7,15 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 ## 🌟 Hauptfunktionen & Features
 
 * **3-Spalten Cockpit, Board & Tabellenmatrix:** Flexible UI-Layouts mit CustomTkinter Flat-Optik, flüssigen Animationen und dynamischem **Dark- & Light-Mode**.
+* **🤖 Hybride KI & Ollama LLM-Integration:**
+  - **Lokale LLM-Anbindung:** Nahtlose REST-API Integration mit lokal laufenden Ollama-Modellen (`qwen3.5:9b`, `llama3:latest`, `pvs-support`).
+  - **Dynamische Status-Badges:** Anzeigen des Ollama-Online-Status inklusive aktuellem Modellnamen (`🟢 Ollama Local LLM aktiv (qwen3.5:9b)`).
+  - **Regelbasierter Zero-Token NLP Fallback:** Automatischer und robuster Fallback-Modus bei Offline-Ollama.
+  - **Vereinter Button `✉ E-Mail & 🤖 KI`:** Kombinierter Schnellzugriff im Haupt-Cockpit für E-Mail-Erstellung und KI-gestützte Entwurfsorchestrierung.
+  - **⚡ Priorisierte KI-Sonderanweisung:** Eingabefeld in den KI-Dialogen für spontane Einzeldirektiven, die im System-Prompt die **allerhöchste Priorität** erhalten und Basis- sowie Praxisregeln übersteuern.
+  - **Hierarchisches Regelwerk:** System-Prompts mit mehrstufiger Vererbung (*Globale Basis-Regeln* < *Praxis-Spezifische Vorrang-Regeln* < *Priorisierte Sonderanweisung*).
+  - **Validierter Fall-ID Ausschluss:** Automatisierte Garantie, dass interne Fall-IDs nicht in Kunden-Mails enthalten sind.
+  - **📋 Zusammenfassungen, 💡 Lösungsvorschläge & Wiki-Matching:** Automatische Extraktion von 3-Stufen-Zusammenfassungen und Abgleich mit BookStack-Wiki-Artikeln.
 * **🏢 Interne Vorgänge & Aufgaben (ohne Kunde):** Erfassung rein interner Vorgänge (Systemwartung, Notizen, Entwicklungsaufgaben) ohne Kundenelement mit automatischer Umschaltung auf das Schema *"🏢 Interne Aufgabe / Notiz"* und blauem `🏢 INTERN`-Badge.
 * **🐍 Cobra CRM Praxen-Import:** Assistent zum Importieren von Kundendatenbanken aus Cobra CRM Exporte im Format CSV, TXT oder JSON mit automatischer Spaltenerkennung (`COBRA_FIELD_ALIAS_MAP`).
 * **📝 Textbausteine & Snippet-Manager:** Zentrale Verwaltung von Bausteinen mit Kategorien und Tags sowie Schnellauswahl-Dialog (`SnippetPickerDialog`) zum direkten Einfügen in Fallnotizen.
@@ -15,7 +24,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - Periodische Fristenprüfung im Hintergrund mit unaufdringlichen Toast-Notifications am Bildschirmrand.
   - **Wiedervorlagen-Flyout** zum schnellen Verfolgen, Erledigen oder Verschieben (`+ 1 Tag`, `+ 1 Woche`).
 * **✉️ E-Mail-Entwurf & 📅 Kalender-Export (.ics):**
-  - Vorbereitung von Support-Mails mit praxisnahen Anreden und Bausteinen (`EmailDraftDialog`).
+  - Vorbereitung von Support-Mails mit praxisnahen Anreden und KI-Antwortentwürfen (`EmailDraftDialog`).
   - Erzeugung von iCalendar (`.ics`) Fristterminen für MS Outlook, Thunderbird & Apple Calendar (`CalendarExportDialog`).
 * **⏱️ Datumswahl mit Uhrzeit & Schnellauswahl:**
   - Kalender-Widget mit Datums- und Uhrzeitwahl (HH:MM).
@@ -33,7 +42,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - Direktes Öffnen von Anhängen im OS-Standardprogramm und Speichern von Screenshots per `Strg+V`.
 * **⚠️ Mitarbeiter-Abwesenheiten & Urlaubsnotizen:** Erfassen von Urlaub/Krankheit in der Mitarbeiterverwaltung mit automatischem Warnhinweis im Übergabe-Dialog bei Auswahl abwesender Kollegen.
 * **🎨 Centralized Constants & Design System (`src/constants.py`):**
-  - Zentrale Verwaltung aller Farb-Tokens, Dialog-Dimensionen, Validierungsmeldungen, Button-Texte und Alias-Zuordnungen.
+  - Zentrale Verwaltung aller Farb-Tokens, Dialog-Dimensionen, Validierungsmeldungen, Button-Texte, AI-Prompts und Alias-Zuordnungen.
 * **🔍 Erweitertes Suchsystem & Schnellfilter:**
   - Tokens wie `is:internal`, `is:customer`, `vip:true`, `reminder:due`, `actor:dev`, `status:open`, `error:...`.
   - Schnellfilter-Buttons (`[Alle]`, `[🔥 Dringend]`, `[🔔 Wiedervorlagen]`, `[🏢 Intern]`) über der Fallliste.
@@ -49,6 +58,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 ### Voraussetzungen
 * Python 3.14+
 * Windows / Linux / macOS
+* *(Optional)* Lokaler [Ollama](https://ollama.com/) Server für KI-Unterstützung
 
 ### Installation & Start
 ```bash
@@ -60,6 +70,15 @@ python -m .venv .venv
 
 # Anwendung starten
 .\.venv\Scripts\python main.py
+```
+
+### KI-Modell mit Ollama einrichten (Optional)
+```bash
+# Eigenes PVS-Support Modell aus Modelfile erstellen
+ollama create pvs-support -f ollama/Modelfile
+
+# Oder Standard-Modell herunterladen
+ollama pull qwen3.5:9b
 ```
 
 ---
@@ -112,13 +131,17 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **231 automatisierte Tests** in der pytest Testsuite:
+Das Projekt verfügt über **293 automatisierte Tests** in der pytest Testsuite:
 
 ```bash
 .\.venv\Scripts\python -m pytest
+# Oder mit uv:
+uv run pytest
 ```
 
 Abgedeckte Testbereiche:
+* `test_ai_text_generation_validation.py`: 45 Tests zur Validierung der LLM-Generierung, Prompt-Hierarchien, Sonderanweisungen, Fall-ID-Ausschluss und NLP-Fallbacks.
+* `test_ai_hierarchical_rules.py` & `test_ai_service_and_assistant.py`: Testen des AiService, Ollama REST API Queries und Regel-Priorisierung.
 * `test_internal_cases.py`: Erfassung & Suche interner Vorgänge ohne Kundenelement.
 * `test_cobra_import.py`: Cobra CRM Kunden- & Praxenimport mit Spaltenerkennung.
 * `test_snippets.py` & `test_seeded_support_snippets.py`: Textbausteine-Verwaltung & Einfüge-Mechanik.

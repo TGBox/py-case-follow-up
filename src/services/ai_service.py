@@ -60,8 +60,9 @@ class AiService:
                 if resp.status == 200:
                     res_data = json.loads(resp.read().decode("utf-8"))
                     return res_data.get("response", "").strip()
-        except Exception:
-            pass
+        except Exception as e:
+            import logging
+            logging.getLogger("AiService").warning(f"Ollama generation request failed or timed out: {e}")
         return None
 
     @staticmethod

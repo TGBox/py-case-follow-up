@@ -53,7 +53,7 @@ logger = logging.getLogger("SupportCockpit")
 class SupportCockpitApp(ctk.CTk):
     def __init__(self, config: AppConfig):
         # Deactivate CustomTkinter's internal header manipulation which causes multiple withdraw/update/deiconify cycles on Windows
-        ctk.CTk._deactivate_windows_window_header_manipulation = True
+        setattr(ctk.CTk, "_deactivate_windows_window_header_manipulation", True)
 
         super().__init__()
         self.app_config = config
@@ -790,8 +790,9 @@ class SupportCockpitApp(ctk.CTk):
             self.bell_btn.configure(text="🔔 0", fg_color="gray30")
             self._last_notified_due_count = 0
 
-        # Update tray icon badge
-        self.tray_service.update_badge(due_count)
+        # Update tray icon badge (guard: may be called before tray_service is initialized)
+        if hasattr(self, "tray_service"):
+            self.tray_service.update_badge(due_count)
 
         _timer_id = self.__dict__.get("_followup_timer_id")
         if _timer_id:

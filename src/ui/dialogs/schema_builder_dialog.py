@@ -143,26 +143,42 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         add_frame = ctk.CTkFrame(main_frame)
         add_frame.pack(fill="x", pady=(0, 15), padx=5)
 
-        ctk.CTkLabel(add_frame, text="Neues Feld hinzufügen:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 5))
+        ctk.CTkLabel(add_frame, text="Neues Feld hinzufügen (V2 mit bedingter Logik):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 5))
         
         inputs_row = ctk.CTkFrame(add_frame, fg_color="transparent")
-        inputs_row.pack(fill="x", padx=10, pady=(0, 10))
+        inputs_row.pack(fill="x", padx=10, pady=(0, 4))
 
-        self.new_id_entry = ctk.CTkEntry(inputs_row, placeholder_text="Feld-ID (z. B. patient_id)", width=160)
-        self.new_id_entry.pack(side="left", padx=(0, 10))
+        self.new_id_entry = ctk.CTkEntry(inputs_row, placeholder_text="Feld-ID (z. B. reason_detail)", width=160)
+        self.new_id_entry.pack(side="left", padx=(0, 8))
 
-        self.new_label_entry = ctk.CTkEntry(inputs_row, placeholder_text="Beschriftung (Label)", width=200)
-        self.new_label_entry.pack(side="left", padx=(0, 10))
+        self.new_label_entry = ctk.CTkEntry(inputs_row, placeholder_text="Beschriftung (Label)", width=180)
+        self.new_label_entry.pack(side="left", padx=(0, 8))
 
         field_types = [t.value for t in FieldType]
-        self.new_type_combo = ctk.CTkOptionMenu(inputs_row, values=field_types, width=120)
-        self.new_type_combo.pack(side="left", padx=(0, 10))
+        self.new_type_combo = ctk.CTkOptionMenu(inputs_row, values=field_types, width=110)
+        self.new_type_combo.pack(side="left", padx=(0, 8))
 
-        self.new_req_chk = ctk.CTkCheckBox(inputs_row, text="Pflicht", width=70)
-        self.new_req_chk.pack(side="left", padx=(0, 10))
+        self.new_req_chk = ctk.CTkCheckBox(inputs_row, text="Pflicht", width=65)
+        self.new_req_chk.pack(side="left", padx=(0, 8))
 
-        add_btn = ctk.CTkButton(inputs_row, text="+ Feld Hinzufügen", command=self.on_add_field, width=120)
+        add_btn = ctk.CTkButton(inputs_row, text="+ Hinzufügen", command=self.on_add_field, width=110)
         add_btn.pack(side="right")
+
+        # Row 2: V2 Conditional Logic & File Extension Inputs
+        v2_row = ctk.CTkFrame(add_frame, fg_color="transparent")
+        v2_row.pack(fill="x", padx=10, pady=(0, 8))
+
+        ctk.CTkLabel(v2_row, text="↳ Bedingte Logik (If/Else):", font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
+
+        self.new_dep_id_entry = ctk.CTkEntry(v2_row, placeholder_text="Abhängig von Feld-ID", width=140)
+        self.new_dep_id_entry.pack(side="left", padx=(0, 6))
+
+        self.new_dep_val_entry = ctk.CTkEntry(v2_row, placeholder_text="Bei Wert (z. B. Sonstiges)", width=140)
+        self.new_dep_val_entry.pack(side="left", padx=(0, 10))
+
+        ctk.CTkLabel(v2_row, text="↳ Dateitypen:", font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
+        self.new_exts_entry = ctk.CTkEntry(v2_row, placeholder_text=".pdf, .log, .png", width=140)
+        self.new_exts_entry.pack(side="left")
 
         # Status & Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -266,7 +282,9 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             f_frame.pack(fill="x", pady=2, padx=5)
 
             req_str = "[PFLICHT]" if f.required else "[OPTIONAL]"
-            text_str = f"#{f.order}  {f.label} ({f.field_id})  —  Typ: {f.field_type}  {req_str}"
+            dep_str = f" [IF {f.depends_on_field_id}=='{f.depends_on_value}']" if f.depends_on_field_id else ""
+            ext_str = f" [{', '.join(f.allowed_extensions)}]" if f.allowed_extensions else ""
+            text_str = f"#{f.order}  {f.label} ({f.field_id})  —  Typ: {f.field_type}{ext_str}  {req_str}{dep_str}"
 
             lbl = ctk.CTkLabel(f_frame, text=text_str, anchor="w", font=ctk.CTkFont(size=12))
             lbl.pack(side="left", padx=10, expand=True, fill="x")
@@ -294,12 +312,27 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
 
         field_type = self.new_type_combo.get()
         is_required = self.new_req_chk.get() == 1
+        dep_id = self.new_dep_id_entry.get().strip()
+        dep_val = self.new_dep_val_entry.get().strip()
+        exts_raw = self.new_exts_entry.get().strip()
+        exts = [e.strip() if e.strip().startswith(".") else f".{e.strip()}" for e in exts_raw.split(",") if e.strip()] if exts_raw else []
 
-        new_field = SchemaField(field_id=field_id, label=label, field_type=field_type, required=is_required)
+        new_field = SchemaField(
+            field_id=field_id,
+            label=label,
+            field_type=field_type,
+            required=is_required,
+            depends_on_field_id=dep_id,
+            depends_on_value=dep_val,
+            allowed_extensions=exts,
+        )
         SchemaService.add_field(self.selected_schema, new_field)
 
         self.new_id_entry.delete(0, "end")
         self.new_label_entry.delete(0, "end")
+        self.new_dep_id_entry.delete(0, "end")
+        self.new_dep_val_entry.delete(0, "end")
+        self.new_exts_entry.delete(0, "end")
         self.refresh_fields_list()
 
     def on_move(self, field_id: str, direction: str):

@@ -241,6 +241,7 @@ class DynamicFormWidget(ctk.CTkFrame):
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.field_widgets.clear()
+        self.field_row_frames: dict[str, ctk.CTkFrame] = {}
 
         if not schema or not schema.fields:
             ctk.CTkLabel(self.scroll_frame, text="Keine Formularfelder definiert.").pack(pady=20)
@@ -251,6 +252,7 @@ class DynamicFormWidget(ctk.CTkFrame):
         for f in sorted_fields:
             row_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
             row_frame.pack(fill="x", pady=6, padx=5)
+            self.field_row_frames[f.field_id] = row_frame
 
             req_mark = " *" if f.required else ""
             label_text = f"{f.label}{req_mark}:"
@@ -320,6 +322,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                     def on_apply_mods(new_selected: list[str]):
                         holder["selected"] = new_selected
                         b.configure(text=format_mod_btn_text(new_selected))
+                        self.update_conditional_visibility()
 
                     ModuleTagPickerPopup(
                         self.winfo_toplevel(),
@@ -353,6 +356,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                             fg_color="dodgerblue" if is_sel else ("gray80", "gray30"),
                             text_color="white" if is_sel else ("gray10", "white"),
                         )
+                    self.update_conditional_visibility()
 
                 def on_browser_click(clicked_opt: str):
                     if clicked_opt == "Unbekannt":
@@ -392,7 +396,7 @@ class DynamicFormWidget(ctk.CTkFrame):
             elif (
                 f.field_type == FieldType.DATE
                 or any(k in fid_lower or k in flabel_lower for k in ("datum", "date", "frist"))
-            ) and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN):
+            ) and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN, FieldType.FILE):
                 entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
                 entry_row.pack(fill="x")
 
@@ -416,7 +420,12 @@ class DynamicFormWidget(ctk.CTkFrame):
             elif f.field_type == FieldType.DROPDOWN:
                 options = f.options if f.options else ["-"]
                 opt_kwargs: dict[str, Any] = {"button_color": "darkred", "fg_color": "firebrick"} if is_missing else {}
-                combo = ctk.CTkOptionMenu(row_frame, values=options, **opt_kwargs)
+                combo = ctk.CTkOptionMenu(
+                    row_frame,
+                    values=options,
+                    command=lambda _val: self.update_conditional_visibility(),
+                    **opt_kwargs,
+                )
                 if val and str(val) in options:
                     combo.set(str(val))
                 combo.pack(fill="x")
@@ -428,7 +437,13 @@ class DynamicFormWidget(ctk.CTkFrame):
                 chk_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
                 chk_frame.pack(fill="x")
 
-                chk = ctk.CTkCheckBox(chk_frame, text=f.label, variable=bool_var, **entry_kwargs)
+                chk = ctk.CTkCheckBox(
+                    chk_frame,
+                    text=f.label,
+                    variable=bool_var,
+                    command=self.update_conditional_visibility,
+                    **entry_kwargs,
+                )
                 chk.pack(side="left", anchor="w")
 
                 is_db_backup_field = "database_dump" in fid_lower or "backup" in fid_lower or "datenbank" in flabel_lower
@@ -449,7 +464,50 @@ class DynamicFormWidget(ctk.CTkFrame):
                 if is_db_backup_field and case:
                     self.render_mini_attachment_section(row_frame, case)
 
-            # 6. NUMBER FIELD
+            # 6. FILE ATTACHMENT FIELD (FieldType.FILE)
+            elif f.field_type == FieldType.FILE:
+                file_row = ctk.CTkFrame(row_frame, fg_color="transparent")
+                file_row.pack(fill="x")
+
+                file_entry = ctk.CTkEntry(
+                    file_row,
+                    placeholder_text=f.placeholder or "Keine Datei ausgewählt...",
+                    **entry_kwargs,
+                )
+                if val:
+                    file_entry.insert(0, str(val))
+                file_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+                def open_file_picker(e=file_entry, f_item=f):
+                    exts = f_item.allowed_extensions
+                    ftypes = [("Dateien", " ".join(f"*{x}" for x in exts))] if exts else [("Alle Dateien", "*.*")]
+                    chosen = filedialog.askopenfilename(title=f"Datei auswählen für '{f_item.label}'", filetypes=ftypes)
+                    if chosen:
+                        e.delete(0, "end")
+                        e.insert(0, chosen)
+                        if self.current_case:
+                            try:
+                                t_dir = self._get_target_dir(self.current_case)
+                                os.makedirs(t_dir, exist_ok=True)
+                                dest_p = os.path.join(t_dir, os.path.basename(chosen))
+                                shutil.copy2(chosen, dest_p)
+                                if hasattr(self, "mini_attach_scroll"):
+                                    self.refresh_mini_attachment_list(self.current_case)
+                            except Exception:
+                                pass
+
+                ctk.CTkButton(
+                    file_row,
+                    text="📁 Datei wählen...",
+                    width=120,
+                    fg_color="dodgerblue",
+                    hover_color="deepskyblue",
+                    command=open_file_picker,
+                ).pack(side="right")
+
+                self.field_widgets[f.field_id] = (f.field_type, file_entry)
+
+            # 7. NUMBER FIELD
             elif f.field_type == FieldType.NUMBER:
                 entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **entry_kwargs)
                 if val is not None:
@@ -457,7 +515,7 @@ class DynamicFormWidget(ctk.CTkFrame):
                 entry.pack(fill="x")
                 self.field_widgets[f.field_id] = (f.field_type, entry)
 
-            # 7. MULTILINE TEXTBOX FIELD
+            # 8. MULTILINE TEXTBOX FIELD
             elif any(k in fid_lower or k in flabel_lower for k in (
                 "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
                 "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
@@ -483,7 +541,7 @@ class DynamicFormWidget(ctk.CTkFrame):
 
                 self.field_widgets[f.field_id] = ("textbox", textbox)
 
-            # 8. STANDARD SINGLE-LINE TEXT ENTRY
+            # 9. STANDARD SINGLE-LINE TEXT ENTRY
             else:
                 entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **entry_kwargs)
                 if val:
@@ -493,6 +551,39 @@ class DynamicFormWidget(ctk.CTkFrame):
 
         # Bind mouse wheel recursively so form is 100% responsive when scrolling
         self._bind_mouse_wheel_recursive(self.scroll_frame)
+        self.update_conditional_visibility()
+
+    def update_conditional_visibility(self):
+        """Dynamically evaluates depends_on_field_id conditions and updates field row visibility."""
+        if not self.schema or not self.schema.fields:
+            return
+
+        current_data = self.get_form_data()
+
+        for f in self.schema.fields:
+            dep_id = getattr(f, "depends_on_field_id", "")
+            row_frame = self.field_row_frames.get(f.field_id)
+            if not row_frame or not dep_id:
+                continue
+
+            expected_val = getattr(f, "depends_on_value", "").strip()
+            parent_val = current_data.get(dep_id)
+
+            should_show = False
+            if parent_val is not None:
+                p_str = str(parent_val).strip()
+                if not expected_val:
+                    # If no specific value required, show when parent is non-empty / True
+                    should_show = bool(parent_val) and p_str.lower() not in ("false", "0", "nein", "none")
+                else:
+                    # Match comma-separated expected values
+                    valid_targets = [v.strip().lower() for v in expected_val.split(",")]
+                    should_show = p_str.lower() in valid_targets or (isinstance(parent_val, bool) and parent_val and "true" in valid_targets)
+
+            if should_show:
+                row_frame.pack(fill="x", pady=6, padx=5)
+            else:
+                row_frame.pack_forget()
 
     def _get_target_dir(self, case: Case) -> str:
         if self.attachment_service:

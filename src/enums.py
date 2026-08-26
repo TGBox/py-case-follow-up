@@ -28,6 +28,7 @@ class FieldType(StrEnum):
     NUMBER = "number"
     BOOLEAN = "boolean"
     DATE = "date"
+    FILE = "file"
 
 
 class SyncMode(StrEnum):

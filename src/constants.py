@@ -77,7 +77,18 @@ DIALOG_TITLES = {
     "p2p_diff": "Multi-User P2P-Sync & Kollegendaten-Abgleich",
     "email_calendar": "✉ E-Mail & 📅 Kalender-Entwurf",
     "ai_assistant": "🤖 KI- & Support-Assistent",
+    "email_import": "📥 E-Mail Posteingang & Import Hub",
 }
+
+# --- Sub-Header Labels inside Dialogs ---
+DIALOG_HEADERS = {
+    "email_import_hub": "📥 E-Mail Import Hub & Auto-Matching",
+}
+
+# --- Dropdown Menu & Navigation Option Lists ---
+MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"]
+MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen"]
+MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"]
 
 # --- Button Labels & UI Action Texts ---
 UI_BUTTON_TEXTS = {
@@ -185,6 +196,7 @@ DIALOG_DIMENSIONS = {
     "p2p_diff": (920, 720),
     "email_calendar": (760, 660),
     "ai_assistant": (820, 580),
+    "email_import": (850, 600),
 }
 
 # --- AI & LLM Service Configuration & Prompts ---
@@ -268,10 +280,12 @@ DEFAULT_MODULE_TAGS = [
 ]
 
 DEFAULT_INTERNAL_TASK_CATEGORIES = [
-    "Systemwartung",
+    "Fernwartung",
+    "Datenaustausch",
     "Dokumentation",
     "Entwicklungsaufgabe",
     "Prozessverbesserung",
+    "Bugfix",
     "Sonstiges",
 ]
 
@@ -289,8 +303,8 @@ DEFAULT_HANDOVER_CHANNELS = [
     "Persönliche Absprache",
     "E-Mail",
     "Telefonanruf",
-    "Slacknachricht / Chat",
-    "GitLab Issue / Ticket",
+    "Slacknachricht",
+    "GitLab Issue",
     "Sonstiges",
 ]
 

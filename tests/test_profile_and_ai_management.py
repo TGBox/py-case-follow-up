@@ -43,6 +43,21 @@ def test_ai_service_model_management_helpers():
         assert ok is True
         assert "entladen" in msg
 
+    # Test start_ollama_server mock
+    with patch("shutil.which", return_value="C:\\Program Files\\Ollama\\ollama.exe"):
+        with patch("subprocess.Popen") as mock_popen:
+            ok, msg = svc.start_ollama_server()
+            assert ok is True
+            assert "gestartet" in msg
+            mock_popen.assert_called_once()
+
+    # Test stop_ollama_server mock
+    with patch("subprocess.run") as mock_run:
+        ok, msg = svc.stop_ollama_server()
+        assert ok is True
+        assert "beendet" in msg
+        assert mock_run.called
+
 
 def test_create_pvs_support_model_mock(tmp_path):
     modelfile = tmp_path / "Modelfile"

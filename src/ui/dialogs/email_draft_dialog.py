@@ -15,6 +15,17 @@ from constants import (
     DIALOG_TITLES,
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    AI_BTN_GENERATE_DRAFT,
+    AI_BTN_GENERATE_DRAFT_DISABLED,
+    AI_LABEL_EMAIL_CUSTOM_INSTRUCTION,
+    AI_HINT_EMAIL_CUSTOM_INSTRUCTION,
+    AI_BTN_OPEN_ASSISTANT,
+    COLOR_AI_PURPLE,
+    COLOR_AI_PURPLE_HOVER,
+    COLOR_TEXT_BLUE,
+    COLOR_BTN_GRAY,
+    COLOR_MUTED_GRAY,
+    COLOR_MUTED_HOVER,
 )
 
 
@@ -254,14 +265,14 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             ci_frame,
-            text="⚡ Priorisierte KI-Sonderanweisung:",
+            text=AI_LABEL_EMAIL_CUSTOM_INSTRUCTION,
             font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="dodgerblue",
+            text_color=COLOR_TEXT_BLUE,
         ).pack(side="left", padx=(10, 4), pady=4)
 
         self.custom_instruction_entry = ctk.CTkEntry(
             ci_frame,
-            placeholder_text="z.B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen...",
+            placeholder_text=AI_HINT_EMAIL_CUSTOM_INSTRUCTION,
             height=28,
             font=ctk.CTkFont(size=11),
         )
@@ -275,11 +286,11 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self.ki_generate_btn = ctk.CTkButton(
             ki_row,
-            text="🤖 KI-Entwurf generieren" if ai_enabled else "🤖 KI-Entwurf (KI global inaktiv)",
+            text=AI_BTN_GENERATE_DRAFT if ai_enabled else AI_BTN_GENERATE_DRAFT_DISABLED,
             width=180,
             height=28,
-            fg_color="#6366f1" if ai_enabled else "gray40",
-            hover_color="#4f46e5" if ai_enabled else "gray40",
+            fg_color=COLOR_AI_PURPLE if ai_enabled else COLOR_BTN_GRAY,
+            hover_color=COLOR_AI_PURPLE_HOVER if ai_enabled else COLOR_BTN_GRAY,
             state="normal" if ai_enabled else "disabled",
             command=self._on_generate_ai_draft,
         )
@@ -288,11 +299,11 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if self.case:
             ctk.CTkButton(
                 ki_row,
-                text="🤖 KI-Assistent öffnen",
+                text=AI_BTN_OPEN_ASSISTANT,
                 width=160,
                 height=28,
-                fg_color=("gray75", "gray30"),
-                hover_color=("gray65", "gray40"),
+                fg_color=COLOR_MUTED_GRAY,
+                hover_color=COLOR_MUTED_HOVER,
                 command=self._open_ai_assistant_dialog,
             ).pack(side="left")
 

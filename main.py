@@ -105,6 +105,8 @@ def main():
         from ui.app import SupportCockpitApp
         app = SupportCockpitApp(config)
         app.mainloop()
+    except KeyboardInterrupt:
+        print("[*] Application interrupted by user.")
     except Exception as e:
         print(f"[-] Application execution error: {e}")
         sys.exit(1)

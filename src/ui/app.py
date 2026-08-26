@@ -30,6 +30,7 @@ from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
 from services.schema_service import SchemaService
 from services.customer_service import CustomerService
+from services.tray_service import TrayService
 
 from ui.views.cockpit_view import CockpitView
 from ui.views.board_view import BoardView
@@ -148,6 +149,9 @@ class SupportCockpitApp(ctk.CTk):
         self.active_view = None
         self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
 
+        # System Tray Service
+        self.tray_service = TrayService()
+
         # Register Shortcuts & Lifecycle
         self.register_shortcuts()
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
@@ -231,6 +235,9 @@ class SupportCockpitApp(ctk.CTk):
         self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
 
         # Right side: User, Bell Badge & Theme Toggle
+        quit_btn = ctk.CTkButton(menu_frame, text="❌ Beenden", command=self.on_quit_app, width=90, fg_color="#8B0000", hover_color="#B22222")
+        quit_btn.pack(side="right", padx=6, pady=4)
+
         theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=6, pady=4)
 
@@ -783,6 +790,9 @@ class SupportCockpitApp(ctk.CTk):
             self.bell_btn.configure(text="🔔 0", fg_color="gray30")
             self._last_notified_due_count = 0
 
+        # Update tray icon badge
+        self.tray_service.update_badge(due_count)
+
         _timer_id = self.__dict__.get("_followup_timer_id")
         if _timer_id:
             try:
@@ -819,8 +829,42 @@ class SupportCockpitApp(ctk.CTk):
         FollowupFlyoutDialog(self, due_cases, on_case_selected=self.on_case_selected, on_refresh=on_refresh)
 
     def on_closing(self):
-        logger.info("Saving application settings and profile before exit...")
+        """Minimize to system tray instead of closing the application."""
+        logger.info("Minimizing to system tray...")
         if hasattr(self, "cockpit_view"):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
+        self.withdraw()
+        self.tray_service.start(
+            on_restore=self._on_restore_from_tray,
+            on_quit=self._on_quit_from_tray,
+        )
+
+    def _on_restore_from_tray(self):
+        """Restore the application window from the system tray."""
+        def _restore():
+            self.tray_service.stop()
+            self.deiconify()
+            try:
+                self.state("zoomed")
+            except Exception:
+                pass
+            self.lift()
+            self.focus_force()
+        self.after(0, _restore)
+
+    def _on_quit_from_tray(self):
+        """Fully quit the application from the system tray context menu."""
+        def _quit():
+            self.tray_service.stop()
+            self.destroy()
+        self.after(0, _quit)
+
+    def on_quit_app(self):
+        """Fully quit the application via the in-app Beenden button."""
+        logger.info("Quitting application...")
+        if hasattr(self, "cockpit_view"):
+            self.cockpit_view.save_sash_widths()
+        self.storage_service.save_profile(self.profile)
+        self.tray_service.stop()
         self.destroy()

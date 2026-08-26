@@ -248,16 +248,29 @@ class AiSettings:
 
 DEFAULT_MODULE_TAGS = [
     "Fakturaübersicht",
-    "Rezeptdruck",
-    "Labor",
-    "eRezept / Verordnung",
-    "EGK-Kartenleser",
-    "GKV-Export",
-    "PVS-Schnittstelle",
     "Terminkalender",
-    "Stammdaten",
-    "System / Allgemeine GUI",
-]
+    "System allgemein",
+    "Benutzerverwaltung und Einstellungen",
+    "Go2Doc",
+    "Heilmittelkatalog",
+    "Kostenträgerliste",
+    "Heilmittelpreisliste",
+    "Fabius",
+    "Termed",
+    "Benutzerrechte",
+    "Patientenstamm",
+    "Terminabrechnung",
+    "Rezeptnachvervollgung",
+    "Ausgangsbelege",
+    "Kassenbuch",
+    "Statistiken",
+    "Kartei",
+    "Terminarten",
+    "Ressourcen",
+    "Datenbank",
+    "ESOL Dateien",
+    "Abrechnung"
+  ]
 
 
 @dataclass

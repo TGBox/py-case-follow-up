@@ -27,24 +27,24 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - Glocken-Badge (`🔔 3`) in der Kopfzeile mit Live-Zähler fälliger Fristen.
   - Periodische Fristenprüfung im Hintergrund mit unaufdringlichen Toast-Notifications am Bildschirmrand.
   - **Wiedervorlagen-Flyout** zum schnellen Verfolgen, Erledigen oder Verschieben (`+ 1 Tag`, `+ 1 Woche`).
-* **✉️ E-Mail-Entwurf & 📅 Kalender-Export (.ics):**
+* **✉ E-Mail-Entwurf & 📅 Kalender-Export (.ics):**
   - Vorbereitung von Support-Mails mit praxisnahen Anreden und KI-Antwortentwürfen (`EmailDraftDialog`).
   - Erzeugung von iCalendar (`.ics`) Fristterminen für MS Outlook, Thunderbird & Apple Calendar (`CalendarExportDialog`).
-* **⏱️ Datumswahl mit Uhrzeit & Schnellauswahl:**
+* **⏱ Datumswahl mit Uhrzeit & Schnellauswahl:**
   - Kalender-Widget mit Datums- und Uhrzeitwahl (HH:MM).
   - Schnellauswahl-Buttons: *"Morgen 08:00 Uhr"*, *"Heute 11:30 (vor Mittag)"*, *"Heute 13:30 (nach Mittag)"*.
 * **📊 Auswertungs- & KPI-Dashboard (`📊 Auswertungen`):**
   - Übersicht über Gesamtfälle, offene/erledigte/archivierte Vorgänge.
   - Dringlichkeits-Scoring Verteilung (`Rot` / `Gelb` / `Grün`).
   - Top 5 Praxen-Ranking nach Fallaufkommen & Abteilungs-Auslastung.
-* **🖨️ Fall-Akte PDF/Druck- & HTML-Export (`CasePrintDialog`):**
+* **🖨 Fall-Akte PDF/Druck- & HTML-Export (`CasePrintDialog`):**
   - Druckauswahl-Dialog mit Checkboxen zum gezielten Abwählen einzelner Timeline-Einträge oder Kundendaten.
-  - Getrennte Knöpfe für **🌐 HTML-Bericht im Browser öffnen** und **🖨️ PDF-Bericht drucken** (mit nativem Druckdialog).
+  - Getrennte Knöpfe für **🌐 HTML-Bericht im Browser öffnen** und **🖨 PDF-Bericht drucken** (mit nativem Druckdialog).
 * **🛠 Formular-Baukasten & Schema-Konverter:** In-App Formular-Builder zur Erstellung eigener Erfassungsmasken sowie Schema-Umwandler für bestehende Fälle.
 * **📂 Dateianhängs-Vorschau & OS-Integration:**
   - Live-Text- und Bild-Vorschau für Anhänge (PNG, JPG, Logfiles, JSON).
   - Direktes Öffnen von Anhängen im OS-Standardprogramm und Speichern von Screenshots per `Strg+V`.
-* **⚠️ Mitarbeiter-Abwesenheiten & Urlaubsnotizen:** Erfassen von Urlaub/Krankheit in der Mitarbeiterverwaltung mit automatischem Warnhinweis im Übergabe-Dialog bei Auswahl abwesender Kollegen.
+* **⚠ Mitarbeiter-Abwesenheiten & Urlaubsnotizen:** Erfassen von Urlaub/Krankheit in der Mitarbeiterverwaltung mit automatischem Warnhinweis im Übergabe-Dialog bei Auswahl abwesender Kollegen.
 * **🎨 Centralized Constants & Design System (`src/constants.py`):**
   - Zentrale Verwaltung aller Farb-Tokens, Dialog-Dimensionen, Validierungsmeldungen, Button-Texte, AI-Prompts und Alias-Zuordnungen.
 * **🔍 Erweitertes Suchsystem & Schnellfilter:**
@@ -109,7 +109,7 @@ Gibt das Netzlaufwerk- oder Benutzerverzeichnis an:
 
 ---
 
-## ⚙️ Umgebungsvariablen & Konfiguration
+## ⚙ Umgebungsvariablen & Konfiguration
 
 BookStack API Tokens können über Umgebungsvariablen bereitgestellt werden:
 
@@ -120,7 +120,7 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 
 ---
 
-## ⌨️ Tastatur-Shortcuts
+## ⌨ Tastatur-Shortcuts
 
 * `Strg+N`: Neuen Support-Fall / Vorgang anlegen
 * `Strg+F`: Globale Suche & Praxissuche fokussieren

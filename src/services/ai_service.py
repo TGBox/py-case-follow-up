@@ -42,6 +42,105 @@ class AiService:
             pass
         return False, []
 
+    def get_available_models(self) -> list[str]:
+        """Returns list of installed model names from Ollama."""
+        is_online, models = self.check_ollama_status()
+        return models if is_online else []
+
+    def get_running_models(self) -> list[str]:
+        """Queries /api/ps to return list of models currently loaded in memory."""
+        try:
+            url = f"{self.ollama_url}/api/ps"
+            req = urllib.request.Request(url, headers={"User-Agent": AI_USER_AGENT})
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_STATUS) as resp:
+                if resp.status == 200:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    return [m.get("name", "") for m in data.get("models", []) if m.get("name")]
+        except Exception:
+            pass
+        return []
+
+    def preload_model(self, model_name: str | None = None) -> tuple[bool, str]:
+        """Preloads a model into VRAM/RAM by sending an empty generation request."""
+        target_model = model_name or self.model_name
+        try:
+            url = f"{self.ollama_url}/api/generate"
+            payload = {"model": target_model, "prompt": ""}
+            json_bytes = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=60.0) as resp:
+                if resp.status == 200:
+                    return True, f"Modell '{target_model}' erfolgreich geladen!"
+        except Exception as e:
+            return False, f"Fehler beim Laden von '{target_model}': {e}"
+        return False, f"Modell '{target_model}' konnte nicht geladen werden."
+
+    def unload_model(self, model_name: str | None = None) -> tuple[bool, str]:
+        """Unloads a model from VRAM/RAM by setting keep_alive to 0."""
+        target_model = model_name or self.model_name
+        try:
+            url = f"{self.ollama_url}/api/generate"
+            payload = {"model": target_model, "keep_alive": 0}
+            json_bytes = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=10.0) as resp:
+                if resp.status == 200:
+                    return True, f"Modell '{target_model}' erfolgreich aus Speicher entladen."
+        except Exception as e:
+            return False, f"Fehler beim Entladen von '{target_model}': {e}"
+        return False, f"Modell '{target_model}' konnte nicht entladen werden."
+
+    def create_pvs_support_model(self, modelfile_path: str = "ollama/Modelfile", base_model_override: str | None = None) -> tuple[bool, str]:
+        """Creates/updates the custom 'pvs-support' model via Ollama REST API /api/create."""
+        from pathlib import Path
+        p = Path(modelfile_path)
+        if not p.exists():
+            return False, f"Modelfile '{modelfile_path}' nicht gefunden."
+        try:
+            content = p.read_text(encoding="utf-8")
+            available = self.get_available_models()
+            base_model = base_model_override
+            if not base_model:
+                for line in content.splitlines():
+                    if line.strip().startswith("FROM "):
+                        base_model = line.strip().split(maxsplit=1)[1].strip()
+                        break
+            if base_model and available and base_model not in available:
+                for fallback in ["qwen3.5:9b", "llama3:latest", "llama3"]:
+                    if any(fallback in m for m in available):
+                        base_model = [m for m in available if fallback in m][0]
+                        break
+                else:
+                    base_model = available[0]
+
+            payload = {
+                "name": "pvs-support",
+                "modelfile": content,
+                "stream": False,
+            }
+            if base_model:
+                payload["from"] = base_model
+
+            url = f"{self.ollama_url}/api/create"
+            json_bytes = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
+            with urllib.request.urlopen(req, timeout=120.0) as resp:
+                if resp.status == 200:
+                    res_data = json.loads(resp.read().decode("utf-8"))
+                    if res_data.get("status") == "success" or "error" not in res_data:
+                        self.model_name = "pvs-support"
+                        return True, f"Modell 'pvs-support' aus '{modelfile_path}' (Basis: {base_model}) erfolgreich erstellt!"
+                    return False, f"Erstellung fehlgeschlagen: {res_data.get('error', 'Unbekannter Fehler')}"
+        except urllib.error.HTTPError as e:
+            try:
+                err_body = json.loads(e.read().decode("utf-8"))
+                return False, f"Ollama API Fehler: {err_body.get('error', e)}"
+            except Exception:
+                return False, f"HTTP Fehler {e.code}: {e.reason}"
+        except Exception as e:
+            return False, f"Fehler bei Erstellung: {e}"
+        return False, "Unbekannter Fehler bei der Erstellung."
+
     def _query_ollama(self, prompt: str, system_prompt: str = "") -> str | None:
         """Sends a generation request to the local Ollama LLM API."""
         try:

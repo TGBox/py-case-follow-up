@@ -271,13 +271,16 @@ class EmailDraftDialog(ctk.CTkToplevel):
         ki_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         ki_row.pack(fill="x", pady=(2, 4))
 
+        ai_enabled = bool(self.profile.ai_settings.enable_ai) if (self.profile and hasattr(self.profile, "ai_settings")) else True
+
         self.ki_generate_btn = ctk.CTkButton(
             ki_row,
-            text="🤖 KI-Entwurf generieren",
+            text="🤖 KI-Entwurf generieren" if ai_enabled else "🤖 KI-Entwurf (KI global inaktiv)",
             width=180,
             height=28,
-            fg_color="#6366f1",
-            hover_color="#4f46e5",
+            fg_color="#6366f1" if ai_enabled else "gray40",
+            hover_color="#4f46e5" if ai_enabled else "gray40",
+            state="normal" if ai_enabled else "disabled",
             command=self._on_generate_ai_draft,
         )
         self.ki_generate_btn.pack(side="left", padx=(0, 6))

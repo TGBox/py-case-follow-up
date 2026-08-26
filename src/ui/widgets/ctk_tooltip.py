@@ -33,7 +33,11 @@ class CTkTooltip:
         try:
             w.bind("<Enter>", self.on_enter, add="+")
             w.bind("<Leave>", self.on_leave, add="+")
+            w.bind("<FocusOut>", self.on_leave, add="+")
+            w.bind("<Unmap>", self.on_leave, add="+")
             w.bind("<Button-1>", self.on_click, add="+")
+            w.bind("<Button-2>", self.on_click, add="+")
+            w.bind("<Button-3>", self.on_click, add="+")
             w.bind("<ButtonRelease-1>", self.on_click, add="+")
             w.bind("<Destroy>", self.on_destroy, add="+")
         except Exception:
@@ -73,17 +77,39 @@ class CTkTooltip:
         CTkTooltip.dismiss_all()
 
         try:
+            if not hasattr(self.widget, "winfo_exists") or not self.widget.winfo_exists():
+                return
+
             text = self.text_or_func() if callable(self.text_or_func) else self.text_or_func
             if not text:
                 return
 
-            x = self.widget.winfo_pointerx() + 15
-            y = self.widget.winfo_pointery() + 15
+            # Verify pointer is still inside the target widget bounds
+            px = self.widget.winfo_pointerx()
+            py = self.widget.winfo_pointery()
+            wx = self.widget.winfo_rootx()
+            wy = self.widget.winfo_rooty()
+            ww = self.widget.winfo_width()
+            wh = self.widget.winfo_height()
+            if not (wx <= px <= wx + ww and wy <= py <= wy + wh):
+                return
 
-            self.tooltip_window = ctk.CTkToplevel(self.widget.winfo_toplevel())
+            x = px + 15
+            y = py + 15
+
+            toplevel = self.widget.winfo_toplevel()
+            self.tooltip_window = ctk.CTkToplevel(toplevel)
             self.tooltip_window.wm_overrideredirect(True)
             self.tooltip_window.attributes("-topmost", True)
             self.tooltip_window.geometry(f"+{x}+{y}")
+
+            # Bind to top level window focus out / unmap to auto dismiss floating tooltip
+            try:
+                toplevel.bind("<FocusOut>", lambda e: CTkTooltip.dismiss_all(), add="+")
+                toplevel.bind("<Unmap>", lambda e: CTkTooltip.dismiss_all(), add="+")
+                toplevel.bind("<ButtonPress>", lambda e: CTkTooltip.dismiss_all(), add="+")
+            except Exception:
+                pass
 
             frame = ctk.CTkFrame(
                 self.tooltip_window,
@@ -116,3 +142,4 @@ class CTkTooltip:
             except Exception:
                 pass
             self.tooltip_window = None
+

@@ -4,7 +4,13 @@ import customtkinter as ctk
 
 
 def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, height: int | None = None) -> None:
-    """Centers a Tkinter / CustomTkinter window on the screen."""
+    """Centers a Tkinter / CustomTkinter window on the screen and dismisses lingering tooltips."""
+    try:
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        CTkTooltip.dismiss_all()
+    except Exception:
+        pass
+
     window.update_idletasks()
 
     w = width if width is not None else window.winfo_width()

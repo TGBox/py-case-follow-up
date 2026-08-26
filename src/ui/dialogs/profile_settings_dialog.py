@@ -334,60 +334,348 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         ctk.CTkCheckBox(self.tab_wiki, text="Wiki-Inhalte beim Anwendungsstart synchronisieren", variable=self.sync_startup_var).pack(anchor="w", pady=5)
 
     def setup_ai_tab(self):
+        import webbrowser
+        from services.ai_service import AiService
+
         ctk.CTkLabel(
             self.tab_ai,
             text="🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Fallback)",
             font=ctk.CTkFont(size=14, weight="bold"),
         ).pack(anchor="w", pady=(10, 5))
 
-        desc_str = (
-            "Konfigurieren Sie die Anbindung an Ihren lokalen Ollama LLM Server (0 € Token-Kosten, 100 % DSGVO-konform). "
-            "Falls Ollama auf Ihrem PC nicht läuft, schaltet das System automatisch auf das regelbasierte NLP-System um."
+        # Top Ollama Management Card
+        self.ollama_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
+        self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
+
+        # Status row
+        status_row = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
+        status_row.pack(fill="x", padx=12, pady=(10, 5))
+
+        self.ollama_status_lbl = ctk.CTkLabel(
+            status_row,
+            text="🔍 Prüfe Ollama-Status...",
+            font=ctk.CTkFont(size=12, weight="bold"),
+        )
+        self.ollama_status_lbl.pack(side="left")
+
+        self.btn_refresh_ollama = ctk.CTkButton(
+            status_row,
+            text="🔄 Status & Modelle scannen",
+            command=self.scan_ollama_status,
+            width=180,
+            fg_color="gray30",
+        )
+        self.btn_refresh_ollama.pack(side="right")
+
+        # Download / Offline Frame (shown if offline)
+        self.ollama_offline_frame = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
+
+        off_desc = (
+            "Ollama wurde auf diesem PC (unter http://localhost:11434) nicht erkannt.\n"
+            "Sie können Ollama kostenlos und DSGVO-konform für lokale KI-Generierung herunterladen:"
         )
         ctk.CTkLabel(
-            self.tab_ai,
-            text=desc_str,
+            self.ollama_offline_frame,
+            text=off_desc,
             font=ctk.CTkFont(size=11),
-            text_color=("gray30", "gray80"),
+            text_color=("gray40", "gray70"),
             justify="left",
             anchor="w",
-            wraplength=800,
-        ).pack(anchor="w", pady=(0, 15))
+        ).pack(anchor="w", pady=(0, 8))
 
-        ctk.CTkLabel(self.tab_ai, text="Ollama Server REST URL:").pack(anchor="w", pady=(5, 2))
-        self.ai_url_entry = ctk.CTkEntry(self.tab_ai, placeholder_text=DEFAULT_OLLAMA_URL)
-        self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
-        self.ai_url_entry.pack(fill="x", pady=(0, 10))
+        btn_download_ollama = ctk.CTkButton(
+            self.ollama_offline_frame,
+            text="🌐 Ollama Herunterladen & Installieren (ollama.com/download)",
+            command=lambda: webbrowser.open("https://ollama.com/download"),
+            fg_color="dodgerblue",
+            width=360,
+        )
+        btn_download_ollama.pack(anchor="w", pady=(0, 5))
 
-        ctk.CTkLabel(self.tab_ai, text="Modell-Name (z. B. llama3, mistral, qwen):").pack(anchor="w", pady=(5, 2))
-        self.ai_model_entry = ctk.CTkEntry(self.tab_ai, placeholder_text=DEFAULT_OLLAMA_MODEL)
+        # Online Controls Frame (shown if online)
+        self.ollama_online_frame = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
+
+        # Model selection dropdown row
+        model_row = ctk.CTkFrame(self.ollama_online_frame, fg_color="transparent")
+        model_row.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(model_row, text="Installiertes Modell auswählen:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 10))
+
+        self.ai_model_combo = ctk.CTkOptionMenu(
+            model_row,
+            values=[self.profile.ai_settings.model_name or DEFAULT_OLLAMA_MODEL],
+            command=self.on_select_ai_model,
+            width=220,
+        )
+        self.ai_model_combo.set(self.profile.ai_settings.model_name or DEFAULT_OLLAMA_MODEL)
+        self.ai_model_combo.pack(side="left", padx=(0, 10))
+
+        self.ai_model_entry = ctk.CTkEntry(model_row, placeholder_text=DEFAULT_OLLAMA_MODEL, width=160)
         self.ai_model_entry.insert(0, self.profile.ai_settings.model_name)
-        self.ai_model_entry.pack(fill="x", pady=(0, 15))
+        self.ai_model_entry.pack(side="left")
 
-        self.ai_enable_chk = ctk.CTkCheckBox(self.tab_ai, text="KI- & NLP-Unterstützung im Cockpit aktivieren")
+        # Buttons row: Create PVS-Support, Preload, Unload
+        btns_row = ctk.CTkFrame(self.ollama_online_frame, fg_color="transparent")
+        btns_row.pack(fill="x", pady=(0, 5))
+
+        btn_create_pvs = ctk.CTkButton(
+            btns_row,
+            text="⚡ PVS-Support Modell aus Modelfile erstellen",
+            command=self.on_create_pvs_model,
+            fg_color="darkviolet",
+            width=260,
+        )
+        btn_create_pvs.pack(side="left", padx=(0, 8))
+
+        btn_preload = ctk.CTkButton(
+            btns_row,
+            text="▶ Modell Laden (Preload)",
+            command=self.on_preload_model,
+            fg_color="forestgreen",
+            width=160,
+        )
+        btn_preload.pack(side="left", padx=(0, 8))
+
+        btn_unload = ctk.CTkButton(
+            btns_row,
+            text="⏹ Modell Entladen",
+            command=self.on_unload_model,
+            fg_color="gray40",
+            width=140,
+        )
+        btn_unload.pack(side="left")
+
+        self.ollama_action_lbl = ctk.CTkLabel(
+            self.ollama_card,
+            text="",
+            font=ctk.CTkFont(size=11),
+            anchor="w",
+        )
+        self.ollama_action_lbl.pack(fill="x", padx=12, pady=(0, 6))
+
+        # URL Entry & Checkbox row
+        url_chk_row = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
+        url_chk_row.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(url_chk_row, text="Ollama URL:").pack(side="left", padx=(0, 5))
+        self.ai_url_entry = ctk.CTkEntry(url_chk_row, placeholder_text=DEFAULT_OLLAMA_URL, width=200)
+        self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
+        self.ai_url_entry.pack(side="left", padx=(0, 15))
+
+        self.ai_enable_chk = ctk.CTkSwitch(
+            url_chk_row,
+            text="🤖 KI- & NLP-Unterstützung global aktivieren",
+            command=self.on_toggle_global_ai,
+            font=ctk.CTkFont(size=12, weight="bold"),
+        )
         if self.profile.ai_settings.enable_ai:
             self.ai_enable_chk.select()
         else:
             self.ai_enable_chk.deselect()
-        self.ai_enable_chk.pack(anchor="w", pady=(0, 10))
+        self.ai_enable_chk.pack(side="left")
 
+        # Bottom Section: Base Rules Textbox (Expanding to fill remaining height)
         ctk.CTkLabel(
             self.tab_ai,
             text="📋 Globale Basis-Regeln & Prompt-Anweisungen (1 Regel pro Zeile):",
             font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", pady=(10, 2))
+        ).pack(anchor="w", pady=(5, 2))
 
         ctk.CTkLabel(
             self.tab_ai,
             text="z. B. 'Immer im Sie-Stil antworten', 'Keine internen Fachbegriffe ohne Erklärung nutzen', 'Freundliche E-Mail-Signatur verwenden'",
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
-        ).pack(anchor="w", pady=(0, 5))
+        ).pack(anchor="w", pady=(0, 4))
 
-        self.ai_base_rules_txt = ctk.CTkTextbox(self.tab_ai, height=90)
+        self.ai_base_rules_txt = ctk.CTkTextbox(self.tab_ai)
         if self.profile.ai_settings.base_rules:
             self.ai_base_rules_txt.insert("1.0", "\n".join(self.profile.ai_settings.base_rules))
-        self.ai_base_rules_txt.pack(fill="x", pady=(0, 10))
+        self.ai_base_rules_txt.pack(fill="both", expand=True, pady=(0, 10))
+
+        # Set paragraph line spacing for clear visual distinction between hard line breaks
+        try:
+            text_widget = getattr(self.ai_base_rules_txt, "_textbox", getattr(self.ai_base_rules_txt, "_textbox_widget", None))
+            if text_widget:
+                text_widget.config(spacing1=4, spacing3=6, spacing2=1)
+        except Exception:
+            pass
+
+        # Initial background scan (non-blocking thread)
+        self.scan_ollama_status()
+
+    def scan_ollama_status(self):
+        if not hasattr(self, "ollama_status_lbl"):
+            return
+
+        self.ollama_status_lbl.configure(
+            text="🔍 Prüfe Ollama-Status im Hintergrund...",
+            text_color=("gray40", "gray70"),
+        )
+
+        url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
+        current_model = self.ai_model_entry.get().strip() if hasattr(self, "ai_model_entry") else self.profile.ai_settings.model_name
+
+        def worker():
+            from services.ai_service import AiService
+            svc = AiService(ollama_url=url, model_name=current_model)
+            is_online, models = svc.check_ollama_status()
+            running_models = svc.get_running_models() if is_online else []
+
+            def done():
+                try:
+                    if not self.winfo_exists():
+                        return
+                    if not is_online:
+                        self.ollama_status_lbl.configure(
+                            text="🔴 Ollama Server nicht erreichbar / Offline (unter http://localhost:11434)",
+                            text_color="red",
+                        )
+                        self.ollama_online_frame.pack_forget()
+                        self.ollama_offline_frame.pack(fill="x", padx=12, pady=(0, 10))
+                        if hasattr(self, "ai_model_combo"):
+                            self.ai_model_combo.configure(values=[current_model or DEFAULT_OLLAMA_MODEL])
+                    else:
+                        self.ollama_offline_frame.pack_forget()
+                        self.ollama_online_frame.pack(fill="x", padx=12, pady=(0, 10))
+
+                        running_str = f" | Geladen im Speicher: {', '.join(running_models)}" if running_models else " | Kein Modell im Speicher geladen"
+                        self.ollama_status_lbl.configure(
+                            text=f"🟢 Ollama Server Online ({len(models)} Modelle installiert{running_str})",
+                            text_color="green",
+                        )
+
+                        if models:
+                            self.ai_model_combo.configure(values=models)
+                            if current_model in models:
+                                self.ai_model_combo.set(current_model)
+                            else:
+                                self.ai_model_combo.set(models[0])
+                                if hasattr(self, "ai_model_entry"):
+                                    self.ai_model_entry.delete(0, "end")
+                                    self.ai_model_entry.insert(0, models[0])
+                except Exception:
+                    pass
+
+            try:
+                self.after(0, done)
+            except Exception:
+                pass
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
+
+    def on_toggle_global_ai(self):
+        enabled = bool(self.ai_enable_chk.get())
+        self.profile.ai_settings.enable_ai = enabled
+
+        if not enabled:
+            self.ollama_action_lbl.configure(
+                text="⏳ Deaktiviere KI global & entlade Modelle aus Arbeitsspeicher...",
+                text_color="orange",
+            )
+            def worker():
+                from services.ai_service import AiService
+                url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
+                current_model = self.ai_model_entry.get().strip() if hasattr(self, "ai_model_entry") else self.profile.ai_settings.model_name
+                svc = AiService(ollama_url=url, model_name=current_model)
+                svc.unload_model()
+
+                def done():
+                    try:
+                        if not self.winfo_exists():
+                            return
+                        self.ollama_action_lbl.configure(
+                            text="⚡ KI global deaktiviert & Modelle aus Arbeitsspeicher entladen.",
+                            text_color="gray",
+                        )
+                        from ui.widgets.toast_notification import ToastNotification
+                        ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
+                        self.scan_ollama_status()
+                    except Exception:
+                        pass
+
+                try:
+                    self.after(0, done)
+                except Exception:
+                    pass
+
+            import threading
+            threading.Thread(target=worker, daemon=True).start()
+        else:
+            self.ollama_action_lbl.configure(
+                text="✅ KI global aktiviert.",
+                text_color="green",
+            )
+            from ui.widgets.toast_notification import ToastNotification
+            ToastNotification(self, "KI-Status", "KI global aktiviert")
+            self.scan_ollama_status()
+
+    def on_select_ai_model(self, selected_model: str):
+        if hasattr(self, "ai_model_entry"):
+            self.ai_model_entry.delete(0, "end")
+            self.ai_model_entry.insert(0, selected_model)
+        self.profile.ai_settings.model_name = selected_model
+        self.ollama_action_lbl.configure(text=f"Aktives Modell auf '{selected_model}' gesetzt.", text_color="dodgerblue")
+
+    def on_create_pvs_model(self):
+        from services.ai_service import AiService
+        url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
+        svc = AiService(ollama_url=url)
+        self.ollama_action_lbl.configure(text="⏳ Erstelle 'pvs-support' Modell aus Modelfile...", text_color="orange")
+        self.update_idletasks()
+
+        def worker():
+            ok, msg = svc.create_pvs_support_model()
+            def done():
+                if ok:
+                    self.ollama_action_lbl.configure(text=f"✅ {msg}", text_color="green")
+                    self.profile.ai_settings.model_name = "pvs-support"
+                    self.scan_ollama_status()
+                else:
+                    self.ollama_action_lbl.configure(text=f"⚠ {msg}", text_color="red")
+            self.after(0, done)
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
+
+    def on_preload_model(self):
+        from services.ai_service import AiService
+        url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
+        model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
+        svc = AiService(ollama_url=url, model_name=model)
+        self.ollama_action_lbl.configure(text=f"⏳ Lade Modell '{model}' in den Speicher...", text_color="orange")
+        self.update_idletasks()
+
+        def worker():
+            ok, msg = svc.preload_model(model)
+            def done():
+                color = "green" if ok else "red"
+                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                self.scan_ollama_status()
+            self.after(0, done)
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
+
+    def on_unload_model(self):
+        from services.ai_service import AiService
+        url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
+        model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
+        svc = AiService(ollama_url=url, model_name=model)
+        self.ollama_action_lbl.configure(text=f"⏳ Entlade Modell '{model}' aus dem Speicher...", text_color="orange")
+        self.update_idletasks()
+
+        def worker():
+            ok, msg = svc.unload_model(model)
+            def done():
+                color = "green" if ok else "red"
+                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                self.scan_ollama_status()
+            self.after(0, done)
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
 
     def setup_scoring_tab(self):
         ctk.CTkLabel(self.tab_scoring, text="Tastenkürzel (Hotkeys)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))

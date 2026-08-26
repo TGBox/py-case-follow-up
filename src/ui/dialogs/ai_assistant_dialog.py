@@ -73,13 +73,26 @@ class AiAssistantDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left")
 
+        # Global AI Toggle Switch
+        self.ai_toggle_switch = ctk.CTkSwitch(
+            hdr_frame,
+            text="🤖 KI Global Aktiv",
+            command=self.on_toggle_global_ai,
+            font=ctk.CTkFont(size=11, weight="bold"),
+        )
+        if self.profile and self.profile.ai_settings.enable_ai:
+            self.ai_toggle_switch.select()
+        else:
+            self.ai_toggle_switch.deselect()
+        self.ai_toggle_switch.pack(side="right", padx=(0, 10))
+
         self.status_badge = ctk.CTkLabel(
             hdr_frame,
             text="Prüfe Status...",
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="gray",
         )
-        self.status_badge.pack(side="right")
+        self.status_badge.pack(side="right", padx=(0, 10))
 
         # Priority Custom Instruction Bar
         ci_frame = ctk.CTkFrame(main_frame, fg_color=("gray90", "gray20"), corner_radius=6)
@@ -111,6 +124,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.setup_summary_tab()
         self.setup_solutions_tab()
         self.setup_response_tab()
+
+        self.update_ai_buttons_state()
 
         # Footer Close Button
         footer = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -221,12 +236,57 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         threading.Thread(target=thread_target, daemon=True).start()
 
+    def on_toggle_global_ai(self):
+        enabled = bool(self.ai_toggle_switch.get())
+        if self.profile and hasattr(self.profile, "ai_settings"):
+            self.profile.ai_settings.enable_ai = enabled
+
+        if not enabled:
+            self.status_lbl.configure(text="⏳ Deaktiviere KI global & entlade Modelle aus Arbeitsspeicher...", text_color="orange")
+            def worker():
+                try:
+                    self.ai_service.unload_model()
+                except Exception:
+                    pass
+
+                def done():
+                    if not self.winfo_exists():
+                        return
+                    self.status_lbl.configure(text="⚡ KI global deaktiviert & Modelle aus Arbeitsspeicher entladen.", text_color="gray")
+                    self.update_ai_buttons_state()
+                    from ui.widgets.toast_notification import ToastNotification
+                    ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
+
+                self.after(0, done)
+
+            import threading
+            threading.Thread(target=worker, daemon=True).start()
+        else:
+            self.status_lbl.configure(text="✅ KI global aktiviert.", text_color="green")
+            self.update_ai_buttons_state()
+            from ui.widgets.toast_notification import ToastNotification
+            ToastNotification(self, "KI-Status", "KI global aktiviert")
+
+    def update_ai_buttons_state(self):
+        is_enabled = self.profile.ai_settings.enable_ai if (self.profile and hasattr(self.profile, "ai_settings")) else True
+
+        state = "normal" if is_enabled else "disabled"
+        if hasattr(self, "btn_gen_summary") and self.btn_gen_summary:
+            self.btn_gen_summary.configure(state=state)
+        if hasattr(self, "btn_gen_solutions") and self.btn_gen_solutions:
+            self.btn_gen_solutions.configure(state=state)
+        if hasattr(self, "btn_gen_draft") and self.btn_gen_draft:
+            self.btn_gen_draft.configure(state=state)
+
+        if not is_enabled:
+            self.status_lbl.configure(text="⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert.", text_color="orange")
+
     # --- TAB 1: SUMMARY ---
     def setup_summary_tab(self):
         btn_bar = ctk.CTkFrame(self.tab_summary, fg_color="transparent")
         btn_bar.pack(fill="x", pady=(4, 6))
 
-        ctk.CTkButton(
+        self.btn_gen_summary = ctk.CTkButton(
             btn_bar,
             text="🔄 Zusammenfassung neu generieren",
             width=210,
@@ -234,7 +294,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_summary,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self.btn_gen_summary.pack(side="left", padx=(0, 8))
 
         ctk.CTkButton(
             btn_bar,
@@ -323,7 +384,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=12, weight="bold"),
         ).pack(side="left")
 
-        ctk.CTkButton(
+        self.btn_gen_solutions = ctk.CTkButton(
             hdr_bar,
             text="🔄 Lösungssuche erneut ausführen",
             width=210,
@@ -331,7 +392,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.load_solutions,
-        ).pack(side="right")
+        )
+        self.btn_gen_solutions.pack(side="right")
 
         self.solutions_scroll = ctk.CTkScrollableFrame(self.tab_solutions, fg_color="transparent")
         self.solutions_scroll.pack(fill="both", expand=True, pady=(4, 0))
@@ -382,7 +444,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         hdr_bar = ctk.CTkFrame(self.tab_response, fg_color="transparent")
         hdr_bar.pack(fill="x", pady=(4, 6))
 
-        ctk.CTkButton(
+        self.btn_gen_draft = ctk.CTkButton(
             hdr_bar,
             text="🔄 Antwort-Entwurf generieren",
             width=210,
@@ -390,7 +452,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_draft,
-        ).pack(side="left", padx=(0, 8))
+        )
+        self.btn_gen_draft.pack(side="left", padx=(0, 8))
 
         if self.on_open_email_draft:
             ctk.CTkButton(

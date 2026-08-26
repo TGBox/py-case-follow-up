@@ -1,1 +1,3 @@
-
+(A) Spaltenbreite im Cockpit wird nicht mehr korrekt im Profil gespeichert. +Bug @code
+(A) Minimierung ins Systemtray macht Probleme. +Bug @code
+(A) Anwendung kann visuell verschwinden ohne dass ein Icon gezeigt wird, aber die App wird dann trotzdem nicht beendet. +Bug @code

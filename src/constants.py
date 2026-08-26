@@ -445,3 +445,52 @@ TOOLTIP_POINTER_OFFSET_Y = 15
 GERMAN_DATE_FORMAT = "%d.%m.%Y"
 GERMAN_DATETIME_FORMAT = "%d.%m.%Y %H:%M"
 ISO_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+# --- Default Keyboard Shortcuts & Hotkey Recorder UI Strings ---
+DEFAULT_SHORTCUTS = {
+    "new_case": "<Control-n>",
+    "search_customer": "<Control-f>",
+    "wiki_search": "<Control-w>",
+    "export_dialog": "<Control-e>",
+    "save_case": "<Control-s>",
+    "archive_case": "<Control-Shift-A>",
+    "open_settings": "<Control-p>",
+    "snippet_picker": "<Control-m>",
+    "view_cockpit": "<Control-1>",
+    "view_board": "<Control-2>",
+    "view_table": "<Control-3>",
+    "toggle_theme": "<Control-t>",
+}
+
+HOTKEY_ACTION_LABELS = [
+    ("new_case", "Neuer Fall:"),
+    ("save_case", "Fall speichern:"),
+    ("archive_case", "Fall archivieren:"),
+    ("export_dialog", "Export Dialog:"),
+    ("open_settings", "Einstellungen öffnen:"),
+    ("snippet_picker", "Snippet-Picker öffnen:"),
+    ("wiki_search", "Wiki-Suche fokussieren:"),
+    ("search_customer", "Kundensuche fokussieren:"),
+    ("view_cockpit", "Cockpit-Ansicht:"),
+    ("view_board", "Board-Ansicht:"),
+    ("view_table", "Tabelle-Ansicht:"),
+    ("toggle_theme", "Theme umschalten:"),
+]
+
+HOTKEY_RECORDER_TITLE = "⌨ Hotkey aufnehmen"
+HOTKEY_RECORDER_HEADER = "⌨ Tastenkombination drücken"
+HOTKEY_RECORDER_INFO = "Drücken Sie Ihre Tasten (z.B. Strg+S, Alt+1)..."
+HOTKEY_RECORDER_CANCEL = "Abbrechen (Esc)"
+HOTKEY_RECORDER_DIMENSIONS = (380, 160)
+HOTKEY_RECORDER_BUTTON = "🎙 Taste erfassen"
+
+STATUS_SHORTCUT_CONFLICT = "⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}"
+STATUS_SHORTCUT_CONFLICT_GENERIC = "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!"
+
+LABEL_APP_SHORTCUTS_HEADER = "⚡ App-Aktionen Tastenkürzel (Hotkeys)"
+LABEL_SNIPPET_SHORTCUTS_HEADER = "📝 Textbaustein-Makros (Snippet Shortcuts)"
+LABEL_NO_SNIPPETS = "Keine Textbausteine vorhanden."
+LABEL_SNIPPET_SHORTCUT_FIELD = "Tastenkürzel / Macro (z. B. <Control-Alt-1>):"
+TOAST_SNIPPET_MACRO_TITLE = "Textbaustein Macro"
+TOAST_SNIPPET_NO_FOCUS = "Kein fokussiertes Eingabefeld vorhanden."
+

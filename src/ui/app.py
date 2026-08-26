@@ -22,6 +22,8 @@ from constants import (
     MENU_OPTIONS_STAMMDATEN,
     MENU_OPTIONS_VORLAGEN,
     MENU_OPTIONS_DATENAUSTAUSCH,
+    TOAST_SNIPPET_MACRO_TITLE,
+    TOAST_SNIPPET_NO_FOCUS,
 )
 
 from services.storage_service import StorageService
@@ -49,6 +51,7 @@ from ui.dialogs.customer_management_dialog import CustomerManagementDialog
 from ui.dialogs.colleague_management_dialog import ColleagueManagementDialog
 from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 from ui.dialogs.tag_management_dialog import TagManagementDialog
+from ui.widgets.toast_notification import ToastNotification
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -782,8 +785,7 @@ class SupportCockpitApp(ctk.CTk):
         if focused and self._insert_text_into_widget(focused, text):
             return "break"
         else:
-            from ui.widgets.toast_notification import show_toast
-            show_toast(self, "Textbaustein Macro", "Kein fokussiertes Eingabefeld vorhanden.")
+            ToastNotification(self, title=TOAST_SNIPPET_MACRO_TITLE, message=TOAST_SNIPPET_NO_FOCUS)
 
     def _insert_text_into_widget(self, widget, text: str) -> bool:
         if not widget or not text:
@@ -842,7 +844,6 @@ class SupportCockpitApp(ctk.CTk):
 
     def check_due_followups(self):
         from utils.datetime_utils import parse_german_date, parse_iso, get_local_now
-        from ui.widgets.toast_notification import ToastNotification
         now = get_local_now()
         due_cases = []
 

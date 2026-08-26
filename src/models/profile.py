@@ -205,10 +205,13 @@ class WikiSettings:
         )
 
 
+from constants import DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL
+
+
 @dataclass
 class AiSettings:
-    ollama_url: str = "http://localhost:11434"
-    model_name: str = "llama3"
+    ollama_url: str = DEFAULT_OLLAMA_URL
+    model_name: str = DEFAULT_OLLAMA_MODEL
     enable_ai: bool = True
     auto_summarize_on_open: bool = False
     base_rules: list[str] = field(default_factory=list)
@@ -221,8 +224,8 @@ class AiSettings:
         rules_raw = data.get("base_rules", [])
         rules = list(rules_raw) if isinstance(rules_raw, list) else []
         return cls(
-            ollama_url=data.get("ollama_url", "http://localhost:11434"),
-            model_name=data.get("model_name", "llama3"),
+            ollama_url=data.get("ollama_url", DEFAULT_OLLAMA_URL),
+            model_name=data.get("model_name", DEFAULT_OLLAMA_MODEL),
             enable_ai=bool(data.get("enable_ai", True)),
             auto_summarize_on_open=bool(data.get("auto_summarize_on_open", False)),
             base_rules=rules,

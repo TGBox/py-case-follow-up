@@ -3,7 +3,7 @@ import subprocess
 import customtkinter as ctk
 from pathlib import Path
 from tkinter import filedialog
-from PIL import Image
+from PIL import Image  # type: ignore
 from models.case import Case
 from services.attachment_service import AttachmentService
 

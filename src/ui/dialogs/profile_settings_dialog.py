@@ -3,7 +3,7 @@ from typing import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL
 
 
 class ProfileSettingsDialog(ctk.CTkToplevel):
@@ -355,12 +355,12 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         ).pack(anchor="w", pady=(0, 15))
 
         ctk.CTkLabel(self.tab_ai, text="Ollama Server REST URL:").pack(anchor="w", pady=(5, 2))
-        self.ai_url_entry = ctk.CTkEntry(self.tab_ai, placeholder_text="http://localhost:11434")
+        self.ai_url_entry = ctk.CTkEntry(self.tab_ai, placeholder_text=DEFAULT_OLLAMA_URL)
         self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
         self.ai_url_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_ai, text="Modell-Name (z. B. llama3, mistral, qwen):").pack(anchor="w", pady=(5, 2))
-        self.ai_model_entry = ctk.CTkEntry(self.tab_ai, placeholder_text="llama3")
+        self.ai_model_entry = ctk.CTkEntry(self.tab_ai, placeholder_text=DEFAULT_OLLAMA_MODEL)
         self.ai_model_entry.insert(0, self.profile.ai_settings.model_name)
         self.ai_model_entry.pack(fill="x", pady=(0, 15))
 

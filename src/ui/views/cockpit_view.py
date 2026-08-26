@@ -395,7 +395,9 @@ class CockpitView(ctk.CTkFrame):
         wiki_articles = []
         if self.storage_service:
             try:
-                wiki_articles = [a.to_dict() for a in self.storage_service.load_wiki_articles()]
+                from services.wiki_sync_service import WikiSyncService
+                wiki_svc = WikiSyncService(self.storage_service.config)
+                wiki_articles = wiki_svc.get_all_pages()
             except Exception:
                 pass
 
@@ -404,7 +406,7 @@ class CockpitView(ctk.CTkFrame):
             case=self.current_case,
             profile=self.profile,
             on_case_updated=self.on_case_updated,
-            on_open_email_draft=self.on_click_email,
+            on_open_email_draft=lambda _c=None: self.on_click_email(),
             wiki_articles=wiki_articles,
         )
 

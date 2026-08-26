@@ -1,16 +1,16 @@
-import pytest
+import pytest  # type: ignore
 from enums import Actor, ACTOR_DISPLAY, get_actor_display, get_actor_val_from_display
 from models.case import Case, TimelineEntry
 
 
 def test_actor_enum_conversions_and_display_names():
-    assert get_actor_display(Actor.SUPPORT) == "Support"
+    assert get_actor_display(Actor.SUPPORT) == "Support / Hotline"
     assert get_actor_display(Actor.DEVELOPMENT) == "Entwicklung"
-    assert ACTOR_DISPLAY[Actor.SUPPORT] == "Support"
+    assert ACTOR_DISPLAY[Actor.SUPPORT] == "Support / Hotline"
     assert ACTOR_DISPLAY[Actor.DEVELOPMENT] == "Entwicklung"
 
     assert get_actor_val_from_display("Entwicklung") == Actor.DEVELOPMENT
-    assert get_actor_val_from_display("Support") == Actor.SUPPORT
+    assert get_actor_val_from_display("Support / Hotline") == Actor.SUPPORT
 
 
 def test_case_handover_timeline_log_entry():

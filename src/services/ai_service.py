@@ -5,12 +5,24 @@ import re
 from typing import Any
 from models.case import Case
 from enums import get_actor_display, get_board_column_display
+from constants import (
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_OLLAMA_MODEL,
+    OLLAMA_TIMEOUT_STATUS,
+    OLLAMA_TIMEOUT_GENERATE,
+    AI_USER_AGENT,
+    AI_SYSTEM_ROLE_DEFAULT,
+    AI_SYSTEM_ROLE_EMAIL,
+    AI_PROMPT_BASE_RULES_HEADER,
+    AI_PROMPT_PRACTICE_RULES_HEADER,
+    AI_PROMPT_OVERRIDE_NOTICE,
+)
 
 
 class AiService:
     """Service providing Hybrid AI Capabilities: Ollama Local LLM REST API + Rule-Based Zero-Token Fallback Engine."""
 
-    def __init__(self, ollama_url: str = "http://localhost:11434", model_name: str = "llama3"):
+    def __init__(self, ollama_url: str = DEFAULT_OLLAMA_URL, model_name: str = DEFAULT_OLLAMA_MODEL):
         self.ollama_url = ollama_url.rstrip("/")
         self.model_name = model_name
 
@@ -18,8 +30,8 @@ class AiService:
         """Checks if local Ollama server is running and lists installed LLM models."""
         try:
             url = f"{self.ollama_url}/api/tags"
-            req = urllib.request.Request(url, headers={"User-Agent": "SupportCockpit/1.0"})
-            with urllib.request.urlopen(req, timeout=1.5) as resp:
+            req = urllib.request.Request(url, headers={"User-Agent": AI_USER_AGENT})
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_STATUS) as resp:
                 if resp.status == 200:
                     data = json.loads(resp.read().decode("utf-8"))
                     models = [m.get("name", "") for m in data.get("models", []) if m.get("name")]
@@ -42,7 +54,7 @@ class AiService:
 
             json_bytes = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=8.0) as resp:
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_GENERATE) as resp:
                 if resp.status == 200:
                     res_data = json.loads(resp.read().decode("utf-8"))
                     return res_data.get("response", "").strip()
@@ -54,7 +66,7 @@ class AiService:
     def build_system_prompt(
         base_rules: list[str] | None = None,
         practice_rules: list[str] | None = None,
-        default_role: str = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen.",
+        default_role: str = AI_SYSTEM_ROLE_DEFAULT,
     ) -> str:
         """Builds a hierarchical system prompt where practice-specific rules explicitly override global base rules."""
         prompt_parts = [default_role]
@@ -62,13 +74,13 @@ class AiService:
         practice_rules = [r.strip() for r in (practice_rules or []) if r.strip()]
 
         if base_rules:
-            prompt_parts.append("\n--- GLOBALE BASIS-REGELN ---")
+            prompt_parts.append(f"\n{AI_PROMPT_BASE_RULES_HEADER}")
             for idx, r in enumerate(base_rules, 1):
                 prompt_parts.append(f"{idx}. {r}")
 
         if practice_rules:
-            prompt_parts.append("\n--- PRAXIS-SPEZIFISCHE REGELN (VORRANGIG UND BINDEND!) ---")
-            prompt_parts.append("WICHTIGER HINWEIS: Die folgenden Praxis-Regeln haben IMMER Vorrang vor den globalen Basis-Regeln! Falls eine Praxis-Regel einer Basis-Regel widerspricht, musst du dich ZWINGEND an die Praxis-Regel halten:")
+            prompt_parts.append(f"\n{AI_PROMPT_PRACTICE_RULES_HEADER}")
+            prompt_parts.append(AI_PROMPT_OVERRIDE_NOTICE)
             for idx, r in enumerate(practice_rules, 1):
                 prompt_parts.append(f"{idx}. {r}")
 
@@ -213,7 +225,7 @@ class AiService:
                 f"Nutzerwunsch/Ziel: {intent or 'Status-Update und nächste Schritte mitteilen'}\n"
                 f"Absender: {user_name}"
             )
-            sys_prompt = self.build_system_prompt(base_rules, practice_rules, default_role="Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen.")
+            sys_prompt = self.build_system_prompt(base_rules, practice_rules, default_role=AI_SYSTEM_ROLE_EMAIL)
             res = self._query_ollama(prompt, system_prompt=sys_prompt)
             if res:
                 return res

@@ -1,3 +1,4 @@
+from typing import Any
 import customtkinter as ctk
 from typing import Callable
 from models.case import Case
@@ -21,6 +22,7 @@ class CaseListWidget(ctk.CTkFrame):
         self.selected_case_id: str | None = None
         self.is_deep_search_active: bool = False
         self.deep_search_results: dict[str, dict] = {}
+        self._card_widgets: dict[str, Any] = {}
 
         self.create_widgets()
 
@@ -108,6 +110,7 @@ class CaseListWidget(ctk.CTkFrame):
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.wrap_labels.clear()
+        self._card_widgets: dict[str, Any] = {}
 
         if not self.cases:
             ctk.CTkLabel(self.scroll_frame, text="Keine Fälle gefunden.").pack(pady=20)
@@ -123,6 +126,7 @@ class CaseListWidget(ctk.CTkFrame):
 
             card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, cursor="hand2")
             card.pack(fill="x", pady=4, padx=(4, 6))
+            self._card_widgets[case.case_id] = card
 
             # Click binding
             card.bind("<Button-1>", lambda e, c=case: self.select_case(c))
@@ -130,6 +134,10 @@ class CaseListWidget(ctk.CTkFrame):
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x", padx=(8, 10), pady=(6, 2))
             top_row.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+            score_lbl = ctk.CTkLabel(top_row, text=f"Pkt.: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+            score_lbl.pack(side="right", padx=(0, 6))
+            score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Urgency Dot Indicator
             urg = case.classification.urgency_level
@@ -141,10 +149,6 @@ class CaseListWidget(ctk.CTkFrame):
             case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
             case_id_lbl.pack(side="left")
             case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-
-            score_lbl = ctk.CTkLabel(top_row, text=f"Pkt.: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
-            score_lbl.pack(side="right", padx=(0, 6))
-            score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Practice Name / Internal Badge
             if case.is_internal:
@@ -340,6 +344,24 @@ class CaseListWidget(ctk.CTkFrame):
     def select_case(self, case: Case):
         from ui.widgets.ctk_tooltip import CTkTooltip
         CTkTooltip.dismiss_all()
+
+        prev_id = self.selected_case_id
         self.selected_case_id = case.case_id
-        self.render_list()
-        self.on_case_selected(case)
+
+        # O(1) UI update if card frames exist
+        if hasattr(self, "_card_widgets") and case.case_id in self._card_widgets:
+            if prev_id and prev_id in self._card_widgets and prev_id != case.case_id:
+                try:
+                    prev_card: Any = self._card_widgets[prev_id]
+                    prev_card.configure(fg_color=("gray92", "gray15"))
+                except Exception:
+                    pass
+            try:
+                curr_card: Any = self._card_widgets[case.case_id]
+                curr_card.configure(fg_color=("gray80", "gray25"))
+            except Exception:
+                pass
+            self.on_case_selected(case)
+        else:
+            self.render_list()
+            self.on_case_selected(case)

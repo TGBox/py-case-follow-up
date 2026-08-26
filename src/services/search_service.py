@@ -1,4 +1,5 @@
 import re
+import functools
 from dataclasses import dataclass, field
 from datetime import datetime
 from models.case import Case
@@ -19,6 +20,7 @@ class SearchQuery:
     free_text_terms: list[str] = field(default_factory=list)
 
 
+@functools.lru_cache(maxsize=256)
 def parse_search_query(query_str: str) -> SearchQuery:
     """Parses a search query string containing tokens and free text."""
     query = SearchQuery()

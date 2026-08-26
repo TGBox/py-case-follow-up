@@ -151,6 +151,10 @@ class SupportCockpitApp(ctk.CTk):
 
         # System Tray Service
         self.tray_service = TrayService()
+        self.tray_service.start(
+            on_restore=self._on_restore_from_tray,
+            on_quit=self._on_quit_from_tray,
+        )
 
         # Register Shortcuts & Lifecycle
         self.register_shortcuts()
@@ -468,7 +472,7 @@ class SupportCockpitApp(ctk.CTk):
 
     def on_case_updated(self, case: Case):
         self.scoring_service.update_case_scoring(case)
-        self.storage_service.save_cases(self.cases)
+        self.storage_service.update_single_case(case)
         self.refresh_views()
 
     def on_archive_case(self, case: Case):
@@ -836,15 +840,10 @@ class SupportCockpitApp(ctk.CTk):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
         self.withdraw()
-        self.tray_service.start(
-            on_restore=self._on_restore_from_tray,
-            on_quit=self._on_quit_from_tray,
-        )
 
     def _on_restore_from_tray(self):
         """Restore the application window from the system tray."""
         def _restore():
-            self.tray_service.stop()
             self.deiconify()
             try:
                 self.state("zoomed")
@@ -857,6 +856,9 @@ class SupportCockpitApp(ctk.CTk):
     def _on_quit_from_tray(self):
         """Fully quit the application from the system tray context menu."""
         def _quit():
+            if hasattr(self, "cockpit_view"):
+                self.cockpit_view.save_sash_widths()
+            self.storage_service.save_profile(self.profile)
             self.tray_service.stop()
             self.destroy()
         self.after(0, _quit)

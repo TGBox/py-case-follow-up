@@ -128,7 +128,7 @@ STATUS_MESSAGES = {
     "ai_summary_copied": "✓ Zusammenfassung in Zwischenablage kopiert.",
     "ai_summary_timeline_saved": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.",
     "ai_draft_generated": "✓ E-Mail-Antwort-Entwurf generiert.",
-    "ai_ollama_online": "🟢 Ollama Local LLM aktiv",
+    "ai_ollama_online": "🟢 Ollama Local LLM aktiv ({model})",
     "ai_ollama_offline": "⚡ Regelbasierter NLP-Modus (Ollama offline)",
     "ai_processing": "🤖 KI verarbeitet Anfrage...",
 }
@@ -201,7 +201,7 @@ DIALOG_DIMENSIONS = {
 
 # --- AI & LLM Service Configuration & Prompts ---
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
-DEFAULT_OLLAMA_MODEL = "llama3"
+DEFAULT_OLLAMA_MODEL = "qwen3.5:9b"
 OLLAMA_TIMEOUT_STATUS = 1.5
 OLLAMA_TIMEOUT_GENERATE = 8.0
 AI_USER_AGENT = "SupportCockpit/1.0"

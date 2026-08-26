@@ -185,9 +185,8 @@ class AiAssistantDialog(ctk.CTkToplevel):
                 if not self.winfo_exists():
                     return
                 if is_online:
-                    m_str = f" ({self.ai_service.model_name})" if self.ai_service.model_name in models else ""
                     self.status_badge.configure(
-                        text=f"🟢 Ollama Local LLM aktiv{m_str}",
+                        text=f"🟢 Ollama Local LLM aktiv ({self.ai_service.model_name})",
                         text_color="forestgreen",
                     )
                 else:

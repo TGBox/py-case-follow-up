@@ -1,18 +1,25 @@
 import os
+import threading
 import urllib.parse
 import webbrowser
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 import customtkinter as ctk
 from models.case import Case
 from models.customer import Customer
+from services.ai_service import AiService
 from services.calendar_email_service import CalendarEmailService, format_german_salutation
 from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    DIALOG_DIMENSIONS,
+    DIALOG_TITLES,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_OLLAMA_MODEL,
+)
 
 
 class EmailDraftDialog(ctk.CTkToplevel):
-    """Standalone dialog for preparing and dispatching support emails."""
+    """Standalone dialog for preparing and dispatching support emails with integrated AI text generation."""
 
     def __init__(
         self,
@@ -24,10 +31,17 @@ class EmailDraftDialog(ctk.CTkToplevel):
         customers: list[Customer] | None = None,
         storage_service: Any | None = None,
         profile: Any | None = None,
+        on_case_updated: Callable[[Case], None] | None = None,
     ):
         super().__init__(parent)
         self.case = case
         self.service = calendar_email_service or CalendarEmailService()
+        self.on_case_updated = on_case_updated
+
+        # Initialize AI service
+        ollama_url = profile.ai_settings.ollama_url if (profile and hasattr(profile, 'ai_settings')) else DEFAULT_OLLAMA_URL
+        model_name = profile.ai_settings.model_name if (profile and hasattr(profile, 'ai_settings')) else DEFAULT_OLLAMA_MODEL
+        self.ai_service = AiService(ollama_url=ollama_url, model_name=model_name)
         self.user_name = user_name
         self.snippet_service = snippet_service
         self.storage_service = storage_service
@@ -87,6 +101,8 @@ class EmailDraftDialog(ctk.CTkToplevel):
         sig = self.profile.user.email_signature if (self.profile and hasattr(self.profile, "user") and hasattr(self.profile.user, "email_signature")) else ""
         self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name, customers=self.customers, signature=sig)
         self.create_widgets()
+        self._create_loading_overlay()
+        self._update_ollama_status_async()
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -95,6 +111,9 @@ class EmailDraftDialog(ctk.CTkToplevel):
         # Header
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 8))
+
+        hdr_top_row = ctk.CTkFrame(hdr_frame, fg_color="transparent")
+        hdr_top_row.pack(fill="x")
 
         if self.case:
             title_text = f"✉ E-Mail verfassen (Fall {self.case.case_id})"
@@ -106,10 +125,19 @@ class EmailDraftDialog(ctk.CTkToplevel):
             sub_text = "Freier Entwurf | Empfänger aus Praxiskartei wählen oder frei eingeben"
 
         ctk.CTkLabel(
-            hdr_frame,
+            hdr_top_row,
             text=title_text,
             font=ctk.CTkFont(size=16, weight="bold"),
-        ).pack(anchor="w")
+        ).pack(side="left")
+
+        # Ollama Status Badge
+        self.ollama_status_badge = ctk.CTkLabel(
+            hdr_top_row,
+            text="Prüfe KI-Status...",
+            font=ctk.CTkFont(size=10, weight="bold"),
+            text_color="gray",
+        )
+        self.ollama_status_badge.pack(side="right")
 
         ctk.CTkLabel(
             hdr_frame,
@@ -219,6 +247,32 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 hover_color="darkmagenta",
                 command=self.open_snippet_picker,
             ).pack(side="right")
+
+        # KI Buttons Row
+        ki_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
+        ki_row.pack(fill="x", pady=(2, 4))
+
+        self.ki_generate_btn = ctk.CTkButton(
+            ki_row,
+            text="🤖 KI-Entwurf generieren",
+            width=180,
+            height=28,
+            fg_color="#6366f1",
+            hover_color="#4f46e5",
+            command=self._on_generate_ai_draft,
+        )
+        self.ki_generate_btn.pack(side="left", padx=(0, 6))
+
+        if self.case:
+            ctk.CTkButton(
+                ki_row,
+                text="🤖 KI-Assistent öffnen",
+                width=160,
+                height=28,
+                fg_color=("gray75", "gray30"),
+                hover_color=("gray65", "gray40"),
+                command=self._open_ai_assistant_dialog,
+            ).pack(side="left")
 
         self.body_textbox = ctk.CTkTextbox(content_scroll, height=210)
         if self.draft_data.get("body"):
@@ -480,3 +534,139 @@ class EmailDraftDialog(ctk.CTkToplevel):
             self.status_lbl.configure(text="✓ E-Mail in Zwischenablage kopiert.")
         except Exception as e:
             self.status_lbl.configure(text=f"Kopieren fehlgeschlagen: {e}")
+
+    # --- AI / KI Integration ---
+
+    def _create_loading_overlay(self):
+        """Creates a semi-transparent loading overlay for AI generation."""
+        self._overlay_frame = ctk.CTkFrame(self, fg_color=("gray95", "gray15"))
+
+        card = ctk.CTkFrame(self._overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=120)
+        card.place(relx=0.5, rely=0.5, anchor="center")
+
+        self._overlay_msg_lbl = ctk.CTkLabel(
+            card,
+            text="🤖 KI generiert E-Mail-Entwurf...",
+            font=ctk.CTkFont(size=14, weight="bold"),
+        )
+        self._overlay_msg_lbl.pack(pady=(20, 10))
+
+        self._overlay_progress = ctk.CTkProgressBar(card, width=280, mode="indeterminate", progress_color="#6366f1")
+        self._overlay_progress.pack(pady=(0, 10))
+
+        ctk.CTkLabel(
+            card,
+            text="Bitte einen Moment gedulden — Modell generiert Antwort",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+        ).pack(pady=(0, 15))
+
+    def _show_overlay(self, message: str = "🤖 KI generiert E-Mail-Entwurf..."):
+        self._overlay_msg_lbl.configure(text=message)
+        self._overlay_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
+        self._overlay_progress.start()
+        self.update_idletasks()
+
+    def _hide_overlay(self):
+        try:
+            self._overlay_progress.stop()
+            self._overlay_frame.place_forget()
+        except Exception:
+            pass
+
+    def _update_ollama_status_async(self):
+        """Checks Ollama status in a background thread and updates the status badge."""
+        def thread_target():
+            try:
+                is_online, models = self.ai_service.check_ollama_status()
+            except Exception:
+                is_online, models = False, []
+
+            def ui_callback():
+                if not self.winfo_exists():
+                    return
+                if is_online:
+                    self.ollama_status_badge.configure(
+                        text=f"🟢 Ollama aktiv ({self.ai_service.model_name})",
+                        text_color="forestgreen",
+                    )
+                else:
+                    self.ollama_status_badge.configure(
+                        text="⚡ Regelbasierter Modus (Ollama offline)",
+                        text_color="dodgerblue",
+                    )
+
+            try:
+                self.after(0, ui_callback)
+            except Exception:
+                pass
+
+        threading.Thread(target=thread_target, daemon=True).start()
+
+    def _on_generate_ai_draft(self):
+        """Generates an AI-powered email draft and fills the body textbox."""
+        if not self.case:
+            self.status_lbl.configure(text="⚠ KI-Entwurf benötigt einen aktiven Fall.", text_color="darkorange")
+            return
+
+        self._show_overlay("🤖 KI generiert E-Mail-Entwurf... Bitte warten")
+
+        def worker():
+            user_name = self.profile.user.name if (self.profile and hasattr(self.profile, 'user')) else self.user_name or "Ihr Support-Team"
+            base_rules = self.profile.ai_settings.base_rules if (self.profile and hasattr(self.profile, 'ai_settings') and self.profile.ai_settings) else []
+            practice_rules = getattr(self.case.customer, "custom_ai_rules", []) or []
+            return self.ai_service.generate_customer_response(
+                self.case,
+                user_name=user_name,
+                base_rules=base_rules,
+                practice_rules=practice_rules,
+            )
+
+        def on_done():
+            if not self.winfo_exists():
+                return
+            self._hide_overlay()
+            if isinstance(result_holder[0], Exception):
+                self.status_lbl.configure(text=f"⚠ KI-Generierung fehlgeschlagen: {result_holder[0]}", text_color="red")
+            else:
+                draft_text = result_holder[0]
+                self.body_textbox.delete("1.0", "end")
+                self.body_textbox.insert("1.0", draft_text)
+                self.status_lbl.configure(text=f"✓ KI-Entwurf generiert ({self.ai_service.model_name}).", text_color="dodgerblue")
+
+        result_holder: list[Any] = [None]
+
+        def thread_target():
+            try:
+                result_holder[0] = worker()
+            except Exception as e:
+                result_holder[0] = e
+            try:
+                self.after(0, on_done)
+            except Exception:
+                pass
+
+        threading.Thread(target=thread_target, daemon=True).start()
+
+    def _open_ai_assistant_dialog(self):
+        """Opens the full AI Assistant dialog for advanced features (summaries, solutions)."""
+        if not self.case:
+            return
+        from ui.dialogs.ai_assistant_dialog import AiAssistantDialog
+
+        wiki_articles: list[dict] = []
+        if self.storage_service:
+            try:
+                from services.wiki_sync_service import WikiSyncService
+                wiki_svc = WikiSyncService(self.storage_service.config)
+                wiki_articles = wiki_svc.get_all_pages()
+            except Exception:
+                pass
+
+        AiAssistantDialog(
+            self,
+            case=self.case,
+            profile=self.profile,
+            on_case_updated=self.on_case_updated,
+            wiki_articles=wiki_articles,
+        )

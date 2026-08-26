@@ -1,6 +1,6 @@
 [project]
 name = "py-case-follow-up"
-version = "1.0.0"
+version = "1.2.0"
 description = "A python program to keep track of open processes where progress might be slow and responsibilities might shift over time. Including integration with other tools, customizable reminders, search functionality, different views and many other functions."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -16,5 +16,7 @@ dependencies = [
     "pluggy==1.6.0",
     "Pygments==2.21.0",
     "pyinstaller>=6.22.2",
+    "pystray>=0.19.5",
     "pytest==9.1.1",
+    "six==1.17.0"
 ]

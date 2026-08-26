@@ -53,7 +53,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 ### Installation & Start
 ```bash
 # Virtuelle Umgebung erstellen
-python -m venv .venv
+python -m .venv .venv
 
 # Abhängigkeiten installieren
 .\.venv\Scripts\pip install -r requirements.txt

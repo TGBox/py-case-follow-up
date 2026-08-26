@@ -471,6 +471,9 @@ def test_notification_badge_updates_immediately_on_followup_or_complete(tmp_path
     app.after = lambda delay, func: "timer_id"
     app.after_cancel = lambda timer_id: None
 
+    from services.tray_service import TrayService
+    app.tray_service = TrayService()
+
     # Initial check -> due_case triggers red bell
     app.check_due_followups()
     assert app.bell_btn.text == "🔔 1"

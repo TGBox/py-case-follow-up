@@ -3,10 +3,10 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['src'],
     binaries=[],
     datas=[('C:/Users/droesch/Documents/Programmiertes/py-case-follow-up/.venv/Lib/site-packages/customtkinter', 'customtkinter')],
-    hiddenimports=[],
+    hiddenimports=['pystray._win32'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

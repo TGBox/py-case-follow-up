@@ -11,7 +11,7 @@ class OutlookIntegrationService:
     """Service for bidirectional integration between Support-Cockpit and Microsoft Outlook.
 
     1. Direct Mail Transfer: Opens drafted emails directly in Microsoft Outlook.
-    2. Mail Import Bridge: Ingests Outlook emails to create new cases or attach events to active cases.
+    2. Mail Import Bridge: Imports Outlook emails to create new cases or attach events to active cases.
     3. Outlook Add-in / Macro specification.
     """
 

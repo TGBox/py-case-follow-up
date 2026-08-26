@@ -19,6 +19,9 @@ from constants import (
     APP_MIN_HEIGHT,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
     AUTO_ARCHIVE_THRESHOLD_DAYS,
+    MENU_OPTIONS_STAMMDATEN,
+    MENU_OPTIONS_VORLAGEN,
+    MENU_OPTIONS_DATENAUSTAUSCH,
 )
 
 from services.storage_service import StorageService
@@ -211,7 +214,7 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche", "📝 Textbausteine"],
+            values=MENU_OPTIONS_STAMMDATEN,
             command=self._on_stammdaten_selected,
             width=150,
         )
@@ -221,7 +224,7 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["🛠 Formulare", "📄 Vorlagen"],
+            values=MENU_OPTIONS_VORLAGEN,
             command=self._on_vorlagen_selected,
             width=165,
         )
@@ -231,7 +234,7 @@ class SupportCockpitApp(ctk.CTk):
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=["📥 E-Mail Ingest", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"],
+            values=MENU_OPTIONS_DATENAUSTAUSCH,
             command=self._on_datenaustausch_selected,
             width=145,
         )

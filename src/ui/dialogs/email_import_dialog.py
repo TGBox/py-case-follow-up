@@ -2,6 +2,7 @@ import customtkinter as ctk
 from typing import Callable, Any
 from models.case import Case
 from services.outlook_integration_service import OutlookIntegrationService
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, DIALOG_HEADERS
 from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
 
 
@@ -22,8 +23,8 @@ class EmailImportDialog(ctk.CTkToplevel):
         self.on_case_updated = on_case_updated
         self.author_name = author_name
 
-        self.title("📥 E-Mail Posteingang & Ingest Hub")
-        w, h = 850, 600
+        self.title(DIALOG_TITLES["email_import"])
+        w, h = DIALOG_DIMENSIONS["email_import"]
         self.geometry(f"{w}x{h}")
         self.minsize(750, 500)
         center_window(self, w, h)
@@ -48,7 +49,7 @@ class EmailImportDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             hdr_frame,
-            text="📥 E-Mail Ingest Hub & Auto-Matching",
+            text=DIALOG_HEADERS["email_import_hub"],
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left")
 

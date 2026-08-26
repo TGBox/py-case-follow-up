@@ -41,6 +41,7 @@ class Customer:
     vm_number: int | None = None
     instance_number: int | None = None
     general_notes: str = ""
+    custom_ai_rules: list[str] = field(default_factory=list)
     contacts: list[Contact] = field(default_factory=list)
 
     @property
@@ -66,7 +67,7 @@ class Customer:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        res: dict[str, Any] = {
             "customer_id": self.customer_id,
             "practice_name": self.practice_name,
             "is_vip": self.is_vip,
@@ -77,6 +78,9 @@ class Customer:
             "general_notes": self.general_notes,
             "contacts": [c.to_dict() for c in self.contacts],
         }
+        if self.custom_ai_rules:
+            res["custom_ai_rules"] = self.custom_ai_rules
+        return res
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Customer":
@@ -89,6 +93,9 @@ class Customer:
         raw_inst = data.get("instance_number")
         inst_num = int(raw_inst) if raw_inst is not None and str(raw_inst).isdigit() else None
 
+        rules_raw = data.get("custom_ai_rules", [])
+        rules = list(rules_raw) if isinstance(rules_raw, list) else []
+
         return cls(
             customer_id=data.get("customer_id", ""),
             practice_name=data.get("practice_name", ""),
@@ -98,5 +105,6 @@ class Customer:
             vm_number=vm_num,
             instance_number=inst_num,
             general_notes=data.get("general_notes", ""),
+            custom_ai_rules=rules,
             contacts=contacts,
         )

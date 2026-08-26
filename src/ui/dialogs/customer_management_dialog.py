@@ -145,7 +145,24 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         # VIP Checkbox
         self.vip_var = ctk.BooleanVar(value=False)
         self.vip_chk = ctk.CTkCheckBox(self.right_frame, text="⭐ VIP-Kunde (erhöht den Dringlichkeits-Score um +30)", variable=self.vip_var)
-        self.vip_chk.pack(anchor="w", padx=15, pady=(5, 15))
+        self.vip_chk.pack(anchor="w", padx=15, pady=(5, 10))
+
+        # Praxisspezifische KI-Regeln
+        rules_box = ctk.CTkFrame(self.right_frame, fg_color="transparent")
+        rules_box.pack(fill="x", padx=15, pady=(0, 15))
+        ctk.CTkLabel(
+            rules_box,
+            text="⚡ Praxisspezifische KI-Regeln (haben VORRANG vor Basis-Regeln):",
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(
+            rules_box,
+            text="1 Regel pro Zeile (z. B. 'Duzen erwünscht (Herr Schmidt)', 'Betreff mit [SCHMIDT] beginnen')",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+        ).pack(anchor="w", pady=(0, 4))
+        self.custom_ai_rules_txt = ctk.CTkTextbox(rules_box, height=65)
+        self.custom_ai_rules_txt.pack(fill="x")
 
         # --- Multiple Contacts Header ---
         contacts_header_frame = ctk.CTkFrame(self.right_frame, fg_color="transparent")
@@ -348,6 +365,10 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.notes_entry.delete(0, "end")
         self.notes_entry.insert(0, c.general_notes)
 
+        self.custom_ai_rules_txt.delete("1.0", "end")
+        if c.custom_ai_rules:
+            self.custom_ai_rules_txt.insert("1.0", "\n".join(c.custom_ai_rules))
+
         self.vip_var.set(c.is_vip)
         self.status_lbl.configure(text="")
 
@@ -370,6 +391,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.vm_entry.delete(0, "end")
         self.instance_entry.delete(0, "end")
         self.notes_entry.delete(0, "end")
+        self.custom_ai_rules_txt.delete("1.0", "end")
         self.vip_var.set(False)
 
         self.status_lbl.configure(text="")
@@ -393,6 +415,8 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         inst_num = int(inst_str) if inst_str.isdigit() else None
 
         general_notes = self.notes_entry.get().strip()
+        raw_rules = self.custom_ai_rules_txt.get("1.0", "end-1c").splitlines()
+        custom_ai_rules = [r.strip() for r in raw_rules if r.strip()]
         sys_version = self.selected_customer.system_version if self.selected_customer else ""
 
         contacts: list[Contact] = []
@@ -419,6 +443,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
             vm_number=vm_num,
             instance_number=inst_num,
             general_notes=general_notes,
+            custom_ai_rules=custom_ai_rules,
             system_version=sys_version,
             contacts=contacts,
             is_vip=self.vip_var.get()

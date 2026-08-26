@@ -852,38 +852,493 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         import threading
         threading.Thread(target=worker, daemon=True).start()
 
+class HotkeyRecorderDialog(ctk.CTkToplevel):
+    """Interactive modal dialog to capture pressed hotkeys and key combinations."""
+    def __init__(self, parent, on_recorded: Callable[[str], None]):
+        super().__init__(parent)
+        self.on_recorded = on_recorded
+        self.title("⌨ Hotkey aufnehmen")
+        self.geometry("380x160")
+        self.resizable(False, False)
+
+        from utils.ui_utils import center_window
+        center_window(self, 380, 160)
+        self.transient(parent)
+        self.grab_set()
+
+        ctk.CTkLabel(self, text="⌨ Tastenkombination drücken", font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 5))
+        self.info_lbl = ctk.CTkLabel(self, text="Drücken Sie Ihre Tasten (z.B. Strg+S, Alt+1)...", text_color=("gray30", "gray70"))
+        self.info_lbl.pack(pady=5)
+
+        cancel_btn = ctk.CTkButton(self, text="Abbrechen (Esc)", command=self.destroy, fg_color="gray40", width=120)
+        cancel_btn.pack(pady=(10, 0))
+
+        self.bind("<KeyPress>", self.on_key_press)
+        self.focus_set()
+
+    def on_key_press(self, event):
+        keysym = event.keysym
+        if keysym == "Escape":
+            self.destroy()
+            return
+
+        if keysym in ("Control_L", "Control_R", "Alt_L", "Alt_R", "Shift_L", "Shift_R", "Win_L", "Win_R"):
+            return
+
+        state = event.state
+        mods = []
+        if state & 0x0004:
+            mods.append("Control")
+        if state & 0x0001:
+            mods.append("Shift")
+        if state & 0x20000 or state & 0x0008 or keysym.startswith("Alt"):
+            mods.append("Alt")
+
+        key_name = keysym
+        if len(key_name) == 1:
+            key_name = key_name.lower()
+
+        if mods:
+            formatted = f"<{'--'.join(mods + [key_name])}>".replace("--", "-")
+        else:
+            formatted = f"<{key_name}>" if len(key_name) > 1 else key_name
+
+        self.on_recorded(formatted)
+        self.destroy()
+
+
+class ProfileSettingsDialog(ctk.CTkToplevel):
+    def __init__(self, parent, profile: UserProfile, storage_service: StorageService, on_profile_updated: Callable[[], None] | None = None):
+        super().__init__(parent)
+        self.profile = profile
+        self.storage_service = storage_service
+        self.on_profile_updated = on_profile_updated
+
+        from services.snippet_service import SnippetService
+        self.snippet_service = getattr(parent, "snippet_service", None) or SnippetService(self.storage_service.config.workspace_dir)
+
+        w, h = DIALOG_DIMENSIONS["profile_settings"]
+        self.title(DIALOG_TITLES["profile_settings"])
+        self.geometry(f"{w}x{h}")
+        self.minsize(880, 680)
+        from utils.ui_utils import center_window
+        center_window(self, w, h)
+
+        self.transient(parent)
+        self.grab_set()
+
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Top Header
+        top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
+        top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
+
+        ctk.CTkLabel(top_bar, text="⚙ Profil & Anwendungseinstellungen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+
+        # Tabview
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+
+        self.tab_user = self.tabview.add("👤 Benutzerprofil")
+        self.tab_ui = self.tabview.add("🎨 Erscheinungsbild")
+        self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
+        self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
+        self.tab_ai = self.tabview.add("🤖 KI & NLP")
+        self.tab_scoring = self.tabview.add("⌨ Tastenkürzel & Scoring")
+        self.tab_backup = self.tabview.add("💾 Datensicherung")
+
+        self.setup_user_tab()
+        self.setup_ui_tab()
+        self.setup_paths_tab()
+        self.setup_wiki_tab()
+        self.setup_ai_tab()
+        self.setup_scoring_tab()
+        self.setup_backup_tab()
+
+        # Bottom Action Bar
+        bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
+        bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
+
+        self.save_btn = ctk.CTkButton(bottom_bar, text="💾 Einstellungen Speichern", command=self.save_settings, fg_color="forestgreen", width=180)
+        self.save_btn.pack(side="right", padx=5)
+
+        self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color="green")
+        self.status_lbl.pack(side="left", padx=5)
+
+    def setup_user_tab(self):
+        ctk.CTkLabel(self.tab_user, text="Mitarbeiter-Profil verwalten & wechseln", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        prof_frame = ctk.CTkFrame(self.tab_user, fg_color="transparent")
+        prof_frame.pack(fill="x", pady=(0, 15))
+
+        ctk.CTkLabel(prof_frame, text="Aktives Profil:").pack(side="left", padx=(0, 10))
+
+        profiles_list = self.storage_service.list_profiles()
+        self.profile_combo = ctk.CTkOptionMenu(
+            prof_frame,
+            values=profiles_list,
+            command=self.on_switch_profile,
+            width=220,
+        )
+        self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
+        self.profile_combo.pack(side="left", padx=(0, 10))
+
+        btn_new_prof = ctk.CTkButton(
+            prof_frame,
+            text="➕ Neues Profil anlegen",
+            command=self.open_create_profile_dialog,
+            fg_color="forestgreen",
+            width=160,
+        )
+        btn_new_prof.pack(side="left")
+
+        ctk.CTkLabel(self.tab_user, text="Benutzerinformationen (Aktives Profil)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+
+        ctk.CTkLabel(self.tab_user, text="Name / Anzeigename *:").pack(anchor="w", pady=(5, 2))
+        self.user_name_entry = ctk.CTkEntry(self.tab_user, placeholder_text="Ihr Name")
+        self.user_name_entry.insert(0, self.profile.user.name)
+        self.user_name_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_user, text="Abteilung / Department *:").pack(anchor="w", pady=(5, 2))
+        self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text="Support")
+        self.user_dept_entry.insert(0, self.profile.user.department)
+        self.user_dept_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_user, text="Telefon / Durchwahl:").pack(anchor="w", pady=(5, 2))
+        self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z.B. 1234")
+        self.user_ext_entry.insert(0, self.profile.user.extension)
+        self.user_ext_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_user, text="E-Mail Adressen (Kommagetrennt):").pack(anchor="w", pady=(5, 2))
+        self.user_email_entry = ctk.CTkEntry(self.tab_user, placeholder_text="support@praxis.de")
+        self.user_email_entry.insert(0, self.profile.user.email)
+        self.user_email_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_user, text="Mobilnummer:").pack(anchor="w", pady=(5, 2))
+        self.user_mobile_entry = ctk.CTkEntry(self.tab_user, placeholder_text="+49 170 1234567")
+        self.user_mobile_entry.insert(0, self.profile.user.mobile)
+        self.user_mobile_entry.pack(fill="x", pady=(0, 10))
+
+    def open_create_profile_dialog(self):
+        from ui.dialogs.profile_create_dialog import ProfileCreateDialog
+        ProfileCreateDialog(self, storage_service=self.storage_service, on_created=self.on_profile_created)
+
+    def on_profile_created(self, new_profile: UserProfile):
+        self.profile = new_profile
+        profiles_list = self.storage_service.list_profiles()
+        self.profile_combo.configure(values=profiles_list)
+        self.profile_combo.set(new_profile.user.name)
+
+        self.user_name_entry.delete(0, "end")
+        self.user_name_entry.insert(0, new_profile.user.name)
+        self.user_dept_entry.delete(0, "end")
+        self.user_dept_entry.insert(0, new_profile.user.department)
+
+        self.status_lbl.configure(text=f"✅ Profil '{new_profile.user.name}' erstellt und aktiviert!", text_color="green")
+        if self.on_profile_updated:
+            self.on_profile_updated()
+
+    def on_switch_profile(self, selected_name: str):
+        if selected_name == self.profile.user.name:
+            return
+        loaded = self.storage_service.load_profile_by_name(selected_name)
+        if loaded:
+            self.profile = loaded
+            self.user_name_entry.delete(0, "end")
+            self.user_name_entry.insert(0, loaded.user.name)
+            self.user_dept_entry.delete(0, "end")
+            self.user_dept_entry.insert(0, loaded.user.department)
+            self.user_ext_entry.delete(0, "end")
+            self.user_ext_entry.insert(0, loaded.user.extension)
+            self.user_email_entry.delete(0, "end")
+            self.user_email_entry.insert(0, loaded.user.email)
+            self.user_mobile_entry.delete(0, "end")
+            self.user_mobile_entry.insert(0, loaded.user.mobile)
+
+            self.status_lbl.configure(text=f"✅ Zum Profil '{selected_name}' gewechselt!", text_color="green")
+            if self.on_profile_updated:
+                self.on_profile_updated()
+
+    def setup_ui_tab(self):
+        ctk.CTkLabel(self.tab_ui, text="Design & Layout-Einstellungen", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        ctk.CTkLabel(self.tab_ui, text="Farbschema / Theme:").pack(anchor="w", pady=(5, 2))
+        self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=["System", "Light", "Dark"])
+        self.theme_combo.set(self.profile.ui_settings.theme.capitalize() if self.profile.ui_settings.theme != "SYSTEM" else "System")
+        self.theme_combo.pack(fill="x", pady=(0, 15))
+
+        ctk.CTkLabel(self.tab_ui, text="Standard-Ansicht beim Start:").pack(anchor="w", pady=(5, 2))
+        self.layout_combo = ctk.CTkOptionMenu(self.tab_ui, values=list(LAYOUT_DISPLAY.values()))
+        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        self.layout_combo.pack(fill="x", pady=(0, 15))
+
+        ctk.CTkLabel(self.tab_ui, text="Beispieldaten-Modus:").pack(anchor="w", pady=(5, 2))
+        demo_val = self.profile.ui_settings.show_demo_data
+        is_demo_on = True if demo_val is None else demo_val
+        self.demo_switch = ctk.CTkSwitch(self.tab_ui, text="Beispieldaten in Ansichten anzeigen", onvalue=1, offvalue=0)
+        if is_demo_on:
+            self.demo_switch.select()
+        else:
+            self.demo_switch.deselect()
+        self.demo_switch.pack(anchor="w", pady=(0, 15))
+
+    def setup_paths_tab(self):
+        ctk.CTkLabel(self.tab_paths, text="Speicherorte & Benutzerdefinierte Pfade", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        ctk.CTkLabel(self.tab_paths, text="Arbeitsverzeichnis (Workspace):").pack(anchor="w", pady=(5, 2))
+        ws_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        ws_frame.pack(fill="x", pady=(0, 10))
+        self.ws_entry = ctk.CTkEntry(ws_frame)
+        self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
+        self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkButton(ws_frame, text="📁 Durchsuchen", width=110, command=self.browse_workspace).pack(side="right")
+
+        ctk.CTkLabel(self.tab_paths, text="Benutzerdefinierter Pfad: Cases (cases.json):").pack(anchor="w", pady=(5, 2))
+        cases_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        cases_frame.pack(fill="x", pady=(0, 10))
+        self.path_cases_entry = ctk.CTkEntry(cases_frame, placeholder_text="Standard: data/cases.json")
+        if self.storage_service.config.custom_cases_path:
+            self.path_cases_entry.insert(0, str(self.storage_service.config.custom_cases_path))
+        self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkButton(cases_frame, text="📁", width=40, command=lambda: self.browse_file_override(self.path_cases_entry)).pack(side="right")
+
+        ctk.CTkLabel(self.tab_paths, text="Benutzerdefinierter Pfad: Kunden (customers.json):").pack(anchor="w", pady=(5, 2))
+        cust_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        cust_frame.pack(fill="x", pady=(0, 10))
+        self.path_cust_entry = ctk.CTkEntry(cust_frame, placeholder_text="Standard: data/customers.json")
+        if self.storage_service.config.custom_customers_path:
+            self.path_cust_entry.insert(0, str(self.storage_service.config.custom_customers_path))
+        self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkButton(cust_frame, text="📁", width=40, command=lambda: self.browse_file_override(self.path_cust_entry)).pack(side="right")
+
+        ctk.CTkLabel(self.tab_paths, text="Benutzerdefinierter Pfad: Wiki-DB (wiki_index.sqlite):").pack(anchor="w", pady=(5, 2))
+        wiki_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        wiki_frame.pack(fill="x", pady=(0, 10))
+        self.path_wiki_entry = ctk.CTkEntry(wiki_frame, placeholder_text="Standard: data/wiki_index.sqlite")
+        if self.storage_service.config.custom_wiki_db_path:
+            self.path_wiki_entry.insert(0, str(self.storage_service.config.custom_wiki_db_path))
+        self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkButton(wiki_frame, text="📁", width=40, command=lambda: self.browse_file_override(self.path_wiki_entry)).pack(side="right")
+
+    def browse_workspace(self):
+        from tkinter import filedialog
+        path = filedialog.askdirectory(initialdir=str(self.storage_service.config.workspace_dir))
+        if path:
+            self.ws_entry.delete(0, "end")
+            self.ws_entry.insert(0, path)
+
+    def browse_file_override(self, entry_widget: ctk.CTkEntry):
+        from tkinter import filedialog
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            entry_widget.delete(0, "end")
+            entry_widget.insert(0, file_path)
+
+    def setup_wiki_tab(self):
+        ctk.CTkLabel(self.tab_wiki, text="BookStack Wiki API Anbindung", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        ctk.CTkLabel(self.tab_wiki, text="BookStack Server URL:").pack(anchor="w", pady=(5, 2))
+        self.wiki_url_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text="https://wiki.praxis.de")
+        self.wiki_url_entry.insert(0, self.profile.wiki_settings.api_url)
+        self.wiki_url_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_wiki, text="Token ID (oder ENV-Variable Name):").pack(anchor="w", pady=(5, 2))
+        self.wiki_token_id_entry = ctk.CTkEntry(self.tab_wiki)
+        self.wiki_token_id_entry.insert(0, self.profile.wiki_settings.token_id)
+        self.wiki_token_id_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_wiki, text="Token Secret (oder ENV-Variable Name):").pack(anchor="w", pady=(5, 2))
+        self.wiki_token_secret_entry = ctk.CTkEntry(self.tab_wiki, show="*")
+        self.wiki_token_secret_entry.insert(0, self.profile.wiki_settings.token_secret)
+        self.wiki_token_secret_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_wiki, text="Synchronisations-Modus:").pack(anchor="w", pady=(5, 2))
+        self.sync_mode_combo = ctk.CTkOptionMenu(self.tab_wiki, values=[SyncMode.METADATA_ONLY, SyncMode.FULL_OFFLINE])
+        self.sync_mode_combo.set(self.profile.wiki_settings.sync_mode)
+        self.sync_mode_combo.pack(fill="x", pady=(0, 10))
+
+        self.sync_startup_var = ctk.BooleanVar(value=self.profile.wiki_settings.sync_on_startup)
+        self.sync_startup_chk = ctk.CTkCheckBox(self.tab_wiki, text="Beim Anwendungsstart automatisch synchronisieren", variable=self.sync_startup_var)
+        self.sync_startup_chk.pack(anchor="w", pady=(5, 10))
+
+        btn_test = ctk.CTkButton(self.tab_wiki, text="🔌 Verbindung Testen", command=self.test_wiki_connection, width=160)
+        btn_test.pack(anchor="w", pady=(5, 0))
+
+    def test_wiki_connection(self):
+        from services.wiki_service import WikiService
+        url = self.wiki_url_entry.get().strip()
+        t_id = self.wiki_token_id_entry.get().strip()
+        t_sec = self.wiki_token_secret_entry.get().strip()
+
+        temp_settings = self.profile.wiki_settings
+        temp_settings.api_url = url
+        temp_settings.token_id = t_id
+        temp_settings.token_secret = t_sec
+
+        srv = WikiService(self.storage_service.config.workspace_dir, temp_settings)
+
+        self.status_lbl.configure(text="🔄 Teste BookStack Verbindung...", text_color="orange")
+
+        def worker():
+            success, msg = srv.test_connection()
+            def done():
+                if success:
+                    self.status_lbl.configure(text=f"✅ {msg}", text_color="green")
+                else:
+                    self.status_lbl.configure(text=f"❌ {msg}", text_color="red")
+            self.after(0, done)
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
+
+    def setup_ai_tab(self):
+        ctk.CTkLabel(self.tab_ai, text="Lokale KI-Integration (Ollama / Qwen / Llama)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        self.ai_enable_chk = ctk.CTkCheckBox(self.tab_ai, text="KI-Funktionen in der App aktivieren")
+        if self.profile.ai_settings.enable_ai:
+            self.ai_enable_chk.select()
+        else:
+            self.ai_enable_chk.deselect()
+        self.ai_enable_chk.pack(anchor="w", pady=(5, 10))
+
+        ctk.CTkLabel(self.tab_ai, text=AI_LABEL_OLLAMA_URL).pack(anchor="w", pady=(5, 2))
+        self.ai_url_entry = ctk.CTkEntry(self.tab_ai)
+        self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
+        self.ai_url_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_ai, text=AI_LABEL_SELECT_MODEL).pack(anchor="w", pady=(5, 2))
+        self.ai_model_entry = ctk.CTkEntry(self.tab_ai)
+        self.ai_model_entry.insert(0, self.profile.ai_settings.model_name)
+        self.ai_model_entry.pack(fill="x", pady=(0, 10))
+
+        ctk.CTkLabel(self.tab_ai, text=AI_LABEL_BASE_RULES_TITLE, font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(10, 2))
+        ctk.CTkLabel(self.tab_ai, text=AI_LABEL_BASE_RULES_HINT, text_color="gray60").pack(anchor="w", pady=(0, 5))
+
+        self.ai_base_rules_txt = ctk.CTkTextbox(self.tab_ai, height=120)
+        self.ai_base_rules_txt.insert("1.0", "\n".join(self.profile.ai_settings.base_rules))
+        self.ai_base_rules_txt.pack(fill="x", pady=(0, 10))
+
     def setup_scoring_tab(self):
-        ctk.CTkLabel(self.tab_scoring, text="Tastenkürzel (Hotkeys)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        row1 = ctk.CTkFrame(self.tab_scoring, fg_color="transparent")
-        row1.pack(fill="x", pady=3)
-        ctk.CTkLabel(row1, text="Neuer Fall:").pack(side="left")
-        self.hk_new = ctk.CTkEntry(row1, width=140)
-        self.hk_new.insert(0, self.profile.shortcuts.new_case)
-        self.hk_new.pack(side="right")
+        ctk.CTkLabel(scroll, text="⚡ App-Aktionen Tastenkürzel (Hotkeys)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(5, 5))
 
-        row2 = ctk.CTkFrame(self.tab_scoring, fg_color="transparent")
-        row2.pack(fill="x", pady=3)
-        ctk.CTkLabel(row2, text="Export Dialog:").pack(side="left")
-        self.hk_export = ctk.CTkEntry(row2, width=140)
-        self.hk_export.insert(0, self.profile.shortcuts.export_dialog)
-        self.hk_export.pack(side="right")
+        self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
 
-        row3 = ctk.CTkFrame(self.tab_scoring, fg_color="transparent")
-        row3.pack(fill="x", pady=3)
-        ctk.CTkLabel(row3, text="Wiki-Suche fokussieren:").pack(side="left")
-        self.hk_search = ctk.CTkEntry(row3, width=140)
-        self.hk_search.insert(0, self.profile.shortcuts.wiki_search)
-        self.hk_search.pack(side="right")
+        action_labels = [
+            ("new_case", "Neuer Fall:"),
+            ("save_case", "Fall speichern:"),
+            ("archive_case", "Fall archivieren:"),
+            ("export_dialog", "Export Dialog:"),
+            ("open_settings", "Einstellungen öffnen:"),
+            ("snippet_picker", "Snippet-Picker öffnen:"),
+            ("wiki_search", "Wiki-Suche fokussieren:"),
+            ("search_customer", "Kundensuche fokussieren:"),
+            ("view_cockpit", "Cockpit-Ansicht:"),
+            ("view_board", "Board-Ansicht:"),
+            ("view_table", "Tabelle-Ansicht:"),
+            ("toggle_theme", "Theme umschalten:"),
+        ]
 
-        ctk.CTkLabel(self.tab_scoring, text="Prioritäts-Scoring Punkte", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+        for attr_name, label_text in action_labels:
+            row = ctk.CTkFrame(scroll, fg_color="transparent")
+            row.pack(fill="x", pady=2)
+            ctk.CTkLabel(row, text=label_text, width=180, anchor="w").pack(side="left")
 
-        row4 = ctk.CTkFrame(self.tab_scoring, fg_color="transparent")
+            val = getattr(self.profile.shortcuts, attr_name, "")
+            entry = ctk.CTkEntry(row, width=140)
+            entry.insert(0, val)
+            entry.pack(side="left", padx=(5, 5))
+            self.shortcut_entries[attr_name] = entry
+
+            rec_btn = ctk.CTkButton(
+                row,
+                text="🎙 Taste erfassen",
+                width=120,
+                fg_color="gray30",
+                hover_color="gray45",
+                command=lambda e=entry: self.open_hotkey_recorder(e)
+            )
+            rec_btn.pack(side="left")
+
+            entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
+
+        # --- Text-Makros (Snippets) Section ---
+        ctk.CTkLabel(scroll, text="📝 Textbaustein-Makros (Snippet Shortcuts)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(20, 5))
+
+        self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
+        all_snippets = self.snippet_service.get_all_snippets()
+
+        if not all_snippets:
+            ctk.CTkLabel(scroll, text="Keine Textbausteine vorhanden.", text_color="gray60").pack(anchor="w", pady=2)
+        else:
+            for snip in all_snippets:
+                s_row = ctk.CTkFrame(scroll, fg_color="transparent")
+                s_row.pack(fill="x", pady=2)
+
+                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:30]} ({snip.snippet_id}):", width=220, anchor="w")
+                title_lbl.pack(side="left")
+
+                s_entry = ctk.CTkEntry(s_row, width=140)
+                s_entry.insert(0, snip.shortcut or "")
+                s_entry.pack(side="left", padx=(5, 5))
+                self.snippet_shortcut_entries.append((snip, s_entry))
+
+                s_rec_btn = ctk.CTkButton(
+                    s_row,
+                    text="🎙 Taste erfassen",
+                    width=120,
+                    fg_color="gray30",
+                    hover_color="gray45",
+                    command=lambda e=s_entry: self.open_hotkey_recorder(e)
+                )
+                s_rec_btn.pack(side="left")
+
+                s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
+
+        # Conflict Warning Label
+        self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color="red", font=ctk.CTkFont(weight="bold"))
+        self.conflict_warn_lbl.pack(fill="x", pady=(5, 5))
+
+        # --- Prioritäts-Scoring Section ---
+        ctk.CTkLabel(scroll, text="Prioritäts-Scoring Punkte", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+
+        row4 = ctk.CTkFrame(scroll, fg_color="transparent")
         row4.pack(fill="x", pady=3)
         ctk.CTkLabel(row4, text="VIP-Bonus (Punkte):").pack(side="left")
         self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
         self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
         self.vip_bonus_entry.pack(side="right")
+
+    def open_hotkey_recorder(self, target_entry: ctk.CTkEntry):
+        def on_recorded(key_str: str):
+            target_entry.delete(0, "end")
+            target_entry.insert(0, key_str)
+            self.validate_shortcut_conflicts()
+
+        HotkeyRecorderDialog(self, on_recorded)
+
+    def validate_shortcut_conflicts(self) -> bool:
+        keys = []
+        for entry in self.shortcut_entries.values():
+            val = entry.get().strip()
+            if val:
+                keys.append(val)
+        for _, entry in self.snippet_shortcut_entries:
+            val = entry.get().strip()
+            if val:
+                keys.append(val)
+
+        duplicates = set([k for k in keys if keys.count(k) > 1])
+        if duplicates:
+            dup_str = ", ".join(duplicates)
+            self.conflict_warn_lbl.configure(text=f"⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}")
+            return False
+        else:
+            self.conflict_warn_lbl.configure(text="")
+            return True
 
     def save_settings(self):
         from pathlib import Path
@@ -936,19 +1391,17 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
         self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
 
-        # Update Shortcuts & Scoring with conflict validation
-        hk_new_val = self.hk_new.get().strip()
-        hk_exp_val = self.hk_export.get().strip()
-        hk_search_val = self.hk_search.get().strip()
-
-        keys_list = [k for k in (hk_new_val, hk_exp_val, hk_search_val) if k]
-        if len(keys_list) != len(set(keys_list)):
-            self.status_lbl.configure(text="⚠ Shortcut-Konflikt: Ein Hotkey darf nicht mehrfach zugewiesen werden!", text_color="red")
+        # Update Shortcuts & Snippet Macros with conflict validation
+        if not self.validate_shortcut_conflicts():
+            self.status_lbl.configure(text="⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!", text_color="red")
             return
 
-        self.profile.shortcuts.new_case = hk_new_val
-        self.profile.shortcuts.export_dialog = hk_exp_val
-        self.profile.shortcuts.wiki_search = hk_search_val
+        for attr_name, entry in self.shortcut_entries.items():
+            setattr(self.profile.shortcuts, attr_name, entry.get().strip())
+
+        for snip, entry in self.snippet_shortcut_entries:
+            snip.shortcut = entry.get().strip()
+            self.snippet_service.add_or_update_snippet(snip)
 
         try:
             self.profile.scoring_matrix.vip_bonus_points = int(self.vip_bonus_entry.get().strip())

@@ -78,7 +78,24 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(self.form_box, text="Tags (kommagetrennt):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. fehler, sql, anleitung")
-        self.tags_entry.pack(fill="x", pady=(0, 12))
+        self.tags_entry.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(self.form_box, text="Tastenkürzel / Macro (z. B. <Control-Alt-1>):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        sc_row = ctk.CTkFrame(self.form_box, fg_color="transparent")
+        sc_row.pack(fill="x", pady=(0, 12))
+
+        self.shortcut_entry = ctk.CTkEntry(sc_row, placeholder_text="z. B. <Control-Alt-1>")
+        self.shortcut_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+        rec_btn = ctk.CTkButton(
+            sc_row,
+            text="🎙 Taste erfassen",
+            width=110,
+            fg_color="gray30",
+            hover_color="gray45",
+            command=self.open_hotkey_recorder,
+        )
+        rec_btn.pack(side="right")
 
         # Status & Action Buttons
         self.status_lbl = ctk.CTkLabel(self.form_box, text="", font=ctk.CTkFont(size=11), text_color="dodgerblue")
@@ -115,6 +132,13 @@ class SnippetManagementDialog(ctk.CTkToplevel):
             width=90,
         ).pack(side="right", pady=(5, 0))
 
+    def open_hotkey_recorder(self):
+        from ui.dialogs.profile_settings_dialog import HotkeyRecorderDialog
+        def on_recorded(key_str: str):
+            self.shortcut_entry.delete(0, "end")
+            self.shortcut_entry.insert(0, key_str)
+        HotkeyRecorderDialog(self, on_recorded)
+
     def refresh_list(self):
         snippets = self.service.get_all_snippets()
 
@@ -137,7 +161,8 @@ class SnippetManagementDialog(ctk.CTkToplevel):
             hdr_row.pack(fill="x", padx=8, pady=(6, 2))
             hdr_row.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-            title_lbl = ctk.CTkLabel(hdr_row, text=snip.title, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+            title_text = f"{snip.title} ⌨ {snip.shortcut}" if snip.shortcut else snip.title
+            title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
             title_lbl.pack(side="left", fill="x", expand=True)
             title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
@@ -158,6 +183,10 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.tags_entry.delete(0, "end")
         self.tags_entry.insert(0, ", ".join(snippet.tags))
 
+        self.shortcut_entry.delete(0, "end")
+        if snippet.shortcut:
+            self.shortcut_entry.insert(0, snippet.shortcut)
+
         self.delete_btn.configure(state="normal")
         self.status_lbl.configure(text=f"Ausgewählt: {snippet.snippet_id}", text_color="dodgerblue")
         self.refresh_list()
@@ -169,6 +198,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.category_entry.insert(0, "Allgemein")
         self.content_textbox.delete("1.0", "end")
         self.tags_entry.delete(0, "end")
+        self.shortcut_entry.delete(0, "end")
         self.delete_btn.configure(state="disabled")
         self.status_lbl.configure(text="Neuer Textbaustein (wird beim Speichern angelegt)", text_color="gray")
         self.refresh_list()
@@ -179,6 +209,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         content = self.content_textbox.get("1.0", "end-1c").strip()
         tags_raw = self.tags_entry.get().strip()
         tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
+        sc = self.shortcut_entry.get().strip()
 
         if not title:
             self.status_lbl.configure(text="⚠ Bitte einen Titel eingeben.", text_color="crimson")
@@ -194,6 +225,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
             category=cat,
             content=content,
             tags=tags,
+            shortcut=sc,
         )
 
         self.service.add_or_update_snippet(snip)

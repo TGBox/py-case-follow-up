@@ -115,6 +115,13 @@ class ShortcutSettings:
     wiki_search: str = "<Control-w>"
     export_dialog: str = "<Control-e>"
     save_case: str = "<Control-s>"
+    archive_case: str = "<Control-Shift-A>"
+    open_settings: str = "<Control-p>"
+    snippet_picker: str = "<Control-m>"
+    view_cockpit: str = "<Control-1>"
+    view_board: str = "<Control-2>"
+    view_table: str = "<Control-3>"
+    toggle_theme: str = "<Control-t>"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -127,6 +134,13 @@ class ShortcutSettings:
             wiki_search=data.get("wiki_search", "<Control-w>"),
             export_dialog=data.get("export_dialog", "<Control-e>"),
             save_case=data.get("save_case", "<Control-s>"),
+            archive_case=data.get("archive_case", "<Control-Shift-A>"),
+            open_settings=data.get("open_settings", "<Control-p>"),
+            snippet_picker=data.get("snippet_picker", "<Control-m>"),
+            view_cockpit=data.get("view_cockpit", "<Control-1>"),
+            view_board=data.get("view_board", "<Control-2>"),
+            view_table=data.get("view_table", "<Control-3>"),
+            toggle_theme=data.get("toggle_theme", "<Control-t>"),
         )
 
 

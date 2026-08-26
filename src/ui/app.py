@@ -734,11 +734,77 @@ class SupportCockpitApp(ctk.CTk):
     def register_shortcuts(self):
         shortcuts = self.profile.shortcuts
         import tkinter as tk
-        tk.Misc.bind_all(self, shortcuts.new_case, self.open_new_case_dialog)
-        tk.Misc.bind_all(self, shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
-        tk.Misc.bind_all(self, shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search())
-        tk.Misc.bind_all(self, shortcuts.save_case, lambda e: self.cockpit_view.on_click_save())
-        tk.Misc.bind_all(self, "<F1>", lambda e: self.open_help_dialog())
+
+        def safe_bind(key_str: str, func):
+            if not key_str or not key_str.strip():
+                return
+            try:
+                tk.Misc.bind_all(self, key_str.strip(), func)
+            except Exception as e:
+                logger.warning(f"Failed to bind shortcut '{key_str}': {e}")
+
+        # App Actions Shortcuts
+        safe_bind(shortcuts.new_case, lambda e: self.open_new_case_dialog())
+        safe_bind(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
+        safe_bind(shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search() if hasattr(self, "cockpit_view") else None)
+        safe_bind(shortcuts.save_case, lambda e: self.cockpit_view.on_click_save() if hasattr(self, "cockpit_view") else None)
+        safe_bind(shortcuts.search_customer, lambda e: self.cockpit_view.focus_customer_search() if hasattr(self, "cockpit_view") else None)
+        safe_bind(shortcuts.archive_case, lambda e: self.on_archive_current_case())
+        safe_bind(shortcuts.open_settings, lambda e: self.open_profile_settings_dialog())
+        safe_bind(shortcuts.snippet_picker, lambda e: self.trigger_snippet_picker())
+        safe_bind(shortcuts.view_cockpit, lambda e: self.switch_layout(LayoutMode.COCKPIT.value))
+        safe_bind(shortcuts.view_board, lambda e: self.switch_layout(LayoutMode.BOARD.value))
+        safe_bind(shortcuts.view_table, lambda e: self.switch_layout(LayoutMode.TABLE.value))
+        safe_bind(shortcuts.toggle_theme, lambda e: self.toggle_theme())
+        safe_bind("<F1>", lambda e: self.open_help_dialog())
+
+        # Text Snippet Macro Shortcuts
+        if hasattr(self, "snippet_service"):
+            for snip in self.snippet_service.get_all_snippets():
+                if snip.shortcut and snip.shortcut.strip():
+                    safe_bind(snip.shortcut, lambda e, content=snip.content: self.insert_snippet_shortcut(content))
+
+    def on_archive_current_case(self):
+        if self.active_case:
+            self.on_archive_case(self.active_case)
+        elif hasattr(self, "cockpit_view") and self.cockpit_view.current_case:
+            self.on_archive_case(self.cockpit_view.current_case)
+
+    def trigger_snippet_picker(self):
+        focused = self.focus_get()
+        def on_selected(text: str):
+            if focused:
+                self._insert_text_into_widget(focused, text)
+        self.open_snippet_picker_dialog(on_selected)
+
+    def insert_snippet_shortcut(self, text: str):
+        focused = self.focus_get()
+        if focused and self._insert_text_into_widget(focused, text):
+            return "break"
+        else:
+            from ui.widgets.toast_notification import show_toast
+            show_toast(self, "Textbaustein Macro", "Kein fokussiertes Eingabefeld vorhanden.")
+
+    def _insert_text_into_widget(self, widget, text: str) -> bool:
+        if not widget or not text:
+            return False
+        try:
+            target = widget
+            if hasattr(target, "_entry"):
+                target = target._entry
+            elif hasattr(target, "_textbox"):
+                target = target._textbox
+
+            import tkinter as tk
+            if isinstance(target, (tk.Entry, ctk.CTkEntry)):
+                target.insert(tk.INSERT, text)
+                return True
+            elif isinstance(target, (tk.Text, ctk.CTkTextbox)):
+                target.insert(tk.INSERT, text)
+                return True
+        except Exception as e:
+            logger.warning(f"Error inserting snippet text: {e}")
+        return False
 
     def schedule_hourly_scoring(self):
         def update_timer():

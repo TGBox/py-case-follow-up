@@ -3,13 +3,15 @@ from typing import Callable
 from models.schema import QuestionSchema, SchemaField
 from enums import FieldType
 from services.schema_service import SchemaService
+from constants import DIALOG_DIMENSIONS
 
 
 class NewSchemaDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_schema_created: Callable[[QuestionSchema], None]):
         super().__init__(parent)
+        w, h = DIALOG_DIMENSIONS["new_schema"]
         self.title("🆕 Neues Formular (Schema) erstellen")
-        self.geometry("440x320")
+        self.geometry(f"{w}x{h}")
         self.resizable(False, False)
         self.transient(parent)
         self.grab_set()
@@ -59,7 +61,7 @@ class NewSchemaDialog(ctk.CTkToplevel):
             schema_id=schema_id,
             display_name=name,
             description=desc,
-            fields=[]
+            fields=[],
         )
         self.on_schema_created(new_schema)
         self.destroy()
@@ -74,11 +76,12 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         on_schemas_updated: Callable[[list[QuestionSchema]], None],
     ):
         super().__init__(parent)
+        w, h = DIALOG_DIMENSIONS["schema_builder"]
         self.title("In-App Formular-Baukasten (Schemata verwalten)")
-        self.geometry("940x720")
+        self.geometry(f"{w}x{h}")
         self.minsize(860, 640)
         from utils.ui_utils import center_window
-        center_window(self, 940, 720)
+        center_window(self, w, h)
 
         self.schemas = schemas
         self.schema_service = schema_service
@@ -125,7 +128,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         reset_schema_btn = ctk.CTkButton(top_frame, text="🔄 Standard-Formulare", command=self.on_reset_schemas, fg_color="gray30", width=150)
         reset_schema_btn.pack(side="left", padx=(0, 5))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text="🗑️ Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
+        del_schema_btn = ctk.CTkButton(top_frame, text="🗑 Löschen", command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()

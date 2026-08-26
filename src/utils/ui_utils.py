@@ -45,9 +45,16 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     except Exception:
         pass
 
+    _updating = False
+
     def update_scrollbar_visibility(*_args):
+        nonlocal _updating
+        if _updating:
+            return
         try:
-            scroll_frame.update_idletasks()
+            if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
+                return
+            _updating = True
             bbox = canvas.bbox("all")
             canvas_h = canvas.winfo_height()
             content_h = (bbox[3] - bbox[1]) if bbox else 0
@@ -67,11 +74,16 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
                     scrollbar.pack(side="right", fill="y")
         except Exception:
             pass
+        finally:
+            _updating = False
 
     canvas.bind("<Configure>", update_scrollbar_visibility, add="+")
     scroll_frame.bind("<Configure>", update_scrollbar_visibility, add="+")
-    scroll_frame.after(50, update_scrollbar_visibility)
-    scroll_frame.after(200, update_scrollbar_visibility)
+    try:
+        scroll_frame.after(50, update_scrollbar_visibility)
+        scroll_frame.after(200, update_scrollbar_visibility)
+    except Exception:
+        pass
 
 
 class AutoScrollableFrame(ctk.CTkScrollableFrame):

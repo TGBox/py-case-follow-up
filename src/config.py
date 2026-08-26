@@ -4,17 +4,21 @@ import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
+from constants import DEFAULT_COLUMN_WIDTHS
 
 logger = logging.getLogger("SupportCockpit")
 
 
 def get_global_config_dir() -> Path:
     """Returns the persistent user appdata folder for SupportCockpit."""
-    if os.name == "nt":
+    if "SUPPORTCOCKPIT_CONFIG_DIR" in os.environ and os.environ["SUPPORTCOCKPIT_CONFIG_DIR"].strip():
+        config_dir = Path(os.environ["SUPPORTCOCKPIT_CONFIG_DIR"])
+    elif os.name == "nt":
         base = Path(os.environ.get("APPDATA", Path.home()))
+        config_dir = base / "SupportCockpit"
     else:
         base = Path.home() / ".config"
-    config_dir = base / "SupportCockpit"
+        config_dir = base / "SupportCockpit"
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir
 
@@ -50,12 +54,7 @@ class AppConfig:
     custom_export_templates_path: Path | None = None
     custom_wiki_db_path: Path | None = None
     column_widths: dict[str, int] = field(
-        default_factory=lambda: {
-            "cockpit_left": 300,
-            "cockpit_center": 420,
-            "cockpit_right": 320,
-            "board_column": 280,
-        }
+        default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
 
     def __post_init__(self):

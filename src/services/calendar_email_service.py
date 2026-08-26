@@ -13,11 +13,42 @@ def format_utc_ics_timestamp(dt: datetime) -> str:
     return dt.strftime("%Y%m%dT%H%M%SZ")
 
 
+def format_german_salutation(contact_person: str = "", practice_name: str = "") -> str:
+    """Formats an authentic and polite German email salutation based on contact person or practice name."""
+    cp = (contact_person or "").strip()
+    if not cp:
+        if practice_name and practice_name.strip():
+            return f"Sehr geehrte Damen und Herren ({practice_name.strip()}),"
+        return "Sehr geehrte Damen und Herren,"
+
+    cp_lower = cp.lower()
+    if cp_lower.startswith("frau ") or cp_lower.startswith("frau."):
+        return f"Sehr geehrte {cp},"
+    elif cp_lower.startswith("herr ") or cp_lower.startswith("herrn ") or cp_lower.startswith("herr."):
+        clean_cp = cp
+        if cp_lower.startswith("herrn "):
+            clean_cp = "Herr " + cp[6:]
+        return f"Sehr geehrter {clean_cp},"
+    elif "frau" in cp_lower and ("dr." in cp_lower or "prof." in cp_lower):
+        return f"Sehr geehrte {cp},"
+    elif "herr" in cp_lower and ("dr." in cp_lower or "prof." in cp_lower):
+        return f"Sehr geehrter {cp},"
+    elif cp_lower.startswith("dr.") or cp_lower.startswith("prof.") or cp_lower.startswith("dipl."):
+        return f"Sehr geehrte(r) {cp},"
+    else:
+        return f"Sehr geehrte/r {cp},"
+
+
 class CalendarEmailService:
     """Service for generating iCalendar (.ics) files and structured E-mail drafts."""
 
-    def __init__(self, workspace_dir: Path | str | None = None):
-        self.workspace_dir = Path(workspace_dir) if workspace_dir else Path.cwd()
+    def __init__(self, workspace_dir: Any = None):
+        if hasattr(workspace_dir, "workspace_dir"):
+            self.workspace_dir = Path(workspace_dir.workspace_dir)
+        elif workspace_dir:
+            self.workspace_dir = Path(workspace_dir)
+        else:
+            self.workspace_dir = Path.cwd()
 
     def generate_ics_content(self, case: Case, user_name: str = "") -> str:
         """Generates RFC 5545 compliant iCalendar string for a case deadline/followup."""
@@ -103,6 +134,8 @@ class CalendarEmailService:
 
         return "\r\n".join(ics_lines)
 
+    generate_ics = generate_ics_content
+
     def generate_ics_file(self, case: Case, target_dir: Path | str | None = None, user_name: str = "") -> Path:
         """Saves generated iCalendar content to a .ics file in target_dir or scratch dir."""
         content = self.generate_ics_content(case, user_name=user_name)
@@ -114,16 +147,54 @@ class CalendarEmailService:
         file_path.write_text(content, encoding="utf-8")
         return file_path
 
-    def generate_email_draft(self, case: Case, user_name: str = "") -> dict[str, str]:
+    def generate_email_draft(
+        self,
+        case: Case | None = None,
+        user_name: str = "",
+        customers: list[Any] | None = None,
+    ) -> dict[str, str]:
         """Generates structured email draft components (to, subject, body)."""
+        if not case:
+            salutation = "Sehr geehrte Damen und Herren,"
+            body_lines = [
+                salutation,
+                "",
+                "",
+                "",
+                "Mit freundlichen Grüßen",
+                user_name or "Ihr Support-Team",
+            ]
+            return {
+                "to": "",
+                "subject": "",
+                "body": "\n".join(body_lines),
+            }
+
         to_email = getattr(case.customer, "email", "") if case.customer else ""
-        practice_name = case.customer.practice_name if case.customer else "Damen und Herren"
+        contact_person = getattr(case.customer, "contact_person", "") if case.customer else ""
+        practice_name = getattr(case.customer, "practice_name", "") if case.customer else ""
+        cust_id = getattr(case.customer, "customer_id", "") if case.customer else ""
+
+        # If email is empty, look up in customers list if provided
+        if not to_email and customers and cust_id:
+            for c in customers:
+                if getattr(c, "customer_id", "") == cust_id:
+                    if hasattr(c, "contacts") and c.contacts:
+                        for contact in c.contacts:
+                            if getattr(contact, "email", ""):
+                                to_email = contact.email
+                                if not contact_person and getattr(contact, "name", ""):
+                                    contact_person = contact.name
+                                break
+                    if not to_email and hasattr(c, "email") and c.email:
+                        to_email = c.email
+                    break
+
         from enums import get_board_column_display
         raw_status = case.workflow_status.board_column if (case.workflow_status and hasattr(case.workflow_status, "board_column")) else "Offen"
         status_val = get_board_column_display(raw_status)
-        contact_person = getattr(case.customer, "contact_person", "") if case.customer else ""
 
-        greeting = f"Hallo Frau/Herr {contact_person}," if contact_person else f"Sehr geehrte Damen und Herren ({practice_name}),"
+        greeting = format_german_salutation(contact_person, practice_name)
 
         subject = f"[Fall {case.case_id}] Rückmeldung zu Ihrem Support-Anliegen"
         if case.title:
@@ -141,7 +212,6 @@ class CalendarEmailService:
 
         if case.followup_due_at:
             body_lines.append(f"Geplante Rückruf-Deadline: {case.formatted_deadline}")
-
 
         body_lines.extend([
             "",

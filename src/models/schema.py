@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import FieldType
+from constants import VALIDATION_MESSAGES
 
 
 @dataclass
@@ -16,9 +17,9 @@ class SchemaField:
     def validate(self) -> list[str]:
         errors = []
         if not self.field_id.strip():
-            errors.append("Field ID is required.")
+            errors.append(VALIDATION_MESSAGES["field_id_required"])
         if not self.label.strip():
-            errors.append("Label is required.")
+            errors.append(VALIDATION_MESSAGES["label_required"])
         valid_types = [t.value for t in FieldType]
         if self.field_type not in valid_types:
             errors.append(f"Invalid field_type '{self.field_type}'. Must be one of {valid_types}.")
@@ -62,9 +63,9 @@ class QuestionSchema:
     def validate(self) -> list[str]:
         errors = []
         if not self.schema_id.strip():
-            errors.append("Schema ID is required.")
+            errors.append(VALIDATION_MESSAGES["schema_id_caps_required"])
         if not self.display_name.strip():
-            errors.append("Display name is required.")
+            errors.append(VALIDATION_MESSAGES["display_name_required"])
         for f in self.fields:
             errors.extend(f.validate())
         return errors

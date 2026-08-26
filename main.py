@@ -1,4 +1,5 @@
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -6,6 +7,48 @@ from pathlib import Path
 src_dir = Path(__file__).parent.resolve() / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
+
+import tkinter
+import traceback
+from types import TracebackType
+
+
+_seen_exceptions: set[str] = set()
+
+
+def _report_tkinter_exception(exc: type[BaseException], val: BaseException, tb: TracebackType | None) -> None:
+    tb_lines = traceback.format_exception(exc, val, tb)
+    tb_str = "".join(tb_lines)
+
+    # 1. Log to file with immediate sync to disk
+    try:
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+        with open(log_dir / "tkinter_error.log", "a", encoding="utf-8") as f:
+            f.write(f"\n--- [Exception] ---\n{tb_str}\n")
+            f.flush()
+            os.fsync(f.fileno())
+    except Exception:
+        pass
+
+    # 2. Deduplicate on terminal so it only prints once per unique error location
+    if tb:
+        extracted = traceback.extract_tb(tb)
+        last_frame = extracted[-1] if extracted else None
+        err_key = f"{exc.__name__}:{last_frame.filename if last_frame else ''}:{last_frame.lineno if last_frame else ''}"
+    else:
+        err_key = f"{exc.__name__}:{val}"
+
+    if err_key not in _seen_exceptions:
+        _seen_exceptions.add(err_key)
+        print("\n=================== [TKINTER CALLBACK EXCEPTION] ===================", file=sys.stderr)
+        print(tb_str.strip(), file=sys.stderr)
+        print(f"--> Ausführlicher Log gespeichert in: logs/tkinter_error.log", file=sys.stderr)
+        print("====================================================================\n", file=sys.stderr)
+        sys.stderr.flush()
+
+
+tkinter.Tk.report_callback_exception = _report_tkinter_exception
 
 from config import AppConfig
 from services.storage_service import StorageService

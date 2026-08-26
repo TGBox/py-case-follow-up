@@ -88,5 +88,5 @@ class WikiWidget(ctk.CTkFrame):
         if success:
             self.status_label.configure(text=f"✅ {msg}", text_color="green")
         else:
-            self.status_label.configure(text=f"⚠️ {msg}", text_color="red")
+            self.status_label.configure(text=f"⚠ {msg}", text_color="red")
         self.on_search()

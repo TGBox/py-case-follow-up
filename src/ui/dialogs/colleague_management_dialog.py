@@ -2,8 +2,9 @@ import customtkinter as ctk
 from typing import Callable, Any
 from models.profile import Colleague
 from services.storage_service import StorageService
+from constants import DEFAULT_DEPARTMENTS, DIALOG_DIMENSIONS, DIALOG_TITLES
 
-DEPARTMENTS = ["Support", "Entwicklung", "Technik", "Vertrieb", "Buchhaltung", "Geschäftsführung", "Sonstige"]
+DEPARTMENTS = DEFAULT_DEPARTMENTS
 
 
 class ColleagueManagementDialog(ctk.CTkToplevel):
@@ -19,11 +20,12 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.storage_service = storage_service
         self.on_colleagues_updated = on_colleagues_updated
 
-        self.title("👥 Mitarbeiter- & Kollegeneinträge")
-        self.geometry("1024x720")
+        w, h = DIALOG_DIMENSIONS["colleague_mgmt"]
+        self.title(DIALOG_TITLES["colleague_mgmt"])
+        self.geometry(f"{w}x{h}")
         self.minsize(900, 600)
         from utils.ui_utils import center_window
-        center_window(self, 1024, 720)
+        center_window(self, w, h)
 
         self.transient(parent)
         self.grab_set()
@@ -121,7 +123,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         # Absence / Vacation settings
         self.is_absent_var = ctk.BooleanVar(value=False)
         self.chk_absent = ctk.CTkCheckBox(
-            form_scroll, text="⚠️ Kollege ist aktuell abwesend (Urlaub / Krankheit)", variable=self.is_absent_var
+            form_scroll, text="⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)", variable=self.is_absent_var
         )
         self.chk_absent.pack(anchor="w", pady=(5, 5))
 
@@ -137,7 +139,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         self.delete_btn = ctk.CTkButton(
             action_bar,
-            text="🗑️ Löschen",
+            text="🗑 Löschen",
             command=self.on_click_delete,
             fg_color="firebrick",
             hover_color="darkred",
@@ -203,7 +205,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.err_lbl.configure(text="")
 
         if col:
-            self.form_header_lbl.configure(text=f"✏️ Bearbeiten: {col.name}")
+            self.form_header_lbl.configure(text=f"✏ Bearbeiten: {col.name}")
             self.username_entry.delete(0, "end")
             self.username_entry.insert(0, col.username)
             self.name_entry.delete(0, "end")
@@ -264,7 +266,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         errs = col.validate()
         if errs:
-            self.err_lbl.configure(text=f"⚠️ {errs[0]}")
+            self.err_lbl.configure(text=f"⚠ {errs[0]}")
             return
 
         # Update existing or add new

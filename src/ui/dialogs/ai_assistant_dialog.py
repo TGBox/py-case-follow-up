@@ -8,6 +8,16 @@ from utils.datetime_utils import now_iso
 from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
 
 
+from constants import (
+    DIALOG_TITLES,
+    DIALOG_DIMENSIONS,
+    UI_BUTTON_TEXTS,
+    STATUS_MESSAGES,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_OLLAMA_MODEL,
+)
+
+
 class AiAssistantDialog(ctk.CTkToplevel):
     """Dialog providing AI & NLP Support capabilities (Case Summaries, Solution Cards, and Email Reply Drafting)."""
 
@@ -28,12 +38,12 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.wiki_articles = wiki_articles or []
         self._is_loading = False
 
-        ollama_url = profile.ai_settings.ollama_url if profile else "http://localhost:11434"
-        model_name = profile.ai_settings.model_name if profile else "llama3"
+        ollama_url = profile.ai_settings.ollama_url if profile else DEFAULT_OLLAMA_URL
+        model_name = profile.ai_settings.model_name if profile else DEFAULT_OLLAMA_MODEL
         self.ai_service = AiService(ollama_url=ollama_url, model_name=model_name)
 
-        self.title(f"🤖 KI- & Support-Assistent — Fall [{case.case_id}]")
-        w, h = 820, 580
+        self.title(f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]")
+        w, h = DIALOG_DIMENSIONS["ai_assistant"]
         self.geometry(f"{w}x{h}")
         self.minsize(720, 480)
         center_window(self, w, h)

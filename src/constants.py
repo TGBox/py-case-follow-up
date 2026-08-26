@@ -76,6 +76,7 @@ DIALOG_TITLES = {
     "export": "Übergabe- & Export-Assistent",
     "p2p_diff": "Multi-User P2P-Sync & Kollegendaten-Abgleich",
     "email_calendar": "✉ E-Mail & 📅 Kalender-Entwurf",
+    "ai_assistant": "🤖 KI- & Support-Assistent",
 }
 
 # --- Button Labels & UI Action Texts ---
@@ -96,6 +97,12 @@ UI_BUTTON_TEXTS = {
     "print_pdf": "🖨 PDF-Bericht drucken",
     "open_html": "🌐 HTML-Bericht",
     "save_file": "💾 Speichern...",
+    "regenerate_summary": "🔄 Zusammenfassung neu generieren",
+    "copy_clipboard": "📋 In Zwischenablage kopieren",
+    "insert_timeline": "📌 In Fall-Zeitleiste einfügen",
+    "rerun_solutions": "🔄 Lösungssuche erneut ausführen",
+    "generate_draft": "🔄 Antwort-Entwurf generieren",
+    "open_email_draft": "✉ In E-Mail-Entwurf öffnen",
 }
 
 # --- Status & Feedback Messages ---
@@ -106,6 +113,13 @@ STATUS_MESSAGES = {
     "colleague_saved": "✓ Kollegendaten erfolgreich gespeichert.",
     "tags_updated": "✓ Tags erfolgreich aktualisiert.",
     "profile_saved": "✓ Profil & Einstellungen gespeichert.",
+    "ai_summary_generated": "✓ Zusammenfassung erfolgreich generiert.",
+    "ai_summary_copied": "✓ Zusammenfassung in Zwischenablage kopiert.",
+    "ai_summary_timeline_saved": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.",
+    "ai_draft_generated": "✓ E-Mail-Antwort-Entwurf generiert.",
+    "ai_ollama_online": "🟢 Ollama Local LLM aktiv",
+    "ai_ollama_offline": "⚡ Regelbasierter NLP-Modus (Ollama offline)",
+    "ai_processing": "🤖 KI verarbeitet Anfrage...",
 }
 
 # --- Validation Error Messages ---
@@ -170,7 +184,22 @@ DIALOG_DIMENSIONS = {
     "export": (820, 760),
     "p2p_diff": (920, 720),
     "email_calendar": (760, 660),
+    "ai_assistant": (820, 580),
 }
+
+# --- AI & LLM Service Configuration & Prompts ---
+DEFAULT_OLLAMA_URL = "http://localhost:11434"
+DEFAULT_OLLAMA_MODEL = "llama3"
+OLLAMA_TIMEOUT_STATUS = 1.5
+OLLAMA_TIMEOUT_GENERATE = 8.0
+AI_USER_AGENT = "SupportCockpit/1.0"
+
+AI_SYSTEM_ROLE_DEFAULT = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen."
+AI_SYSTEM_ROLE_EMAIL = "Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen."
+
+AI_PROMPT_BASE_RULES_HEADER = "--- GLOBALE BASIS-REGELN ---"
+AI_PROMPT_PRACTICE_RULES_HEADER = "--- PRAXIS-SPEZIFISCHE REGELN (VORRANGIG UND BINDEND!) ---"
+AI_PROMPT_OVERRIDE_NOTICE = "WICHTIGER HINWEIS: Die folgenden Praxis-Regeln haben IMMER Vorrang vor den globalen Basis-Regeln! Falls eine Praxis-Regel einer Basis-Regel widerspricht, musst du dich ZWINGEND an die Praxis-Regel halten:"
 
 # --- Design System Color Tokens ---
 COLOR_PRIMARY = "#2563eb"

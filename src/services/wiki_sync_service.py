@@ -265,3 +265,32 @@ class WikiSyncService:
 
         conn.close()
         return results
+
+    def get_all_pages(self) -> list[dict[str, Any]]:
+        """Returns all cached pages from offline SQLite wiki database as dicts."""
+        if not Path(self.db_path).exists():
+            return []
+        api_url = normalize_url(self.settings.api_url)
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT page_id, title, url, content_markdown FROM wiki_pages")
+            rows = cursor.fetchall()
+            results = []
+            for row in rows:
+                p_id, raw_title, raw_url, content_raw = row[0], row[1], row[2], row[3]
+                url = raw_url
+                if not url or "/pages/" in url:
+                    url = f"{api_url}/link/{p_id}" if api_url else (url or "")
+                results.append({
+                    "page_id": p_id,
+                    "title": clean_html_snippet(raw_title),
+                    "url": url,
+                    "snippet": clean_html_snippet((content_raw or raw_title)[:150]),
+                    "content": content_raw or "",
+                })
+            conn.close()
+            return results
+        except Exception as e:
+            logger.error(f"Failed to fetch wiki pages: {e}")
+            return []

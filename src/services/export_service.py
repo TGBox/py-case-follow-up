@@ -1,6 +1,6 @@
 import logging
 from typing import Any
-from jinja2 import Template, Environment
+from jinja2 import Template, Environment  # type: ignore
 from models.case import Case
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema

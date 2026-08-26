@@ -4,9 +4,9 @@ import threading
 import logging
 from typing import Callable
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont  # type: ignore
 
-import pystray
+import pystray  # type: ignore
 
 logger = logging.getLogger("SupportCockpit")
 

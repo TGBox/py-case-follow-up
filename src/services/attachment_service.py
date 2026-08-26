@@ -72,7 +72,7 @@ class AttachmentService:
         dest_path = dir_path / f"{timestamp}_clipboard.png"
 
         try:
-            from PIL import Image, ImageGrab
+            from PIL import Image, ImageGrab  # type: ignore
             img = ImageGrab.grabclipboard()
             if isinstance(img, Image.Image):
                 img.save(dest_path, "PNG")

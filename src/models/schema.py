@@ -13,6 +13,9 @@ class SchemaField:
     required: bool = False
     placeholder: str = ""
     order: int = 1
+    depends_on_field_id: str = ""
+    depends_on_value: str = ""
+    allowed_extensions: list[str] = field(default_factory=list)
 
     def validate(self) -> list[str]:
         errors = []
@@ -37,10 +40,18 @@ class SchemaField:
             res["options"] = self.options
         if self.placeholder:
             res["placeholder"] = self.placeholder
+        if self.depends_on_field_id:
+            res["depends_on_field_id"] = self.depends_on_field_id
+        if self.depends_on_value:
+            res["depends_on_value"] = self.depends_on_value
+        if self.allowed_extensions:
+            res["allowed_extensions"] = self.allowed_extensions
         return res
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "SchemaField":
+        exts_raw = data.get("allowed_extensions", [])
+        exts = list(exts_raw) if isinstance(exts_raw, list) else []
         return cls(
             field_id=data.get("field_id", ""),
             label=data.get("label", ""),
@@ -49,6 +60,9 @@ class SchemaField:
             required=bool(data.get("required", False)),
             placeholder=data.get("placeholder", ""),
             order=int(data.get("order", 1)),
+            depends_on_field_id=data.get("depends_on_field_id", ""),
+            depends_on_value=data.get("depends_on_value", ""),
+            allowed_extensions=exts,
         )
 
 

@@ -2,7 +2,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, STATUS_MESSAGES
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, STATUS_MESSAGES, LABEL_SNIPPET_SHORTCUT_FIELD, HOTKEY_RECORDER_BUTTON
 
 
 class SnippetManagementDialog(ctk.CTkToplevel):
@@ -80,7 +80,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. fehler, sql, anleitung")
         self.tags_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(self.form_box, text="Tastenkürzel / Macro (z. B. <Control-Alt-1>):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(self.form_box, text=LABEL_SNIPPET_SHORTCUT_FIELD, font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         sc_row = ctk.CTkFrame(self.form_box, fg_color="transparent")
         sc_row.pack(fill="x", pady=(0, 12))
 
@@ -89,7 +89,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         rec_btn = ctk.CTkButton(
             sc_row,
-            text="🎙 Taste erfassen",
+            text=HOTKEY_RECORDER_BUTTON,
             width=110,
             fg_color="gray30",
             hover_color="gray45",

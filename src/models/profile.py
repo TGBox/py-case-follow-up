@@ -2,7 +2,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import SyncMode, LayoutMode
 from utils.security import normalize_url
-from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS, VALIDATION_MESSAGES
+from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS, VALIDATION_MESSAGES, DEFAULT_SHORTCUTS
 
 
 @dataclass
@@ -110,18 +110,18 @@ class UISettings:
 
 @dataclass
 class ShortcutSettings:
-    new_case: str = "<Control-n>"
-    search_customer: str = "<Control-f>"
-    wiki_search: str = "<Control-w>"
-    export_dialog: str = "<Control-e>"
-    save_case: str = "<Control-s>"
-    archive_case: str = "<Control-Shift-A>"
-    open_settings: str = "<Control-p>"
-    snippet_picker: str = "<Control-m>"
-    view_cockpit: str = "<Control-1>"
-    view_board: str = "<Control-2>"
-    view_table: str = "<Control-3>"
-    toggle_theme: str = "<Control-t>"
+    new_case: str = DEFAULT_SHORTCUTS["new_case"]
+    search_customer: str = DEFAULT_SHORTCUTS["search_customer"]
+    wiki_search: str = DEFAULT_SHORTCUTS["wiki_search"]
+    export_dialog: str = DEFAULT_SHORTCUTS["export_dialog"]
+    save_case: str = DEFAULT_SHORTCUTS["save_case"]
+    archive_case: str = DEFAULT_SHORTCUTS["archive_case"]
+    open_settings: str = DEFAULT_SHORTCUTS["open_settings"]
+    snippet_picker: str = DEFAULT_SHORTCUTS["snippet_picker"]
+    view_cockpit: str = DEFAULT_SHORTCUTS["view_cockpit"]
+    view_board: str = DEFAULT_SHORTCUTS["view_board"]
+    view_table: str = DEFAULT_SHORTCUTS["view_table"]
+    toggle_theme: str = DEFAULT_SHORTCUTS["toggle_theme"]
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -129,18 +129,18 @@ class ShortcutSettings:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "ShortcutSettings":
         return cls(
-            new_case=data.get("new_case", "<Control-n>"),
-            search_customer=data.get("search_customer", "<Control-f>"),
-            wiki_search=data.get("wiki_search", "<Control-w>"),
-            export_dialog=data.get("export_dialog", "<Control-e>"),
-            save_case=data.get("save_case", "<Control-s>"),
-            archive_case=data.get("archive_case", "<Control-Shift-A>"),
-            open_settings=data.get("open_settings", "<Control-p>"),
-            snippet_picker=data.get("snippet_picker", "<Control-m>"),
-            view_cockpit=data.get("view_cockpit", "<Control-1>"),
-            view_board=data.get("view_board", "<Control-2>"),
-            view_table=data.get("view_table", "<Control-3>"),
-            toggle_theme=data.get("toggle_theme", "<Control-t>"),
+            new_case=data.get("new_case", DEFAULT_SHORTCUTS["new_case"]),
+            search_customer=data.get("search_customer", DEFAULT_SHORTCUTS["search_customer"]),
+            wiki_search=data.get("wiki_search", DEFAULT_SHORTCUTS["wiki_search"]),
+            export_dialog=data.get("export_dialog", DEFAULT_SHORTCUTS["export_dialog"]),
+            save_case=data.get("save_case", DEFAULT_SHORTCUTS["save_case"]),
+            archive_case=data.get("archive_case", DEFAULT_SHORTCUTS["archive_case"]),
+            open_settings=data.get("open_settings", DEFAULT_SHORTCUTS["open_settings"]),
+            snippet_picker=data.get("snippet_picker", DEFAULT_SHORTCUTS["snippet_picker"]),
+            view_cockpit=data.get("view_cockpit", DEFAULT_SHORTCUTS["view_cockpit"]),
+            view_board=data.get("view_board", DEFAULT_SHORTCUTS["view_board"]),
+            view_table=data.get("view_table", DEFAULT_SHORTCUTS["view_table"]),
+            toggle_theme=data.get("toggle_theme", DEFAULT_SHORTCUTS["toggle_theme"]),
         )
 
 

@@ -13,20 +13,30 @@ APP_MIN_HEIGHT = 650
 DISPLAY_CHANNEL_NAMES = {
     "PHONE_INBOUND": "Telefon (Eingang)",
     "PHONE_OUTBOUND": "Telefon (Ausgang)",
-    "EMAIL": "E-Mail",
-    "DEV_TICKET": "Entwickler-Ticket",
+    "EMAIL_IN": "E-Mail (Eingang)",
+    "EMAIL_OUT": "E-Mail (Eingang)",
+    "GITLAB_TICKET_CREATED": "GitLab-Ticket erstellt",
+    "GITLAB_TICKET_UPDATED": "GitLab-Ticket geupdated",
+    "GITLAB_TICKET_CLOSED": "GitLab-Ticket geschlossen",
     "INTERNAL_NOTE": "Interne Notiz",
+    "OTHER": "Sonstiges"
 }
 
 DISPLAY_ACTOR_NAMES = {
-    "SUPPORT": "Support",
+    "SUPPORT": "Support / Hotline",
+    "HOTLINE": "Hotline",
     "DEVELOPMENT": "Entwicklung",
     "TECH": "Technik",
     "CUSTOMER": "Kunde",
+    "DATA_SUPPORT": "Data-AL Support / Hotline",
+    "DATA_HOTLINE": "Data-AL Hotline",
+    "DATA_DEVELOPMENT": "Data-AL Entwicklung",
+    "DATA_TECH": "Data-AL Technik",
+    "DATA_CUSTOMER": "Data-AL Kunde",
 }
 
 DISPLAY_LAYOUT_NAMES = {
-    "COCKPIT": "Cockpit (Einzel-Fall)",
+    "COCKPIT": "Cockpit (Hauptansicht)",
     "BOARD": "Kanban-Board (Zuständigkeiten)",
     "TABLE": "Tabelle & Details (Sortier-Matrix)",
 }
@@ -34,7 +44,7 @@ DISPLAY_LAYOUT_NAMES = {
 DISPLAY_BOARD_COLUMN_NAMES = {
     "NEW": "Neu",
     "ACTION_REQUIRED": "Aktion erforderlich",
-    "WAITING": "Warten auf Kunde",
+    "WAITING": "Warten auf zuständige Stelle",
     "IN_PROGRESS": "In Bearbeitung",
     "DONE": "Erledigt",
 }

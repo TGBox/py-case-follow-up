@@ -205,6 +205,26 @@ class WikiSettings:
         )
 
 
+@dataclass
+class AiSettings:
+    ollama_url: str = "http://localhost:11434"
+    model_name: str = "llama3"
+    enable_ai: bool = True
+    auto_summarize_on_open: bool = False
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "AiSettings":
+        return cls(
+            ollama_url=data.get("ollama_url", "http://localhost:11434"),
+            model_name=data.get("model_name", "llama3"),
+            enable_ai=bool(data.get("enable_ai", True)),
+            auto_summarize_on_open=bool(data.get("auto_summarize_on_open", False)),
+        )
+
+
 DEFAULT_MODULE_TAGS = [
     "Fakturaübersicht",
     "Rezeptdruck",
@@ -227,6 +247,7 @@ class UserProfile:
     reminder_settings: ReminderSettings = field(default_factory=ReminderSettings)
     scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
+    ai_settings: AiSettings = field(default_factory=AiSettings)
     available_tags: list[str] = field(default_factory=lambda: list(DEFAULT_TAGS))
     available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
@@ -238,6 +259,7 @@ class UserProfile:
             "reminder_settings": self.reminder_settings.to_dict(),
             "scoring_matrix": self.scoring_matrix.to_dict(),
             "wiki_settings": self.wiki_settings.to_dict(),
+            "ai_settings": self.ai_settings.to_dict(),
             "available_tags": self.available_tags,
             "available_module_tags": self.available_module_tags,
         }
@@ -255,6 +277,7 @@ class UserProfile:
             reminder_settings=ReminderSettings.from_dict(data.get("reminder_settings", {})),
             scoring_matrix=ScoringMatrix.from_dict(data.get("scoring_matrix", {})),
             wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
+            ai_settings=AiSettings.from_dict(data.get("ai_settings", {})),
             available_tags=tags,
             available_module_tags=mod_tags,
         )

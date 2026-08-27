@@ -213,6 +213,16 @@ OLLAMA_TIMEOUT_STATUS = 1.5
 OLLAMA_TIMEOUT_GENERATE = 120.0
 AI_USER_AGENT = "SupportCockpit/1.0"
 
+# --- Gemini API Configuration ---
+DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+AVAILABLE_GEMINI_MODELS = [
+    "gemini-1.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-pro",
+    "gemini-2.0-flash-lite",
+]
+GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+
 AI_SYSTEM_ROLE_DEFAULT = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen."
 AI_SYSTEM_ROLE_EMAIL = "Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen."
 
@@ -227,7 +237,9 @@ AI_STATUS_ONLINE_LOADED = "🟢 Ollama Server Online ({count} Modelle installier
 AI_STATUS_ONLINE_STANDBY = "🔵 Ollama Server Online ({count} Modelle installiert | Standby — Kein Modell im Speicher)"
 AI_STATUS_ONLINE_DISABLED = "⚪ Ollama Server Online ({count} Modelle installiert | KI global deaktiviert)"
 AI_STATUS_OFFLINE_LABEL = "🔴 Ollama Server nicht erreichbar / Offline (unter {url})"
-AI_STATUS_CHECKING = "🔍 Prüfe Ollama-Status im Hintergrund..."
+AI_STATUS_GEMINI_ACTIVE = "🟢 Google Gemini API aktiv ({model} | DSGVO-Anonymisiert)"
+AI_STATUS_GEMINI_NO_KEY = "🔴 Google Gemini API Key fehlt oder ungültig"
+AI_STATUS_CHECKING = "🔍 Prüfe KI-Status im Hintergrund..."
 AI_STATUS_UNLOADING = "⏳ Deaktiviere KI global & entlade Modelle aus Arbeitsspeicher..."
 AI_STATUS_UNLOADED = "⚡ KI global deaktiviert & Modelle aus Arbeitsspeicher entladen."
 AI_STATUS_ACTIVATED = "✅ KI global aktiviert."
@@ -238,9 +250,10 @@ AI_NO_MODELS_TITLE = "⚠ Keine KI-Modelle in Ollama installiert!"
 AI_NO_MODELS_DESC = "Bitte laden Sie ein Modell wie qwen2.5:7b oder llama3 über die Ollama-Bibliothek herunter:"
 
 AI_BADGE_ACTIVE = "🟢 Ollama Local LLM aktiv ({model})"
+AI_BADGE_GEMINI_ACTIVE = "🟢 Google Gemini aktiv ({model} | Anonymisiert)"
 AI_BADGE_STANDBY = "🔵 Ollama Standby ({model})"
 AI_BADGE_DISABLED = "⚪ KI global deaktiviert (Schalter OFF)"
-AI_BADGE_NLP_FALLBACK = "⚡ Regelbasierter NLP-Modus (Ollama offline)"
+AI_BADGE_NLP_FALLBACK = "⚡ Regelbasierter NLP-Modus (KI Offline/Ohne Key)"
 
 # --- AI Button Labels & UI Action Texts ---
 AI_BTN_GENERATE_DRAFT = "🤖 KI-Entwurf generieren"
@@ -249,6 +262,7 @@ AI_BTN_GLOBAL_TOGGLE = "🤖 KI- & NLP-Unterstützung global aktivieren"
 AI_BTN_GLOBAL_TOGGLE_HEADER = "🤖 KI Global Aktiv"
 AI_BTN_START_SERVER = "▶ Ollama Server Starten"
 AI_BTN_STOP_SERVER = "🛑 Server Beenden"
+AI_BTN_TEST_GEMINI_KEY = "🔑 Gemini Key Testen"
 AI_BTN_DOWNLOAD_OLLAMA = "🌐 Ollama Herunterladen & Installieren (ollama.com/download)"
 AI_BTN_DOWNLOAD_QWEN = "🌐 qwen2.5 Download (ollama.com/library/qwen2.5)"
 AI_BTN_DOWNLOAD_LLAMA = "🌐 llama3 Download (ollama.com/library/llama3)"

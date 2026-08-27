@@ -9,6 +9,8 @@ from constants import (
     DIALOG_TITLES,
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    DEFAULT_GEMINI_MODEL,
+    AVAILABLE_GEMINI_MODELS,
     OLLAMA_DOWNLOAD_URL,
     OLLAMA_LIBRARY_QWEN_URL,
     OLLAMA_LIBRARY_LLAMA_URL,
@@ -16,6 +18,8 @@ from constants import (
     AI_STATUS_ONLINE_STANDBY,
     AI_STATUS_ONLINE_DISABLED,
     AI_STATUS_OFFLINE_LABEL,
+    AI_STATUS_GEMINI_ACTIVE,
+    AI_STATUS_GEMINI_NO_KEY,
     AI_STATUS_CHECKING,
     AI_STATUS_UNLOADING,
     AI_STATUS_UNLOADED,
@@ -32,6 +36,7 @@ from constants import (
     AI_BTN_GLOBAL_TOGGLE,
     AI_BTN_START_SERVER,
     AI_BTN_STOP_SERVER,
+    AI_BTN_TEST_GEMINI_KEY,
     AI_BTN_DOWNLOAD_OLLAMA,
     AI_BTN_DOWNLOAD_QWEN,
     AI_BTN_DOWNLOAD_LLAMA,
@@ -462,9 +467,87 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             self.tab_ai,
-            text="🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Fallback)",
+            text="🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)",
             font=ctk.CTkFont(size=14, weight="bold"),
         ).pack(anchor="w", pady=(10, 5))
+
+        # --- Provider Selection Row ---
+        provider_frame = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
+        provider_frame.pack(fill="x", pady=(0, 8))
+
+        ctk.CTkLabel(provider_frame, text="KI-Anbieter wählen:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 10))
+        
+        current_provider = getattr(self.profile.ai_settings, "provider", "OLLAMA").upper()
+        self.ai_provider_seg = ctk.CTkSegmentedButton(
+            provider_frame,
+            values=["OLLAMA (Lokal)", "GOOGLE GEMINI (Cloud)"],
+            command=self.on_change_ai_provider,
+        )
+        self.ai_provider_seg.set("GOOGLE GEMINI (Cloud)" if current_provider == "GEMINI" else "OLLAMA (Lokal)")
+        self.ai_provider_seg.pack(side="left", padx=(0, 15))
+
+        self.anonymize_chk_var = ctk.BooleanVar(value=getattr(self.profile.ai_settings, "enable_anonymization", True))
+        self.anonymize_chk = ctk.CTkCheckBox(
+            provider_frame,
+            text="🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)",
+            variable=self.anonymize_chk_var,
+            font=ctk.CTkFont(size=11, weight="bold"),
+        )
+        self.anonymize_chk.pack(side="left")
+
+        # --- Gemini Card (Shown when Gemini selected) ---
+        self.gemini_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
+        
+        gemini_top_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
+        gemini_top_row.pack(fill="x", padx=12, pady=(10, 5))
+
+        ctk.CTkLabel(gemini_top_row, text="🔑 Google Gemini API Key:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+        self.gemini_key_entry = ctk.CTkEntry(
+            gemini_top_row,
+            placeholder_text="AIzaSy...",
+            show="*",
+            width=280,
+        )
+        self.gemini_key_entry.insert(0, getattr(self.profile.ai_settings, "gemini_api_key", ""))
+        self.gemini_key_entry.pack(side="left", padx=(0, 8))
+
+        self.btn_toggle_key_show = ctk.CTkButton(
+            gemini_top_row,
+            text="👁",
+            width=35,
+            fg_color="gray30",
+            command=self.on_toggle_show_gemini_key
+        )
+        self.btn_toggle_key_show.pack(side="left", padx=(0, 8))
+
+        self.btn_test_gemini = ctk.CTkButton(
+            gemini_top_row,
+            text=AI_BTN_TEST_GEMINI_KEY,
+            command=self.on_test_gemini_key,
+            fg_color=COLOR_PRIMARY_BLUE,
+            width=140,
+        )
+        self.btn_test_gemini.pack(side="left")
+
+        gemini_model_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
+        gemini_model_row.pack(fill="x", padx=12, pady=(0, 10))
+
+        ctk.CTkLabel(gemini_model_row, text="Gemini Modell wählen:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+        self.gemini_model_combo = ctk.CTkOptionMenu(
+            gemini_model_row,
+            values=AVAILABLE_GEMINI_MODELS,
+            width=200,
+        )
+        saved_g_model = getattr(self.profile.ai_settings, "gemini_model", DEFAULT_GEMINI_MODEL)
+        self.gemini_model_combo.set(saved_g_model if saved_g_model in AVAILABLE_GEMINI_MODELS else DEFAULT_GEMINI_MODEL)
+        self.gemini_model_combo.pack(side="left", padx=(0, 15))
+
+        self.gemini_status_lbl = ctk.CTkLabel(
+            gemini_model_row,
+            text="",
+            font=ctk.CTkFont(size=11),
+        )
+        self.gemini_status_lbl.pack(side="left")
 
         # Top Ollama Management Card
         self.ollama_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
@@ -680,8 +763,47 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         except Exception:
             pass
 
-        # Initial background scan (non-blocking thread)
+        self.on_change_ai_provider(self.ai_provider_seg.get())
         self.scan_ollama_status()
+
+    def on_change_ai_provider(self, value: str):
+        if "GEMINI" in value.upper():
+            self.gemini_card.pack(fill="x", pady=(0, 10), padx=2)
+            self.ollama_card.pack_forget()
+        else:
+            self.gemini_card.pack_forget()
+            self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
+
+    def on_toggle_show_gemini_key(self):
+        current = self.gemini_key_entry.cget("show")
+        if current == "*":
+            self.gemini_key_entry.configure(show="")
+            self.btn_toggle_key_show.configure(text="🔒")
+        else:
+            self.gemini_key_entry.configure(show="*")
+            self.btn_toggle_key_show.configure(text="👁")
+
+    def on_test_gemini_key(self):
+        key = self.gemini_key_entry.get().strip()
+        model = self.gemini_model_combo.get()
+        if not key:
+            self.gemini_status_lbl.configure(text="⚠ Bitte API Key eingeben", text_color=COLOR_TEXT_RED)
+            return
+
+        self.gemini_status_lbl.configure(text="🔍 Prüfe Key...", text_color=COLOR_MUTED_LABEL)
+
+        def worker():
+            from services.ai_service import AiService
+            svc = AiService(provider="GEMINI", gemini_api_key=key, gemini_model=model)
+            ok, msg = svc.check_gemini_status(api_key=key, model=model)
+            if self.winfo_exists():
+                self.after(0, lambda: self.gemini_status_lbl.configure(
+                    text=f"✅ {msg}" if ok else f"❌ {msg}",
+                    text_color=COLOR_TEXT_GREEN if ok else COLOR_TEXT_RED
+                ))
+
+        import threading
+        threading.Thread(target=worker, daemon=True).start()
 
     def scan_ollama_status(self):
         if not hasattr(self, "ollama_status_lbl"):
@@ -1075,8 +1197,13 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.wiki_settings.sync_on_startup = self.sync_startup_var.get()
 
         # Update AI Settings
+        provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"
+        self.profile.ai_settings.provider = provider_val
         self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
         self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
+        self.profile.ai_settings.gemini_api_key = self.gemini_key_entry.get().strip()
+        self.profile.ai_settings.gemini_model = self.gemini_model_combo.get()
+        self.profile.ai_settings.enable_anonymization = bool(self.anonymize_chk_var.get())
         self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
         raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
         self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]

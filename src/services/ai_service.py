@@ -2,12 +2,16 @@ import json
 import urllib.request
 import urllib.error
 import re
+import logging
 from typing import Any
 from models.case import Case
 from enums import get_actor_display, get_board_column_display
+from services.anonymizer_service import PiiAnonymizer
 from constants import (
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    DEFAULT_GEMINI_MODEL,
+    GEMINI_API_BASE_URL,
     DEFAULT_MODELFILE_PATH,
     DEFAULT_PVS_MODEL_NAME,
     OLLAMA_FALLBACK_BASE_MODELS,
@@ -23,13 +27,32 @@ from constants import (
     AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE,
 )
 
+logger = logging.getLogger("AiService")
+
 
 class AiService:
-    """Service providing Hybrid AI Capabilities: Ollama Local LLM REST API + Rule-Based Zero-Token Fallback Engine."""
+    """Service providing Hybrid AI Capabilities: 
+    - Local Ollama LLM REST API
+    - Cloud Google Gemini REST API (with Client-Side PII Anonymization for GDPR/Medical Compliance)
+    - Rule-Based Zero-Token Fallback Engine
+    """
 
-    def __init__(self, ollama_url: str = DEFAULT_OLLAMA_URL, model_name: str = DEFAULT_OLLAMA_MODEL):
+    def __init__(
+        self,
+        provider: str = "OLLAMA",
+        ollama_url: str = DEFAULT_OLLAMA_URL,
+        model_name: str = DEFAULT_OLLAMA_MODEL,
+        gemini_api_key: str = "",
+        gemini_model: str = DEFAULT_GEMINI_MODEL,
+        enable_anonymization: bool = True,
+    ):
+        self.provider = provider.upper()  # "OLLAMA" or "GEMINI"
         self.ollama_url = ollama_url.rstrip("/")
         self.model_name = model_name
+        self.gemini_api_key = gemini_api_key
+        self.gemini_model = gemini_model
+        self.enable_anonymization = enable_anonymization
+        self.anonymizer = PiiAnonymizer(enable_anonymization=self.enable_anonymization)
 
     def check_ollama_status(self) -> tuple[bool, list[str]]:
         """Checks if local Ollama server is running and lists installed LLM models."""
@@ -44,6 +67,30 @@ class AiService:
         except Exception:
             pass
         return False, []
+
+    def check_gemini_status(self, api_key: str | None = None, model: str | None = None) -> tuple[bool, str]:
+        """Checks if Google Gemini API key is valid by querying the models list API."""
+        key = api_key if api_key is not None else self.gemini_api_key
+        if not key or not key.strip():
+            return False, "Kein Gemini API Key konfiguriert."
+
+        try:
+            url = f"{GEMINI_API_BASE_URL}?key={key.strip()}"
+            req = urllib.request.Request(url, headers={"User-Agent": AI_USER_AGENT})
+            with urllib.request.urlopen(req, timeout=5.0) as resp:
+                if resp.status == 200:
+                    return True, f"Google Gemini API Key gültig! (Modell: {model or self.gemini_model})"
+        except urllib.error.HTTPError as e:
+            try:
+                err_data = json.loads(e.read().decode("utf-8"))
+                msg = err_data.get("error", {}).get("message", f"HTTP {e.code}")
+                return False, f"Gemini API Fehler: {msg}"
+            except Exception:
+                return False, f"HTTP Fehler {e.code}: {e.reason}"
+        except Exception as e:
+            return False, f"Verbindungsfehler zu Google Gemini: {e}"
+
+        return False, "Unbekannter API-Fehler."
 
     def get_available_models(self) -> list[str]:
         """Returns list of installed model names from Ollama."""
@@ -192,9 +239,86 @@ class AiService:
                     res_data = json.loads(resp.read().decode("utf-8"))
                     return res_data.get("response", "").strip()
         except Exception as e:
-            import logging
-            logging.getLogger("AiService").warning(f"Ollama generation request failed or timed out: {e}")
+            logger.warning(f"Ollama generation request failed or timed out: {e}")
         return None
+
+    def _query_gemini(self, prompt: str, system_prompt: str = "") -> str | None:
+        """Sends a generation request to Google Gemini API via HTTP REST."""
+        if not self.gemini_api_key or not self.gemini_api_key.strip():
+            logger.warning("Gemini API key is missing.")
+            return None
+
+        try:
+            url = f"{GEMINI_API_BASE_URL}/{self.gemini_model}:generateContent?key={self.gemini_api_key.strip()}"
+            
+            combined_text = prompt
+            if system_prompt:
+                combined_text = f"System-Anweisungen:\n{system_prompt}\n\nBenutzer-Anfrage:\n{prompt}"
+
+            payload = {
+                "contents": [
+                    {
+                        "parts": [
+                            {"text": combined_text}
+                        ]
+                    }
+                ]
+            }
+
+            json_bytes = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(
+                url,
+                data=json_bytes,
+                headers={"Content-Type": "application/json", "User-Agent": AI_USER_AGENT}
+            )
+            with urllib.request.urlopen(req, timeout=30.0) as resp:
+                if resp.status == 200:
+                    res_data = json.loads(resp.read().decode("utf-8"))
+                    candidates = res_data.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            return parts[0].get("text", "").strip()
+        except urllib.error.HTTPError as e:
+            try:
+                err_body = json.loads(e.read().decode("utf-8"))
+                logger.warning(f"Gemini API HTTP Error {e.code}: {err_body}")
+            except Exception:
+                logger.warning(f"Gemini API HTTP Error {e.code}: {e.reason}")
+        except Exception as e:
+            logger.warning(f"Gemini generation request failed: {e}")
+        return None
+
+    def query_llm(self, prompt: str, system_prompt: str = "", case: Case | None = None) -> str | None:
+        """Unified method for querying LLM (Ollama or Gemini) with PII Anonymization."""
+        # 1. Anonymize prompt and system prompt locally if Gemini or anonymization enabled
+        should_anonymize = self.enable_anonymization or (self.provider == "GEMINI")
+        
+        mapping: dict[str, str] = {}
+        anon_prompt = prompt
+        anon_system = system_prompt
+
+        if should_anonymize:
+            anon_prompt, mapping_prompt = self.anonymizer.anonymize(prompt, case=case)
+            anon_system, mapping_sys = self.anonymizer.anonymize(system_prompt, case=case)
+            mapping = {**mapping_prompt, **mapping_sys}
+
+        # 2. Dispatch to provider
+        raw_response: str | None = None
+        if self.provider == "GEMINI":
+            raw_response = self._query_gemini(anon_prompt, system_prompt=anon_system)
+        else:
+            raw_response = self._query_ollama(anon_prompt, system_prompt=anon_system)
+
+        if not raw_response:
+            return None
+
+        # 3. De-anonymize response locally
+        if should_anonymize and mapping:
+            final_response = self.anonymizer.deanonymize(raw_response, mapping)
+            return final_response
+
+        return raw_response
 
     @staticmethod
     def build_system_prompt(
@@ -233,27 +357,26 @@ class AiService:
         practice_rules: list[str] | None = None,
         custom_instruction: str | None = None,
     ) -> str:
-        """Generates a concise bulleted summary of a support case using Ollama LLM or Rule-Based NLP."""
-        is_online, _ = self.check_ollama_status()
-        if is_online:
-            timeline_str = "\n".join(f"- [{t.timestamp[:16]}] {t.author} ({t.channel}): {t.note}" for t in case.timeline)
-            prompt = (
-                f"Bitte erstelle eine präzise, übersichtliche stichpunktartige Zusammenfassung auf Deutsch für folgenden Support-Fall:\n\n"
-                f"Fall-ID: {case.case_id}\n"
-                f"Praxis / Kunde: {case.customer.practice_name} ({case.customer.customer_id})\n"
-                f"Thema: {case.classification.title}\n"
-                f"Zuständig: {get_actor_display(case.workflow_status.current_actor)}\n"
-                f"Status: {get_board_column_display(case.workflow_status.board_column)}\n"
-                f"Zeitleiste:\n{timeline_str}\n\n"
-                f"Formatiere das Ergebnis in 3 Abschnitte:\n"
-                f"1. Problembeschreibung\n"
-                f"2. Bisherige Maßnahmen\n"
-                f"3. Nächster erforderlicher Schritt"
-            )
-            sys_prompt = self.build_system_prompt(base_rules, practice_rules, custom_instruction=custom_instruction)
-            res = self._query_ollama(prompt, system_prompt=sys_prompt)
-            if res:
-                return res
+        """Generates a concise bulleted summary of a support case using LLM or Rule-Based NLP."""
+        timeline_str = "\n".join(f"- [{t.timestamp[:16]}] {t.author} ({t.channel}): {t.note}" for t in case.timeline)
+        prompt = (
+            f"Bitte erstelle eine präzise, übersichtliche stichpunktartige Zusammenfassung auf Deutsch für folgenden Support-Fall:\n\n"
+            f"Fall-ID: {case.case_id}\n"
+            f"Praxis / Kunde: {case.customer.practice_name} ({case.customer.customer_id})\n"
+            f"Thema: {case.classification.title}\n"
+            f"Zuständig: {get_actor_display(case.workflow_status.current_actor)}\n"
+            f"Status: {get_board_column_display(case.workflow_status.board_column)}\n"
+            f"Zeitleiste:\n{timeline_str}\n\n"
+            f"Formatiere das Ergebnis in 3 Abschnitte:\n"
+            f"1. Problembeschreibung\n"
+            f"2. Bisherige Maßnahmen\n"
+            f"3. Nächster erforderlicher Schritt"
+        )
+        sys_prompt = self.build_system_prompt(base_rules, practice_rules, custom_instruction=custom_instruction)
+        
+        res = self.query_llm(prompt, system_prompt=sys_prompt, case=case)
+        if res:
+            return res
 
         # Fallback Engine (Rule-Based Zero-Token NLP)
         return self._generate_rule_based_summary(case)
@@ -299,7 +422,6 @@ class AiService:
         solutions = []
         full_text = f"{case.classification.title} {' '.join(str(v) for v in case.form_data.values())} {' '.join(t.note for t in case.timeline)}".lower()
 
-        # Known error pattern rules
         if "cobra" in full_text or "schnittstelle" in full_text:
             solutions.append({
                 "title": "⚡ COBRA-Schnittstelle: Neustart & Token-Refresh",
@@ -324,7 +446,6 @@ class AiService:
                 "source": "Fehlercode-Muster (Labor)",
             })
 
-        # Match against BookStack Wiki articles if provided
         if wiki_articles:
             for art in wiki_articles:
                 t_str = str(art.get("title", "")).lower()
@@ -357,25 +478,24 @@ class AiService:
         custom_instruction: str | None = None,
     ) -> str:
         """Generates a polite German customer reply draft tailored to the case."""
-        is_online, _ = self.check_ollama_status()
-        if is_online:
-            prompt = (
-                f"Formuliere eine höfliche, professionelle deutsche Support-E-Mail-Antwort für folgenden Fall:\n"
-                f"Kunde / Ansprechpartner: {case.customer.contact_person or case.customer.practice_name}\n"
-                f"Fall-ID: {case.case_id}\n"
-                f"Titel: {case.classification.title}\n"
-                f"Nutzerwunsch/Ziel: {intent or 'Status-Update und nächste Schritte mitteilen'}\n"
-                f"Absender: {user_name}"
-            )
-            sys_prompt = self.build_system_prompt(
-                base_rules,
-                practice_rules,
-                custom_instruction=custom_instruction,
-                default_role=AI_SYSTEM_ROLE_EMAIL,
-            )
-            res = self._query_ollama(prompt, system_prompt=sys_prompt)
-            if res:
-                return res
+        prompt = (
+            f"Formuliere eine höfliche, professionelle deutsche Support-E-Mail-Antwort für folgenden Fall:\n"
+            f"Kunde / Ansprechpartner: {case.customer.contact_person or case.customer.practice_name}\n"
+            f"Fall-ID: {case.case_id}\n"
+            f"Titel: {case.classification.title}\n"
+            f"Nutzerwunsch/Ziel: {intent or 'Status-Update und nächste Schritte mitteilen'}\n"
+            f"Absender: {user_name}"
+        )
+        sys_prompt = self.build_system_prompt(
+            base_rules,
+            practice_rules,
+            custom_instruction=custom_instruction,
+            default_role=AI_SYSTEM_ROLE_EMAIL,
+        )
+        
+        res = self.query_llm(prompt, system_prompt=sys_prompt, case=case)
+        if res:
+            return res
 
         # Fallback Template
         cp = case.customer.contact_person or case.customer.practice_name

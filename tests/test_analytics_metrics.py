@@ -34,3 +34,33 @@ def test_analytics_dashboard_metrics():
 
     assert counts["Praxis Alpha"] == 2
     assert counts["Praxis Beta"] == 1
+
+
+def test_analytics_view_report_generation_and_rendering():
+    """Test AnalyticsView markdown report generation and rendering without errors."""
+    import customtkinter as ctk
+    from ui.views.analytics_view import AnalyticsView
+
+    root = ctk.CTk()
+    analytics_view = AnalyticsView(root)
+
+    c1 = Case(case_id="T-01")
+    c1.customer = CaseCustomer(practice_name="Praxis Alpha", is_vip=True)
+    c1.workflow_status.followup_at = "2020-01-01T12:00:00"  # Overdue
+    c1.classification.schema_id = "schema_zuzahlungsnachforderung"
+
+    c2 = Case(case_id="T-02")
+    c2.customer = CaseCustomer(practice_name="Praxis Beta", is_vip=False)
+    c2.workflow_status.is_completed = True
+    c2.created_at = "2026-08-01T10:00:00"
+    c2.updated_at = "2026-08-02T10:00:00"
+
+    analytics_view.set_cases([c1, c2])
+
+    report = analytics_view.generate_report_markdown()
+    assert "**Fälle Gesamt:** 2" in report
+    assert "**Offene Fälle:** 1" in report
+    assert "**Erledigte Fälle:** 1" in report
+    assert "**Überfällige Wiedervorlagen:** 1" in report
+
+    root.destroy()

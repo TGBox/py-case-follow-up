@@ -1,4 +1,0 @@
-x 2026-08-26 (A) Spaltenbreite im Cockpit wird nicht mehr korrekt im Profil gespeichert. +Bug @code
-x 2026-08-26 (A) Minimierung ins Systemtray macht Probleme. +Bug @code
-x 2026-08-26 (A) Anwendung kann visuell verschwinden ohne dass ein Icon gezeigt wird, aber die App wird dann trotzdem nicht beendet. +Bug @code
-x 2026-08-26 (B) Punktescore in der Case Widget Spalte wird nicht korrekt angezeigt am Anfang wenn die App startet. Muss dann Breite ändern bis die GUI aktualisiert. +Bug @code

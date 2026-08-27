@@ -73,6 +73,9 @@ class QuestionSchema:
     description: str = ""
     default_suggested_exports: list[str] = field(default_factory=list)
     fields: list[SchemaField] = field(default_factory=list)
+    is_repeatable_group: bool = False
+    repeatable_group_title: str = "Datei / Korrektur-Anforderung"
+    repeatable_field_ids: list[str] = field(default_factory=list)
 
     def validate(self) -> list[str]:
         errors = []
@@ -85,22 +88,32 @@ class QuestionSchema:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        res: dict[str, Any] = {
             "schema_id": self.schema_id,
             "display_name": self.display_name,
             "description": self.description,
             "default_suggested_exports": self.default_suggested_exports,
             "fields": [f.to_dict() for f in self.fields],
         }
+        if self.is_repeatable_group:
+            res["is_repeatable_group"] = self.is_repeatable_group
+            res["repeatable_group_title"] = self.repeatable_group_title
+            res["repeatable_field_ids"] = self.repeatable_field_ids
+        return res
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "QuestionSchema":
         fields_raw = data.get("fields", [])
         fields = [SchemaField.from_dict(f) for f in fields_raw] if isinstance(fields_raw, list) else []
+        rep_ids_raw = data.get("repeatable_field_ids", [])
+        rep_ids = list(rep_ids_raw) if isinstance(rep_ids_raw, list) else []
         return cls(
             schema_id=data.get("schema_id", ""),
             display_name=data.get("display_name", ""),
             description=data.get("description", ""),
             default_suggested_exports=list(data.get("default_suggested_exports", [])),
             fields=fields,
+            is_repeatable_group=bool(data.get("is_repeatable_group", False)),
+            repeatable_group_title=data.get("repeatable_group_title", "Datei / Korrektur-Anforderung"),
+            repeatable_field_ids=rep_ids,
         )

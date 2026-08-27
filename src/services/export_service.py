@@ -56,6 +56,10 @@ class ExportService:
 
         for fid in required_fields:
             val = case.form_data.get(fid)
+            if (val is None or str(val).strip() == "") and isinstance(case.form_data.get("file_requests"), list) and len(case.form_data["file_requests"]) > 0:
+                first_req = case.form_data["file_requests"][0]
+                if isinstance(first_req, dict):
+                    val = first_req.get(fid)
             if val is None or str(val).strip() == "":
                 missing_fields.append(fid)
 
@@ -64,6 +68,13 @@ class ExportService:
 
         # Prepare Jinja2 render context
         render_form_data = dict(case.form_data)
+        if isinstance(case.form_data.get("file_requests"), list) and len(case.form_data["file_requests"]) > 0:
+            first_req = case.form_data["file_requests"][0]
+            if isinstance(first_req, dict):
+                for k, v in first_req.items():
+                    if k not in render_form_data or render_form_data[k] is None:
+                        render_form_data[k] = v
+
         if force_export and missing_fields:
             for fid in missing_fields:
                 label = field_label_map.get(fid, fid)

@@ -3,7 +3,7 @@ import shutil
 import customtkinter as ctk
 from tkinter import filedialog
 from typing import Any, Callable
-from models.schema import QuestionSchema
+from models.schema import QuestionSchema, SchemaField
 from models.case import Case
 from models.profile import UserProfile
 from services.storage_service import StorageService
@@ -227,6 +227,338 @@ class DynamicFormWidget(ctk.CTkFrame):
             for child in widget.winfo_children():
                 self._bind_mouse_wheel_recursive(child)
 
+    def _extract_widget_value(self, ftype: str, widget: Any) -> Any:
+        if ftype == "module_picker":
+            selected = widget.get("selected", [])
+            return ", ".join(selected)
+        elif ftype in ("module_pills", "browser_pills"):
+            selected = [k for k, bvar in widget.items() if bvar.get()]
+            return ", ".join(selected)
+        elif ftype == "textbox":
+            return widget.get("1.0", "end-1c").strip()
+        elif ftype == FieldType.BOOLEAN:
+            return widget.get()
+        elif ftype == FieldType.DROPDOWN:
+            return widget.get()
+        elif ftype == FieldType.NUMBER:
+            txt = widget.get().strip()
+            if txt:
+                try:
+                    return float(txt) if "." in txt else int(txt)
+                except ValueError:
+                    return txt
+            else:
+                return None
+        else:
+            return widget.get().strip()
+
+    def render_single_field(
+        self,
+        parent_frame: ctk.CTkFrame,
+        f: SchemaField,
+        val: Any,
+        target_widget_dict: dict[str, Any],
+        missing_fields: list[str],
+        case: Case | None = None,
+    ):
+        row_frame = ctk.CTkFrame(parent_frame, fg_color="transparent")
+        row_frame.pack(fill="x", pady=6, padx=5)
+        self.field_row_frames[f.field_id] = row_frame
+
+        req_mark = " *" if f.required else ""
+        label_text = f"{f.label}{req_mark}:"
+
+        label_row = ctk.CTkFrame(row_frame, fg_color="transparent")
+        label_row.pack(fill="x", anchor="w", pady=(0, 2))
+
+        lbl = ctk.CTkLabel(
+            label_row,
+            text=label_text,
+            anchor="w",
+            font=ctk.CTkFont(size=12, weight="bold" if f.required else "normal"),
+        )
+        lbl.pack(side="left")
+
+        is_missing = f.field_id in missing_fields
+        entry_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
+
+        fid_lower = f.field_id.lower()
+        flabel_lower = f.label.lower()
+
+        # 1. PROGRAMMBEREICH / MODULE TAGS COMPACT DROPDOWN POPUP
+        if fid_lower in ("module_name", "programmbereich", "programmteil") or "programm" in flabel_lower or "bereich" in flabel_lower:
+            if self.on_manage_module_tags:
+                ctk.CTkButton(
+                    label_row,
+                    text="⚙ Programmbereiche verwalten",
+                    width=140,
+                    height=22,
+                    fg_color=("gray75", "gray30"),
+                    hover_color=("gray65", "gray40"),
+                    command=self.on_manage_module_tags,
+                ).pack(side="right", padx=5)
+
+            available_mods = self.profile.available_module_tags if self.profile else list(DEFAULT_MODULE_TAGS)
+            selected_mods = [m.strip() for m in str(val).split(",") if m.strip()] if val else []
+
+            mod_container = ctk.CTkFrame(row_frame, fg_color="transparent")
+            mod_container.pack(fill="x", pady=2)
+
+            mod_selected_holder = {"selected": selected_mods}
+
+            def format_mod_btn_text(sel_list: list[str]) -> str:
+                if not sel_list:
+                    return "🧩 Keinen Programmbereich ausgewählt ▾"
+                elif len(sel_list) == 1:
+                    return f"🧩 {sel_list[0]} ▾"
+                elif len(sel_list) <= 2:
+                    return f"🧩 {', '.join(sel_list)} ▾"
+                else:
+                    return f"🧩 {sel_list[0]}, {sel_list[1]} (+{len(sel_list)-2} weitere) ▾"
+
+            btn_text = format_mod_btn_text(selected_mods)
+            picker_btn = ctk.CTkButton(
+                mod_container,
+                text=btn_text,
+                height=32,
+                anchor="w",
+                fg_color=("gray85", "gray25"),
+                hover_color=("gray75", "gray35"),
+                text_color=("gray10", "white"),
+            )
+            picker_btn.pack(fill="x", expand=True)
+
+            def open_mod_picker(b=picker_btn, holder=mod_selected_holder):
+                def on_apply_mods(new_selected: list[str]):
+                    holder["selected"] = new_selected
+                    b.configure(text=format_mod_btn_text(new_selected))
+                    self.update_conditional_visibility()
+
+                ModuleTagPickerPopup(
+                    self.winfo_toplevel(),
+                    available_tags=available_mods,
+                    selected_tags=holder["selected"],
+                    on_apply=on_apply_mods,
+                )
+
+            picker_btn.configure(command=open_mod_picker)
+            target_widget_dict[f.field_id] = ("module_picker", mod_selected_holder)
+
+        # 2. BROWSER MULTISELECT WITH MUTUAL EXCLUSION FOR "UNBEKANNT"
+        elif fid_lower in ("tested_browsers", "browser", "welcher_browser") or "browser" in flabel_lower:
+            browser_options = ["Firefox", "Edge", "Chrome", "Unbekannt"]
+            raw_val = str(val) if val else ""
+            selected_browsers = [b.strip() for b in raw_val.split(",") if b.strip()]
+
+            b_frame = ctk.CTkFrame(row_frame, fg_color=("gray90", "gray20"), corner_radius=6)
+            b_frame.pack(fill="x", pady=2)
+
+            b_pills_box = ctk.CTkFrame(b_frame, fg_color="transparent")
+            b_pills_box.pack(fill="x", padx=6, pady=4)
+
+            b_vars: dict[str, ctk.BooleanVar] = {}
+            b_btns: dict[str, ctk.CTkButton] = {}
+
+            def update_browser_pills_ui():
+                for b_opt, b_v in b_vars.items():
+                    is_sel = b_v.get()
+                    b_btns[b_opt].configure(
+                        fg_color="dodgerblue" if is_sel else ("gray80", "gray30"),
+                        text_color="white" if is_sel else ("gray10", "white"),
+                    )
+                self.update_conditional_visibility()
+
+            def on_browser_click(clicked_opt: str):
+                if clicked_opt == "Unbekannt":
+                    new_state = not b_vars["Unbekannt"].get()
+                    b_vars["Unbekannt"].set(new_state)
+                    if new_state:
+                        for o in ["Firefox", "Edge", "Chrome"]:
+                            b_vars[o].set(False)
+                else:
+                    new_state = not b_vars[clicked_opt].get()
+                    b_vars[clicked_opt].set(new_state)
+                    if new_state:
+                        b_vars["Unbekannt"].set(False)
+
+                update_browser_pills_ui()
+
+            for b_opt in browser_options:
+                is_b_on = b_opt in selected_browsers
+                b_var = ctk.BooleanVar(value=is_b_on)
+                b_vars[b_opt] = b_var
+
+                btn = ctk.CTkButton(
+                    b_pills_box,
+                    text=b_opt,
+                    height=26,
+                    fg_color="dodgerblue" if is_b_on else ("gray80", "gray30"),
+                    hover_color="deepskyblue",
+                    text_color="white" if is_b_on else ("gray10", "white"),
+                    command=lambda opt=b_opt: on_browser_click(opt),
+                )
+                btn.pack(side="left", padx=4, pady=3)
+                b_btns[b_opt] = btn
+
+            target_widget_dict[f.field_id] = ("browser_pills", b_vars)
+
+        # 3. DATE FIELD
+        elif (
+            f.field_type == FieldType.DATE
+            or any(k in fid_lower or k in flabel_lower for k in ("datum", "date", "frist"))
+        ) and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN, FieldType.FILE):
+            entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
+            entry_row.pack(fill="x")
+
+            entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or "TT.MM.JJJJ", **entry_kwargs)
+            if val:
+                entry.insert(0, str(val))
+            entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+            cal_btn = ctk.CTkButton(
+                entry_row,
+                text="📅 Kalender",
+                width=95,
+                fg_color="gray30",
+                hover_color="gray40",
+                command=lambda e=entry: self.open_calendar_picker(e),
+            )
+            cal_btn.pack(side="right")
+            target_widget_dict[f.field_id] = (f.field_type, entry)
+
+        # 4. DROPDOWN FIELD
+        elif f.field_type == FieldType.DROPDOWN:
+            options = f.options if f.options else ["-"]
+            opt_kwargs: dict[str, Any] = {"button_color": "darkred", "fg_color": "firebrick"} if is_missing else {}
+            combo = ctk.CTkOptionMenu(
+                row_frame,
+                values=options,
+                command=lambda _val: self.update_conditional_visibility(),
+                **opt_kwargs,
+            )
+            if val and str(val) in options:
+                combo.set(str(val))
+            combo.pack(fill="x")
+            target_widget_dict[f.field_id] = (f.field_type, combo)
+
+        # 5. BOOLEAN / CHECKBOX FIELD
+        elif f.field_type == FieldType.BOOLEAN:
+            bool_var = ctk.BooleanVar(value=bool(val) if val is not None else False)
+            chk_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
+            chk_frame.pack(fill="x")
+
+            chk = ctk.CTkCheckBox(
+                chk_frame,
+                text=f.label,
+                variable=bool_var,
+                command=self.update_conditional_visibility,
+                **entry_kwargs,
+            )
+            chk.pack(side="left", anchor="w")
+
+            is_db_backup_field = "database_dump" in fid_lower or "backup" in fid_lower or "datenbank" in flabel_lower
+
+            if is_db_backup_field and case:
+                import_db_btn = ctk.CTkButton(
+                    chk_frame,
+                    text="📁 .backup-Datei importieren...",
+                    width=190,
+                    fg_color="darkblue",
+                    hover_color="blue",
+                    command=lambda c=case, v=bool_var: self.import_db_backup_file(c, v),
+                )
+                import_db_btn.pack(side="left", padx=15)
+
+            target_widget_dict[f.field_id] = (f.field_type, bool_var)
+
+            if is_db_backup_field and case:
+                self.render_mini_attachment_section(row_frame, case)
+
+        # 6. FILE ATTACHMENT FIELD (FieldType.FILE)
+        elif f.field_type == FieldType.FILE:
+            file_row = ctk.CTkFrame(row_frame, fg_color="transparent")
+            file_row.pack(fill="x")
+
+            file_entry = ctk.CTkEntry(
+                file_row,
+                placeholder_text=f.placeholder or "Keine Datei ausgewählt...",
+                **entry_kwargs,
+            )
+            if val:
+                file_entry.insert(0, str(val))
+            file_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+            def open_file_picker(e=file_entry, f_item=f):
+                exts = f_item.allowed_extensions
+                ftypes = [("Dateien", " ".join(f"*{x}" for x in exts))] if exts else [("Alle Dateien", "*.*")]
+                chosen = filedialog.askopenfilename(title=f"Datei auswählen für '{f_item.label}'", filetypes=ftypes)
+                if chosen:
+                    e.delete(0, "end")
+                    e.insert(0, chosen)
+                    if self.current_case:
+                        try:
+                            t_dir = self._get_target_dir(self.current_case)
+                            os.makedirs(t_dir, exist_ok=True)
+                            dest_p = os.path.join(t_dir, os.path.basename(chosen))
+                            shutil.copy2(chosen, dest_p)
+                            if hasattr(self, "mini_attach_scroll"):
+                                self.refresh_mini_attachment_list(self.current_case)
+                        except Exception:
+                            pass
+
+            ctk.CTkButton(
+                file_row,
+                text="📁 Datei wählen...",
+                width=120,
+                fg_color="dodgerblue",
+                hover_color="deepskyblue",
+                command=open_file_picker,
+            ).pack(side="right")
+
+            target_widget_dict[f.field_id] = (f.field_type, file_entry)
+
+        # 7. NUMBER FIELD
+        elif f.field_type == FieldType.NUMBER:
+            entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **entry_kwargs)
+            if val is not None:
+                entry.insert(0, str(val))
+            entry.pack(fill="x")
+            target_widget_dict[f.field_id] = (f.field_type, entry)
+
+        # 8. MULTILINE TEXTBOX FIELD
+        elif any(k in fid_lower or k in flabel_lower for k in (
+            "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
+            "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
+            "dateien", "dateianfragen", "files", "anfragen", "liste", "korrekturdateien"
+        )):
+            saved_height = 90
+            if self.profile and self.profile.ui_settings:
+                saved_height = self.profile.ui_settings.custom_textbox_heights.get(f.field_id, self.profile.ui_settings.textbox_height)
+
+            textbox = ctk.CTkTextbox(row_frame, height=saved_height, **entry_kwargs)
+            if val:
+                textbox.insert("1.0", str(val))
+            textbox.pack(fill="x", expand=True)
+
+            handle = TextboxResizeHandle(
+                row_frame,
+                target_textbox=textbox,
+                field_id=f.field_id,
+                profile=self.profile,
+                storage_service=self.storage_service,
+            )
+            handle.pack(fill="x", pady=(2, 0))
+
+            target_widget_dict[f.field_id] = ("textbox", textbox)
+
+        # 9. STANDARD SINGLE-LINE TEXT ENTRY
+        else:
+            entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **entry_kwargs)
+            if val:
+                entry.insert(0, str(val))
+            entry.pack(fill="x")
+            target_widget_dict[f.field_id] = (f.field_type, entry)
+
     def load_schema(
         self,
         schema: QuestionSchema | None,
@@ -236,11 +568,12 @@ class DynamicFormWidget(ctk.CTkFrame):
     ):
         self.schema = schema
         self.current_case = case
-        missing_fields = missing_fields or []
+        self.missing_fields = missing_fields or []
 
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.field_widgets.clear()
+        self.card_field_widgets: list[dict[str, tuple[str, Any]]] = []
         self.field_row_frames: dict[str, ctk.CTkFrame] = {}
 
         if not schema or not schema.fields:
@@ -249,309 +582,128 @@ class DynamicFormWidget(ctk.CTkFrame):
 
         sorted_fields = sorted(schema.fields, key=lambda f: f.order)
 
-        for f in sorted_fields:
-            row_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
-            row_frame.pack(fill="x", pady=6, padx=5)
-            self.field_row_frames[f.field_id] = row_frame
+        if schema.is_repeatable_group and schema.repeatable_field_ids:
+            rep_set = set(schema.repeatable_field_ids)
+            top_fields = [f for f in sorted_fields if f.field_id not in rep_set]
+            self.card_fields = [f for f in sorted_fields if f.field_id in rep_set]
 
-            req_mark = " *" if f.required else ""
-            label_text = f"{f.label}{req_mark}:"
-
-            label_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-            label_row.pack(fill="x", anchor="w", pady=(0, 2))
-
-            lbl = ctk.CTkLabel(
-                label_row,
-                text=label_text,
-                anchor="w",
-                font=ctk.CTkFont(size=12, weight="bold" if f.required else "normal"),
-            )
-            lbl.pack(side="left")
-
-            val = form_data.get(f.field_id)
-            is_missing = f.field_id in missing_fields
-            entry_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
-
-            fid_lower = f.field_id.lower()
-            flabel_lower = f.label.lower()
-
-            # 1. PROGRAMMBEREICH / MODULE TAGS COMPACT DROPDOWN POPUP
-            if fid_lower in ("module_name", "programmbereich", "programmteil") or "programm" in flabel_lower or "bereich" in flabel_lower:
-                if self.on_manage_module_tags:
-                    ctk.CTkButton(
-                        label_row,
-                        text="⚙ Programmbereiche verwalten",
-                        width=140,
-                        height=22,
-                        fg_color=("gray75", "gray30"),
-                        hover_color=("gray65", "gray40"),
-                        command=self.on_manage_module_tags,
-                    ).pack(side="right", padx=5)
-
-                available_mods = self.profile.available_module_tags if self.profile else list(DEFAULT_MODULE_TAGS)
-                selected_mods = [m.strip() for m in str(val).split(",") if m.strip()] if val else []
-
-                mod_container = ctk.CTkFrame(row_frame, fg_color="transparent")
-                mod_container.pack(fill="x", pady=2)
-
-                mod_selected_holder = {"selected": selected_mods}
-
-                def format_mod_btn_text(sel_list: list[str]) -> str:
-                    if not sel_list:
-                        return "🧩 Keinen Programmbereich ausgewählt ▾"
-                    elif len(sel_list) == 1:
-                        return f"🧩 {sel_list[0]} ▾"
-                    elif len(sel_list) <= 2:
-                        return f"🧩 {', '.join(sel_list)} ▾"
-                    else:
-                        return f"🧩 {sel_list[0]}, {sel_list[1]} (+{len(sel_list)-2} weitere) ▾"
-
-                btn_text = format_mod_btn_text(selected_mods)
-                picker_btn = ctk.CTkButton(
-                    mod_container,
-                    text=btn_text,
-                    height=32,
-                    anchor="w",
-                    fg_color=("gray85", "gray25"),
-                    hover_color=("gray75", "gray35"),
-                    text_color=("gray10", "white"),
+            # 1. Top level non-repeatable fields
+            for f in top_fields:
+                self.render_single_field(
+                    self.scroll_frame, f, form_data.get(f.field_id), self.field_widgets, self.missing_fields, case
                 )
-                picker_btn.pack(fill="x", expand=True)
 
-                def open_mod_picker(b=picker_btn, holder=mod_selected_holder):
-                    def on_apply_mods(new_selected: list[str]):
-                        holder["selected"] = new_selected
-                        b.configure(text=format_mod_btn_text(new_selected))
-                        self.update_conditional_visibility()
-
-                    ModuleTagPickerPopup(
-                        self.winfo_toplevel(),
-                        available_tags=available_mods,
-                        selected_tags=holder["selected"],
-                        on_apply=on_apply_mods,
-                    )
-
-                picker_btn.configure(command=open_mod_picker)
-                self.field_widgets[f.field_id] = ("module_picker", mod_selected_holder)
-
-            # 2. BROWSER MULTISELECT WITH MUTUAL EXCLUSION FOR "UNBEKANNT"
-            elif fid_lower in ("tested_browsers", "browser", "welcher_browser") or "browser" in flabel_lower:
-                browser_options = ["Firefox", "Edge", "Chrome", "Unbekannt"]
-                raw_val = str(val) if val else ""
-                selected_browsers = [b.strip() for b in raw_val.split(",") if b.strip()]
-
-                b_frame = ctk.CTkFrame(row_frame, fg_color=("gray90", "gray20"), corner_radius=6)
-                b_frame.pack(fill="x", pady=2)
-
-                b_pills_box = ctk.CTkFrame(b_frame, fg_color="transparent")
-                b_pills_box.pack(fill="x", padx=6, pady=4)
-
-                b_vars: dict[str, ctk.BooleanVar] = {}
-                b_btns: dict[str, ctk.CTkButton] = {}
-
-                def update_browser_pills_ui():
-                    for b_opt, b_v in b_vars.items():
-                        is_sel = b_v.get()
-                        b_btns[b_opt].configure(
-                            fg_color="dodgerblue" if is_sel else ("gray80", "gray30"),
-                            text_color="white" if is_sel else ("gray10", "white"),
-                        )
-                    self.update_conditional_visibility()
-
-                def on_browser_click(clicked_opt: str):
-                    if clicked_opt == "Unbekannt":
-                        new_state = not b_vars["Unbekannt"].get()
-                        b_vars["Unbekannt"].set(new_state)
-                        if new_state:
-                            for o in ["Firefox", "Edge", "Chrome"]:
-                                b_vars[o].set(False)
-                    else:
-                        new_state = not b_vars[clicked_opt].get()
-                        b_vars[clicked_opt].set(new_state)
-                        if new_state:
-                            b_vars["Unbekannt"].set(False)
-
-                    update_browser_pills_ui()
-
-                for b_opt in browser_options:
-                    is_b_on = b_opt in selected_browsers
-                    b_var = ctk.BooleanVar(value=is_b_on)
-                    b_vars[b_opt] = b_var
-
-                    btn = ctk.CTkButton(
-                        b_pills_box,
-                        text=b_opt,
-                        height=26,
-                        fg_color="dodgerblue" if is_b_on else ("gray80", "gray30"),
-                        hover_color="deepskyblue",
-                        text_color="white" if is_b_on else ("gray10", "white"),
-                        command=lambda opt=b_opt: on_browser_click(opt),
-                    )
-                    btn.pack(side="left", padx=4, pady=3)
-                    b_btns[b_opt] = btn
-
-                self.field_widgets[f.field_id] = ("browser_pills", b_vars)
-
-            # 3. DATE FIELD
-            elif (
-                f.field_type == FieldType.DATE
-                or any(k in fid_lower or k in flabel_lower for k in ("datum", "date", "frist"))
-            ) and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN, FieldType.FILE):
-                entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-                entry_row.pack(fill="x")
-
-                entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or "TT.MM.JJJJ", **entry_kwargs)
-                if val:
-                    entry.insert(0, str(val))
-                entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-
-                cal_btn = ctk.CTkButton(
-                    entry_row,
-                    text="📅 Kalender",
-                    width=95,
-                    fg_color="gray30",
-                    hover_color="gray40",
-                    command=lambda e=entry: self.open_calendar_picker(e),
-                )
-                cal_btn.pack(side="right")
-                self.field_widgets[f.field_id] = (f.field_type, entry)
-
-            # 4. DROPDOWN FIELD
-            elif f.field_type == FieldType.DROPDOWN:
-                options = f.options if f.options else ["-"]
-                opt_kwargs: dict[str, Any] = {"button_color": "darkred", "fg_color": "firebrick"} if is_missing else {}
-                combo = ctk.CTkOptionMenu(
-                    row_frame,
-                    values=options,
-                    command=lambda _val: self.update_conditional_visibility(),
-                    **opt_kwargs,
-                )
-                if val and str(val) in options:
-                    combo.set(str(val))
-                combo.pack(fill="x")
-                self.field_widgets[f.field_id] = (f.field_type, combo)
-
-            # 5. BOOLEAN / CHECKBOX FIELD
-            elif f.field_type == FieldType.BOOLEAN:
-                bool_var = ctk.BooleanVar(value=bool(val) if val is not None else False)
-                chk_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
-                chk_frame.pack(fill="x")
-
-                chk = ctk.CTkCheckBox(
-                    chk_frame,
-                    text=f.label,
-                    variable=bool_var,
-                    command=self.update_conditional_visibility,
-                    **entry_kwargs,
-                )
-                chk.pack(side="left", anchor="w")
-
-                is_db_backup_field = "database_dump" in fid_lower or "backup" in fid_lower or "datenbank" in flabel_lower
-
-                if is_db_backup_field and case:
-                    import_db_btn = ctk.CTkButton(
-                        chk_frame,
-                        text="📁 .backup-Datei importieren...",
-                        width=190,
-                        fg_color="darkblue",
-                        hover_color="blue",
-                        command=lambda c=case, v=bool_var: self.import_db_backup_file(c, v),
-                    )
-                    import_db_btn.pack(side="left", padx=15)
-
-                self.field_widgets[f.field_id] = (f.field_type, bool_var)
-
-                if is_db_backup_field and case:
-                    self.render_mini_attachment_section(row_frame, case)
-
-            # 6. FILE ATTACHMENT FIELD (FieldType.FILE)
-            elif f.field_type == FieldType.FILE:
-                file_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-                file_row.pack(fill="x")
-
-                file_entry = ctk.CTkEntry(
-                    file_row,
-                    placeholder_text=f.placeholder or "Keine Datei ausgewählt...",
-                    **entry_kwargs,
-                )
-                if val:
-                    file_entry.insert(0, str(val))
-                file_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
-
-                def open_file_picker(e=file_entry, f_item=f):
-                    exts = f_item.allowed_extensions
-                    ftypes = [("Dateien", " ".join(f"*{x}" for x in exts))] if exts else [("Alle Dateien", "*.*")]
-                    chosen = filedialog.askopenfilename(title=f"Datei auswählen für '{f_item.label}'", filetypes=ftypes)
-                    if chosen:
-                        e.delete(0, "end")
-                        e.insert(0, chosen)
-                        if self.current_case:
-                            try:
-                                t_dir = self._get_target_dir(self.current_case)
-                                os.makedirs(t_dir, exist_ok=True)
-                                dest_p = os.path.join(t_dir, os.path.basename(chosen))
-                                shutil.copy2(chosen, dest_p)
-                                if hasattr(self, "mini_attach_scroll"):
-                                    self.refresh_mini_attachment_list(self.current_case)
-                            except Exception:
-                                pass
-
-                ctk.CTkButton(
-                    file_row,
-                    text="📁 Datei wählen...",
-                    width=120,
-                    fg_color="dodgerblue",
-                    hover_color="deepskyblue",
-                    command=open_file_picker,
-                ).pack(side="right")
-
-                self.field_widgets[f.field_id] = (f.field_type, file_entry)
-
-            # 7. NUMBER FIELD
-            elif f.field_type == FieldType.NUMBER:
-                entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **entry_kwargs)
-                if val is not None:
-                    entry.insert(0, str(val))
-                entry.pack(fill="x")
-                self.field_widgets[f.field_id] = (f.field_type, entry)
-
-            # 8. MULTILINE TEXTBOX FIELD
-            elif any(k in fid_lower or k in flabel_lower for k in (
-                "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
-                "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
-                "dateien", "dateianfragen", "files", "anfragen", "liste", "korrekturdateien"
-            )):
-                saved_height = 90
-                if self.profile and self.profile.ui_settings:
-                    saved_height = self.profile.ui_settings.custom_textbox_heights.get(f.field_id, self.profile.ui_settings.textbox_height)
-
-                textbox = ctk.CTkTextbox(row_frame, height=saved_height, **entry_kwargs)
-                if val:
-                    textbox.insert("1.0", str(val))
-                textbox.pack(fill="x", expand=True)
-
-                handle = TextboxResizeHandle(
-                    row_frame,
-                    target_textbox=textbox,
-                    field_id=f.field_id,
-                    profile=self.profile,
-                    storage_service=self.storage_service,
-                )
-                handle.pack(fill="x", pady=(2, 0))
-
-                self.field_widgets[f.field_id] = ("textbox", textbox)
-
-            # 9. STANDARD SINGLE-LINE TEXT ENTRY
+            # 2. Parse or initialize file_requests
+            raw_reqs = form_data.get("file_requests")
+            if isinstance(raw_reqs, list) and len(raw_reqs) > 0:
+                self.current_file_requests = [dict(r) if isinstance(r, dict) else {} for r in raw_reqs]
             else:
-                entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **entry_kwargs)
-                if val:
-                    entry.insert(0, str(val))
-                entry.pack(fill="x")
-                self.field_widgets[f.field_id] = (f.field_type, entry)
+                flat_req = {fid: form_data.get(fid) for fid in schema.repeatable_field_ids if form_data.get(fid) is not None}
+                if flat_req:
+                    self.current_file_requests = [flat_req]
+                else:
+                    self.current_file_requests = [{}]
 
-        # Bind mouse wheel recursively so form is 100% responsive when scrolling
+            self.repeatable_container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+            self.repeatable_container.pack(fill="x", pady=10, padx=2)
+            self.render_repeatable_cards()
+
+        else:
+            for f in sorted_fields:
+                self.render_single_field(
+                    self.scroll_frame, f, form_data.get(f.field_id), self.field_widgets, self.missing_fields, case
+                )
+
         self._bind_mouse_wheel_recursive(self.scroll_frame)
         self.update_conditional_visibility()
+
+    def render_repeatable_cards(self):
+        if not hasattr(self, "repeatable_container"):
+            return
+
+        for w in self.repeatable_container.winfo_children():
+            w.destroy()
+        self.card_field_widgets = []
+
+        group_title = self.schema.repeatable_group_title if self.schema else "Datei / Korrektur-Anforderung"
+
+        for idx, req_data in enumerate(self.current_file_requests):
+            card_frame = ctk.CTkFrame(
+                self.repeatable_container,
+                fg_color=("gray90", "gray22"),
+                corner_radius=8,
+                border_width=1,
+                border_color=("gray75", "gray35"),
+            )
+            card_frame.pack(fill="x", pady=8, padx=4)
+
+            hdr = ctk.CTkFrame(card_frame, fg_color="transparent")
+            hdr.pack(fill="x", padx=10, pady=(8, 4))
+
+            ctk.CTkLabel(
+                hdr,
+                text=f"📌 {group_title} #{idx + 1}",
+                font=ctk.CTkFont(size=13, weight="bold"),
+                text_color=("dodgerblue", "deepskyblue"),
+            ).pack(side="left")
+
+            if len(self.current_file_requests) > 1:
+                ctk.CTkButton(
+                    hdr,
+                    text=f"🗑 Anfrage #{idx + 1} entfernen",
+                    height=24,
+                    width=140,
+                    fg_color="firebrick",
+                    hover_color="crimson",
+                    command=lambda i=idx: self.remove_repeatable_card(i),
+                ).pack(side="right")
+
+            card_widgets_dict: dict[str, tuple[str, Any]] = {}
+            card_body = ctk.CTkFrame(card_frame, fg_color="transparent")
+            card_body.pack(fill="x", padx=10, pady=(0, 8))
+
+            for f in self.card_fields:
+                val = req_data.get(f.field_id)
+                self.render_single_field(
+                    card_body, f, val, card_widgets_dict, self.missing_fields, self.current_case
+                )
+
+            self.card_field_widgets.append(card_widgets_dict)
+
+        btn_row = ctk.CTkFrame(self.repeatable_container, fg_color="transparent")
+        btn_row.pack(fill="x", pady=(6, 4))
+
+        ctk.CTkButton(
+            btn_row,
+            text=f"➕ Weitere {group_title} anfordern",
+            fg_color="forestgreen",
+            hover_color="darkgreen",
+            height=32,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            command=self.add_repeatable_card,
+        ).pack(fill="x", padx=4)
+
+        self._bind_mouse_wheel_recursive(self.repeatable_container)
+
+    def _sync_current_card_inputs(self):
+        updated_reqs = []
+        for card_dict in self.card_field_widgets:
+            req_data = {}
+            for fid, (ftype, widget) in card_dict.items():
+                req_data[fid] = self._extract_widget_value(ftype, widget)
+            updated_reqs.append(req_data)
+        self.current_file_requests = updated_reqs
+
+    def add_repeatable_card(self):
+        self._sync_current_card_inputs()
+        self.current_file_requests.append({})
+        self.render_repeatable_cards()
+
+    def remove_repeatable_card(self, idx: int):
+        self._sync_current_card_inputs()
+        if 0 <= idx < len(self.current_file_requests) and len(self.current_file_requests) > 1:
+            self.current_file_requests.pop(idx)
+            self.render_repeatable_cards()
 
     def update_conditional_visibility(self):
         """Dynamically evaluates depends_on_field_id conditions and updates field row visibility."""
@@ -573,10 +725,8 @@ class DynamicFormWidget(ctk.CTkFrame):
             if parent_val is not None:
                 p_str = str(parent_val).strip()
                 if not expected_val:
-                    # If no specific value required, show when parent is non-empty / True
                     should_show = bool(parent_val) and p_str.lower() not in ("false", "0", "nein", "none")
                 else:
-                    # Match comma-separated expected values
                     valid_targets = [v.strip().lower() for v in expected_val.split(",")]
                     should_show = p_str.lower() in valid_targets or (isinstance(parent_val, bool) and parent_val and "true" in valid_targets)
 
@@ -720,31 +870,20 @@ class DynamicFormWidget(ctk.CTkFrame):
     def get_form_data(self) -> dict[str, Any]:
         data = {}
         for fid, (ftype, widget) in self.field_widgets.items():
-            if ftype == "module_picker":
-                # dict with 'selected' list
-                selected = widget.get("selected", [])
-                data[fid] = ", ".join(selected)
-            elif ftype == "module_pills":
-                selected = [m for m, bvar in widget.items() if bvar.get()]
-                data[fid] = ", ".join(selected)
-            elif ftype == "browser_pills":
-                selected = [b for b, bvar in widget.items() if bvar.get()]
-                data[fid] = ", ".join(selected)
-            elif ftype == "textbox":
-                data[fid] = widget.get("1.0", "end-1c").strip()
-            elif ftype == FieldType.BOOLEAN:
-                data[fid] = widget.get()
-            elif ftype == FieldType.DROPDOWN:
-                data[fid] = widget.get()
-            elif ftype == FieldType.NUMBER:
-                txt = widget.get().strip()
-                if txt:
-                    try:
-                        data[fid] = float(txt) if "." in txt else int(txt)
-                    except ValueError:
-                        data[fid] = txt
-                else:
-                    data[fid] = None
-            else:
-                data[fid] = widget.get().strip()
+            data[fid] = self._extract_widget_value(ftype, widget)
+
+        schema = getattr(self, "schema", None)
+        if schema and getattr(schema, "is_repeatable_group", False):
+            file_requests = []
+            for card_dict in getattr(self, "card_field_widgets", []):
+                card_data = {}
+                for fid, (ftype, widget) in card_dict.items():
+                    card_data[fid] = self._extract_widget_value(ftype, widget)
+                file_requests.append(card_data)
+
+            data["file_requests"] = file_requests
+            if file_requests:
+                for k, v in file_requests[0].items():
+                    data[k] = v
+
         return data

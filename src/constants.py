@@ -14,7 +14,7 @@ DISPLAY_CHANNEL_NAMES = {
     "PHONE_INBOUND": "Telefon (Eingang)",
     "PHONE_OUTBOUND": "Telefon (Ausgang)",
     "EMAIL_IN": "E-Mail (Eingang)",
-    "EMAIL_OUT": "E-Mail (Eingang)",
+    "EMAIL_OUT": "E-Mail (Ausgang)",
     "GITLAB_TICKET_CREATED": "GitLab-Ticket erstellt",
     "GITLAB_TICKET_UPDATED": "GitLab-Ticket geupdated",
     "GITLAB_TICKET_CLOSED": "GitLab-Ticket geschlossen",

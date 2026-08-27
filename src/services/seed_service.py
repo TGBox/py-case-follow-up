@@ -115,6 +115,18 @@ class SeedService:
                 display_name="Zuzahlungsnachforderung & Abrechnungskorrektur",
                 description="Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV.",
                 default_suggested_exports=["mail_dev_zuzahlung_abrechnung", "mail_kunden_rueckmeldung"],
+                is_repeatable_group=True,
+                repeatable_group_title="Datei / Korrektur-Anforderung",
+                repeatable_field_ids=[
+                    "action_type",
+                    "esol_filename",
+                    "invoice_number",
+                    "invoice_date",
+                    "prescription_info",
+                    "prescription_date",
+                    "patient_names",
+                    "action_reason_detail",
+                ],
                 fields=[
                     SchemaField(field_id="action_type", label="Geforderte Aktion", field_type=FieldType.DROPDOWN, options=["Zuzahlungsnachforderung", "Abrechnungskorrektur"], required=True, order=1),
                     SchemaField(field_id="invoice_number", label="Betroffene Rechnungsnummer", field_type=FieldType.TEXT, required=True, placeholder="z. B. RE-2026-0815", order=2),
@@ -123,9 +135,8 @@ class SeedService:
                     SchemaField(field_id="prescription_date", label="Datum der Verordnung", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=5),
                     SchemaField(field_id="patient_names", label="Namen der betroffenen Patienten", field_type=FieldType.TEXT, required=True, placeholder="z. B. Max Mustermann", order=6),
                     SchemaField(field_id="esol_filename", label="Name der originalen ESOL-Datei", field_type=FieldType.TEXT, required=True, placeholder="z. B. ESOL_20260801.dat", order=7),
-                    SchemaField(field_id="requested_files", label="Angeforderte Dateien & Korrekturdateien (Dateiname, Rechnungs-/VO-Nr., Patient, Grund je Zeile)", field_type=FieldType.TEXT, required=False, placeholder="z. B.\nESOL_20260801.dat | RE-2026-0815 | Max Mustermann | Fehlende Zuzahlung\nESOL_20260802.dat | RE-2026-0816 | Erika Muster | Falscher Kostenträger", order=8),
-                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=9),
-                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=10),
+                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=8),
+                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=9),
                 ],
             ),
             QuestionSchema(
@@ -177,14 +188,27 @@ class SeedService:
                 template_string=(
                     "Betreff: [{{ form_data.action_type | default('Abrechnungskorrektur') }}] {{ customer.practice_name }} (BSNR/Kundennr: {{ customer.customer_id }})\n\n"
                     "Hallo Entwicklerteam,\n\n"
-                    "für die Praxis {{ customer.practice_name }} (Kundennummer: {{ customer.customer_id }}, Ansprechpartner: {{ customer.contact_person }}) liegt eine Anforderung zur {{ form_data.action_type }} vor.\n\n"
+                    "für die Praxis {{ customer.practice_name }} (Kundennummer: {{ customer.customer_id }}, Ansprechpartner: {{ customer.contact_person }}) liegt eine Anforderung zur Zuzahlungsnachforderung / Abrechnungskorrektur vor.\n\n"
+                    "{% if form_data.file_requests and form_data.file_requests | length > 0 %}\n"
+                    "### Details zu den erfassten Datei-Anforderungen ({{ form_data.file_requests | length }} Anfragen):\n"
+                    "{% for req in form_data.file_requests %}\n"
+                    "--- Datei-Anforderung #{{ loop.index }} ---\n"
+                    "* **Aktions-Typ:** {{ req.action_type | default(form_data.action_type) }}\n"
+                    "* **Original ESOL-Datei:** {{ req.esol_filename | default(form_data.esol_filename) }}\n"
+                    "* **Rechnungsnummer:** {{ req.invoice_number | default(form_data.invoice_number) }} (vom {{ req.invoice_date | default(form_data.invoice_date) }})\n"
+                    "* **Verordnung:** {{ req.prescription_info | default(form_data.prescription_info) }} (vom {{ req.prescription_date | default(form_data.prescription_date) }})\n"
+                    "* **Betroffene Patienten:** {{ req.patient_names | default(form_data.patient_names) }}\n"
+                    "* **Begründung & Details:** {{ req.action_reason_detail | default(form_data.action_reason_detail) }}\n\n"
+                    "{% endfor %}\n"
+                    "{% else %}\n"
                     "### Details zur Anforderung:\n"
                     "* **Aktions-Typ:** {{ form_data.action_type }}\n"
+                    "* **Original ESOL-Datei:** {{ form_data.esol_filename }}\n"
                     "* **Rechnungsnummer:** {{ form_data.invoice_number }} (vom {{ form_data.invoice_date }})\n"
                     "* **Verordnung:** {{ form_data.prescription_info }} (vom {{ form_data.prescription_date }})\n"
                     "* **Betroffene Patienten:** {{ form_data.patient_names }}\n"
-                    "* **Original ESOL-Datei:** {{ form_data.esol_filename }}\n"
                     "* **Begründung & Details:** {{ form_data.action_reason_detail }}\n\n"
+                    "{% endif %}\n"
                     "### Belege & Anhänge:\n"
                     "* **Weitergeleitete Mail / Screenshot im Fallordner:** {{ 'JA (siehe Fallordner ' ~ attachment_directory ~ ')' if form_data.has_forwarded_email_or_screenshot else 'NEIN' }}\n\n"
                     "---\n"

@@ -185,47 +185,31 @@ class CockpitView(ctk.CTkFrame):
         # 2. Center Pane: Case Details & Dynamic Form
         self.center_frame = ctk.CTkFrame(self.paned)
 
-        # Center Header Controls
-        self.center_header = ctk.CTkFrame(self.center_frame, fg_color="transparent")
-        self.center_header.pack(fill="x", padx=10, pady=10)
+        # Unified Cockpit Header Card Frame
+        self.header_card = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=8)
+        self.header_card.pack(fill="x", padx=8, pady=(8, 6))
+
+        # Row 1: Dedicated Full-Width Case Title Row (prevents button overlaps)
+        self.title_row = ctk.CTkFrame(self.header_card, fg_color="transparent")
+        self.title_row.pack(fill="x", padx=10, pady=(8, 4))
 
         self.case_title_label = ctk.CTkLabel(
-            self.center_header, text="Bitte einen Fall auswählen", font=ctk.CTkFont(size=16, weight="bold"), anchor="w"
+            self.title_row,
+            text="Bitte einen Fall auswählen",
+            font=ctk.CTkFont(size=15, weight="bold"),
+            anchor="w",
+            justify="left",
         )
         self.case_title_label.pack(side="left", fill="x", expand=True)
 
-        self.print_btn = ctk.CTkButton(
-            self.center_header, text="🖨 Drucken", command=self.on_click_print, width=85, state="disabled", fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
-        )
-        self.print_btn.pack(side="right", padx=2)
+        # Row 2: Customer & Status Info Row
+        self.info_row = ctk.CTkFrame(self.header_card, fg_color="transparent")
+        self.info_row.pack(fill="x", padx=10, pady=(2, 6))
+        self.info_bar = self.info_row
 
-        self.cal_btn = ctk.CTkButton(
-            self.center_header, text="📅 Kalender", command=self.on_click_calendar, width=88, state="disabled", fg_color="forestgreen", hover_color="darkgreen"
-        )
-        self.cal_btn.pack(side="right", padx=2)
-
-        self.email_btn = ctk.CTkButton(
-            self.center_header, text="✉ E-Mail & 🤖 KI", command=self.on_click_email, width=140, state="disabled", fg_color="#6366f1", hover_color="#4f46e5"
-        )
-        self.email_btn.pack(side="right", padx=2)
-
-        self.export_btn = ctk.CTkButton(
-            self.center_header, text="📤 Export", command=self.on_click_export, width=80, state="disabled"
-        )
-        self.export_btn.pack(side="right", padx=2)
-
-        self.save_btn = ctk.CTkButton(
-            self.center_header, text="💾 Speichern", command=self.on_click_save, width=85, state="disabled"
-        )
-        self.save_btn.pack(side="right", padx=2)
-
-        # Customer & Status Info Bar (3 vertical info lines on left + action buttons on right)
-        self.info_bar = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=6)
-        self.info_bar.pack(fill="x", padx=10, pady=(0, 10))
-
-        # Left Column: 3 vertical stacked lines for customer details
-        self.info_left_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
-        self.info_left_frame.pack(side="left", fill="both", expand=True, padx=8, pady=6)
+        # Left Column: Customer details & Wiedervorlage deadline
+        self.info_left_frame = ctk.CTkFrame(self.info_row, fg_color="transparent")
+        self.info_left_frame.pack(side="left", fill="both", expand=True)
 
         self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w", height=0)
         self.kunde_label.pack(fill="x", anchor="w")
@@ -287,35 +271,61 @@ class CockpitView(ctk.CTkFrame):
 
         self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
-        # Right Column: Action Buttons Container
-        self.info_right_frame = ctk.CTkFrame(self.info_bar, fg_color="transparent")
-        self.info_right_frame.pack(side="right", padx=6, pady=6)
+        # Right Column: Status Controls (Actor, Erledigen, Archivieren)
+        self.status_right_frame = ctk.CTkFrame(self.info_row, fg_color="transparent")
+        self.status_right_frame.pack(side="right", anchor="e")
+        self.info_right_frame = self.status_right_frame
 
-        # Row 1 of right buttons
-        self.info_btn_row1 = ctk.CTkFrame(self.info_right_frame, fg_color="transparent")
-        self.info_btn_row1.pack(fill="x", anchor="e", pady=(0, 2))
-
-        self.archive_btn = ctk.CTkButton(self.info_btn_row1, text="📦 Archivieren", command=self.on_click_archive, width=90, fg_color="darkred")
+        self.archive_btn = ctk.CTkButton(self.status_right_frame, text="📦 Archivieren", command=self.on_click_archive, width=95, fg_color="darkred")
         self.archive_btn.pack(side="right", padx=2)
 
-        self.complete_btn = ctk.CTkButton(self.info_btn_row1, text="✓ Erledigt", command=self.on_toggle_complete, width=85, fg_color="green")
+        self.complete_btn = ctk.CTkButton(self.status_right_frame, text="✓ Erledigt", command=self.on_toggle_complete, width=90, fg_color="green")
         self.complete_btn.pack(side="right", padx=2)
 
-        self.actor_combo = ctk.CTkOptionMenu(self.info_btn_row1, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=120)
+        self.actor_combo = ctk.CTkOptionMenu(self.status_right_frame, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=130)
         self.actor_combo.pack(side="right", padx=2)
 
-        # Row 2 of right buttons
-        self.info_btn_row2 = ctk.CTkFrame(self.info_right_frame, fg_color="transparent")
-        self.info_btn_row2.pack(fill="x", anchor="e", pady=(2, 0))
+        # Row 3: Integrated Action Toolbar
+        self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=("gray80", "gray25"), corner_radius=6)
+        self.toolbar_row.pack(fill="x", padx=8, pady=(2, 8))
 
-        self.convert_schema_btn = ctk.CTkButton(self.info_btn_row2, text="🔄 Formular umwandeln", command=self.open_convert_schema_dialog, width=140, fg_color="#2563eb", hover_color="#1d4ed8", state="disabled")
-        self.convert_schema_btn.pack(side="right", padx=2)
+        self.toolbar_left = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
+        self.toolbar_left.pack(side="left", padx=4, pady=4)
 
-        self.add_note_btn = ctk.CTkButton(self.info_btn_row2, text="📝 Notiz", command=self.focus_timeline_note, width=75, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
-        self.add_note_btn.pack(side="right", padx=2)
+        self.email_btn = ctk.CTkButton(self.toolbar_left, text="✉ E-Mail & 🤖 KI", command=self.on_click_email, width=130, state="disabled", fg_color="#6366f1", hover_color="#4f46e5")
+        self.email_btn.pack(side="left", padx=3)
 
-        self.followup_btn = ctk.CTkButton(self.info_btn_row2, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=110, fg_color="darkblue")
-        self.followup_btn.pack(side="right", padx=2)
+        self.cal_btn = ctk.CTkButton(self.toolbar_left, text="📅 Kalender", command=self.on_click_calendar, width=95, state="disabled", fg_color="forestgreen", hover_color="darkgreen")
+        self.cal_btn.pack(side="left", padx=3)
+
+        self.followup_btn = ctk.CTkButton(self.toolbar_left, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=115, fg_color="darkblue")
+        self.followup_btn.pack(side="left", padx=3)
+
+        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text="📝 Notiz", command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
+        self.add_note_btn.pack(side="left", padx=3)
+
+        # Right Side of Toolbar: Save Button + Integrated Dropdown Menu for Utilities
+        self.toolbar_right = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
+        self.toolbar_right.pack(side="right", padx=4, pady=4)
+
+        self.save_btn = ctk.CTkButton(self.toolbar_right, text="💾 Speichern", command=self.on_click_save, width=95, state="disabled")
+        self.save_btn.pack(side="left", padx=3)
+
+        self.more_actions_combo = ctk.CTkOptionMenu(
+            self.toolbar_right,
+            values=["⚙ Weitere Aktionen...", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
+            command=self.on_more_actions_selected,
+            width=165,
+            fg_color=("gray70", "gray35"),
+            button_color=("gray60", "gray40"),
+        )
+        self.more_actions_combo.set("⚙ Weitere Aktionen...")
+        self.more_actions_combo.pack(side="left", padx=3)
+
+        # Aliases for export, print, convert_schema buttons to maintain backward compatibility
+        self.export_btn = self.more_actions_combo
+        self.print_btn = self.more_actions_combo
+        self.convert_schema_btn = self.more_actions_combo
 
         # Dynamic Form Widget
         self.form_widget = DynamicFormWidget(
@@ -463,6 +473,16 @@ class CockpitView(ctk.CTkFrame):
         # Load right sidebar
         self.timeline_widget.load_timeline(case.timeline)
         self.attachment_widget.load_attachments(case)
+
+    def on_more_actions_selected(self, choice: str):
+        if choice == "📤 Fall Exportieren":
+            self.on_click_export()
+        elif choice == "🖨 Fall Drucken":
+            self.on_click_print()
+        elif choice == "🔄 Formular umwandeln":
+            self.open_convert_schema_dialog()
+        if hasattr(self, "more_actions_combo"):
+            self.more_actions_combo.set("⚙ Weitere Aktionen...")
 
     def open_convert_schema_dialog(self):
         if not self.current_case:
@@ -620,8 +640,8 @@ class CockpitView(ctk.CTkFrame):
         # Compute available pixel width in info_left_frame
         w = self.info_left_frame.winfo_width()
         if w <= 50:
-            bar_w = self.info_bar.winfo_width()
-            right_w = self.info_right_frame.winfo_reqwidth()
+            bar_w = self.info_row.winfo_width()
+            right_w = self.status_right_frame.winfo_reqwidth()
             w = max(250, (bar_w - right_w - 30) if bar_w > right_w + 50 else 380)
         else:
             w = max(200, w - 10)

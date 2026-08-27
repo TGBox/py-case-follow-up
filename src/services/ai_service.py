@@ -68,6 +68,13 @@ class AiService:
             pass
         return False, []
 
+    @property
+    def active_model_name(self) -> str:
+        """Returns active model name depending on provider (OLLAMA vs GEMINI)."""
+        if self.provider == "GEMINI":
+            return self.gemini_model or "gemini-2.0-flash"
+        return self.model_name or "qwen3.5:9b"
+
     def check_gemini_status(self, api_key: str | None = None, model: str | None = None) -> tuple[bool, str]:
         """Checks if Google Gemini API key is valid by querying the models list API."""
         key = api_key if api_key is not None else self.gemini_api_key
@@ -75,7 +82,7 @@ class AiService:
             return False, "Kein Gemini API Key konfiguriert."
 
         try:
-            url = f"{GEMINI_API_BASE_URL}?key={key.strip()}"
+            url = f"{GEMINI_API_BASE_URL}/models?key={key.strip()}"
             req = urllib.request.Request(url, headers={"User-Agent": AI_USER_AGENT})
             with urllib.request.urlopen(req, timeout=5.0) as resp:
                 if resp.status == 200:
@@ -248,45 +255,57 @@ class AiService:
             logger.warning("Gemini API key is missing.")
             return None
 
-        try:
-            url = f"{GEMINI_API_BASE_URL}/{self.gemini_model}:generateContent?key={self.gemini_api_key.strip()}"
-            
-            combined_text = prompt
-            if system_prompt:
-                combined_text = f"System-Anweisungen:\n{system_prompt}\n\nBenutzer-Anfrage:\n{prompt}"
+        models_to_try = [self.gemini_model]
+        for fallback in ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"]:
+            if fallback not in models_to_try:
+                models_to_try.append(fallback)
 
-            payload = {
-                "contents": [
-                    {
-                        "parts": [
-                            {"text": combined_text}
-                        ]
-                    }
-                ]
-            }
+        combined_text = prompt
+        if system_prompt:
+            combined_text = f"System-Anweisungen:\n{system_prompt}\n\nBenutzer-Anfrage:\n{prompt}"
 
-            json_bytes = json.dumps(payload).encode("utf-8")
-            req = urllib.request.Request(
-                url,
-                data=json_bytes,
-                headers={"Content-Type": "application/json", "User-Agent": AI_USER_AGENT}
-            )
-            with urllib.request.urlopen(req, timeout=30.0) as resp:
-                if resp.status == 200:
-                    res_data = json.loads(resp.read().decode("utf-8"))
-                    candidates = res_data.get("candidates", [])
-                    if candidates:
-                        parts = candidates[0].get("content", {}).get("parts", [])
-                        if parts:
-                            return parts[0].get("text", "").strip()
-        except urllib.error.HTTPError as e:
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": combined_text}
+                    ]
+                }
+            ]
+        }
+        json_bytes = json.dumps(payload).encode("utf-8")
+
+        for m in models_to_try:
+            clean_m = m.replace("models/", "")
+            url = f"{GEMINI_API_BASE_URL}/models/{clean_m}:generateContent?key={self.gemini_api_key.strip()}"
             try:
-                err_body = json.loads(e.read().decode("utf-8"))
-                logger.warning(f"Gemini API HTTP Error {e.code}: {err_body}")
-            except Exception:
-                logger.warning(f"Gemini API HTTP Error {e.code}: {e.reason}")
-        except Exception as e:
-            logger.warning(f"Gemini generation request failed: {e}")
+                req = urllib.request.Request(
+                    url,
+                    data=json_bytes,
+                    headers={"Content-Type": "application/json", "User-Agent": AI_USER_AGENT}
+                )
+                with urllib.request.urlopen(req, timeout=30.0) as resp:
+                    if resp.status == 200:
+                        res_data = json.loads(resp.read().decode("utf-8"))
+                        candidates = res_data.get("candidates", [])
+                        if candidates:
+                            parts = candidates[0].get("content", {}).get("parts", [])
+                            if parts:
+                                return parts[0].get("text", "").strip()
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    logger.info(f"Gemini model '{clean_m}' not found (404), trying next model candidate...")
+                    continue
+                try:
+                    err_body = json.loads(e.read().decode("utf-8"))
+                    logger.warning(f"Gemini API HTTP Error {e.code}: {err_body}")
+                except Exception:
+                    logger.warning(f"Gemini API HTTP Error {e.code}: {e.reason}")
+                break
+            except Exception as e:
+                logger.warning(f"Gemini generation request failed for model '{clean_m}': {e}")
+                break
+
         return None
 
     def query_llm(self, prompt: str, system_prompt: str = "", case: Case | None = None) -> str | None:

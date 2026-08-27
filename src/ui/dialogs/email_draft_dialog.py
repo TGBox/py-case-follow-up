@@ -690,7 +690,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 draft_text = result_holder[0]
                 self.body_textbox.delete("1.0", "end")
                 self.body_textbox.insert("1.0", draft_text)
-                self.status_lbl.configure(text=f"✓ KI-Entwurf generiert ({self.ai_service.model_name}).", text_color="dodgerblue")
+                self.status_lbl.configure(text=f"✓ KI-Entwurf generiert ({self.ai_service.active_model_name}).", text_color="dodgerblue")
 
         result_holder: list[Any] = [None]
 

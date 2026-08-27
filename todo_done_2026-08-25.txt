@@ -35,3 +35,7 @@ x 2026-08-25 (D) Umgekehrt möchte ich auch prüfen, ob eine Funktion in die App
 x 2026-08-25 (D) Hilfemenü aktualisieren um die ganzen neuen Funktionen dort zu erklären +Refactoring @code
 x 2026-08-25 (D) Im Notification Toast wird der Text vom "Öffnen" Button abgeschnitten. +Refactoring @code
 x 2026-08-25 (D) Im Light Mode sind die neu hinzugefügten GUI Elemente noch immer auf den zum Zeitpunkt der Implementierung ausgewählten Dark Mode angepasst. Alle GUI Elemente sollen jetzt und auch immer in Zukunft passende Farben für beide Modi zugewiesen bekommen. Es muss sichergestellt werden, dass dieses Verhalten auch für zukünftige Veränderungen immer eingehalten und überprüft wird. +Bug +Refactoring @code
+x 2026-08-26 (A) Spaltenbreite im Cockpit wird nicht mehr korrekt im Profil gespeichert. +Bug @code
+x 2026-08-26 (A) Minimierung ins Systemtray macht Probleme. +Bug @code
+x 2026-08-26 (A) Anwendung kann visuell verschwinden ohne dass ein Icon gezeigt wird, aber die App wird dann trotzdem nicht beendet. +Bug @code
+x 2026-08-26 (B) Punktescore in der Case Widget Spalte wird nicht korrekt angezeigt am Anfang wenn die App startet. Muss dann Breite ändern bis die GUI aktualisiert. +Bug @code

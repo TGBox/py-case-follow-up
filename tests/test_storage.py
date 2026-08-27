@@ -116,6 +116,7 @@ def test_custom_workspace_and_path_overrides(tmp_path: Path):
     storage = StorageService(config)
     case = Case(case_id="T-999")
     storage.save_cases([case])
+    storage.flush_all_saves()
 
     assert custom_cases.exists()
     loaded = storage.load_cases()

@@ -39,6 +39,7 @@ DISPLAY_LAYOUT_NAMES = {
     "COCKPIT": "Cockpit (Hauptansicht)",
     "BOARD": "Kanban-Board (Zuständigkeiten)",
     "TABLE": "Tabelle & Details (Sortier-Matrix)",
+    "ANALYTICS": "📊 Auswertungen & Kennzahlen",
 }
 
 DISPLAY_BOARD_COLUMN_NAMES = {
@@ -86,8 +87,8 @@ DIALOG_HEADERS = {
 }
 
 # --- Dropdown Menu & Navigation Option Lists ---
-MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🏷 Tags", "🧩 Programmbereiche"]
-MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine"]
+MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🧩 Programmbereiche"]
+MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine", "🏷 Tags"]
 MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"]
 
 # --- Button Labels & UI Action Texts ---
@@ -186,7 +187,7 @@ DIALOG_DIMENSIONS = {
     "followup_flyout": (680, 560),
     "handover": (580, 520),
     "zip_import": (840, 620),
-    "snippet_mgmt": (820, 600),
+    "snippet_mgmt": (900, 750),
     "snippet_picker": (640, 480),
     "email_draft": (760, 640),
     "calendar_export": (640, 520),
@@ -459,6 +460,7 @@ DEFAULT_SHORTCUTS = {
     "view_cockpit": "<Control-1>",
     "view_board": "<Control-2>",
     "view_table": "<Control-3>",
+    "view_analytics": "<Control-4>",
     "toggle_theme": "<Control-t>",
 }
 
@@ -474,6 +476,7 @@ HOTKEY_ACTION_LABELS = [
     ("view_cockpit", "Cockpit-Ansicht:"),
     ("view_board", "Board-Ansicht:"),
     ("view_table", "Tabelle-Ansicht:"),
+    ("view_analytics", "Auswertungs-Ansicht:"),
     ("toggle_theme", "Theme umschalten:"),
 ]
 

@@ -53,6 +53,7 @@ class LayoutMode(StrEnum):
     COCKPIT = "COCKPIT"
     BOARD = "BOARD"
     TABLE = "TABLE"
+    ANALYTICS = "ANALYTICS"
 
 
 from constants import (

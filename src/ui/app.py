@@ -277,6 +277,7 @@ class SupportCockpitApp(ctk.CTk):
             command=self.open_profile_settings_dialog,
             width=130,
             fg_color="transparent",
+            text_color=("gray10", "gray90"),
             hover_color=("gray80", "gray25")
         )
         self.user_btn.pack(side="right", padx=6, pady=4)
@@ -356,6 +357,9 @@ class SupportCockpitApp(ctk.CTk):
         elif val == LayoutMode.TABLE.value:
             self.table_view.pack(fill="both", expand=True)
             self.active_view = self.table_view
+        elif val == LayoutMode.ANALYTICS.value:
+            self.analytics_view.pack(fill="both", expand=True)
+            self.active_view = self.analytics_view
         else:
             self.cockpit_view.pack(fill="both", expand=True)
             self.active_view = self.cockpit_view
@@ -384,6 +388,8 @@ class SupportCockpitApp(ctk.CTk):
 
         self.cockpit_view.set_schemas(self.schemas)
         self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
+        if hasattr(self.cockpit_view, "update_sash_color"):
+            self.cockpit_view.update_sash_color()
         self.board_view.set_cases(filtered_cases)
         self.table_view.set_schemas(self.schemas)
         self.table_view.set_cases(filtered_cases)
@@ -732,6 +738,8 @@ class SupportCockpitApp(ctk.CTk):
         ctk.set_appearance_mode(new_theme)
         self.apply_windows_theme(new_theme == "Dark")
         self.profile.ui_settings.theme = new_theme
+        if hasattr(self, "cockpit_view"):
+            self.cockpit_view.update_sash_color()
         self.refresh_views()
 
     def register_shortcuts(self):
@@ -758,6 +766,7 @@ class SupportCockpitApp(ctk.CTk):
         safe_bind(shortcuts.view_cockpit, lambda e: self.switch_layout(LayoutMode.COCKPIT.value))
         safe_bind(shortcuts.view_board, lambda e: self.switch_layout(LayoutMode.BOARD.value))
         safe_bind(shortcuts.view_table, lambda e: self.switch_layout(LayoutMode.TABLE.value))
+        safe_bind(getattr(shortcuts, "view_analytics", "<Control-4>"), lambda e: self.switch_layout(LayoutMode.ANALYTICS.value))
         safe_bind(shortcuts.toggle_theme, lambda e: self.toggle_theme())
         safe_bind("<F1>", lambda e: self.open_help_dialog())
 

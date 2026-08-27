@@ -121,6 +121,7 @@ class ShortcutSettings:
     view_cockpit: str = DEFAULT_SHORTCUTS["view_cockpit"]
     view_board: str = DEFAULT_SHORTCUTS["view_board"]
     view_table: str = DEFAULT_SHORTCUTS["view_table"]
+    view_analytics: str = DEFAULT_SHORTCUTS["view_analytics"]
     toggle_theme: str = DEFAULT_SHORTCUTS["toggle_theme"]
 
     def to_dict(self) -> dict[str, Any]:
@@ -140,6 +141,7 @@ class ShortcutSettings:
             view_cockpit=data.get("view_cockpit", DEFAULT_SHORTCUTS["view_cockpit"]),
             view_board=data.get("view_board", DEFAULT_SHORTCUTS["view_board"]),
             view_table=data.get("view_table", DEFAULT_SHORTCUTS["view_table"]),
+            view_analytics=data.get("view_analytics", DEFAULT_SHORTCUTS["view_analytics"]),
             toggle_theme=data.get("toggle_theme", DEFAULT_SHORTCUTS["toggle_theme"]),
         )
 

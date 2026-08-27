@@ -137,6 +137,15 @@ class CockpitView(ctk.CTkFrame):
         except Exception as e:
             logger.warning(f"Could not save paned sash positions: {e}")
 
+    def update_sash_color(self):
+        if hasattr(self, "paned") and self.paned.winfo_exists():
+            is_dark = ctk.get_appearance_mode() == "Dark"
+            sash_bg = COLOR_SASH_DARK if is_dark else COLOR_SASH_LIGHT
+            try:
+                self.paned.configure(bg=sash_bg)
+            except Exception:
+                pass
+
     def create_layout(self):
         widths = {}
         if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):

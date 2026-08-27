@@ -234,6 +234,7 @@ class AiSettings:
     enable_anonymization: bool = True
     enable_ai: bool = True
     auto_summarize_on_open: bool = False
+    use_modelfile_rules_for_gemini: bool = False
     base_rules: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -252,6 +253,7 @@ class AiSettings:
             enable_anonymization=bool(data.get("enable_anonymization", True)),
             enable_ai=bool(data.get("enable_ai", True)),
             auto_summarize_on_open=bool(data.get("auto_summarize_on_open", False)),
+            use_modelfile_rules_for_gemini=bool(data.get("use_modelfile_rules_for_gemini", False)),
             base_rules=rules,
         )
 

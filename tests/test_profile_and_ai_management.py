@@ -107,3 +107,16 @@ def test_ctk_tooltip_dismiss_all():
     mock_tooltip1.hide_tooltip.assert_called_once()
     mock_tooltip2.cancel_timer.assert_called_once()
     mock_tooltip2.hide_tooltip.assert_called_once()
+
+
+def test_use_modelfile_rules_for_gemini_settings_persistence():
+    profile = UserProfile()
+    assert profile.ai_settings.use_modelfile_rules_for_gemini is False
+
+    profile.ai_settings.use_modelfile_rules_for_gemini = True
+    data = profile.to_dict()
+    assert data["ai_settings"]["use_modelfile_rules_for_gemini"] is True
+
+    reloaded = UserProfile.from_dict(data)
+    assert reloaded.ai_settings.use_modelfile_rules_for_gemini is True
+

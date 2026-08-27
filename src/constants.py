@@ -214,13 +214,14 @@ OLLAMA_TIMEOUT_GENERATE = 120.0
 AI_USER_AGENT = "SupportCockpit/1.0"
 
 # --- Gemini API Configuration ---
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-flash-latest",
-    "gemini-1.5-pro",
-    "gemini-2.0-flash-lite",
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash-lite",
 ]
 GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 

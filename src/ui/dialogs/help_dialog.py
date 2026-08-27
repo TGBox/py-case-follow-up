@@ -12,21 +12,20 @@ HELP_ARTICLES = [
 
 Das **Support-Cockpit** unterstützt Sie bei der effizienten Nachverfolgung, Kategorisierung und Priorisierung von Support-Fällen und Praxisanfragen.
 
-#### Die 3 Ansichten (Layout-Modi)
-In der oberen Menüleiste können Sie jederzeit zwischen 3 Ansichten umschalten:
+#### Die 4 Ansichten (Layout-Modi)
+In der oberen Menüleiste können Sie jederzeit zwischen 4 Ansichten umschalten (`Strg+1` bis `Strg+4`):
 
-1. **Cockpit-Ansicht (Standard)**: 
-   - Dreigeteilte Ansicht für maximale Übersicht.
-   - **Links**: Filterbare Fall-Liste sortiert nach Dringlichkeit (Score).
-   - **Mitte**: Hauptdaten des aktiven Falls (Kunde, Status, Dringlichkeit, dynamische Formularfelder, Zeitleiste & Anhänge).
-   - **Rechts**: Integriertes BookStack Wiki zur schnellen Lösungssuche.
+1. **Cockpit-Ansicht (Standard, `Strg+1`)**: 
+   - Dreigeteiltes Haupt-Layout mit Fallliste, Falldetails/Formular und BookStack-Wiki.
 
-2. **Tab-Ansicht (Reiter-Modus)**:
-   - Übersichtliche Reiter-Navigation für kompakte Bildschirme.
-   - Schnelles Umschalten zwischen Fallübersicht, Falldetails und Historie.
+2. **Kanban-Board (`Strg+2`)**:
+   - Board-Ansicht sortiert nach Spalten & Zuständigkeiten (*Neu*, *Aktion erforderlich*, *Warten*, *In Bearbeitung*, *Erledigt*).
 
-3. **Split-Ansicht (2-Spalten-Modus)**:
-   - Links Fall-Liste, rechts Falldetailansicht für fokussiertes Arbeiten ohne Wiki-Seitenleiste.
+3. **Tabelle & Details (`Strg+3`)**:
+   - Tabellarische Matrix mit Falldetails für kompakte Übersicht, Sortierung und Filterung.
+
+4. **Auswertungen & Kennzahlen (`Strg+4`)**:
+   - Vollständiges Statistik-Dashboard mit Durchlaufzeiten, überfälligen Fristen, VIP-Quoten und Berichtsexport.
 
 ---
 
@@ -190,13 +189,14 @@ Arbeiten Sie noch schneller mit folgenden Hotkeys:
 | **Wiki-Suche fokussieren** | `Strg + W` |
 | **Kundensuche fokussieren** | `Strg + F` |
 | **Cockpit-Ansicht** | `Strg + 1` |
-| **Kanban-Board-Ansicht** | `Strg + 2` |
-| **Tabellen-Ansicht** | `Strg + 3` |
+| **Tab-Ansicht** | `Strg + 2` |
+| **Split-Ansicht** | `Strg + 3` |
+| **Auswertung & Kennzahlen** | `Strg + 4` |
 | **Theme umschalten** | `Strg + T` |
 | **Hilfe-Dialog** | `F1` |
 | **Textbaustein-Makros** | e.g. `Strg + Alt + 1` |
 
-*Hinweis: Alle Tastenkürzel und Textbaustein-Makros können in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) frei angepasst und per Taste erfasst werden.*
+*Hinweis: Alle Tastenkürzel und Textbaustein-Makros können in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) frei angepasst und interaktiv per Taste erfasst werden.*
 """
     },
     {
@@ -420,22 +420,53 @@ Sparen Sie Zeit bei wiederkehrenden Antworten und Standardnotizen durch den inte
 """
     },
     {
+        "id": "repeatable_sub_forms",
+        "title": "📂 Dynamische Mehrfach-Eingabemasken",
+        "category": "Formulare",
+        "content": """
+### 📂 Dynamische Mehrfach-Eingabemasken (Wiederholbare Blöcke)
+
+Einige Formular-Typen (wie *"Zuzahlungsnachforderung & Abrechnungskorrektur"*) erfordern die Erfassung mehrerer voneinander unabhängiger Anfragen (z.B. mehrere ESOL-Dateien oder Rechnungen) in einem einzigen Fall.
+
+#### Bedienung:
+1. Wählen Sie im Fall das Formular **"Zuzahlungsnachforderung & Abrechnungskorrektur"**.
+2. **Karten-Container**: Das Formular erstellt eigenständige Karteikarten für jede Anforderung (mit ESOL-Dateiname, Geforderter Aktion, Rechnungs-Nr. & Datum, Verordnungs-Nr., Patientenname(n) und Begründung).
+3. **➕ Weitere Datei / Korrektur-Anforderung anfordern**: Fügt per Klick dynamisch eine neue leere Anforderungs-Karteikarte hinzu.
+4. **🗑 Anfrage #N entfernen**: Löscht einzelne Karteikarten bei Bedarf (bei mehr als einer Karte).
+5. **E-Mail & Export**: In E-Mail-Entwürfen und Exporten werden alle Karteikarten automatisch als nummerierte Abschnitte (`--- Datei-Anforderung #1 ---`) formatiert!
+"""
+    },
+    {
         "id": "analytics_kpi_dashboard",
-        "title": "📊 Auswertungs- & KPI-Dashboard",
+        "title": "Auswertungs- & KPI-Dashboard",
         "category": "Auswertungen",
         "content": """
-### 📊 Auswertungs- & KPI-Dashboard
+### Auswertungs- & KPI-Dashboard
 
-Erhalten Sie einen schnellen Überblick über Ihre Support-Kennzahlen und Auslastungen.
+Erhalten Sie auf einen Blick umfassende und tiefe Einblicke in Ihre Support-Performance und Kennzahlen.
 
 #### Dashboard öffnen:
-- Klicken Sie in der Menüleiste auf **📊 Auswertungen**.
+- Klicken Sie in der Menüleiste auf **Auswertungen & Kennzahlen** oder drücken Sie `Strg + 4`.
 
-#### Enthaltene Metriken & Visualisierungen:
-- **Gesamt-Kennzahlen**: Offene Fälle, Erledigte Fälle, Archivierte Fälle, Durchschnittliche Bearbeitungszeit.
-- **Dringlichkeits-Verteilung**: Ampelanzeige für `🔴 Kritisch`, `🟡 Hoch`, `🟢 Normal`.
-- **Top 5 Praxen-Ranking**: Praxen mit dem höchsten Fallaufkommen zur frühzeitigen Problemidentifikation.
-- **Abteilungs-Auslastung**: Verteilung der Fälle auf Support, Technik, Entwicklung und Buchhaltung.
+#### 6 Haupt-KPI-Karten (Obere Reihe):
+- **📋 Fälle Gesamt**: Gesamtzahl aller erfassten Vorgänge.
+- **⏳ Offene Fälle**: Vorgänge in Bearbeitung oder Warten.
+- **✓ Erledigt (%)**: Anzahl erledigter Fälle inkl. prozentualem Erfolgsanteil.
+- **⚠ Überfällig**: Anzahl offener Fälle mit überschrittener Wiedervorlage / Frist (`due_date`).
+- **⏱ Ø Bearbeitung**: Durchschnittliche Durchlaufzeit von Fallerstellung bis Erledigung in Tagen oder Stunden.
+- **⭐ VIP-Quote**: Prozentsatz der Fälle von Premium-/VIP-Praxen.
+
+#### 2-Spalten Dashboard Layout:
+- **Linke Spalte**:
+  - **🚨 Dringlichkeits-Verteilung (Scoring)**: Ampelanzeige für `🔴 Kritisch`, `🟡 Hoch`, `🟢 Normal` mit Prozentanteilen.
+  - **📄 Verteilung nach Formular / Schema**: Übersicht, wie viele Fälle je Formulartyp vorliegen.
+- **Rechte Spalte**:
+  - **🏆 Top 5 Praxen nach Fallaufkommen**: Ranking mit VIP-Kennzeichnung (`★ VIP`).
+  - **👤 Bearbeiter-Auslastung**: Offene vs. erledigte Fälle je zugewiesenem Bearbeiter (`assigned_to`).
+  - **👥 Offene Fälle nach Abteilung**: Aufschlüsselung nach *Support, Entwicklung, Technik, Kunde*.
+
+#### 📋 Statistik-Bericht kopieren:
+- Über den Button oben rechts kopieren Sie eine vollständige Markdown-Zusammenfassung aller Auswertungen direkt in die Zwischenablage!
 """
     },
     {

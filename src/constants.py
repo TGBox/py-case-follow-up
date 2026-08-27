@@ -39,7 +39,7 @@ DISPLAY_LAYOUT_NAMES = {
     "COCKPIT": "Cockpit (Hauptansicht)",
     "BOARD": "Kanban-Board (Zuständigkeiten)",
     "TABLE": "Tabelle & Details (Sortier-Matrix)",
-    "ANALYTICS": "📊 Auswertungen & Kennzahlen",
+    "ANALYTICS": "Auswertungen & Kennzahlen",
 }
 
 DISPLAY_BOARD_COLUMN_NAMES = {

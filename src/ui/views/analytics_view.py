@@ -28,7 +28,7 @@ class AnalyticsView(ctk.CTkFrame):
 
         ctk.CTkLabel(
             top_bar,
-            text="📊 Auswertungen & Support Cockpit KPIs",
+            text="Auswertungen & Support Cockpit KPIs",
             font=ctk.CTkFont(size=18, weight="bold")
         ).pack(side="left")
 
@@ -233,7 +233,7 @@ class AnalyticsView(ctk.CTkFrame):
                     pass
 
         lines = [
-            "# 📊 Support Cockpit — Statistik & Kennzahlen Bericht",
+            "# Support Cockpit — Statistik & Kennzahlen Bericht",
             f"**Fälle Gesamt:** {total_count}",
             f"**Offene Fälle:** {len(open_cases)}",
             f"**Erledigte Fälle:** {len(completed_cases)} ({(len(completed_cases)/total_count*100 if total_count else 0):.1f}%)",

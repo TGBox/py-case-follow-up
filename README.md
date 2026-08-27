@@ -6,7 +6,11 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 
 ## 🌟 Hauptfunktionen & Features
 
-* **3-Spalten Cockpit, Board & Tabellenmatrix:** Flexible UI-Layouts mit CustomTkinter Flat-Optik, flüssigen Animationen und dynamischem **Dark- & Light-Mode**.
+* **4 Flexible Ansichten (Layout-Modi):**
+  - **Cockpit-Ansicht (`Strg+1`)**: Dreigeteiltes Haupt-Layout mit Fallliste, Falldetails/Formular und BookStack-Wiki.
+  - **Kanban-Board (`Strg+2`)**: Board-Ansicht sortiert nach Spalten & Zuständigkeiten (*Neu, Aktion erforderlich, Warten, In Bearbeitung, Erledigt*).
+  - **Tabelle & Details (`Strg+3`)**: Tabellarische Umschalt-Matrix für schnelle Übersicht, Filterung und Sortierung.
+  - **Auswertungen & Kennzahlen (`Strg+4`)**: Vollständiges Statistik- & KPI-Dashboard.
 * **🤖 Hybride KI & Ollama LLM-Integration:**
   - **Lokale LLM-Anbindung:** Nahtlose REST-API Integration mit lokal laufenden Ollama-Modellen (`qwen2.5`, `qwen3.5:9b`, `llama3`, `pvs-support`).
   - **In-App Ollama Server-Steuerung:** Direktes Starten (`▶ Ollama Server Starten`) per `ollama serve` und Beenden (`🛑 Server Beenden`) laufender Ollama-Prozesse direkt aus den Profileinstellungen.
@@ -20,23 +24,32 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - **Hierarchisches Regelwerk:** System-Prompts mit mehrstufiger Vererbung (*Globale Basis-Regeln* < *Praxis-Spezifische Vorrang-Regeln* < *Priorisierte Sonderanweisung*).
   - **Validierter Fall-ID Ausschluss:** Automatisierte Garantie, dass interne Fall-IDs nicht in Kunden-Mails enthalten sind.
   - **📋 Zusammenfassungen, 💡 Lösungsvorschläge & Wiki-Matching:** Automatische Extraktion von 3-Stufen-Zusammenfassungen und Abgleich mit BookStack-Wiki-Artikeln.
+* **📂 Dynamische Mehrfach-Eingabemasken (Wiederholbare Blöcke / Zuzahlungsnachforderungen):**
+  - Wiederholbare Karten-Container in dynamischen Formularen (z.B. *Zuzahlungsnachforderung & Abrechnungskorrektur*).
+  - Beliebig viele Datei- / Korrektur-Anforderungen per Knopfdruck (`➕ Weitere Datei / Korrektur-Anforderung anfordern`) hinzufügen und verwalten.
+  - Nummerierte Aufbereitung in E-Mail- & Export-Templates (`--- Datei-Anforderung #1 ---`).
+* **Auswertungs- & KPI-Dashboard (`Auswertungen & Kennzahlen`):**
+  - **6 Top-KPI-Karten**: *Fälle Gesamt, Offene Fälle, Erledigt %, Überfällige Wiedervorlagen, Ø Bearbeitungszeit, VIP-Kundenquote*.
+  - **2-Spalten Layout**: Dringlichkeits-Scoring Ampel (`Rot` / `Gelb` / `Grün`), Formular-/Schema-Verteilung, Top 5 Praxen mit VIP-Badge (`★ VIP`), Bearbeiter-Auslastung (`assigned_to`) und Abteilungs-Zuständigkeiten.
+  - **📋 Statistik-Bericht kopieren**: Kopiert eine strukturierte Markdown-Zusammenfassung aller Auswertungen in die Zwischenablage.
 * **🏢 Interne Vorgänge & Aufgaben (ohne Kunde):** Erfassung rein interner Vorgänge (Systemwartung, Notizen, Entwicklungsaufgaben) ohne Kundenelement mit automatischer Umschaltung auf das Schema *"🏢 Interne Aufgabe / Notiz"* und blauem `🏢 INTERN`-Badge.
 * **🐍 Cobra CRM Praxen-Import:** Assistent zum Importieren von Kundendatenbanken aus Cobra CRM Exporte im Format CSV, TXT oder JSON mit automatischer Spaltenerkennung (`COBRA_FIELD_ALIAS_MAP`).
 * **📝 Textbausteine & Snippet-Manager:** Zentrale Verwaltung von Bausteinen mit Kategorien und Tags sowie Schnellauswahl-Dialog (`SnippetPickerDialog`) zum direkten Einfügen in Fallnotizen.
+* **⌨ Einstellbare Keyboard-Makros & Shortcuts:**
+  - Beliebige globale und benutzerdefinierte Tastenkürzel sowie Textbaustein-Makros.
+  - Interaktive Tasten-Erfassung und automatische Konfliktprüfung in den Profileinstellungen (`⚙ Profil & Einstellungen`).
 * **🔔 Live-Wiedervorlagen & Background Toast-Popups:**
   - Glocken-Badge (`🔔 3`) in der Kopfzeile mit Live-Zähler fälliger Fristen.
   - Periodische Fristenprüfung im Hintergrund mit unaufdringlichen Toast-Notifications am Bildschirmrand.
   - **Wiedervorlagen-Flyout** zum schnellen Verfolgen, Erledigen oder Verschieben (`+ 1 Tag`, `+ 1 Woche`).
-* **✉ E-Mail-Entwurf & 📅 Kalender-Export (.ics):**
+* **✉ E-Mail-Entwurf & 📅 Kalender-Export (.ics) & Outlook Transfer:**
   - Vorbereitung von Support-Mails mit praxisnahen Anreden und KI-Antwortentwürfen (`EmailDraftDialog`).
+  - **In Outlook übertragen**: Direkte Übergabe ersteller E-Mails an Microsoft Outlook.
   - Erzeugung von iCalendar (`.ics`) Fristterminen für MS Outlook, Thunderbird & Apple Calendar (`CalendarExportDialog`).
-* **⏱ Datumswahl mit Uhrzeit & Schnellauswahl:**
+* **⏱ Datumswahl mit Uhrzeit & Stepper-Navigation:**
   - Kalender-Widget mit Datums- und Uhrzeitwahl (HH:MM).
+  - Zeit-Stepper (`▲` / `▼`) für 5-Minuten-Intervalle und praxisnahe Kernarbeitszeiten (07:00–20:00 Uhr).
   - Schnellauswahl-Buttons: *"Morgen 08:00 Uhr"*, *"Heute 11:30 (vor Mittag)"*, *"Heute 13:30 (nach Mittag)"*.
-* **📊 Auswertungs- & KPI-Dashboard (`📊 Auswertungen`):**
-  - Übersicht über Gesamtfälle, offene/erledigte/archivierte Vorgänge.
-  - Dringlichkeits-Scoring Verteilung (`Rot` / `Gelb` / `Grün`).
-  - Top 5 Praxen-Ranking nach Fallaufkommen & Abteilungs-Auslastung.
 * **🖨 Fall-Akte PDF/Druck- & HTML-Export (`CasePrintDialog`):**
   - Druckauswahl-Dialog mit Checkboxen zum gezielten Abwählen einzelner Timeline-Einträge oder Kundendaten.
   - Getrennte Knöpfe für **🌐 HTML-Bericht im Browser öffnen** und **🖨 PDF-Bericht drucken** (mit nativem Druckdialog).
@@ -45,8 +58,9 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   - Live-Text- und Bild-Vorschau für Anhänge (PNG, JPG, Logfiles, JSON).
   - Direktes Öffnen von Anhängen im OS-Standardprogramm und Speichern von Screenshots per `Strg+V`.
 * **⚠ Mitarbeiter-Abwesenheiten & Urlaubsnotizen:** Erfassen von Urlaub/Krankheit in der Mitarbeiterverwaltung mit automatischem Warnhinweis im Übergabe-Dialog bei Auswahl abwesender Kollegen.
-* **🎨 Centralized Constants & Design System (`src/constants.py`):**
+* **🎨 Centralized Constants & Light/Dark Mode Design System:**
   - Zentrale Verwaltung aller Farb-Tokens, Dialog-Dimensionen, Validierungsmeldungen, Button-Texte, AI-Prompts und Alias-Zuordnungen.
+  - Perfekt abgestimmte Farbmuster für Hell- und Dunkelmodus.
 * **🔍 Erweitertes Suchsystem & Schnellfilter:**
   - Tokens wie `is:internal`, `is:customer`, `vip:true`, `reminder:due`, `actor:dev`, `status:open`, `error:...`.
   - Schnellfilter-Buttons (`[Alle]`, `[🔥 Dringend]`, `[🔔 Wiedervorlagen]`, `[🏢 Intern]`) über der Fallliste.
@@ -128,14 +142,18 @@ ENV_BOOKSTACK_TOKEN_SECRET="your_bookstack_token_secret"
 * `Strg+E`: Export-Assistenten öffnen
 * `Strg+S`: Aktiven Fall speichern
 * `Strg+V`: Screenshot aus Zwischenablage im Fallordner speichern
+* `Strg+1`: Cockpit-Ansicht (3-Spalten Hauptansicht)
+* `Strg+2`: Kanban-Board (Zuständigkeiten)
+* `Strg+3`: Tabelle & Details (Sortier-Matrix)
+* `Strg+4`: Auswertungen & Kennzahlen Dashboard
 
-*(Alle Hotkeys können im Profil-Einstellungen-Dialog benutzerdefiniert angepasst werden inkl. automatischer Konfliktprüfung).*
+*(Alle Hotkeys und Keyboard-Makros können im Profil-Einstellungen-Dialog benutzerdefiniert angepasst werden).*
 
 ---
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **297 automatisierte Tests** in der pytest Testsuite:
+Das Projekt verfügt über **305 automatisierte Tests** in der pytest Testsuite:
 
 ```bash
 .\.venv\Scripts\python -m pytest
@@ -145,21 +163,24 @@ uv run pytest
 
 Abgedeckte Testbereiche:
 * `test_profile_and_ai_management.py`: Ollama Server Process Control (Start/Stop), Modell-Downloads, VRAM-Entladung & asynchroner Status-Scan.
-* `test_ai_text_generation_validation.py`: 45 Tests zur Validierung der LLM-Generierung, Prompt-Hierarchien, Sonderanweisungen, Fall-ID-Ausschluss und NLP-Fallbacks.
+* `test_ai_text_generation_validation.py`: Validierung der LLM-Generierung, Prompt-Hierarchien, Sonderanweisungen, Fall-ID-Ausschluss und NLP-Fallbacks.
 * `test_ai_hierarchical_rules.py` & `test_ai_service_and_assistant.py`: Testen des AiService, Ollama REST API Queries und Regel-Priorisierung.
+* `test_zuzahlungsnachforderung_multi_requests.py`: Dynamische wiederholbare Karten-Container für Multi-Datei-Anforderungen.
+* `test_analytics_metrics.py`: Auswertungs-Dashboard KPIs, Bearbeitungszeiten & Markdown-Berichtsexport.
+* `test_keyboard_macros.py`: Keyboard-Makros & Hotkey-Konfliktprüfungen.
 * `test_internal_cases.py`: Erfassung & Suche interner Vorgänge ohne Kundenelement.
 * `test_cobra_import.py`: Cobra CRM Kunden- & Praxenimport mit Spaltenerkennung.
 * `test_snippets.py` & `test_seeded_support_snippets.py`: Textbausteine-Verwaltung & Einfüge-Mechanik.
-* `test_email_and_calendar_dialog_separation.py`: Eigenständige Dialoge für E-Mail & .ics Kalenderexport.
+* `test_email_and_calendar_dialog_separation.py` & `test_email_and_outlook_suite.py`: Eigenständige Dialoge für E-Mail, Outlook-Transfer & .ics Kalenderexport.
 * `test_case_print_dialog.py` & `test_case_print_export_options.py`: HTML-Browseranzeige & PDF-Druck.
 * `test_followup_and_relative_dates.py`: Fristen, Relativdaten & Toast-Benachrichtigungen.
 * `test_colleague_absence.py`: Abwesenheiten & Vertretungswarnungen.
-* `test_unicode_cleanliness_anti_regression.py`: Schutz vor Unicode Variation-Selectors.
-* `test_analytics_metrics.py`: Auswertungs-Dashboard KPIs & Metriken.
+* `test_unicode_cleanliness_anti_regression.py`: Schutz vor Unicode Control Characters.
 * `test_zip_backup.py`: ZIP-Komplettsicherung & Entpackungs-Workflow.
-* `test_storage.py`: Atomares Schreiben, Backups, Archivierung & Crash-Recovery.
+* `test_storage.py` & `test_storage_robustness_deep.py`: Atomares Schreiben, Backups, Archivierung & Crash-Recovery.
 * `test_scoring.py`: Urgency-Score Formel & Ampelschwellen.
 * `test_search_parser.py` & `test_quick_filter_search.py`: Token-Parsing & Schnellauswahl.
 * `test_export_engine.py`: Jinja2 Rendering, In-Place Validierung & Force-Export.
 * `test_p2p_sync.py` & `test_p2p_advanced.py`: Diff-Berechnung & selektiver P2P-Import.
 * `test_ui_integration.py` & `test_ui_workflow_chains.py`: E2E-Integrationstests aller GUI-Workflows.
+

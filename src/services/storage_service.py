@@ -1,6 +1,7 @@
 import json
 import logging
 import shutil
+import threading
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Callable
@@ -103,6 +104,50 @@ def safe_read_json(
         return default_val
 
 
+class DebouncedSaver:
+    """Buffers and debounces background disk save operations per target file path."""
+    def __init__(self):
+        self._timers: dict[Path, threading.Timer] = {}
+        self._data: dict[Path, Any] = {}
+        self._lock = threading.Lock()
+
+    def save_debounced(self, target_path: Path, data: Any, delay_seconds: float = 0.15):
+        with self._lock:
+            self._data[target_path] = data
+            if target_path in self._timers:
+                self._timers[target_path].cancel()
+
+            def flush():
+                with self._lock:
+                    val = self._data.pop(target_path, None)
+                    self._timers.pop(target_path, None)
+                if val is not None:
+                    try:
+                        atomic_save_json(target_path, val)
+                    except Exception as e:
+                        logger.error(f"Debounced background save failed for {target_path}: {e}")
+
+            timer = threading.Timer(delay_seconds, flush)
+            timer.daemon = True
+            self._timers[target_path] = timer
+            timer.start()
+
+    def flush_all(self):
+        """Immediately flushes all pending debounced saves synchronously (used on app exit)."""
+        with self._lock:
+            pending_data = dict(self._data)
+            for timer in self._timers.values():
+                timer.cancel()
+            self._timers.clear()
+            self._data.clear()
+
+        for path, data in pending_data.items():
+            try:
+                atomic_save_json(path, data)
+            except Exception as e:
+                logger.error(f"Flush save failed for {path}: {e}")
+
+
 class StorageService:
     def __init__(self, config: AppConfig):
         self.config = config
@@ -116,9 +161,15 @@ class StorageService:
         self._schemas_cache: list[QuestionSchema] | None = None
         self._templates_cache: list[ExportTemplate] | None = None
         self._colleagues_cache: list[Colleague] | None = None
+        self.saver = DebouncedSaver()
+
+    def flush_all_saves(self) -> None:
+        """Flushes all pending background saves to disk synchronously."""
+        self.saver.flush_all()
 
     def invalidate_cache(self) -> None:
-        """Clears all in-memory caches to force fresh disk reads."""
+        """Clears all in-memory caches and flushes pending writes to force fresh disk reads."""
+        self.flush_all_saves()
         self._cases_cache = None
         self._archive_cache = None
         self._profile_cache = None
@@ -143,10 +194,13 @@ class StorageService:
             self._cases_cache = []
         return self._cases_cache
 
-    def save_cases(self, cases: list[Case]) -> None:
+    def save_cases(self, cases: list[Case], sync: bool = False) -> None:
         self._cases_cache = cases
         data = [case.to_dict() for case in cases]
-        atomic_save_json(self.config.cases_path, data)
+        if sync:
+            atomic_save_json(self.config.cases_path, data)
+        else:
+            self.saver.save_debounced(self.config.cases_path, data)
 
     def update_single_case(self, case: Case) -> None:
         """Updates or adds a single case in the cache and persists the cases file."""
@@ -176,10 +230,13 @@ class StorageService:
             self._archive_cache = []
         return self._archive_cache
 
-    def save_archive(self, cases: list[Case]) -> None:
+    def save_archive(self, cases: list[Case], sync: bool = False) -> None:
         self._archive_cache = cases
         data = [case.to_dict() for case in cases]
-        atomic_save_json(self.config.archive_path, data)
+        if sync:
+            atomic_save_json(self.config.archive_path, data)
+        else:
+            self.saver.save_debounced(self.config.archive_path, data)
 
     def archive_single_case(self, case_id: str) -> bool:
         cases = self.load_cases()
@@ -267,10 +324,13 @@ class StorageService:
             self._customers_cache = []
         return self._customers_cache
 
-    def save_customers(self, customers: list[Customer]) -> None:
+    def save_customers(self, customers: list[Customer], sync: bool = False) -> None:
         self._customers_cache = customers
         data = [c.to_dict() for c in customers]
-        atomic_save_json(self.config.customers_path, data)
+        if sync:
+            atomic_save_json(self.config.customers_path, data)
+        else:
+            self.saver.save_debounced(self.config.customers_path, data)
 
     # --- Profile ---
     @property
@@ -322,13 +382,20 @@ class StorageService:
         
         return self.load_profile()
 
-    def save_profile(self, profile: UserProfile) -> None:
+    def save_profile(self, profile: UserProfile, sync: bool = False) -> None:
         self._profile_cache = profile
-        atomic_save_json(self.config.app_profile_path, profile.to_dict())
+        p_dict = profile.to_dict()
+        if sync:
+            atomic_save_json(self.config.app_profile_path, p_dict)
+        else:
+            self.saver.save_debounced(self.config.app_profile_path, p_dict)
         safe_filename = "".join(c for c in profile.user.name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
         if safe_filename:
             target_path = self.profiles_dir / f"profile_{safe_filename}.json"
-            atomic_save_json(target_path, profile.to_dict())
+            if sync:
+                atomic_save_json(target_path, p_dict)
+            else:
+                self.saver.save_debounced(target_path, p_dict)
 
     # --- Schemas ---
     def load_schemas(self, use_cache: bool = True) -> list[QuestionSchema]:
@@ -366,10 +433,13 @@ class StorageService:
         self._schemas_cache = loaded_schemas
         return self._schemas_cache
 
-    def save_schemas(self, schemas: list[QuestionSchema]) -> None:
+    def save_schemas(self, schemas: list[QuestionSchema], sync: bool = False) -> None:
         self._schemas_cache = schemas
         data = {"schemas": [s.to_dict() for s in schemas]}
-        atomic_save_json(self.config.question_schemas_path, data)
+        if sync:
+            atomic_save_json(self.config.question_schemas_path, data)
+        else:
+            self.saver.save_debounced(self.config.question_schemas_path, data)
 
     def reset_schemas_to_defaults(self) -> list[QuestionSchema]:
         """Overwrites working schemas with data_examples/question_schemas.json."""
@@ -416,10 +486,13 @@ class StorageService:
         self._templates_cache = loaded_templates
         return self._templates_cache
 
-    def save_templates(self, templates: list[ExportTemplate]) -> None:
+    def save_templates(self, templates: list[ExportTemplate], sync: bool = False) -> None:
         self._templates_cache = templates
         data = {"templates": [t.to_dict() for t in templates]}
-        atomic_save_json(self.config.export_templates_path, data)
+        if sync:
+            atomic_save_json(self.config.export_templates_path, data)
+        else:
+            self.saver.save_debounced(self.config.export_templates_path, data)
 
     def reset_templates_to_defaults(self) -> list[ExportTemplate]:
         """Overwrites working templates with data_examples/export_templates.json."""
@@ -446,7 +519,10 @@ class StorageService:
             self._colleagues_cache = []
         return self._colleagues_cache
 
-    def save_colleagues(self, colleagues: list[Colleague]) -> None:
+    def save_colleagues(self, colleagues: list[Colleague], sync: bool = False) -> None:
         self._colleagues_cache = colleagues
         data = [c.to_dict() for c in colleagues]
-        atomic_save_json(self.config.colleagues_path, data)
+        if sync:
+            atomic_save_json(self.config.colleagues_path, data)
+        else:
+            self.saver.save_debounced(self.config.colleagues_path, data)

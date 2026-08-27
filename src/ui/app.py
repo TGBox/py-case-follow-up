@@ -368,9 +368,10 @@ class SupportCockpitApp(ctk.CTk):
             self.layout_combo.set(get_layout_display(val))
 
         self.profile.ui_settings.default_layout = val
+        self.storage_service.save_profile(self.profile)
         self.refresh_views()
 
-    def refresh_views(self):
+    def refresh_views(self, force_all: bool = False):
         active_cases = self.get_filtered_cases()
         deep_results = {}
         is_deep_active = (
@@ -387,13 +388,48 @@ class SupportCockpitApp(ctk.CTk):
             filtered_cases = SearchService.filter_cases(active_cases, self.search_query) if self.search_query else active_cases
 
         self.cockpit_view.set_schemas(self.schemas)
-        self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
-        if hasattr(self.cockpit_view, "update_sash_color"):
-            self.cockpit_view.update_sash_color()
-        self.board_view.set_cases(filtered_cases)
-        self.table_view.set_schemas(self.schemas)
-        self.table_view.set_cases(filtered_cases)
-        self.analytics_view.set_cases(filtered_cases)
+
+        # Optimize view updates: update active view immediately; mark inactive views dirty for layout switch
+        if force_all:
+            self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
+            if hasattr(self.cockpit_view, "update_sash_color"):
+                self.cockpit_view.update_sash_color()
+            self.board_view.set_cases(filtered_cases)
+            self.table_view.set_schemas(self.schemas)
+            self.table_view.set_cases(filtered_cases)
+            self.analytics_view.set_cases(filtered_cases)
+            self._cockpit_dirty = False
+            self._board_dirty = False
+            self._table_dirty = False
+            self._analytics_dirty = False
+        else:
+            if self.active_view == self.board_view:
+                self.board_view.set_cases(filtered_cases)
+                self._board_dirty = False
+                self._cockpit_dirty = True
+                self._table_dirty = True
+                self._analytics_dirty = True
+            elif self.active_view == self.table_view:
+                self.table_view.set_schemas(self.schemas)
+                self.table_view.set_cases(filtered_cases)
+                self._table_dirty = False
+                self._cockpit_dirty = True
+                self._board_dirty = True
+                self._analytics_dirty = True
+            elif self.active_view == self.analytics_view:
+                self.analytics_view.set_cases(filtered_cases)
+                self._analytics_dirty = False
+                self._cockpit_dirty = True
+                self._board_dirty = True
+                self._table_dirty = True
+            else:
+                self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
+                if hasattr(self.cockpit_view, "update_sash_color"):
+                    self.cockpit_view.update_sash_color()
+                self._cockpit_dirty = False
+                self._board_dirty = True
+                self._table_dirty = True
+                self._analytics_dirty = True
 
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
         has_user_cases = len(user_cases) > 0
@@ -931,6 +967,7 @@ class SupportCockpitApp(ctk.CTk):
         if hasattr(self, "cockpit_view"):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
+        self.storage_service.flush_all_saves()
         self.withdraw()
 
     def _on_restore_from_tray(self):
@@ -951,6 +988,7 @@ class SupportCockpitApp(ctk.CTk):
             if hasattr(self, "cockpit_view"):
                 self.cockpit_view.save_sash_widths()
             self.storage_service.save_profile(self.profile)
+            self.storage_service.flush_all_saves()
             self.tray_service.stop()
             self.destroy()
         self.after(0, _quit)
@@ -961,5 +999,6 @@ class SupportCockpitApp(ctk.CTk):
         if hasattr(self, "cockpit_view"):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
+        self.storage_service.flush_all_saves()
         self.tray_service.stop()
         self.destroy()

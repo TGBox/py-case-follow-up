@@ -221,13 +221,17 @@ class WikiSettings:
         )
 
 
-from constants import DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL
+from constants import DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL, DEFAULT_GEMINI_MODEL
 
 
 @dataclass
 class AiSettings:
+    provider: str = "OLLAMA"  # "OLLAMA" or "GEMINI"
     ollama_url: str = DEFAULT_OLLAMA_URL
     model_name: str = DEFAULT_OLLAMA_MODEL
+    gemini_api_key: str = ""
+    gemini_model: str = DEFAULT_GEMINI_MODEL
+    enable_anonymization: bool = True
     enable_ai: bool = True
     auto_summarize_on_open: bool = False
     base_rules: list[str] = field(default_factory=list)
@@ -240,8 +244,12 @@ class AiSettings:
         rules_raw = data.get("base_rules", [])
         rules = list(rules_raw) if isinstance(rules_raw, list) else []
         return cls(
+            provider=data.get("provider", "OLLAMA"),
             ollama_url=data.get("ollama_url", DEFAULT_OLLAMA_URL),
             model_name=data.get("model_name", DEFAULT_OLLAMA_MODEL),
+            gemini_api_key=data.get("gemini_api_key", ""),
+            gemini_model=data.get("gemini_model", DEFAULT_GEMINI_MODEL),
+            enable_anonymization=bool(data.get("enable_anonymization", True)),
             enable_ai=bool(data.get("enable_ai", True)),
             auto_summarize_on_open=bool(data.get("auto_summarize_on_open", False)),
             base_rules=rules,

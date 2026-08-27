@@ -50,9 +50,22 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.on_case_updated = on_case_updated
 
         # Initialize AI service
-        ollama_url = profile.ai_settings.ollama_url if (profile and hasattr(profile, 'ai_settings')) else DEFAULT_OLLAMA_URL
-        model_name = profile.ai_settings.model_name if (profile and hasattr(profile, 'ai_settings')) else DEFAULT_OLLAMA_MODEL
-        self.ai_service = AiService(ollama_url=ollama_url, model_name=model_name)
+        ai_set = getattr(profile, 'ai_settings', None)
+        provider = getattr(ai_set, 'provider', 'OLLAMA') if ai_set else 'OLLAMA'
+        ollama_url = getattr(ai_set, 'ollama_url', DEFAULT_OLLAMA_URL) if ai_set else DEFAULT_OLLAMA_URL
+        model_name = getattr(ai_set, 'model_name', DEFAULT_OLLAMA_MODEL) if ai_set else DEFAULT_OLLAMA_MODEL
+        gemini_key = getattr(ai_set, 'gemini_api_key', '') if ai_set else ''
+        gemini_mod = getattr(ai_set, 'gemini_model', 'gemini-1.5-flash') if ai_set else 'gemini-1.5-flash'
+        enable_anon = getattr(ai_set, 'enable_anonymization', True) if ai_set else True
+
+        self.ai_service = AiService(
+            provider=provider,
+            ollama_url=ollama_url,
+            model_name=model_name,
+            gemini_api_key=gemini_key,
+            gemini_model=gemini_mod,
+            enable_anonymization=enable_anon,
+        )
         self.user_name = user_name
         self.snippet_service = snippet_service
         self.storage_service = storage_service
@@ -608,26 +621,36 @@ class EmailDraftDialog(ctk.CTkToplevel):
             pass
 
     def _update_ollama_status_async(self):
-        """Checks Ollama status in a background thread and updates the status badge."""
+        """Checks AI provider status in a background thread and updates the status badge."""
         def thread_target():
+            is_online = False
+            badge_text = "⚡ Regelbasierter Modus (KI Offline/Ohne Key)"
+            badge_color = "dodgerblue"
+
             try:
-                is_online, models = self.ai_service.check_ollama_status()
+                if self.ai_service.provider == "GEMINI":
+                    is_online, msg = self.ai_service.check_gemini_status()
+                    if is_online:
+                        badge_text = f"🟢 Gemini aktiv ({self.ai_service.gemini_model} | Anonymisiert)"
+                        badge_color = "forestgreen"
+                    else:
+                        badge_text = "🔴 Gemini API Key ungültig / offline"
+                        badge_color = "firebrick"
+                else:
+                    is_online, models = self.ai_service.check_ollama_status()
+                    if is_online:
+                        badge_text = f"🟢 Ollama aktiv ({self.ai_service.model_name})"
+                        badge_color = "forestgreen"
             except Exception:
-                is_online, models = False, []
+                pass
 
             def ui_callback():
                 if not self.winfo_exists():
                     return
-                if is_online:
-                    self.ollama_status_badge.configure(
-                        text=f"🟢 Ollama aktiv ({self.ai_service.model_name})",
-                        text_color="forestgreen",
-                    )
-                else:
-                    self.ollama_status_badge.configure(
-                        text="⚡ Regelbasierter Modus (Ollama offline)",
-                        text_color="dodgerblue",
-                    )
+                self.ollama_status_badge.configure(
+                    text=badge_text,
+                    text_color=badge_color,
+                )
 
             try:
                 self.after(0, ui_callback)

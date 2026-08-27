@@ -59,9 +59,22 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.wiki_articles = wiki_articles or []
         self._is_loading = False
 
-        ollama_url = profile.ai_settings.ollama_url if profile else DEFAULT_OLLAMA_URL
-        model_name = profile.ai_settings.model_name if profile else DEFAULT_OLLAMA_MODEL
-        self.ai_service = AiService(ollama_url=ollama_url, model_name=model_name)
+        ai_set = getattr(profile, 'ai_settings', None)
+        provider = getattr(ai_set, 'provider', 'OLLAMA') if ai_set else 'OLLAMA'
+        ollama_url = getattr(ai_set, 'ollama_url', DEFAULT_OLLAMA_URL) if ai_set else DEFAULT_OLLAMA_URL
+        model_name = getattr(ai_set, 'model_name', DEFAULT_OLLAMA_MODEL) if ai_set else DEFAULT_OLLAMA_MODEL
+        gemini_key = getattr(ai_set, 'gemini_api_key', '') if ai_set else ''
+        gemini_mod = getattr(ai_set, 'gemini_model', 'gemini-1.5-flash') if ai_set else 'gemini-1.5-flash'
+        enable_anon = getattr(ai_set, 'enable_anonymization', True) if ai_set else True
+
+        self.ai_service = AiService(
+            provider=provider,
+            ollama_url=ollama_url,
+            model_name=model_name,
+            gemini_api_key=gemini_key,
+            gemini_model=gemini_mod,
+            enable_anonymization=enable_anon,
+        )
 
         self.title(f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]")
         w, h = DIALOG_DIMENSIONS["ai_assistant"]

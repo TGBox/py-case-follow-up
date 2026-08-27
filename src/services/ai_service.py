@@ -72,7 +72,7 @@ class AiService:
     def active_model_name(self) -> str:
         """Returns active model name depending on provider (OLLAMA vs GEMINI)."""
         if self.provider == "GEMINI":
-            return self.gemini_model or "gemini-2.0-flash"
+            return self.gemini_model or "gemini-3.6-flash"
         return self.model_name or "qwen3.5:9b"
 
     def check_gemini_status(self, api_key: str | None = None, model: str | None = None) -> tuple[bool, str]:
@@ -256,7 +256,7 @@ class AiService:
             return None
 
         models_to_try = [self.gemini_model]
-        for fallback in ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-flash", "gemini-1.5-pro"]:
+        for fallback in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro"]:
             if fallback not in models_to_try:
                 models_to_try.append(fallback)
 
@@ -291,7 +291,10 @@ class AiService:
                         if candidates:
                             parts = candidates[0].get("content", {}).get("parts", [])
                             if parts:
-                                return parts[0].get("text", "").strip()
+                                text_res = parts[0].get("text", "").strip()
+                                if text_res:
+                                    self.gemini_model = clean_m
+                                    return text_res
             except urllib.error.HTTPError as e:
                 if e.code == 404:
                     logger.info(f"Gemini model '{clean_m}' not found (404), trying next model candidate...")

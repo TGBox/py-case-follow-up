@@ -15,7 +15,9 @@ from constants import (
     STATUS_MESSAGES,
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
+    DEFAULT_GEMINI_MODEL,
     AI_BADGE_ACTIVE,
+    AI_BADGE_GEMINI_ACTIVE,
     AI_BADGE_STANDBY,
     AI_BADGE_DISABLED,
     AI_BADGE_NLP_FALLBACK,
@@ -64,7 +66,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         ollama_url = getattr(ai_set, 'ollama_url', DEFAULT_OLLAMA_URL) if ai_set else DEFAULT_OLLAMA_URL
         model_name = getattr(ai_set, 'model_name', DEFAULT_OLLAMA_MODEL) if ai_set else DEFAULT_OLLAMA_MODEL
         gemini_key = getattr(ai_set, 'gemini_api_key', '') if ai_set else ''
-        gemini_mod = getattr(ai_set, 'gemini_model', 'gemini-1.5-flash') if ai_set else 'gemini-1.5-flash'
+        gemini_mod = getattr(ai_set, 'gemini_model', DEFAULT_GEMINI_MODEL) if ai_set else DEFAULT_GEMINI_MODEL
         enable_anon = getattr(ai_set, 'enable_anonymization', True) if ai_set else True
 
         self.ai_service = AiService(
@@ -245,8 +247,12 @@ class AiAssistantDialog(ctk.CTkToplevel):
     def update_status_header_async(self):
         def thread_target():
             try:
-                is_online, models = self.ai_service.check_ollama_status()
-                running_models = self.ai_service.get_running_models() if is_online else []
+                if self.ai_service.provider == "GEMINI":
+                    is_online, msg = self.ai_service.check_gemini_status()
+                    running_models = [self.ai_service.gemini_model] if is_online else []
+                else:
+                    is_online, models = self.ai_service.check_ollama_status()
+                    running_models = self.ai_service.get_running_models() if is_online else []
             except Exception:
                 is_online, models, running_models = False, [], []
 
@@ -261,14 +267,19 @@ class AiAssistantDialog(ctk.CTkToplevel):
                         text=AI_BADGE_DISABLED,
                         text_color=COLOR_BADGE_GRAY,
                     )
+                elif is_online and self.ai_service.provider == "GEMINI":
+                    self.status_badge.configure(
+                        text=AI_BADGE_GEMINI_ACTIVE.format(model=self.ai_service.active_model_name),
+                        text_color=COLOR_BADGE_GREEN,
+                    )
                 elif is_online and running_models:
                     self.status_badge.configure(
-                        text=AI_BADGE_ACTIVE.format(model=self.ai_service.model_name),
+                        text=AI_BADGE_ACTIVE.format(model=self.ai_service.active_model_name),
                         text_color=COLOR_BADGE_GREEN,
                     )
                 elif is_online:
                     self.status_badge.configure(
-                        text=AI_BADGE_STANDBY.format(model=self.ai_service.model_name),
+                        text=AI_BADGE_STANDBY.format(model=self.ai_service.active_model_name),
                         text_color=COLOR_BADGE_BLUE,
                     )
                 else:

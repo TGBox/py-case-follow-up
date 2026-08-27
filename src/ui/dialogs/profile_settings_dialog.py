@@ -549,6 +549,20 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         )
         self.gemini_status_lbl.pack(side="left")
 
+        gemini_rules_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
+        gemini_rules_row.pack(fill="x", padx=12, pady=(0, 10))
+
+        import tkinter as tk
+        self.gemini_modelfile_chk_var = tk.BooleanVar(value=getattr(self.profile.ai_settings, "use_modelfile_rules_for_gemini", False))
+        self.gemini_modelfile_chk = ctk.CTkCheckBox(
+            gemini_rules_row,
+            text="📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)",
+            variable=self.gemini_modelfile_chk_var,
+            command=self.on_toggle_gemini_modelfile_rules,
+            font=ctk.CTkFont(size=11, weight="bold"),
+        )
+        self.gemini_modelfile_chk.pack(side="left")
+
         # Top Ollama Management Card
         self.ollama_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
         self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
@@ -766,13 +780,66 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.on_change_ai_provider(self.ai_provider_seg.get())
         self.scan_ollama_status()
 
+    def get_modelfile_prompt_text(self) -> str:
+        """Reads system rules text from ollama/Modelfile or DEFAULT_MODELFILE_PATH."""
+        from pathlib import Path
+        from constants import DEFAULT_MODELFILE_PATH
+        p = Path(DEFAULT_MODELFILE_PATH)
+        if not p.exists():
+            p = Path("ollama/Modelfile")
+        if p.exists():
+            try:
+                content = p.read_text(encoding="utf-8")
+                if 'SYSTEM """' in content:
+                    start = content.index('SYSTEM """') + len('SYSTEM """')
+                    end = content.find('"""', start)
+                    if end != -1:
+                        return content[start:end].strip()
+            except Exception:
+                pass
+        return ""
+
+    def on_toggle_gemini_modelfile_rules(self):
+        use_mf = bool(self.gemini_modelfile_chk_var.get())
+        mf_text = self.get_modelfile_prompt_text()
+        if not mf_text:
+            return
+
+        current_txt = self.ai_base_rules_txt.get("1.0", "end-1c").strip()
+        marker = "--- MODELFILE SYSTEM-REGELN ---"
+
+        if use_mf:
+            if mf_text not in current_txt:
+                if current_txt:
+                    new_txt = f"{current_txt}\n\n{marker}\n{mf_text}"
+                else:
+                    new_txt = f"{marker}\n{mf_text}"
+                self.ai_base_rules_txt.delete("1.0", "end")
+                self.ai_base_rules_txt.insert("1.0", new_txt)
+        else:
+            if mf_text in current_txt:
+                cleaned = current_txt.replace(f"\n\n{marker}\n{mf_text}", "").replace(f"{marker}\n{mf_text}", "").replace(mf_text, "").strip()
+                self.ai_base_rules_txt.delete("1.0", "end")
+                self.ai_base_rules_txt.insert("1.0", cleaned)
+
     def on_change_ai_provider(self, value: str):
-        if "GEMINI" in value.upper():
+        is_gemini = "GEMINI" in value.upper()
+        if is_gemini:
             self.gemini_card.pack(fill="x", pady=(0, 10), padx=2)
             self.ollama_card.pack_forget()
+            if hasattr(self, "gemini_modelfile_chk_var") and self.gemini_modelfile_chk_var.get():
+                self.on_toggle_gemini_modelfile_rules()
         else:
             self.gemini_card.pack_forget()
             self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
+            mf_text = self.get_modelfile_prompt_text()
+            if hasattr(self, "ai_base_rules_txt"):
+                current_txt = self.ai_base_rules_txt.get("1.0", "end-1c").strip()
+                marker = "--- MODELFILE SYSTEM-REGELN ---"
+                if mf_text and mf_text in current_txt:
+                    cleaned = current_txt.replace(f"\n\n{marker}\n{mf_text}", "").replace(f"{marker}\n{mf_text}", "").replace(mf_text, "").strip()
+                    self.ai_base_rules_txt.delete("1.0", "end")
+                    self.ai_base_rules_txt.insert("1.0", cleaned)
 
     def on_toggle_show_gemini_key(self):
         current = self.gemini_key_entry.cget("show")
@@ -1205,6 +1272,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.ai_settings.gemini_model = self.gemini_model_combo.get()
         self.profile.ai_settings.enable_anonymization = bool(self.anonymize_chk_var.get())
         self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
+        self.profile.ai_settings.use_modelfile_rules_for_gemini = bool(self.gemini_modelfile_chk_var.get())
         raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
         self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
 

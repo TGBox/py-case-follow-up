@@ -214,14 +214,15 @@ OLLAMA_TIMEOUT_GENERATE = 120.0
 AI_USER_AGENT = "SupportCockpit/1.0"
 
 # --- Gemini API Configuration ---
-DEFAULT_GEMINI_MODEL = "gemini-1.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
 AVAILABLE_GEMINI_MODELS = [
-    "gemini-1.5-flash",
     "gemini-2.0-flash",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
     "gemini-1.5-pro",
     "gemini-2.0-flash-lite",
 ]
-GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
 AI_SYSTEM_ROLE_DEFAULT = "Du bist ein hochqualifizierter IT-Support-Assistent für Arztpraxis-Software im deutschen Gesundheitswesen."
 AI_SYSTEM_ROLE_EMAIL = "Du bist ein freundlicher IT-Support-Mitarbeiter im deutschen Gesundheitswesen."

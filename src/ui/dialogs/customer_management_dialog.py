@@ -91,18 +91,142 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.cust_id_entry = ctk.CTkEntry(self.right_frame, placeholder_text="CUST-...")
         self.cust_id_entry.pack(fill="x", padx=15, pady=(0, 10))
 
-        # Practice Name
-        ctk.CTkLabel(self.right_frame, text="Praxisname *:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(5, 2))
-        self.name_entry = ctk.CTkEntry(self.right_frame, placeholder_text="z.B. Hausarztpraxis Dr. Med. Weber")
-        self.name_entry.pack(fill="x", padx=15, pady=(0, 10))
+        # Practice Name & Old Name Row
+        name_row = ctk.CTkFrame(self.right_frame, fg_color="transparent")
+        name_row.pack(fill="x", padx=15, pady=(0, 10))
 
-        # Practice Technical Details Row (Website, VM-Nummer, Instanznummer)
+        name_left = ctk.CTkFrame(name_row, fg_color="transparent")
+        name_left.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        ctk.CTkLabel(name_left, text="Praxisname *:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.name_entry = ctk.CTkEntry(name_left, placeholder_text="z.B. Hausarztpraxis Dr. Med. Weber")
+        self.name_entry.pack(fill="x")
+
+        name_right = ctk.CTkFrame(name_row, fg_color="transparent")
+        name_right.pack(side="right", fill="x", expand=True, padx=(5, 0))
+        ctk.CTkLabel(name_right, text="Praxisname (Alt):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.name_old_entry = ctk.CTkEntry(name_right, placeholder_text="z.B. Ehem. Praxis Dr. Alt")
+        self.name_old_entry.pack(fill="x")
+
+        # Hauptansprechpartner (Anrede, Vorname, Nachname) Row
+        contact_name_row = ctk.CTkFrame(self.right_frame, fg_color="transparent")
+        contact_name_row.pack(fill="x", padx=15, pady=(0, 10))
+
+        salut_col = ctk.CTkFrame(contact_name_row, fg_color="transparent", width=100)
+        salut_col.pack(side="left", fill="x", padx=(0, 4))
+        ctk.CTkLabel(salut_col, text="Anrede:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.salut_entry = ctk.CTkEntry(salut_col, placeholder_text="Frau / Herr / Dr.", width=95)
+        self.salut_entry.pack(fill="x")
+
+        fname_col = ctk.CTkFrame(contact_name_row, fg_color="transparent")
+        fname_col.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(fname_col, text="Vorname:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.fname_entry = ctk.CTkEntry(fname_col, placeholder_text="Vorname...")
+        self.fname_entry.pack(fill="x")
+
+        lname_col = ctk.CTkFrame(contact_name_row, fg_color="transparent")
+        lname_col.pack(side="left", fill="x", expand=True, padx=(4, 0))
+        ctk.CTkLabel(lname_col, text="Nachname:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.lname_entry = ctk.CTkEntry(lname_col, placeholder_text="Nachname...")
+        self.lname_entry.pack(fill="x")
+
+        # Address Row (Straße, PLZ, Ort)
+        addr_row = ctk.CTkFrame(self.right_frame, fg_color="transparent")
+        addr_row.pack(fill="x", padx=15, pady=(0, 10))
+
+        street_col = ctk.CTkFrame(addr_row, fg_color="transparent")
+        street_col.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkLabel(street_col, text="🏠 Straße & Hausnr.:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.street_entry = ctk.CTkEntry(street_col, placeholder_text="z.B. Hauptstr. 10")
+        self.street_entry.pack(fill="x")
+
+        zip_col = ctk.CTkFrame(addr_row, fg_color="transparent", width=90)
+        zip_col.pack(side="left", fill="x", padx=4)
+        ctk.CTkLabel(zip_col, text="PLZ:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.zip_entry = ctk.CTkEntry(zip_col, placeholder_text="12345", width=80)
+        self.zip_entry.pack(fill="x")
+
+        city_col = ctk.CTkFrame(addr_row, fg_color="transparent")
+        city_col.pack(side="left", fill="x", expand=True, padx=(4, 0))
+        ctk.CTkLabel(city_col, text="Ort:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.city_entry = ctk.CTkEntry(city_col, placeholder_text="Ort...")
+        self.city_entry.pack(fill="x")
+
+        # Phone Numbers Section
+        phone_box = ctk.CTkFrame(self.right_frame, fg_color=("gray90", "gray18"), corner_radius=6)
+        phone_box.pack(fill="x", padx=15, pady=(0, 10))
+        ctk.CTkLabel(phone_box, text="📞 Telefonnummern (Cobra Export)", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(6, 4))
+
+        pr1 = ctk.CTkFrame(phone_box, fg_color="transparent")
+        pr1.pack(fill="x", padx=10, pady=(0, 4))
+
+        p_main_col = ctk.CTkFrame(pr1, fg_color="transparent")
+        p_main_col.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkLabel(p_main_col, text="Telefon Hauptnr.:").pack(anchor="w", pady=(0, 1))
+        self.phone_m_entry = ctk.CTkEntry(p_main_col, placeholder_text="0711-...")
+        self.phone_m_entry.pack(fill="x")
+
+        p_dir_col = ctk.CTkFrame(pr1, fg_color="transparent")
+        p_dir_col.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(p_dir_col, text="Telefon direkt:").pack(anchor="w", pady=(0, 1))
+        self.phone_dir_entry = ctk.CTkEntry(p_dir_col, placeholder_text="Durchwahl...")
+        self.phone_dir_entry.pack(fill="x")
+
+        p_priv_col = ctk.CTkFrame(pr1, fg_color="transparent")
+        p_priv_col.pack(side="left", fill="x", expand=True, padx=(4, 0))
+        ctk.CTkLabel(p_priv_col, text="Telefon privat:").pack(anchor="w", pady=(0, 1))
+        self.phone_priv_entry = ctk.CTkEntry(p_priv_col, placeholder_text="Privat...")
+        self.phone_priv_entry.pack(fill="x")
+
+        pr2 = ctk.CTkFrame(phone_box, fg_color="transparent")
+        pr2.pack(fill="x", padx=10, pady=(0, 6))
+
+        p2_col = ctk.CTkFrame(pr2, fg_color="transparent")
+        p2_col.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkLabel(p2_col, text="Telefon 2:").pack(anchor="w", pady=(0, 1))
+        self.phone2_entry = ctk.CTkEntry(p2_col, placeholder_text="Zweitnr....")
+        self.phone2_entry.pack(fill="x")
+
+        p3_col = ctk.CTkFrame(pr2, fg_color="transparent")
+        p3_col.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(p3_col, text="Telefon 3:").pack(anchor="w", pady=(0, 1))
+        self.phone3_entry = ctk.CTkEntry(p3_col, placeholder_text="Drittnr....")
+        self.phone3_entry.pack(fill="x")
+
+        mob_col = ctk.CTkFrame(pr2, fg_color="transparent")
+        mob_col.pack(side="left", fill="x", expand=True, padx=4)
+        ctk.CTkLabel(mob_col, text="Mobil:").pack(anchor="w", pady=(0, 1))
+        self.mobile_entry = ctk.CTkEntry(mob_col, placeholder_text="0171-...")
+        self.mobile_entry.pack(fill="x")
+
+        mob_priv_col = ctk.CTkFrame(pr2, fg_color="transparent")
+        mob_priv_col.pack(side="left", fill="x", expand=True, padx=(4, 0))
+        ctk.CTkLabel(mob_priv_col, text="Mobil privat:").pack(anchor="w", pady=(0, 1))
+        self.mobile_priv_entry = ctk.CTkEntry(mob_priv_col, placeholder_text="Mobil privat...")
+        self.mobile_priv_entry.pack(fill="x")
+
+        # Additional E-Mail Addresses (E-Mail 2, E-Mail 3) Row
+        pr3 = ctk.CTkFrame(phone_box, fg_color="transparent")
+        pr3.pack(fill="x", padx=10, pady=(0, 6))
+
+        em2_col = ctk.CTkFrame(pr3, fg_color="transparent")
+        em2_col.pack(side="left", fill="x", expand=True, padx=(0, 4))
+        ctk.CTkLabel(em2_col, text="✉ E-Mail 2:").pack(anchor="w", pady=(0, 1))
+        self.email2_entry = ctk.CTkEntry(em2_col, placeholder_text="zweit-email@praxis.de")
+        self.email2_entry.pack(fill="x")
+
+        em3_col = ctk.CTkFrame(pr3, fg_color="transparent")
+        em3_col.pack(side="left", fill="x", expand=True, padx=(4, 0))
+        ctk.CTkLabel(em3_col, text="✉ E-Mail 3:").pack(anchor="w", pady=(0, 1))
+        self.email3_entry = ctk.CTkEntry(em3_col, placeholder_text="dritt-email@praxis.de")
+        self.email3_entry.pack(fill="x")
+
+        # Practice Technical Details Row (Website, VM-Nummer, Instanznummer, DSC, DSCNEU)
         tech_row = ctk.CTkFrame(self.right_frame, fg_color="transparent")
         tech_row.pack(fill="x", padx=15, pady=(0, 10))
 
         # Website Column
         web_col = ctk.CTkFrame(tech_row, fg_color="transparent")
-        web_col.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        web_col.pack(side="left", fill="x", expand=True, padx=(0, 4))
         ctk.CTkLabel(web_col, text="🌐 Webseite:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
 
         web_sub = ctk.CTkFrame(web_col, fg_color="transparent")
@@ -122,18 +246,38 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         open_web_btn.pack(side="right")
 
         # VM Number Column
-        vm_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=110)
-        vm_col.pack(side="left", fill="x", padx=5)
+        vm_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=95)
+        vm_col.pack(side="left", fill="x", padx=4)
         ctk.CTkLabel(vm_col, text="🖥 VM-Nr.:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
-        self.vm_entry = ctk.CTkEntry(vm_col, placeholder_text="z.B. 104", width=90)
+        self.vm_entry = ctk.CTkEntry(vm_col, placeholder_text="104", width=85)
         self.vm_entry.pack(fill="x")
 
         # Instance Number Column
-        inst_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=110)
-        inst_col.pack(side="left", fill="x", padx=(5, 0))
+        inst_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=95)
+        inst_col.pack(side="left", fill="x", padx=4)
         ctk.CTkLabel(inst_col, text="🔢 Instanz-Nr.:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
-        self.instance_entry = ctk.CTkEntry(inst_col, placeholder_text="z.B. 1", width=90)
+        self.instance_entry = ctk.CTkEntry(inst_col, placeholder_text="1", width=85)
         self.instance_entry.pack(fill="x")
+
+        # DSC & DSCNEU Columns
+        dsc_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=100)
+        dsc_col.pack(side="left", fill="x", padx=4)
+        ctk.CTkLabel(dsc_col, text="🏷 DSC:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.dsc_entry = ctk.CTkEntry(dsc_col, placeholder_text="DSC...", width=90)
+        self.dsc_entry.pack(fill="x")
+
+        dsc_neu_col = ctk.CTkFrame(tech_row, fg_color="transparent", width=100)
+        dsc_neu_col.pack(side="left", fill="x", padx=(4, 0))
+        ctk.CTkLabel(dsc_neu_col, text="🏷 DSCNEU:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.dsc_neu_entry = ctk.CTkEntry(dsc_neu_col, placeholder_text="DSCNEU...", width=90)
+        self.dsc_neu_entry.pack(fill="x")
+
+        # Additional Contacts (Weitere Ansprechpartner) Box
+        add_contact_box = ctk.CTkFrame(self.right_frame, fg_color="transparent")
+        add_contact_box.pack(fill="x", padx=15, pady=(0, 10))
+        ctk.CTkLabel(add_contact_box, text="👥 Weitere Ansprechpartner (1 Name pro Zeile):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        self.additional_contacts_txt = ctk.CTkTextbox(add_contact_box, height=45)
+        self.additional_contacts_txt.pack(fill="x")
 
         # General Notes row
         notes_row = ctk.CTkFrame(self.right_frame, fg_color="transparent")
@@ -351,6 +495,54 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.name_entry.delete(0, "end")
         self.name_entry.insert(0, c.practice_name)
 
+        self.name_old_entry.delete(0, "end")
+        self.name_old_entry.insert(0, c.practice_name_old)
+
+        self.salut_entry.delete(0, "end")
+        self.salut_entry.insert(0, c.salutation)
+
+        self.fname_entry.delete(0, "end")
+        self.fname_entry.insert(0, c.first_name)
+
+        self.lname_entry.delete(0, "end")
+        self.lname_entry.insert(0, c.last_name)
+
+        self.street_entry.delete(0, "end")
+        self.street_entry.insert(0, c.street)
+
+        self.zip_entry.delete(0, "end")
+        self.zip_entry.insert(0, c.zip_code)
+
+        self.city_entry.delete(0, "end")
+        self.city_entry.insert(0, c.city)
+
+        self.phone_m_entry.delete(0, "end")
+        self.phone_m_entry.insert(0, c.phone_main)
+
+        self.phone_dir_entry.delete(0, "end")
+        self.phone_dir_entry.insert(0, c.phone_direct)
+
+        self.phone_priv_entry.delete(0, "end")
+        self.phone_priv_entry.insert(0, c.phone_private)
+
+        self.phone2_entry.delete(0, "end")
+        self.phone2_entry.insert(0, c.phone2)
+
+        self.phone3_entry.delete(0, "end")
+        self.phone3_entry.insert(0, c.phone3)
+
+        self.mobile_entry.delete(0, "end")
+        self.mobile_entry.insert(0, c.mobile)
+
+        self.mobile_priv_entry.delete(0, "end")
+        self.mobile_priv_entry.insert(0, c.mobile_private)
+
+        self.email2_entry.delete(0, "end")
+        self.email2_entry.insert(0, c.email2)
+
+        self.email3_entry.delete(0, "end")
+        self.email3_entry.insert(0, c.email3)
+
         self.website_entry.delete(0, "end")
         self.website_entry.insert(0, c.website)
 
@@ -361,6 +553,16 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.instance_entry.delete(0, "end")
         if c.instance_number is not None:
             self.instance_entry.insert(0, str(c.instance_number))
+
+        self.dsc_entry.delete(0, "end")
+        self.dsc_entry.insert(0, c.dsc)
+
+        self.dsc_neu_entry.delete(0, "end")
+        self.dsc_neu_entry.insert(0, c.dsc_neu)
+
+        self.additional_contacts_txt.delete("1.0", "end")
+        if c.additional_contacts:
+            self.additional_contacts_txt.insert("1.0", "\n".join(c.additional_contacts))
 
         self.notes_entry.delete(0, "end")
         self.notes_entry.insert(0, c.general_notes)
@@ -387,9 +589,28 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         self.cust_id_entry.insert(0, new_id)
 
         self.name_entry.delete(0, "end")
+        self.name_old_entry.delete(0, "end")
+        self.salut_entry.delete(0, "end")
+        self.fname_entry.delete(0, "end")
+        self.lname_entry.delete(0, "end")
+        self.street_entry.delete(0, "end")
+        self.zip_entry.delete(0, "end")
+        self.city_entry.delete(0, "end")
+        self.phone_m_entry.delete(0, "end")
+        self.phone_dir_entry.delete(0, "end")
+        self.phone_priv_entry.delete(0, "end")
+        self.phone2_entry.delete(0, "end")
+        self.phone3_entry.delete(0, "end")
+        self.mobile_entry.delete(0, "end")
+        self.mobile_priv_entry.delete(0, "end")
+        self.email2_entry.delete(0, "end")
+        self.email3_entry.delete(0, "end")
         self.website_entry.delete(0, "end")
         self.vm_entry.delete(0, "end")
         self.instance_entry.delete(0, "end")
+        self.dsc_entry.delete(0, "end")
+        self.dsc_neu_entry.delete(0, "end")
+        self.additional_contacts_txt.delete("1.0", "end")
         self.notes_entry.delete(0, "end")
         self.custom_ai_rules_txt.delete("1.0", "end")
         self.vip_var.set(False)
@@ -419,6 +640,9 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         custom_ai_rules = [r.strip() for r in raw_rules if r.strip()]
         sys_version = self.selected_customer.system_version if self.selected_customer else ""
 
+        raw_add_contacts = self.additional_contacts_txt.get("1.0", "end-1c").splitlines()
+        additional_contacts = [ac.strip() for ac in raw_add_contacts if ac.strip()]
+
         contacts: list[Contact] = []
         for r in self.contact_rows:
             c_name = r["name_entry"].get().strip()
@@ -438,11 +662,32 @@ class CustomerManagementDialog(ctk.CTkToplevel):
 
         customer = Customer(
             customer_id=cust_id,
+            vnum1=cust_id if cust_id.isdigit() else (self.selected_customer.vnum1 if self.selected_customer else ""),
             practice_name=name,
+            practice_name_old=self.name_old_entry.get().strip(),
+            salutation=self.salut_entry.get().strip(),
+            first_name=self.fname_entry.get().strip(),
+            last_name=self.lname_entry.get().strip(),
+            street=self.street_entry.get().strip(),
+            zip_code=self.zip_entry.get().strip(),
+            city=self.city_entry.get().strip(),
+            phone_main=self.phone_m_entry.get().strip(),
+            phone_direct=self.phone_dir_entry.get().strip(),
+            phone_private=self.phone_priv_entry.get().strip(),
+            phone2=self.phone2_entry.get().strip(),
+            phone3=self.phone3_entry.get().strip(),
+            mobile=self.mobile_entry.get().strip(),
+            mobile_private=self.mobile_priv_entry.get().strip(),
+            email_address=contacts[0].email if contacts else (self.selected_customer.email_address if self.selected_customer else ""),
+            email2=self.email2_entry.get().strip(),
+            email3=self.email3_entry.get().strip(),
             website=website,
+            dsc=self.dsc_entry.get().strip(),
+            dsc_neu=self.dsc_neu_entry.get().strip(),
             vm_number=vm_num,
             instance_number=inst_num,
             general_notes=general_notes,
+            additional_contacts=additional_contacts,
             custom_ai_rules=custom_ai_rules,
             system_version=sys_version,
             contacts=contacts,

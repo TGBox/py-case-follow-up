@@ -36,7 +36,12 @@ def ui_fixture(tmp_path: Path):
     config = AppConfig(workspace_dir=tmp_path)
     storage = StorageService(config)
 
-    app = ctk.CTk()
+    try:
+        app = ctk.CTk()
+    except Exception:
+        import time
+        time.sleep(0.1)
+        app = ctk.CTk()
     app.withdraw()
 
     sample_case = Case(

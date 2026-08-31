@@ -49,6 +49,10 @@ class CaseCustomer:
     phone: str = ""
     email: str = ""
 
+    @property
+    def full_address(self) -> str:
+        return ""
+
     def validate(self) -> list[str]:
         errors = []
         if self.customer_id == "INTERNAL":

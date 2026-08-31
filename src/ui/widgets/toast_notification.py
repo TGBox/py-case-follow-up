@@ -91,6 +91,18 @@ class ToastNotification(ctk.CTkToplevel):
     def handle_open(self, event=None):
         cb = self.on_open
         self.on_open = None
+        try:
+            if hasattr(self, "master") and self.master:
+                top = self.master.winfo_toplevel()
+                if hasattr(top, "bring_to_foreground"):
+                    top.bring_to_foreground()
+                elif top:
+                    if top.state() == "iconic" or not top.winfo_viewable():
+                        top.deiconify()
+                    top.lift()
+                    top.focus_force()
+        except Exception:
+            pass
         self.safe_destroy()
         if cb:
             cb()

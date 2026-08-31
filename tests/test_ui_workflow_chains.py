@@ -532,6 +532,7 @@ def test_layout_combo_updates_on_view_redirect(tmp_path: Path):
     app.analytics_view = MockView()
     app.active_view = app.board_view
     app.schemas = []
+    app.storage_service = storage
     app.get_filtered_cases = lambda: app.cases
     app.check_due_followups = lambda: None
     app.deep_search_service = Any

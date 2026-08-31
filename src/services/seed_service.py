@@ -787,6 +787,7 @@ class SeedService:
         self.storage.save_colleagues(colleagues)
 
         self.create_seed_wiki_db()
+        self.storage.flush_all_saves()
 
         return {
             "customers": len(customers),

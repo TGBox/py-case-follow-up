@@ -446,7 +446,31 @@ class SupportCockpitApp(ctk.CTk):
 
         self.check_due_followups()
 
+    def bring_to_foreground(self):
+        """Restore main window from minimized/withdrawn state and bring it to the foreground on OS level."""
+        if "tk" not in self.__dict__ or self.tk is None:
+            return
+
+        def _restore():
+            try:
+                if self.state() == "iconic" or not self.winfo_viewable():
+                    self.deiconify()
+                if self.state() == "iconic":
+                    self.state("zoomed")
+                self.lift()
+                self.focus_force()
+                self.attributes("-topmost", True)
+                self.attributes("-topmost", False)
+            except Exception as e:
+                logger.warning(f"Error bringing app window to foreground: {e}")
+
+        try:
+            self.after(0, _restore)
+        except Exception:
+            pass
+
     def switch_to_cockpit_view_for_case(self, case: Case):
+        self.bring_to_foreground()
         self.active_case = case
         if self.active_view != self.cockpit_view:
             self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))
@@ -516,6 +540,7 @@ class SupportCockpitApp(ctk.CTk):
         self.refresh_views()
 
     def on_case_selected(self, case: Case):
+        self.bring_to_foreground()
         self.active_case = case
         if self.active_view != self.cockpit_view or self.cockpit_view.current_case != case:
             self.switch_to_cockpit_view_for_case(case)
@@ -972,15 +997,7 @@ class SupportCockpitApp(ctk.CTk):
 
     def _on_restore_from_tray(self):
         """Restore the application window from the system tray."""
-        def _restore():
-            self.deiconify()
-            try:
-                self.state("zoomed")
-            except Exception:
-                pass
-            self.lift()
-            self.focus_force()
-        self.after(0, _restore)
+        self.bring_to_foreground()
 
     def _on_quit_from_tray(self):
         """Fully quit the application from the system tray context menu."""

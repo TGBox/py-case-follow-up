@@ -11,6 +11,7 @@ class ZipBackupService:
     @staticmethod
     def export_backup_zip(storage_service: StorageService, output_zip_path: Path) -> dict[str, Any]:
         """Packs all files in data_dir and attachments_dir into a zip archive."""
+        storage_service.flush_all_saves()
         config = storage_service.config
         config.ensure_directories()
 

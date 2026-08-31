@@ -103,6 +103,18 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
 
     def _do_select_case(self, case: Case, cb: Callable[[Case], None] | None):
         try:
+            if hasattr(self, "master") and self.master:
+                top = self.master.winfo_toplevel()
+                if hasattr(top, "bring_to_foreground"):
+                    top.bring_to_foreground()
+                elif top:
+                    if top.state() == "iconic" or not top.winfo_viewable():
+                        top.deiconify()
+                    top.lift()
+                    top.focus_force()
+        except Exception:
+            pass
+        try:
             self.destroy()
         except Exception:
             pass

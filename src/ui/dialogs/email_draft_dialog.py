@@ -87,26 +87,17 @@ class EmailDraftDialog(ctk.CTkToplevel):
         for c in self.customers:
             p_name = c.practice_name
             c_id = c.customer_id
-            if hasattr(c, "contacts") and c.contacts:
-                for contact in c.contacts:
-                    c_name = getattr(contact, "name", "")
-                    c_email = getattr(contact, "email", "")
-                    if c_email or c_name:
-                        self.all_contacts.append({
-                            "email": c_email,
-                            "name": c_name,
-                            "practice": p_name,
-                            "cust_id": c_id,
-                            "search_key": f"{c_name} {c_email} {p_name} {c_id}".lower(),
-                        })
-            elif hasattr(c, "email") and c.email:
-                self.all_contacts.append({
-                    "email": c.email,
-                    "name": "",
-                    "practice": p_name,
-                    "cust_id": c_id,
-                    "search_key": f"{p_name} {c.email} {c_id}".lower(),
-                })
+            emails = getattr(c, "all_emails", [getattr(c, "email", "")]) if hasattr(c, "all_emails") else [getattr(c, "email", "")]
+            c_person = getattr(c, "contact_person", "")
+            for em in emails:
+                if em:
+                    self.all_contacts.append({
+                        "email": em,
+                        "name": c_person,
+                        "practice": p_name,
+                        "cust_id": c_id,
+                        "search_key": f"{c_person} {em} {p_name} {c_id}".lower(),
+                    })
 
         dialog_title = f"{DIALOG_TITLES['email_draft']} - Fall {case.case_id}" if case else f"{DIALOG_TITLES['email_draft']} (Neuer Entwurf)"
         self.title(dialog_title)

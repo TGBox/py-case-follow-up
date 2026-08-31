@@ -457,7 +457,9 @@ class CockpitView(ctk.CTkFrame):
         else:
             self.kunde_label.configure(text=f"🏥 Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
 
-        self.ansprechpartner_label.configure(text=f"👤 Ansprechpartner: {case.customer.contact_person}")
+        full_addr = getattr(case.customer, "full_address", "")
+        addr_str = f" | 🏠 {full_addr}" if full_addr else ""
+        self.ansprechpartner_label.configure(text=f"👤 Ansprechpartner: {case.customer.contact_person}{addr_str}")
 
         self._update_wiedervorlage_display()
 

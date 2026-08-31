@@ -18,7 +18,12 @@ class DummyApp(ctk.CTk):
 
 def test_toast_notification_calls_bring_to_foreground():
     """Verify clicking open on ToastNotification triggers bring_to_foreground on top window."""
-    app = DummyApp()
+    try:
+        app = DummyApp()
+    except Exception:
+        import time
+        time.sleep(0.1)
+        app = DummyApp()
     app.withdraw()
 
     opened = []

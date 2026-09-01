@@ -3,9 +3,22 @@ from typing import Any
 import customtkinter as ctk
 
 
+def get_main_app_window(window: ctk.CTk | ctk.CTkToplevel) -> ctk.CTk | ctk.CTkToplevel:
+    """Finds the root main application window (SupportCockpitApp) by walking up the master chain."""
+    curr = window
+    visited = set()
+    while curr is not None and id(curr) not in visited:
+        visited.add(id(curr))
+        master = getattr(curr, "master", None)
+        if master is None or master is curr or type(master).__name__ in ("MagicMock", "Mock", "str"):
+            break
+        curr = master
+    return curr
+
+
 def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int, int, int]:
     """Returns (x, y, width, height) of the monitor/window area where the app is located or last located."""
-    top_app = window.winfo_toplevel() if hasattr(window, "winfo_toplevel") else window
+    top_app = get_main_app_window(window)
     
     # 1. Try last stored geometry from app if window is iconic/minimized
     last_geom = getattr(top_app, "_last_geometry", None)
@@ -15,7 +28,7 @@ def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int,
     parent_w = top_app.winfo_width()
     parent_h = top_app.winfo_height()
 
-    if (parent_w <= 1 or parent_h <= 1 or parent_x <= -32000 or parent_y <= -32000) and last_geom:
+    if (parent_w <= 50 or parent_h <= 50 or parent_x <= -32000 or parent_y <= -32000) and last_geom:
         parent_x, parent_y, parent_w, parent_h = last_geom
 
     # Fallback to screen dimensions if window coordinates are invalid
@@ -45,20 +58,20 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
         w = width or 800
         h = height or 600
 
-    top_app = window.winfo_toplevel() if hasattr(window, "winfo_toplevel") else window
+    top_app = get_main_app_window(window)
     target_setting = "APP_SCREEN"
     if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):
         target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")
 
     if target_setting == "APP_SCREEN":
         bx, by, bw, bh = get_app_monitor_bounds(window)
-        x = max(0, bx + (bw - w) // 2)
-        y = max(0, by + (bh - h) // 2)
+        x = bx + (bw - w) // 2
+        y = by + (bh - h) // 2
     else:
         screen_w = window.winfo_screenwidth()
         screen_h = window.winfo_screenheight()
-        x = max(0, (screen_w - w) // 2)
-        y = max(0, (screen_h - h) // 2)
+        x = (screen_w - w) // 2
+        y = (screen_h - h) // 2
 
     window.geometry(f"{w}x{h}+{x}+{y}")
 

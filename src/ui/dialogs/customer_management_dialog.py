@@ -58,8 +58,33 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         left_frame.pack_propagate(False)
 
         self.search_entry = ctk.CTkEntry(left_frame, placeholder_text="🔍 Praxis / ID suchen...")
-        self.search_entry.pack(fill="x", padx=10, pady=(10, 5))
+        self.search_entry.pack(fill="x", padx=10, pady=(10, 4))
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
+
+        # Sort Controls Bar
+        sort_bar = ctk.CTkFrame(left_frame, fg_color="transparent")
+        sort_bar.pack(fill="x", padx=10, pady=(0, 5))
+
+        self.sort_criterion_combo = ctk.CTkOptionMenu(
+            sort_bar,
+            values=["Name (A-Z)", "Praxisnummer / ID", "Zeit seit letztem Kontakt"],
+            width=170,
+            command=lambda v: self.on_sort_changed(),
+            font=ctk.CTkFont(size=11),
+        )
+        self.sort_criterion_combo.pack(side="left", padx=(0, 4))
+
+        self.sort_asc_var = True
+        self.sort_dir_btn = ctk.CTkButton(
+            sort_bar,
+            text="↑ Aufst.",
+            width=85,
+            fg_color="gray30",
+            hover_color="gray40",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            command=self.toggle_sort_direction,
+        )
+        self.sort_dir_btn.pack(side="right")
 
         self.list_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
         self.list_scroll.pack(fill="both", expand=True, padx=5, pady=5)
@@ -450,6 +475,45 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         else:
             self.on_click_new_customer()
 
+    def toggle_sort_direction(self):
+        self.sort_asc_var = not getattr(self, "sort_asc_var", True)
+        if hasattr(self, "sort_dir_btn"):
+            self.sort_dir_btn.configure(text="↑ Aufst." if self.sort_asc_var else "↓ Abst.")
+        self.on_sort_changed()
+
+    def _get_customer_last_contact_ts(self, customer: Customer) -> str:
+        parent_app = getattr(self, "master", None)
+        visited = set()
+        while parent_app and hasattr(parent_app, "master") and parent_app.master is not None and id(parent_app) not in visited:
+            visited.add(id(parent_app))
+            parent_app = parent_app.master
+        cases = getattr(parent_app, "cases", []) if parent_app else []
+        customer_cases = [c for c in cases if c.customer.customer_id == customer.customer_id]
+        if not customer_cases:
+            return ""
+        latest_ts = ""
+        for c in customer_cases:
+            ts = c.updated_at or c.created_at
+            if ts > latest_ts:
+                latest_ts = ts
+            for t in c.timeline:
+                if t.timestamp > latest_ts:
+                    latest_ts = t.timestamp
+        return latest_ts
+
+    def on_sort_changed(self):
+        criterion = self.sort_criterion_combo.get() if hasattr(self, "sort_criterion_combo") else "Name (A-Z)"
+        reverse = not getattr(self, "sort_asc_var", True)
+
+        if "ID" in criterion or "nummer" in criterion:
+            self.filtered_customers.sort(key=lambda c: c.customer_id.lower(), reverse=reverse)
+        elif "Kontakt" in criterion:
+            self.filtered_customers.sort(key=self._get_customer_last_contact_ts, reverse=reverse)
+        else:
+            self.filtered_customers.sort(key=lambda c: c.practice_name.lower(), reverse=reverse)
+
+        self.render_list()
+
     def render_list(self):
         for w in self.list_scroll.winfo_children():
             w.destroy()
@@ -461,23 +525,49 @@ class CustomerManagementDialog(ctk.CTkToplevel):
         for c in self.filtered_customers:
             is_selected = self.selected_customer and self.selected_customer.customer_id == c.customer_id
             fg_color = ("gray75", "gray30") if is_selected else ("gray85", "gray20")
-            vip_prefix = "⭐ " if c.is_vip else ""
-            title_txt = f"{vip_prefix}{c.practice_name}"
-            sub_txt = f"ID: {c.customer_id}"
 
-            btn_frame = ctk.CTkFrame(self.list_scroll, fg_color=fg_color, corner_radius=6)
+            btn_frame = ctk.CTkFrame(self.list_scroll, fg_color=fg_color, corner_radius=6, cursor="hand2")
             btn_frame.pack(fill="x", pady=3, padx=2)
+            btn_frame.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
-            btn = ctk.CTkButton(
+            # Fixed-width star slot (24px) for perfect left alignment across all items
+            star_txt = "⭐" if c.is_vip else ""
+            star_lbl = ctk.CTkLabel(
                 btn_frame,
-                text=f"{title_txt}\n({sub_txt})",
-                anchor="w",
-                fg_color="transparent",
-                hover_color=("gray70", "gray35"),
-                text_color=("black", "white"),
-                command=lambda cid=c.customer_id: self.select_customer(cid)
+                text=star_txt,
+                width=24,
+                font=ctk.CTkFont(size=13),
+                anchor="center",
             )
-            btn.pack(fill="x", padx=5, pady=5)
+            star_lbl.pack(side="left", padx=(6, 2), pady=6)
+            star_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
+
+            # Right label column for name & ID (always starts at exact same x offset)
+            txt_box = ctk.CTkFrame(btn_frame, fg_color="transparent")
+            txt_box.pack(side="left", fill="x", expand=True, padx=(2, 6), pady=4)
+            txt_box.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
+
+            name_lbl = ctk.CTkLabel(
+                txt_box,
+                text=c.practice_name,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                anchor="w",
+                justify="left",
+                text_color=("black", "white"),
+            )
+            name_lbl.pack(fill="x", anchor="w")
+            name_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
+
+            sub_lbl = ctk.CTkLabel(
+                txt_box,
+                text=f"(ID: {c.customer_id})",
+                font=ctk.CTkFont(size=11),
+                anchor="w",
+                justify="left",
+                text_color=("gray40", "gray70"),
+            )
+            sub_lbl.pack(fill="x", anchor="w")
+            sub_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
     def select_customer(self, customer_id: str):
         c = self.customer_service.get_customer_by_id(customer_id)
@@ -711,7 +801,7 @@ class CustomerManagementDialog(ctk.CTkToplevel):
             self.filtered_customers = list(self.customers)
         else:
             self.filtered_customers = self.customer_service.search_customers(query)
-        self.render_list()
+        self.on_sort_changed()
 
     def on_click_cobra_import(self):
         from ui.dialogs.cobra_import_dialog import CobraImportDialog

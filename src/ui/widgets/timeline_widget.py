@@ -57,6 +57,9 @@ class TimelineWidget(ctk.CTkFrame):
         self.note_textbox = ctk.CTkTextbox(input_frame, height=60)
         self.note_textbox.pack(fill="x", padx=5, pady=(0, 5))
 
+        from utils.ui_utils import enable_textbox_cursor_autoscroll
+        enable_textbox_cursor_autoscroll(self.note_textbox)
+
         add_btn = ctk.CTkButton(input_frame, text="+ Notiz Hinzufügen", command=self.on_add_note, width=140)
         add_btn.pack(side="right", padx=5, pady=(0, 5))
 

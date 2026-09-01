@@ -151,8 +151,9 @@ class NewCaseDialog(ctk.CTkToplevel):
         cust_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
         cust_row.pack(fill="x", pady=(0, 6))
 
+        from ui.widgets.searchable_combobox import SearchableCombobox
         initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else ["Keine Kunden"]
-        self.customer_combo = ctk.CTkOptionMenu(cust_row, values=initial_cust_names, width=380)
+        self.customer_combo = SearchableCombobox(cust_row, values=initial_cust_names, width=380)
         self.customer_combo.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
         self.add_cust_btn = ctk.CTkButton(cust_row, text="+ Neue Praxis", command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
@@ -200,10 +201,23 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.deadline_picker = DatePickerWidget(form_scroll, placeholder_text="z. B. 23.08.2026 16:00", include_time=True, width=380)
         self.deadline_picker.pack(fill="x", pady=(0, 6))
 
-        # Initial Timeline Note
-        ctk.CTkLabel(form_scroll, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        # Initial Timeline Note & Channel Selection
+        note_hdr_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
+        note_hdr_row.pack(fill="x", pady=(4, 1))
+
+        ctk.CTkLabel(note_hdr_row, text="Initiale Notiz / Eingangskanal:", font=ctk.CTkFont(size=13, weight="bold")).pack(side="left")
+
+        from enums import CHANNEL_DISPLAY, get_channel_val_from_display, Channel
+        channel_names = list(CHANNEL_DISPLAY.values())
+        self.channel_combo = ctk.CTkOptionMenu(note_hdr_row, values=channel_names, width=175, font=ctk.CTkFont(size=11))
+        self.channel_combo.set(CHANNEL_DISPLAY.get(Channel.PHONE_INBOUND, "Telefon (Eingang)"))
+        self.channel_combo.pack(side="right")
+
         self.note_textbox = ctk.CTkTextbox(form_scroll, height=65)
         self.note_textbox.pack(fill="x", pady=(0, 6))
+
+        from utils.ui_utils import enable_textbox_cursor_autoscroll
+        enable_textbox_cursor_autoscroll(self.note_textbox)
 
     def render_tags_checkboxes(self):
         for w in self.tags_frame.winfo_children():
@@ -281,8 +295,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         customer_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers]
         if not customer_names:
             customer_names = ["Standard Praxis (K-10000)"]
-        self.customer_combo.configure(values=customer_names)
-        self.customer_combo.set(customer_names[0])
+        if hasattr(self, "customer_combo"):
+            self.customer_combo.set_values(customer_names)
 
     def open_quick_add_customer(self):
         QuickAddCustomerDialog(self, on_customer_created=self.on_quick_customer_created)
@@ -293,12 +307,14 @@ class NewCaseDialog(ctk.CTkToplevel):
             self.on_customer_added(new_cust)
         self.refresh_customer_combo()
         target_name = f"{new_cust.practice_name} ({new_cust.customer_id})"
-        self.customer_combo.set(target_name)
+        if hasattr(self, "customer_combo"):
+            self.customer_combo.set_selected(target_name)
 
     def on_toggle_internal(self):
         is_int = self.is_internal_var.get()
         if is_int:
-            self.customer_combo.configure(state="disabled")
+            if hasattr(self.customer_combo, "btn"):
+                self.customer_combo.btn.configure(state="disabled")
             self.add_cust_btn.configure(state="disabled")
             # Select internal schema if available
             schema_names = self.schema_combo.cget("values")
@@ -306,7 +322,8 @@ class NewCaseDialog(ctk.CTkToplevel):
             if int_schema:
                 self.schema_combo.set(int_schema)
         else:
-            self.customer_combo.configure(state="normal")
+            if hasattr(self.customer_combo, "btn"):
+                self.customer_combo.btn.configure(state="normal")
             self.add_cust_btn.configure(state="normal")
 
     def generate_case_id(self, ref_year: int | None = None) -> str:
@@ -355,8 +372,11 @@ class NewCaseDialog(ctk.CTkToplevel):
             )
             att_folder = f"attachments/{case_id}_Intern"
         else:
-            selected_cust_idx = self.customer_combo.cget("values").index(self.customer_combo.get()) if self.customer_combo.get() in self.customer_combo.cget("values") else 0
-            customer_obj = self.customers[selected_cust_idx] if selected_cust_idx < len(self.customers) else Customer(customer_id="K-10000", practice_name="Standard Praxis")
+            selected_str = self.customer_combo.get()
+            customer_obj = next((c for c in self.customers if f"{c.practice_name} ({c.customer_id})" == selected_str or c.customer_id in selected_str), None)
+            if not customer_obj:
+                customer_obj = self.customers[0] if self.customers else Customer(customer_id="K-10000", practice_name="Standard Praxis")
+
             case_customer = CaseCustomer(
                 customer_id=customer_obj.customer_id,
                 practice_name=customer_obj.practice_name,
@@ -378,10 +398,13 @@ class NewCaseDialog(ctk.CTkToplevel):
         initial_note = self.note_textbox.get("1.0", "end-1c").strip()
         timeline = []
         if initial_note:
+            from enums import get_channel_val_from_display, Channel
+            selected_chan_disp = self.channel_combo.get() if hasattr(self, "channel_combo") else "Telefon (Eingang)"
+            selected_chan_val = get_channel_val_from_display(selected_chan_disp)
             timeline.append(TimelineEntry(
                 timestamp=created_at_iso,
                 author=self.created_by,
-                channel=Channel.PHONE_INBOUND,
+                channel=selected_chan_val,
                 note=initial_note,
                 status_change="NEW -> ACTION_REQUIRED (SUPPORT)",
             ))

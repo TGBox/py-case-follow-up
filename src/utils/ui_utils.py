@@ -255,3 +255,21 @@ def wrap_and_truncate_text(
 
     return "\n".join(lines), truncated
 
+
+def enable_textbox_cursor_autoscroll(textbox: ctk.CTkTextbox) -> None:
+    """Ensures a CTkTextbox automatically scrolls to keep the insertion cursor in view while typing."""
+    inner = getattr(textbox, "_textbox", textbox)
+    
+    def _scroll_to_cursor(event=None):
+        try:
+            inner.see("insert")
+        except Exception:
+            pass
+
+    try:
+        inner.bind("<KeyRelease>", _scroll_to_cursor, add="+")
+        inner.bind("<KeyPress>", _scroll_to_cursor, add="+")
+        inner.bind("<ButtonRelease>", _scroll_to_cursor, add="+")
+    except Exception:
+        pass
+

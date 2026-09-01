@@ -540,6 +540,9 @@ class DynamicFormWidget(ctk.CTkFrame):
                 textbox.insert("1.0", str(val))
             textbox.pack(fill="x", expand=True)
 
+            from utils.ui_utils import enable_textbox_cursor_autoscroll
+            enable_textbox_cursor_autoscroll(textbox)
+
             handle = TextboxResizeHandle(
                 row_frame,
                 target_textbox=textbox,

@@ -80,13 +80,23 @@ class ToastNotification(ctk.CTkToplevel):
 
         self.overrideredirect(True)
 
-        screen_w = self.winfo_screenwidth()
-        screen_h = self.winfo_screenheight()
-
         width = 420 if on_open else 360
         height = 84
-        x = screen_w - width - 20
-        y = screen_h - height - 60
+
+        target_setting = "APP_SCREEN"
+        if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):
+            target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+
+        if target_setting == "APP_SCREEN":
+            from utils.ui_utils import get_app_monitor_bounds
+            bx, by, bw, bh = get_app_monitor_bounds(self)
+            x = max(0, bx + bw - width - 20)
+            y = max(0, by + bh - height - 60)
+        else:
+            screen_w = self.winfo_screenwidth()
+            screen_h = self.winfo_screenheight()
+            x = screen_w - width - 20
+            y = screen_h - height - 60
 
         self.geometry(f"{width}x{height}+{x}+{y}")
 

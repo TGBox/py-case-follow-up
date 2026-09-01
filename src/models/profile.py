@@ -48,6 +48,7 @@ class UISettings:
     show_demo_data: bool | None = None
     textbox_height: int = 90
     custom_textbox_heights: dict[str, int] = field(default_factory=dict)
+    popup_display_target: str = "APP_SCREEN"
 
     def reset_column_widths(self) -> None:
         self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
@@ -56,6 +57,7 @@ class UISettings:
         self.table_column_order = ["case_id", "practice", "title", "actor", "followup", "score"]
         self.textbox_height = 90
         self.custom_textbox_heights = {}
+        self.popup_display_target = "APP_SCREEN"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -68,6 +70,7 @@ class UISettings:
             "show_demo_data": self.show_demo_data,
             "textbox_height": self.textbox_height,
             "custom_textbox_heights": self.custom_textbox_heights,
+            "popup_display_target": self.popup_display_target,
         }
 
     @classmethod
@@ -94,6 +97,9 @@ class UISettings:
 
         tb_height = int(data.get("textbox_height", 90))
         cust_tb_heights = dict(data.get("custom_textbox_heights", {})) if isinstance(data.get("custom_textbox_heights"), dict) else {}
+        popup_target = str(data.get("popup_display_target", "APP_SCREEN"))
+        if popup_target not in ("APP_SCREEN", "PRIMARY_SCREEN"):
+            popup_target = "APP_SCREEN"
 
         return cls(
             theme=data.get("theme", "SYSTEM"),
@@ -105,6 +111,7 @@ class UISettings:
             show_demo_data=s_demo,
             textbox_height=tb_height,
             custom_textbox_heights=cust_tb_heights,
+            popup_display_target=popup_target,
         )
 
 

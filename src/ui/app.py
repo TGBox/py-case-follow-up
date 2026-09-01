@@ -998,6 +998,13 @@ class SupportCockpitApp(ctk.CTk):
     def _on_restore_from_tray(self):
         """Restore the application window from the system tray."""
         self.bring_to_foreground()
+        if hasattr(self, "_pending_notification_callback") and self._pending_notification_callback:
+            cb = self._pending_notification_callback
+            self._pending_notification_callback = None
+            try:
+                cb()
+            except Exception as e:
+                logger.warning(f"Error executing pending notification callback: {e}")
 
     def _on_quit_from_tray(self):
         """Fully quit the application from the system tray context menu."""

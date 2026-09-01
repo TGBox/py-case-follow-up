@@ -29,6 +29,12 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         self.create_widgets()
 
     def create_widgets(self):
+        for child in self.winfo_children():
+            try:
+                child.destroy()
+            except Exception:
+                pass
+
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
@@ -137,45 +143,37 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         except Exception:
             pass
 
+    def _on_action_completed(self, case: Case):
+        if case in self.due_cases:
+            self.due_cases.remove(case)
+        if self.on_refresh:
+            self.on_refresh()
+        if not self.due_cases:
+            self.safe_close()
+        else:
+            self.create_widgets()
+
     def snooze_hours(self, case: Case, hours: int):
         new_dt = get_local_now() + timedelta(hours=hours)
         case.workflow_status.followup_at = format_german_datetime(new_dt)
-        self.safe_close_and_refresh()
+        self._on_action_completed(case)
 
     def set_preset_today_1630(self, case: Case):
         now = get_local_now()
         case.workflow_status.followup_at = f"{format_german_date(now)} 16:30"
-        self.safe_close_and_refresh()
+        self._on_action_completed(case)
 
     def set_preset_tomorrow_8am(self, case: Case):
         tmw = get_local_now() + timedelta(days=1)
         case.workflow_status.followup_at = f"{format_german_date(tmw)} 08:00"
-        self.safe_close_and_refresh()
+        self._on_action_completed(case)
 
     def snooze_days(self, case: Case, days: int):
         new_dt = get_local_now() + timedelta(days=days)
         case.workflow_status.followup_at = f"{format_german_date(new_dt)} 09:00"
-        self.safe_close_and_refresh()
-
-    def safe_close_and_refresh(self):
-        try:
-            self.grab_release()
-        except Exception:
-            pass
-        if hasattr(self, "tk"):
-            self.after(1, self._do_close_and_refresh)
-        else:
-            self._do_close_and_refresh()
-
-    def _do_close_and_refresh(self):
-        try:
-            self.destroy()
-        except Exception:
-            pass
-        if self.on_refresh:
-            self.on_refresh()
+        self._on_action_completed(case)
 
     def complete_followup(self, case: Case):
         case.workflow_status.followup_at = ""
         case.workflow_status.followup_note = ""
-        self.safe_close_and_refresh()
+        self._on_action_completed(case)

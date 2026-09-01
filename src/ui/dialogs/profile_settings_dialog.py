@@ -326,7 +326,17 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             self.demo_switch.select()
         else:
             self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 20))
+        self.demo_switch.pack(anchor="w", pady=(0, 15))
+
+        self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+            self.tab_ui,
+            text="🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"
+        )
+        if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
+            self.os_popup_switch.select()
+        else:
+            self.os_popup_switch.deselect()
+        self.os_popup_switch.pack(anchor="w", pady=(0, 20))
 
         # Column widths reset section
         ctk.CTkLabel(self.tab_ui, text="Gespeicherte Spaltenbreiten (Profile-Level)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -1233,11 +1243,13 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.user.email = self.user_email_entry.get().strip()
         self.profile.user.mobile = self.user_mobile_entry.get().strip()
 
-        # Update UI Settings
+        # Update UI Settings & Reminders
         self.profile.ui_settings.theme = self.theme_combo.get()
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
         if hasattr(self, "demo_switch"):
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
+        if hasattr(self, "os_popup_switch"):
+            self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
 
         # Update Workspace & Custom File Paths
         ws_path_str = self.ws_entry.get().strip()

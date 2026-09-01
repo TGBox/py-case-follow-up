@@ -1,5 +1,6 @@
 """System Tray service for minimize-to-tray with notification badge counter."""
 
+import sys
 import threading
 import logging
 from typing import Callable
@@ -111,6 +112,49 @@ class TrayService:
                 self._icon.title = self._get_tooltip()
             except Exception:
                 pass
+
+    def notify(self, title: str, message: str) -> bool:
+        """Send a native Windows system notification via winotify or tray icon.
+
+        Args:
+            title: Notification title.
+            message: Notification text content.
+
+        Returns:
+            True if notification was sent, False otherwise.
+        """
+        if self._icon and type(self._icon).__name__ == "DummyIcon":
+            try:
+                self._icon.notify(message, title)
+                logger.info(f"Mock tray notification recorded: {title}")
+                return True
+            except Exception:
+                pass
+
+        if sys.platform.startswith("win"):
+            try:
+                from winotify import Notification  # type: ignore
+                toast = Notification(
+                    app_id="Support-Cockpit",
+                    title=title,
+                    msg=message,
+                    duration="short",
+                )
+                toast.show()
+                logger.info(f"Native winotify toast sent: {title}")
+                return True
+            except Exception as e:
+                logger.debug(f"winotify toast failed: {e}")
+
+        if self._icon and hasattr(self._icon, "notify"):
+            try:
+                self._icon.notify(message, title)
+                logger.info(f"Native tray notification sent via icon: {title}")
+                return True
+            except Exception as e:
+                logger.warning(f"Could not send native tray notification via icon: {e}")
+
+        return False
 
     def stop(self) -> None:
         """Remove the tray icon and stop the background thread."""

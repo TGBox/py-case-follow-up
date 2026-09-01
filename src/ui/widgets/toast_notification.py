@@ -1,15 +1,76 @@
+import sys
+import logging
 import customtkinter as ctk
 from typing import Callable
 from constants import TOAST_DURATION_DEFAULT_MS
 
+logger = logging.getLogger("SupportCockpit")
+
 
 class ToastNotification(ctk.CTkToplevel):
-    """Non-intrusive toast popup notification displayed in the bottom-right corner."""
+    """Non-intrusive toast notification: uses native Windows OS notifications when available, with CTk overlay fallback."""
 
     def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None):
         super().__init__(parent)
         self.title("Erinnerung")
         self.on_open = on_open
+
+        # Always construct internal CTk frame & widgets
+        frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), border_width=2, border_color="dodgerblue", corner_radius=8)
+        frame.pack(fill="both", expand=True)
+
+        if on_open:
+            btn_open = ctk.CTkButton(
+                frame,
+                text="👁 Öffnen",
+                width=95,
+                height=32,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                fg_color="dodgerblue",
+                hover_color="deepskyblue",
+                command=self.handle_open,
+            )
+            btn_open.pack(side="right", padx=(6, 12), pady=12)
+
+        content_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        content_frame.pack(side="left", fill="both", expand=True, padx=(12, 6), pady=8)
+
+        lbl_title = ctk.CTkLabel(content_frame, text=title, font=ctk.CTkFont(size=13, weight="bold"), text_color="dodgerblue", anchor="w")
+        lbl_title.pack(anchor="w", pady=(0, 2))
+
+        lbl_msg = ctk.CTkLabel(content_frame, text=message, font=ctk.CTkFont(size=11), text_color=("gray10", "white"), anchor="w")
+        lbl_msg.pack(anchor="w", pady=(0, 2))
+
+        top_app = parent.winfo_toplevel() if hasattr(parent, "winfo_toplevel") else parent
+        os_popup_enabled = True
+        if hasattr(top_app, "profile") and hasattr(top_app.profile, "reminder_settings"):
+            os_popup_enabled = getattr(top_app.profile.reminder_settings, "os_popup_enabled", True)
+
+        native_sent = False
+
+        if sys.platform.startswith("win") and os_popup_enabled:
+            tray_svc = getattr(top_app, "tray_service", None)
+            if tray_svc:
+                native_sent = tray_svc.notify(title, message)
+            else:
+                try:
+                    from winotify import Notification
+                    toast = Notification(
+                        app_id="Support-Cockpit",
+                        title=title,
+                        msg=message,
+                        duration="short",
+                    )
+                    toast.show()
+                    native_sent = True
+                except Exception as e:
+                    logger.warning(f"Could not send native winotify notification: {e}")
+
+        if native_sent:
+            if on_open:
+                top_app._pending_notification_callback = on_open
+            self.withdraw()
+            return
 
         # 1. Transient link to parent so window stays above parent on Windows OS
         try:

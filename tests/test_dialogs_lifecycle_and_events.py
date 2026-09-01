@@ -161,6 +161,56 @@ def test_followup_flyout_dialog_lifecycle(ui_fixture):
     dialog.destroy()
 
 
+def test_followup_flyout_dialog_complete_keeps_open_until_empty(ui_fixture):
+    """Test that completing a due case keeps the flyout open if remaining cases exist, and closes it when empty."""
+    app, storage, config, case1, schemas, templates, colleagues = ui_fixture
+    from models.case import Case, CaseCustomer, Classification, WorkflowStatus
+
+    case2 = Case(
+        case_id="T-FW-02",
+        customer=CaseCustomer(customer_id="K-2", practice_name="Praxis Test 2"),
+        classification=Classification(title="Zweiter Fall"),
+        workflow_status=WorkflowStatus(
+            followup_at="2026-08-01T10:00:00",
+            followup_note="Wichtig!",
+            is_completed=False,
+        ),
+    )
+
+    due_cases = [case1, case2]
+    refresh_count = 0
+
+    def on_ref():
+        nonlocal refresh_count
+        refresh_count += 1
+
+    dialog = FollowupFlyoutDialog(
+        app,
+        due_cases=due_cases,
+        on_case_selected=lambda c: None,
+        on_refresh=on_ref,
+    )
+    dialog.update_idletasks()
+
+    assert dialog.winfo_exists()
+    assert len(dialog.due_cases) == 2
+
+    # Complete 1st case -> window should remain open, due_cases should have 1 case left
+    dialog.complete_followup(case1)
+    dialog.update_idletasks()
+
+    assert refresh_count == 1
+    assert len(dialog.due_cases) == 1
+    assert dialog.winfo_exists()
+
+    # Complete 2nd case -> window should close (safe_close destroys it)
+    dialog.complete_followup(case2)
+    dialog.update_idletasks()
+
+    assert refresh_count == 2
+    assert len(dialog.due_cases) == 0
+
+
 def test_email_calendar_and_export_dialogs_lifecycle(ui_fixture):
     """Test EmailCalendarDialog and CalendarExportDialog rendering."""
     app, storage, config, case, schemas, templates, colleagues = ui_fixture

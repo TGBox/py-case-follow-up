@@ -111,6 +111,16 @@ class SupportCockpitApp(ctk.CTk):
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.container_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
+        # Startup Splash Screen Overlay (prevents layout shifting on launch)
+        self.splash_overlay: ctk.CTkFrame | None = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
+        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+
+        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
+        splash_box.place(relx=0.5, rely=0.5, anchor="center")
+
+        ctk.CTkLabel(splash_box, text="🩺 Support-Cockpit", font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue").pack(pady=(0, 8))
+        ctk.CTkLabel(splash_box, text="⏳ Anwendungsdaten und Layouts werden geladen...", font=ctk.CTkFont(size=14), text_color=("gray40", "gray70")).pack()
+
         self.cockpit_view = CockpitView(
             self.container_frame,
             author_name=self.profile.user.name,
@@ -155,6 +165,10 @@ class SupportCockpitApp(ctk.CTk):
         self.active_view = None
         self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
 
+        # Geometry tracking for multi-monitor positioning
+        self._last_geometry: tuple[int, int, int, int] | None = None
+        self.bind("<Configure>", self._on_window_configure, add="+")
+
         # System Tray Service
         self.tray_service = TrayService()
         self.tray_service.start(
@@ -179,6 +193,27 @@ class SupportCockpitApp(ctk.CTk):
         # Scoring Timer (every hour) & Followup Timer
         self.schedule_hourly_scoring()
         self.after(FOLLOWUP_CHECK_INITIAL_DELAY_MS, self.check_due_followups)
+
+        # Hide splash screen smoothly after initial layout pass
+        self.update_idletasks()
+        self.after(250, self._hide_splash_screen)
+
+    def _on_window_configure(self, event=None):
+        try:
+            if self.state() != "iconic" and self.winfo_viewable():
+                x, y, w, h = self.winfo_x(), self.winfo_y(), self.winfo_width(), self.winfo_height()
+                if x > -30000 and y > -30000 and w > 100 and h > 100:
+                    self._last_geometry = (x, y, w, h)
+        except Exception:
+            pass
+
+    def _hide_splash_screen(self):
+        if hasattr(self, "splash_overlay") and self.splash_overlay:
+            try:
+                self.splash_overlay.destroy()
+                self.splash_overlay = None
+            except Exception:
+                pass
 
     def load_all_data(self):
         self.cases = self.storage_service.load_cases()
@@ -497,9 +532,28 @@ class SupportCockpitApp(ctk.CTk):
         FollowupDialog(self, case=case, on_followup_set=on_followup_set)
 
     def on_toggle_complete_for_case(self, case: Case):
-        case.workflow_status.is_completed = not case.workflow_status.is_completed
-        if case.workflow_status.is_completed:
+        new_state = not case.workflow_status.is_completed
+        case.workflow_status.is_completed = new_state
+        if new_state:
             case.workflow_status.followup_at = ""
+            note_text = "Fall auf erledigt gesetzt."
+            change_text = "STATUS: Erledigt"
+        else:
+            note_text = "Fall wieder geöffnet."
+            change_text = "STATUS: Offen"
+
+        from models.case import TimelineEntry
+        from utils.datetime_utils import now_iso
+        from enums import Channel
+
+        entry = TimelineEntry(
+            timestamp=now_iso(),
+            author=self.profile.user.name,
+            channel=Channel.INTERNAL_NOTE.value,
+            note=note_text,
+            status_change=change_text,
+        )
+        case.timeline.append(entry)
         self.on_case_updated(case)
 
     def open_handover_dialog_for_case(self, case: Case):

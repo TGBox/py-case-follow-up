@@ -301,6 +301,9 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
 
         self.theme_combo.set(self.profile.ui_settings.theme)
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        if hasattr(self, "popup_target_combo"):
+            curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+            self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
 
     def setup_ui_tab(self):
         ctk.CTkLabel(self.tab_ui, text="Erscheinungsbild & Layout", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -336,7 +339,16 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             self.os_popup_switch.select()
         else:
             self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(0, 20))
+        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
+
+        ctk.CTkLabel(self.tab_ui, text="Position zusätzlicher Fenster & Benachrichtigungen:").pack(anchor="w", pady=(5, 2))
+        self.popup_target_combo = ctk.CTkOptionMenu(
+            self.tab_ui,
+            values=["App-Bildschirm (aktuell/zuletzt)", "Hauptbildschirm"]
+        )
+        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+        self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
+        self.popup_target_combo.pack(fill="x", pady=(0, 20))
 
         # Column widths reset section
         ctk.CTkLabel(self.tab_ui, text="Gespeicherte Spaltenbreiten (Profile-Level)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -488,7 +500,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         ctk.CTkLabel(provider_frame, text="KI-Anbieter wählen:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 10))
         
         current_provider = getattr(self.profile.ai_settings, "provider", "OLLAMA").upper()
-        self.ai_provider_seg = ctk.CTkSegmentedButton(
+        self.ai_provider_seg = ctk.CTkSegmentedButton(  # type: ignore[attr-defined]
             provider_frame,
             values=["OLLAMA (Lokal)", "GOOGLE GEMINI (Cloud)"],
             command=self.on_change_ai_provider,
@@ -810,7 +822,7 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         return ""
 
     def on_toggle_gemini_modelfile_rules(self):
-        use_mf = bool(self.gemini_modelfile_chk_var.get())
+        use_mf = self.gemini_modelfile_chk_var.get()
         mf_text = self.get_modelfile_prompt_text()
         if not mf_text:
             return
@@ -1250,6 +1262,9 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
         if hasattr(self, "os_popup_switch"):
             self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
+        if hasattr(self, "popup_target_combo"):
+            val = self.popup_target_combo.get()
+            self.profile.ui_settings.popup_display_target = "PRIMARY_SCREEN" if "Hauptbildschirm" in val else "APP_SCREEN"
 
         # Update Workspace & Custom File Paths
         ws_path_str = self.ws_entry.get().strip()
@@ -1282,9 +1297,9 @@ class ProfileSettingsDialog(ctk.CTkToplevel):
         self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
         self.profile.ai_settings.gemini_api_key = self.gemini_key_entry.get().strip()
         self.profile.ai_settings.gemini_model = self.gemini_model_combo.get()
-        self.profile.ai_settings.enable_anonymization = bool(self.anonymize_chk_var.get())
+        self.profile.ai_settings.enable_anonymization = self.anonymize_chk_var.get()
         self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
-        self.profile.ai_settings.use_modelfile_rules_for_gemini = bool(self.gemini_modelfile_chk_var.get())
+        self.profile.ai_settings.use_modelfile_rules_for_gemini = self.gemini_modelfile_chk_var.get()
         raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
         self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
 

@@ -150,6 +150,20 @@ class CaseListWidget(ctk.CTkFrame):
             case_id_lbl.pack(side="left")
             case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
+            if case.workflow_status.is_completed:
+                done_lbl = ctk.CTkLabel(
+                    top_row,
+                    text="✓ ERLEDIGT",
+                    font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color="white",
+                    fg_color="forestgreen",
+                    corner_radius=4,
+                    padx=6,
+                    pady=1,
+                )
+                done_lbl.pack(side="left", padx=(8, 0))
+                done_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
             # Practice Name / Internal Badge
             if case.is_internal:
                 practice_str = "🏢 INTERNE AUFGABE / VORGANG"

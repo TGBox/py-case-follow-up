@@ -439,10 +439,16 @@ class CockpitView(ctk.CTkFrame):
     def on_click_email_calendar(self):
         self.on_click_email()
 
+    def _update_title_label(self):
+        if not self.current_case:
+            return
+        status_tag = "  [✓ ERLEDIGT]" if self.current_case.workflow_status.is_completed else ""
+        self.case_title_label.configure(text=f"{self.current_case.case_id}: {self.current_case.classification.title}{status_tag}")
+
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
 
-        self.case_title_label.configure(text=f"{case.case_id}: {case.classification.title}")
+        self._update_title_label()
         self.print_btn.configure(state="normal")
         self.email_btn.configure(state="normal")
         self.cal_btn.configure(state="normal")
@@ -571,8 +577,33 @@ class CockpitView(ctk.CTkFrame):
 
     def on_toggle_complete(self):
         if self.current_case:
-            self.current_case.workflow_status.is_completed = not self.current_case.workflow_status.is_completed
-            self.complete_btn.configure(text="✓ Wieder öffnen" if self.current_case.workflow_status.is_completed else "✓ Erledigen")
+            new_state = not self.current_case.workflow_status.is_completed
+            self.current_case.workflow_status.is_completed = new_state
+            if new_state:
+                self.current_case.workflow_status.followup_at = ""
+                note_text = "Fall auf erledigt gesetzt."
+                change_text = "STATUS: Erledigt"
+            else:
+                note_text = "Fall wieder geöffnet."
+                change_text = "STATUS: Offen"
+
+            from models.case import TimelineEntry
+            from utils.datetime_utils import now_iso
+            from enums import Channel
+
+            entry = TimelineEntry(
+                timestamp=now_iso(),
+                author=self.author_name,
+                channel=Channel.INTERNAL_NOTE.value,
+                note=note_text,
+                status_change=change_text,
+            )
+            self.current_case.timeline.append(entry)
+            self.timeline_widget.load_timeline(self.current_case.timeline)
+
+            self.complete_btn.configure(text="✓ Wieder öffnen" if new_state else "✓ Erledigen")
+            self._update_title_label()
+            self._update_wiedervorlage_display()
             self.on_click_save()
 
     def on_click_archive(self):

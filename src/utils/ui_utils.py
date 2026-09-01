@@ -3,8 +3,33 @@ from typing import Any
 import customtkinter as ctk
 
 
+def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int, int, int]:
+    """Returns (x, y, width, height) of the monitor/window area where the app is located or last located."""
+    top_app = window.winfo_toplevel() if hasattr(window, "winfo_toplevel") else window
+    
+    # 1. Try last stored geometry from app if window is iconic/minimized
+    last_geom = getattr(top_app, "_last_geometry", None)
+    
+    parent_x = top_app.winfo_x()
+    parent_y = top_app.winfo_y()
+    parent_w = top_app.winfo_width()
+    parent_h = top_app.winfo_height()
+
+    if (parent_w <= 1 or parent_h <= 1 or parent_x <= -32000 or parent_y <= -32000) and last_geom:
+        parent_x, parent_y, parent_w, parent_h = last_geom
+
+    # Fallback to screen dimensions if window coordinates are invalid
+    screen_w = top_app.winfo_screenwidth()
+    screen_h = top_app.winfo_screenheight()
+
+    if parent_w <= 50 or parent_h <= 50:
+        return 0, 0, screen_w, screen_h
+
+    return parent_x, parent_y, parent_w, parent_h
+
+
 def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, height: int | None = None) -> None:
-    """Centers a Tkinter / CustomTkinter window on the screen and dismisses lingering tooltips."""
+    """Centers a Tkinter / CustomTkinter window relative to app monitor or primary monitor."""
     try:
         from ui.widgets.ctk_tooltip import CTkTooltip
         CTkTooltip.dismiss_all()
@@ -17,15 +42,23 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
     h = height if height is not None else window.winfo_height()
 
     if w <= 1 or h <= 1:
-        # Fallback to requested size or defaults
         w = width or 800
         h = height or 600
 
-    screen_w = window.winfo_screenwidth()
-    screen_h = window.winfo_screenheight()
+    top_app = window.winfo_toplevel() if hasattr(window, "winfo_toplevel") else window
+    target_setting = "APP_SCREEN"
+    if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):
+        target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")
 
-    x = max(0, (screen_w - w) // 2)
-    y = max(0, (screen_h - h) // 2)
+    if target_setting == "APP_SCREEN":
+        bx, by, bw, bh = get_app_monitor_bounds(window)
+        x = max(0, bx + (bw - w) // 2)
+        y = max(0, by + (bh - h) // 2)
+    else:
+        screen_w = window.winfo_screenwidth()
+        screen_h = window.winfo_screenheight()
+        x = max(0, (screen_w - w) // 2)
+        y = max(0, (screen_h - h) // 2)
 
     window.geometry(f"{w}x{h}+{x}+{y}")
 

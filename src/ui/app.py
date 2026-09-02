@@ -124,8 +124,12 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
         splash_box.place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(splash_box, text="🩺 Support-Cockpit", font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue").pack(pady=(0, 8))
-        ctk.CTkLabel(splash_box, text="⏳ Anwendungsdaten und Layouts werden geladen...", font=ctk.CTkFont(size=14), text_color=("gray40", "gray70")).pack()
+        from services.i18n_service import tr
+
+        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
+        self.splash_title_lbl.pack(pady=(0, 8))
+        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
+        self.splash_msg_lbl.pack()
 
         self.cockpit_view = CockpitView(
             self.container_frame,

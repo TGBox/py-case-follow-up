@@ -43,9 +43,12 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_all", "Alle"), width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "🔥 Dringend"), width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        self.qfilter_all_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_all", "Alle"), width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter(""))
+        self.qfilter_all_btn.pack(side="left", padx=2)
+        self.qfilter_urgent_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "🔥 Dringend"), width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true"))
+        self.qfilter_urgent_btn.pack(side="left", padx=2)
+        self.qfilter_followup_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due"))
+        self.qfilter_followup_btn.pack(side="left", padx=2)
         
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
@@ -57,7 +60,6 @@ class CaseListWidget(ctk.CTkFrame):
         )
         self.deep_btn.pack(side="left", padx=2)
 
-        from services.i18n_service import tr
         # Header Info
         self.count_label = ctk.CTkLabel(self, text=tr("case_list.zero_cases", "0 Fälle"), font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
         self.count_label.pack(fill="x", padx=15, pady=(0, 5))
@@ -71,6 +73,20 @@ class CaseListWidget(ctk.CTkFrame):
         self.wrap_labels: list[ctk.CTkLabel] = []
         self._last_wrap_width: int = 250
         self.bind("<Configure>", self._on_widget_configure)
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "search_entry"):
+            self.search_entry.configure(placeholder_text=tr("cockpit.search_placeholder", "🔍 Suche / Token (z. B. vip:true status:open)..."))
+        if hasattr(self, "qfilter_all_btn"):
+            self.qfilter_all_btn.configure(text=tr("cockpit.filter_all", "Alle"))
+        if hasattr(self, "qfilter_urgent_btn"):
+            self.qfilter_urgent_btn.configure(text=tr("cockpit.filter_urgent", "🔥 Dringend"))
+        if hasattr(self, "qfilter_followup_btn"):
+            self.qfilter_followup_btn.configure(text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"))
+        if hasattr(self, "deep_btn"):
+            self.deep_btn.configure(text=tr("cockpit.filter_deep", "🔍 Tiefensuche"))
+        self.render_list()
 
     def _on_widget_configure(self, event=None):
         w = self.winfo_width()

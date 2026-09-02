@@ -163,19 +163,34 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        self.top_header_lbl = ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold"))
+        self.top_header_lbl.pack(side="left", padx=10)
 
         # Tabview
         self.tabview = ctk.CTkTabview(self)
         self.tabview.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
-        self.tab_user = self.tabview.add(tr("profile.tab_user", "👤 Benutzerprofil"))
-        self.tab_ui = self.tabview.add(tr("profile.tab_ui", "🎨 Erscheinungsbild"))
-        self.tab_paths = self.tabview.add(tr("profile.tab_paths", "📁 Speicherort & Pfade"))
-        self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
-        self.tab_ai = self.tabview.add(tr("profile.tab_ai", "🤖 KI & NLP"))
-        self.tab_scoring = self.tabview.add(tr("profile.tab_shortcuts", "⌨ Tastenkürzel & Scoring"))
-        self.tab_backup = self.tabview.add(tr("profile.tab_backup", "💾 Datensicherung"))
+        self._tab_keys = [
+            ("tab_user", "profile.tab_user", "👤 Benutzerprofil"),
+            ("tab_ui", "profile.tab_ui", "🎨 Erscheinungsbild"),
+            ("tab_paths", "profile.tab_paths", "📁 Speicherort & Pfade"),
+            ("tab_wiki", "profile.tab_wiki", "📚 BookStack Wiki"),
+            ("tab_ai", "profile.tab_ai", "🤖 KI & NLP"),
+            ("tab_scoring", "profile.tab_shortcuts", "⌨ Tastenkürzel & Scoring"),
+            ("tab_backup", "profile.tab_backup", "💾 Datensicherung"),
+        ]
+        self._tab_name_map = {}
+        for tab_id, key, default in self._tab_keys:
+            orig_t = tr(key, default)
+            self._tab_name_map[tab_id] = orig_t
+
+        self.tab_user = self.tabview.add(self._tab_name_map["tab_user"])
+        self.tab_ui = self.tabview.add(self._tab_name_map["tab_ui"])
+        self.tab_paths = self.tabview.add(self._tab_name_map["tab_paths"])
+        self.tab_wiki = self.tabview.add(self._tab_name_map["tab_wiki"])
+        self.tab_ai = self.tabview.add(self._tab_name_map["tab_ai"])
+        self.tab_scoring = self.tabview.add(self._tab_name_map["tab_scoring"])
+        self.tab_backup = self.tabview.add(self._tab_name_map["tab_backup"])
 
         self.setup_user_tab()
         self.setup_ui_tab()
@@ -198,12 +213,14 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
     def setup_user_tab(self):
         from services.i18n_service import tr
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.user_tab_hdr_lbl = ctk.CTkLabel(self.tab_user, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_tab_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
         prof_frame = ctk.CTkFrame(self.tab_user, fg_color="transparent")
         prof_frame.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:")).pack(side="left", padx=(0, 10))
+        self.active_prof_lbl = ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:"))
+        self.active_prof_lbl.pack(side="left", padx=(0, 10))
 
         profiles_list = self.storage_service.list_profiles()
         self.profile_combo = ctk.CTkOptionMenu(
@@ -215,16 +232,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
         self.profile_combo.pack(side="left", padx=(0, 10))
 
-        btn_new_prof = ctk.CTkButton(
+        self.btn_new_prof = ctk.CTkButton(
             prof_frame,
             text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"),
             command=self.open_create_profile_dialog,
             fg_color="forestgreen",
             width=160,
         )
-        btn_new_prof.pack(side="left")
+        self.btn_new_prof.pack(side="left")
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+        self.user_details_hdr_lbl = ctk.CTkLabel(self.tab_user, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_details_hdr_lbl.pack(anchor="w", pady=(15, 5))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
         self.user_name_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.name_placeholder", "Ihr Name"))
@@ -312,26 +330,81 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
             self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
 
+    def on_language_selected(self, selected_display_name: str):
+        from services.i18n_service import LANGUAGE_DISPLAY_TO_CODE, get_i18n
+        lang_code = LANGUAGE_DISPLAY_TO_CODE.get(selected_display_name, "de")
+        self.profile.ui_settings.language = lang_code
+        get_i18n().current_language = lang_code
+        self.refresh_ui_labels()
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        self.title(tr("dialog_titles.profile_settings", "⚙ Profil & Anwendungseinstellungen"))
+        if hasattr(self, "top_header_lbl"):
+            self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
+        if hasattr(self, "save_btn"):
+            self.save_btn.configure(text=tr("profile.save_btn", "💾 Einstellungen Speichern"))
+
+        if hasattr(self, "tabview") and hasattr(self.tabview, "_segmented_button") and hasattr(self.tabview._segmented_button, "_buttons_dict"):
+            btns = self.tabview._segmented_button._buttons_dict
+            for tab_id, key, default in getattr(self, "_tab_keys", []):
+                orig_name = getattr(self, "_tab_name_map", {}).get(tab_id)
+                if orig_name and orig_name in btns:
+                    new_txt = tr(key, default)
+                    btns[orig_name].configure(text=new_txt)
+
+        if hasattr(self, "appearance_hdr_lbl"):
+            self.appearance_hdr_lbl.configure(text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"))
+        if hasattr(self, "lang_lbl"):
+            self.lang_lbl.configure(text=tr("profile.language", "Sprache / Language:"))
+        if hasattr(self, "theme_lbl"):
+            self.theme_lbl.configure(text=tr("profile.theme", "Farb-Thema (Theme):"))
+        if hasattr(self, "default_layout_lbl"):
+            self.default_layout_lbl.configure(text=tr("profile.default_layout", "Standard-Layout beim Start:"))
+        if hasattr(self, "demo_switch"):
+            self.demo_switch.configure(text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"))
+        if hasattr(self, "os_popup_switch"):
+            self.os_popup_switch.configure(text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"))
+        if hasattr(self, "popup_target_lbl"):
+            self.popup_target_lbl.configure(text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
+        if hasattr(self, "col_widths_hdr_lbl"):
+            self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
+        if hasattr(self, "btn_reset_widths"):
+            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "Alle Spaltenbreiten auf Standard zurücksetzen"))
+        if hasattr(self, "user_tab_hdr_lbl"):
+            self.user_tab_hdr_lbl.configure(text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"))
+        if hasattr(self, "active_prof_lbl"):
+            self.active_prof_lbl.configure(text=tr("profile.active_profile", "Aktives Profil:"))
+        if hasattr(self, "btn_new_prof"):
+            self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
+        if hasattr(self, "user_details_hdr_lbl"):
+            self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
+
     def setup_ui_tab(self):
         from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
 
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.appearance_hdr_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.appearance_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.language", "Sprache / Language:")).pack(anchor="w", pady=(5, 2))
+        self.lang_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.language", "Sprache / Language:"))
+        self.lang_lbl.pack(anchor="w", pady=(5, 2))
         self.language_combo = ctk.CTkOptionMenu(
             self.tab_ui,
-            values=list(SUPPORTED_LANGUAGES.values())
+            values=list(SUPPORTED_LANGUAGES.values()),
+            command=self.on_language_selected,
         )
         curr_lang = getattr(self.profile.ui_settings, "language", "de")
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
         self.language_combo.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.theme", "Farb-Thema (Theme):")).pack(anchor="w", pady=(5, 2))
+        self.theme_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.theme", "Farb-Thema (Theme):"))
+        self.theme_lbl.pack(anchor="w", pady=(5, 2))
         self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=["Dark", "Light", "System"])
         self.theme_combo.set(self.profile.ui_settings.theme)
         self.theme_combo.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.default_layout", "Standard-Layout beim Start:")).pack(anchor="w", pady=(5, 2))
+        self.default_layout_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
+        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
         self.layout_combo = ctk.CTkOptionMenu(
             self.tab_ui,
             values=list(LAYOUT_DISPLAY.values())
@@ -359,7 +432,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.os_popup_switch.deselect()
         self.os_popup_switch.pack(anchor="w", pady=(0, 15))
 
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")).pack(anchor="w", pady=(5, 2))
+        self.popup_target_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
+        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
         self.popup_target_combo = ctk.CTkOptionMenu(
             self.tab_ui,
             values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")]
@@ -369,7 +443,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.popup_target_combo.pack(fill="x", pady=(0, 20))
 
         # Column widths reset section
-        ctk.CTkLabel(self.tab_ui, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.col_widths_hdr_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.col_widths_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
         widths = self.profile.ui_settings.column_widths
         w_str = (

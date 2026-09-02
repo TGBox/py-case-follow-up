@@ -310,127 +310,127 @@
     "basics": {
       "title": "🚀 Basics & Layouts",
       "category": "Basics",
-      "content": "### 🚀 User Interface Basics\n\nThe **Support Cockpit** assists you in efficiently tracking, categorizing, and prioritizing support cases and medical practice requests.\n\n#### The 4 Views (Layout Modes)\nIn the top menu bar, you can switch between 4 views at any time (`Ctrl+1` to `Ctrl+4`):\n\n1. **Cockpit View (Default, `Ctrl+1`)**:\n   - Tri-pane main layout with case list, case details/form, and BookStack wiki.\n\n2. **Kanban Board (`Ctrl+2`)**:\n   - Board view organized by columns & responsibilities (*New*, *Action Required*, *Waiting*, *In Progress*, *Completed*).\n\n3. **Table & Details (`Ctrl+3`)**:\n   - Tabular matrix showing case details for a compact overview, sorting, and filtering.\n\n4. **Analytics & Metrics (`Ctrl+4`)**:\n   - Full statistics dashboard showing resolution times, overdue deadlines, VIP ratios, and report exports.\n\n---\n\n#### 🔍 Search & Filter Function\n- Use the search bar at the top of the case list to filter cases by **Case ID**, **Practice Name**, **Subject**, or **Tags**.\n- Shortcut to focus search: `Ctrl+F`"
+      "content": "### 🚀 User Interface Basics\n\nThe **Support Cockpit** assists you in efficiently tracking, categorizing, and prioritizing support cases and medical practice requests.\n\n#### The 4 Views (Layout Modes)\nIn the top menu bar, you can switch between 4 views at any time (`Ctrl+1` to `Ctrl+4`):\n\n1. **Cockpit View (Default, `Ctrl+1`)**:\n   - Tri-pane main layout with case list, case details/form, and BookStack wiki.\n\n2. **Kanban Board (`Ctrl+2`)**:\n   - Board view organized by columns & responsibilities (*New*, *Action Required*, *Waiting*, *In Progress*, *Completed*).\n\n3. **Table & Details (`Ctrl+3`)**:\n   - Tabular matrix showing case details for a compact overview, sorting, and filtering.\n\n4. **Analytics & Metrics (`Ctrl+4`)**:\n   - Full statistics dashboard showing resolution times, overdue deadlines, VIP ratios, and report exports.\n\n---\n\n#### 🔍 Search & Filter Function\n- Use the search bar at the top of the case list to filter cases by **Case ID**, **Practice Name**, **Subject**, or **Tags**.\n- Shortcut to focus search: `Ctrl+F`\n"
     },
     "ui_customization": {
       "title": "📅 Date Formats, Calendar & Column Widths",
       "category": "User Interface",
-      "content": "### 📅 Date Formatting, Calendar Picker & Column Widths\n\n#### 1. 📅 Date Formatting\n- All dates in the Support Cockpit (deadlines, callbacks, follow-ups, timeline) are displayed consistently in standard date format (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`).\n\n#### 2. 🗓 Interactive Calendar Picker\n- An interactive calendar dialog is available for all date entries (e.g. scheduling follow-ups, setting callback deadlines).\n- Click **📅 Calendar** next to the input field to open the monthly calendar and conveniently select the desired date with a click.\n- Quick selection buttons for *Today*, *+ 1 Day*, and *+ 1 Week* speed up data entry."
+      "content": "### 📅 Date Formatting, Calendar Picker & Column Widths\n\n#### 1. 📅 Date Formatting\n- All dates in the Support Cockpit (deadlines, callbacks, follow-ups, timeline) are displayed consistently in standard date format (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`).\n\n#### 2. 🗓 Interactive Calendar Picker\n- An interactive calendar dialog is available for all date entries (e.g. scheduling follow-ups, setting callback deadlines).\n- Click **📅 Calendar** next to the input field to open the monthly calendar and conveniently select the desired date with a click.\n- Quick selection buttons for *Today*, *+ 1 Day*, and *+ 1 Week* speed up data entry.\n\n#### 3. 📐 Individual & Persistent Column Widths\n- Use the **📐 Columns** button in the top menu bar to freely adjust the widths of individual columns in the cockpit (case list, details/form, timeline) as well as the Kanban board.\n- Your chosen widths are automatically saved in the user configuration (`user_config.json`) and persist across application restarts.\n"
     },
     "praxis": {
       "title": "🏥 Practice & Customer Management",
       "category": "Customers",
-      "content": "### 🏥 Practice & Customer Data Management\n\n#### Central Practice Catalog\n- Manage all customer entries centrally under **Stammdaten -> 🏥 Praxen**.\n- Practice entries contain contact persons, phone numbers, email addresses, customer numbers, VIP status, and preferred support contacts."
+      "content": "### 🏥 Practice & Customer Management\n\nEvery support case is assigned to a specific medical practice (customer).\n\n#### 1. Open Practice Management\n- Click **🏥 Practices** in the top menu bar.\n- Here you will see a complete list of all registered practices with customer number, practice name, primary contact person, email, and phone.\n\n#### 2. Create New Practice\n- Open **🏥 Practices** -> **+ Create New Practice**.\n- Or directly when creating a new case in the **+ New Case** dialog: Click **+ New Practice** next to the practice selection. The new practice is immediately available for selection!\n\n#### 3. Manage Contact Persons\n- In the practice details, you can store multiple contact persons (e.g. practice owner, IT manager, medical assistants).\n"
     },
     "scoring": {
-      "title": "📊 Urgency Scoring & Prioritization",
+      "title": "📊 Case Scoring & Prioritization",
       "category": "Workflow",
-      "content": "### 📊 Automatic Urgency Scoring\n\nThe Support Cockpit automatically calculates an **Urgency Score** for every open case to help you identify urgent cases immediately."
+      "content": "### 📊 Automatic Urgency Scoring\n\nThe Support Cockpit automatically calculates an **Urgency Score** (points) for every open case so that you can identify urgent cases immediately.\n\n#### How is the score calculated?\n- **Priority**: Critical (60 pts), High (40 pts), Medium (20 pts), Low (10 pts).\n- **VIP Status**: VIP practices receive a bonus of +30 points.\n- **Waiting Time**: The longer a case remains open, the higher the score rises (+2 pts / day).\n- **Inactivity**: Cases without an update in the last 48 hours receive additional points.\n- **Workflow Status**: In Progress (+10 pts), Waiting for Customer (+0 pts), On-site Appointment Needed (+20 pts).\n\n#### Automatic Hourly Recalculation\nA background timer updates the scores of all open cases hourly.\n"
     },
     "schemas": {
-      "title": "📄 Form Builder & Schemas",
+      "title": "📄 Form Builder (Schemas)",
       "category": "Forms",
-      "content": "### 📄 Custom Dynamic Forms & Schemas\n\nCreate tailored input forms for specific medical device types, software modules, or support scenarios using the built-in Schema Builder."
+      "content": "### 📄 Dynamic Form Schemas\n\nDifferent support types (e.g. hardware replacement, billing inquiry, interface problem) require different information.\n\n#### Create & Customize Custom Forms\n1. Click **🛠 Form Builder** in the menu bar.\n2. Create a new schema (e.g. *\"PVS Interface\"*) or edit an existing one.\n3. Add custom fields:\n   - **Text Fields** (e.g. error message)\n   - **Number Fields** (e.g. port number)\n   - **Yes/No Checkboxes** (e.g. service restarted)\n   - **Dropdown Selection Fields** (e.g. PVS manufacturer)\n4. Define required mandatory fields (*).\n\nWhen completing a case in the cockpit, the form automatically adapts to the selected schema!\n"
     },
     "export": {
       "title": "📤 Export Engine & Templates",
       "category": "Export",
-      "content": "### 📤 Export & Handover Assistant\n\nGenerate summary reports, emails, or documentation for colleagues or external ticketing systems with a single click."
+      "content": "### 📤 Handover & Export Engine\n\nGenerate ready-to-use handover protocols, emails, or documentation for colleagues or ticketing systems with a single click.\n\n#### Export Case\n1. Select the desired case and click **📤 Export (Ctrl+E)**.\n2. Select a template (e.g. *\"Standard Handover\"*, *\"Customer Summary\"*, *\"Developer Bug Report\"*).\n3. Select the output format:\n   - **Markdown** (ideal for wikis / Jira / GitHub)\n   - **HTML / Text** (ideal for emails)\n   - **PDF** (for print / archiving)\n4. Use the **📋 Copy to Clipboard** or **💾 Save as File** button.\n"
     },
     "wiki": {
       "title": "📚 BookStack Wiki Integration",
       "category": "Wiki",
-      "content": "### 📚 BookStack Wiki Integration\n\nThe Support Cockpit is directly connected to your BookStack Wiki to keep solution articles readily accessible."
+      "content": "### 📚 BookStack Wiki Integration\n\nThe Support Cockpit is directly connected to your BookStack Wiki to keep solution articles readily accessible.\n\n#### Features\n- **Automatic Search**: Type search terms into the wiki search bar to find matching articles.\n- **Article Preview**: Article content is rendered directly in the right cockpit panel.\n- **Open in BookStack**: Open articles with one click in your default browser.\n- **Case Linking**: Link resolved cases to the corresponding wiki article.\n- **Configuration**: Enter your BookStack URL and API tokens in **Profile & Settings** (`👤`).\n"
     },
     "p2p": {
       "title": "🔄 Peer-to-Peer Sync (Colleagues)",
       "category": "Sync",
-      "content": "### 🔄 Peer-to-Peer (P2P) Synchronization\n\nCollaborate with colleagues without a central server. P2P Sync allows matching case data directly between local workstations."
+      "content": "### 🔄 Peer-to-Peer (P2P) Synchronization\n\nCollaborate with colleagues without a central server! P2P Sync allows matching case data directly between local workstations.\n\n#### Workflow\n1. Click **🔄 P2P Sync**.\n2. Select the colleague you want to sync with.\n3. The system compares the version status of the cases.\n4. In the **Diff Dialog**, you see conflicts or newly added cases and can safely merge changes.\n"
     },
     "shortcuts": {
       "title": "⌨ Keyboard Shortcuts & Hotkeys",
       "category": "Shortcuts",
-      "content": "### ⌨ Keyboard Shortcuts\n\n- `Ctrl+N`: New Case\n- `Ctrl+S`: Save Case\n- `Ctrl+E`: Export Case\n- `Ctrl+P`: Open Settings\n- `Ctrl+1` - `Ctrl+4`: Switch Views\n- `F1`: Open Help"
+      "content": "### ⌨ Keyboard Shortcuts\n\nWork even faster with the following hotkeys:\n\n| Action | Default Hotkey |\n| :--- | :--- |\n| **New Case** | `Ctrl + N` |\n| **Save Case** | `Ctrl + S` |\n| **Archive Case** | `Ctrl + Shift + A` |\n| **Export Case** | `Ctrl + E` |\n| **Open Settings** | `Ctrl + P` |\n| **Open Snippet Picker** | `Ctrl + M` |\n| **Focus Wiki Search** | `Ctrl + W` |\n| **Focus Customer Search** | `Ctrl + F` |\n| **Cockpit View** | `Ctrl + 1` |\n| **Tab View** | `Ctrl + 2` |\n| **Split View** | `Ctrl + 3` |\n| **Analytics & KPIs** | `Ctrl + 4` |\n| **Toggle Theme** | `Ctrl + T` |\n| **Help Dialog** | `F1` |\n| **Text Snippet Macros** | e.g. `Ctrl + Alt + 1` |\n\n*Note: All keyboard shortcuts and snippet macros can be customized and recorded interactively in Settings (`⚙ Profile & Settings` -> `⌨ Shortcuts & Scoring`).*\n"
     },
     "storage_paths": {
       "title": "📁 Storage Locations & File Paths",
       "category": "Configuration",
-      "content": "### 📁 Storage Locations & Directory Structure\n\nThe Support Cockpit keeps application data separated from workspace files for clean portability and EXE execution."
+      "content": "### 📁 Storage Locations, Data Structure & EXE Mode\n\nThe **Support Cockpit** keeps application data separated from program files. This allows safe execution from a single executable file (PyInstaller `.exe`) and prevents tracking real customer data in Git repositories.\n\n#### 1. Data Folder & Custom Paths\n- Open **Profile & Settings** (`👤 [Your Name]`) -> **📁 Storage & Paths** tab.\n- **Main Data Folder**: Click **📁 Choose Folder** to set your workspace location (e.g. `D:\\SupportData` or a network share).\n- **Individual File Paths**: If needed, link individual files (`cases.json`, `customers.json`, `wiki_index.sqlite`) to different locations or reset them to default via **🔄 Reset Individual Paths**.\n\n#### 2. Executable (.exe) Mode Behavior\n- When the app is run as a compiled `.exe`, no folders are created in the execution directory (e.g. `C:\\Program Files\\`).\n- Instead, the central user configuration is stored in your user profile:\n  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`\n  - Linux/Mac: `~/.config/SupportCockpit/user_config.json`\n- If configuration is missing, `Documents\\SupportCockpitData` is automatically used as the default data folder.\n\n#### 3. Sample Files & Automatic Initialization\n- **Repository Templates (`data_examples/`)**: Sample files from `data_examples/` are copied to your chosen data folder on first startup.\n- **Empty Files**: If neither data nor templates exist, the application automatically creates new empty data files for smooth operation.\n"
     },
     "template_editor": {
       "title": "📄 Export Template Editor",
       "category": "Export",
-      "content": "### 📄 Export Template Editor & Live Preview\n\nCustomize existing templates or define new export formats with side-by-side live rendering."
+      "content": "### 📄 Create & Customize Export Templates\n\nIn the **Export Template Editor**, you can customize existing handover templates or define completely new export formats.\n\n#### Open Template Manager\n- Click **📄 Templates** in the top menu bar or **🛠 Manage Templates** inside the Export Dialog (`Ctrl+E`).\n\n#### Configure Template\n1. **Name & ID**: Assign a unique ID and a readable display name.\n2. **Target Action**: Choose between clipboard text and file export.\n3. **Assigned Schemas**: Check the form schemas for which the template should be offered.\n4. **Required Mandatory Fields**: Define which case fields must be filled out before exporting is allowed.\n5. **Jinja2 Template**: Write the template text in Markdown/HTML. Use **👁 Render Live Preview** to instantly verify the output!\n"
     },
     "handover_followup": {
       "title": "🔔 Case Handovers & Follow-ups",
       "category": "Workflow",
-      "content": "### 🔔 Responsibility Handovers & Follow-up Reminders\n\nReassign cases to colleagues or departments with automated timeline logging and follow-up alerts."
+      "content": "### 🔔 Responsibility Handovers & Follow-up Reminders\n\nAlways keep track of when a case was handed over to whom and when to follow up with colleagues.\n\n#### 1. Automatic Handover Logging\n- As soon as you change the **Assignee (Actor)** of a case (e.g. from *Support* to *Development*), the system automatically creates a precise entry in the **Timeline**:\n  - *Timestamp & Author*\n  - *Status Change: ASSIGNEE: Support -> Development*\n  - *Note: Handover to: Development (previously: Support)*\n\n#### 2. Schedule Follow-up & Reminder Alerts\n- When reassigning a case, the **🔔 Schedule Follow-up** dialog opens automatically.\n- Or click **🔔 Follow-up** anytime in the case details.\n- Select a quick preset (`+ 1 Day`, `+ 2 Days`, `+ 1 Week`) or a custom date with a note.\n- Cases with an active follow-up are highlighted with 3 lines in the case list (Follow-up on, date with relative info `(tomorrow)` / `(today)` / `(in X days)`, time).\n"
     },
     "email_calendar_outlook": {
       "title": "✉ Email, Calendar (.ics) & Outlook",
       "category": "Communication",
-      "content": "### ✉ Email Drafts, iCalendar & Outlook Integration\n\nCompose customer emails, export `.ics` calendar events, or transfer items directly to Microsoft Outlook."
+      "content": "### ✉ Compose Emails, iCalendar Export & Microsoft Outlook Integration\n\nTwo separate features are available in the Cockpit:\n\n#### 1. ✉ Compose Email\n- Click **✉ Email** to open the email draft for the current case.\n- Recipient and subject are pre-filled based on practice data and subject.\n- Click **🧩 Text Snippet** to insert pre-built support templates (e.g. TI troubleshooting, billing correction) with one click.\n- **Transfer to Outlook**: Opens the email directly in Microsoft Outlook with all fields filled.\n- **Open in Standard Mail App**: Launches your default mail client via `mailto:` protocol.\n\n#### 2. 📅 Create Calendar Entry (.ics)\n- Click **📅 Calendar** to generate a calendar appointment for follow-ups or callback deadlines.\n- **Open directly in Calendar**: Creates a temporary `.ics` file and opens your calendar (Outlook / Thunderbird).\n- **Save as .ics file...**: Saves the event file to any location.\n\n#### 3. 📬 Outlook Add-in / Macro (Transfer Emails to Cockpit)\n- With the integrated Outlook macro, you can transfer received customer emails directly from Outlook into Support Cockpit to automatically create a new case or append a timeline note.\n"
     },
     "case_print_reporting": {
       "title": "🖨 Case Print View, PDF & Images",
       "category": "Export",
-      "content": "### 🖨 Case File Print & PDF Export\n\nGenerate print reports and PDF documents with embedded screenshots and complete timeline histories."
+      "content": "### 🖨 Case Print View, PDF Export & Image Attachments\n\nCreate comprehensive case dossiers for archiving or team meetings.\n\n#### 1. Open Print Dialog\n- Click **🖨 Print** in the Cockpit.\n- Select which sections to include (customer data, form fields, timeline entries, images).\n\n#### 2. Images & Screenshots at Page End\n- All image files (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) from the case folder are automatically embedded at the end of the document.\n- You can inspect screenshots simply by scrolling in the report and printing them along with the document.\n\n#### 3. Export Options\n- **🖨 Open in Browser & Print**: Opens the page in your default browser and automatically launches the browser print/PDF export dialog.\n- **💾 Save as HTML/PDF Report...**: Saves the complete standalone HTML dossier to your disk.\n"
     },
     "ai_ollama_management": {
       "title": "🤖 AI Assistant, Ollama Server & Model Control",
       "category": "AI & Ollama",
-      "content": "### 🤖 Local AI Support Assistant & Ollama Management\n\n100% local, privacy-compliant AI assistance using local Ollama LLMs (Qwen2.5 / Llama3) or Google Gemini Cloud API."
+      "content": "### 🤖 Local AI Support Assistant & Ollama Server Control\n\nThe Support Cockpit provides 100% privacy-compliant AI assistance powered by local open-source LLMs (e.g. Ollama with Qwen2.5 / Llama3). All requests remain 100% on your PC!\n\n#### 1. ⚙ Ollama Server Control (Start & Stop from App)\nUnder **Profile & Settings** (`👤`) -> **🤖 AI & NLP** tab, you can manage the Ollama server directly:\n- **`▶ Start Ollama Server`**: Starts the Ollama background process (`ollama serve`) without opening a terminal.\n- **`🛑 Stop Server`**: Gracefully terminates the Ollama process and frees up RAM/VRAM immediately.\n- **`🌐 Download Links`**: Direct links to `ollama.com`, `qwen2.5`, and `llama3` if Ollama is not yet installed.\n\n#### 2. ⚡ Create PVS Support Model in One Click\n- Click **`⚡ Create PVS Support Model from Modelfile`** to generate a specialized model (`pvs-support`) from the bundled Modelfile.\n- This model is pre-configured specifically for German healthcare IT support (PVS, TI connectors, GKV billing, KV-SafeNet).\n\n#### 3. 🎚 Global AI Toggle & Auto Unload\n- Use the **`🤖 AI Globally Active`** switch to turn AI off anytime.\n- Disabling AI automatically unloads the active model from RAM/VRAM.\n- All AI generation buttons are safely disabled when the switch is OFF.\n\n#### 4. 🚦 Precise Status Color Coding\n- **`🔴 Red`**: Ollama Offline or server unreachable.\n- **`⚪ Gray`**: Ollama Online, but AI switch is OFF.\n- **`🔵 Blue`**: Ollama Online & AI Active, but standby (no model loaded in RAM).\n- **`🟢 Green`**: Ollama Online & AI Active with model ready in RAM.\n\n#### 5. 🎯 Hierarchical Prompt Rules & Directives\n1. **Global Base Rules** (User profile defaults).\n2. **Practice-Specific Override Rules** (Stored in practice details).\n3. **⚡ Prioritized Custom Directive** (Entered in dialog, highest priority).\n"
     },
     "stepper_time_picker": {
       "title": "⏱ Time Selection (07:00-20:00) & Stepper",
       "category": "User Interface",
-      "content": "### ⏱ Interactive Time Picker\n\nOptimized time selection for medical practice office hours (07:00 to 20:00) with quick stepper arrows."
+      "content": "### ⏱ Time Selection & Stepper Arrows\n\nThe time picker in calendar and follow-up dialogs is optimized specifically for office working hours:\n\n- **Practice Working Hours**: Hours focus on core office hours from **07:00 AM to 08:00 PM**.\n- **Quick Stepper Buttons**: Arrow buttons (`▲` / `▼`) next to dropdown menus:\n  - Hours: Adjust step-by-step by `+/- 1 Hour`.\n  - Minutes: Adjust step-by-step in 5-minute increments (`+/- 5 Min`).\n"
     },
     "internal_cases": {
       "title": "🏢 Internal Cases & Tasks (Non-Customer)",
       "category": "Workflow",
-      "content": "### 🏢 Internal Operations & Sub-Tasks\n\nManage internal IT tasks, server maintenance, or dev notes without requiring a customer assignment."
+      "content": "### 🏢 Internal Operations & Sub-Tasks\n\nIn addition to customer support cases, you can manage **purely internal tasks** (e.g. server maintenance, system updates, notes, or development tasks).\n\n#### Features:\n- **No Customer Required**: When creating a new case (`+ New Case` / `Ctrl+N`), leave practice blank or set to *\"🏢 Internal Operation / No Practice\"*.\n- **Automatic Schema Adaptation**: The form automatically switches to *\"🏢 Internal Task / Note\"*.\n- **Visual Highlight**: Internal cases get a blue **`🏢 INTERNAL`** badge in the case list.\n- **Search Filter**: Use **`[🏢 Internal]`** quick filter or search token `is:internal`.\n"
     },
     "cobra_crm_import": {
       "title": "🐍 Cobra CRM Practice & Customer Import",
       "category": "Customers",
-      "content": "### 🐍 Cobra CRM Import Assistant\n\nImport customer databases directly from Cobra CRM exports (.csv, .txt, .json)."
+      "content": "### 🐍 Cobra CRM Import Assistant\n\nImport your existing practice database directly from Cobra CRM into Support Cockpit.\n\n#### Workflow:\n1. Open Practice Management (**🏥 Practices**).\n2. Click **🐍 Cobra CRM Import...**.\n3. Select your export file (supports `.csv`, `.txt`, `.json`).\n4. **Automatic Column Detection**: Recognizes Cobra fields (customer number, practice name, contact person, email, phone, VIP status) via aliasing.\n5. After confirmation, all practices are immediately available for case assignment.\n"
     },
     "snippets_manager": {
-      "title": "📝 Text Snippets & Macro Manager",
+      "title": "📝 Text Snippets & Snippet Manager",
       "category": "Communication",
-      "content": "### 📝 Text Snippets & Quick Response Templates\n\nSave time on recurring responses with reusable text snippet macros."
+      "content": "### 📝 Manage & Insert Text Snippets\n\nSave time on recurring responses and standard notes with the built-in snippet manager.\n\n#### 1. Manage Text Snippets\n- Click **📝 Text Snippets** in the main menu.\n- Create new snippets with title, category (e.g. *Billing*, *Hardware*, *TI Support*), tags, and template text.\n\n#### 2. Insert Snippets into Notes or Emails\n- In note fields or email dialog (`✉ Email`): Click **🧩 Text Snippet**.\n- The `SnippetPickerDialog` opens with search bar and category filter.\n- Select the desired snippet — text is inserted at the current cursor position!\n"
     },
     "repeatable_sub_forms": {
       "title": "📂 Dynamic Multi-Card Forms",
       "category": "Forms",
-      "content": "### 📂 Dynamic Multi-Card Forms & Repeatable Sub-Entries\n\nCapture multiple billing items or claims within a single structured support case."
+      "content": "### 📂 Dynamic Multi-Card Forms (Repeatable Blocks)\n\nCertain form types (such as *\"Co-payment Claim & Billing Correction\"*) require capturing multiple independent requests within a single case.\n\n#### Usage:\n1. Select the form **\"Co-payment Claim & Billing Correction\"**.\n2. **Card Container**: Creates individual cards for each request (ESOL file name, requested action, invoice no. & date, prescription no., patient name(s), justification).\n3. **➕ Add Another File / Claim Request**: Dynamically adds a new empty claim card.\n4. **🗑 Remove Claim #N**: Deletes individual cards as needed.\n5. **Email & Export**: Formats all cards automatically as numbered sections (`--- File Claim #1 ---`).\n"
     },
     "analytics_kpi_dashboard": {
-      "title": "Auswertungs- & KPI-Dashboard",
+      "title": "Analytics & KPI Dashboard",
       "category": "Analytics",
-      "content": "### Analytics & KPI Dashboard\n\nComprehensive statistical overview of workload, average resolution times, VIP rates, and department distribution."
+      "content": "### Analytics & KPI Dashboard\n\nGet comprehensive insights into your support performance and key metrics at a glance.\n\n#### Open Dashboard:\n- Click **Analytics & Metrics** in the menu bar or press `Ctrl + 4`.\n\n#### 6 Main KPI Cards (Top Row):\n- **📋 Total Cases**: Total number of recorded cases.\n- **⏳ Open Cases**: Cases in progress or waiting.\n- **✓ Resolved (%)**: Number of resolved cases with percentage success rate.\n- **⚠ Overdue**: Open cases with exceeded follow-up / due date (`due_date`).\n- **⏱ Avg Resolution Time**: Average resolution time from creation to completion in days or hours.\n- **⭐ VIP Ratio**: Percentage of cases from premium/VIP practices.\n\n#### 2-Column Dashboard Layout:\n- **Left Column**:\n  - **🚨 Urgency Distribution (Scoring)**: Traffic light indicator for `🔴 Critical`, `🟡 High`, `🟢 Normal`.\n  - **📄 Distribution by Form Schema**: Breakdown by form type.\n- **Right Column**:\n  - **🏆 Top 5 Practices by Volume**: Ranking with VIP badges (`★ VIP`).\n  - **👤 Workload by Assignee**: Open vs. resolved cases per staff member.\n  - **👥 Open Cases by Department**: Breakdown by *Support, Development, Tech, Customer*.\n\n#### 📋 Copy Statistics Report:\n- Click the top-right button to copy a complete Markdown summary of all metrics directly to your clipboard!\n"
     },
     "advanced_search_filters": {
       "title": "🔍 Advanced Search & Search Tokens",
       "category": "Basics",
-      "content": "### 🔍 Search Tokens & Quick Filters\n\nFilter cases using search tokens like `is:internal`, `vip:true`, `reminder:due`, or `actor:dev`."
+      "content": "### 🔍 Advanced Search System & Tokens\n\nThe cockpit search bar supports both free-text search and powerful filter tokens.\n\n#### 1. Quick Filter Buttons\n- **`[All]`**: Show all cases.\n- **`[🔥 Urgent]`**: Show cases with high urgency score.\n- **`[🔔 Follow-ups]`**: Show due follow-ups.\n- **`[🏢 Internal]`**: Show purely internal tasks.\n\n#### 2. Search Tokens (`Ctrl+F`):\nCombinable tokens for precise filtering:\n- `is:internal` / `is:customer`: Filter by internal or customer cases.\n- `vip:true`: Only VIP practices.\n- `reminder:due`: Only due follow-ups.\n- `actor:dev` / `actor:support` / `actor:tech`: Filter by responsibility.\n- `status:open` / `status:closed`: Filter by status.\n- `error:XYZ`: Search by error codes or notes text.\n"
     },
     "attachments_and_screenshots": {
       "title": "📂 File Attachments & Screenshots (Ctrl+V)",
       "category": "Documents",
-      "content": "### 📂 Attachment Management & Clipboard Screenshots\n\nPaste screenshots directly into cases with `Ctrl+V` and view file previews."
+      "content": "### 📂 File Attachments, Screenshots & Previews\n\nManage log files, screenshots, and documents directly inside the case.\n\n#### 1. Paste Screenshots via `Ctrl+V`\n- Take a screenshot (e.g. using `Win+Shift+S`).\n- Press **`Ctrl + V`** inside Cockpit: Image is automatically saved to case folder and embedded in timeline!\n\n#### 2. Live Preview & OS Launch\n- Image files (`.png`, `.jpg`, `.webp`) and text files (`.log`, `.json`, `.txt`) can be previewed directly in attachments bar.\n- Double-clicking opens the file in your OS default application.\n"
     },
     "zip_backup_restore": {
-      "title": "📦 Complete ZIP Backup & Restoration",
+      "title": "📦 Complete ZIP Backup & Import/Export",
       "category": "Configuration",
-      "content": "### 📦 Full Workspace Backup & Restore\n\nBackup all cases, customers, schemas, templates, and attachments into a compressed ZIP file."
+      "content": "### 📦 Complete ZIP Backup & Import/Export\n\nBackup your entire workspace including all cases, customer data, schemas, templates, and attachments in a single ZIP file.\n\n#### Procedure:\n1. Open **Profile & Settings** (`👤`) -> **📦 Backup & Restoration**.\n2. **`💾 Create Full Backup...`**: Saves all JSON files and attachments folder into a ZIP archive.\n3. **`📥 Restore Backup...`**: Unpacks and restores a previous state (with automated safety backup of current data).\n"
     },
     "email_webhook_integration": {
       "title": "🔌 Email Import & REST Webhooks (Jira/GitLab)",
       "category": "Integrations",
-      "content": "### 🔌 Email IMAP Ingestion & Webhooks\n\nIngest emails via IMAP and trigger REST webhooks for external tools like GitLab or Jira."
+      "content": "### 🔌 Email Ingestion & REST Webhooks\n\nConnect Support Cockpit to external systems.\n\n#### 1. 📬 Automatic Email Import (IMAP)\n- Queries a support mailbox via IMAP and automatically creates new incoming emails as draft cases.\n\n#### 2. 🔗 REST Webhook Integration (GitLab / Jira)\n- Configure webhook URLs under Settings to automatically trigger issue payloads to GitLab, Jira, or custom APIs upon case creation or transfer.\n"
     }
   },
   "demo_cases": {
@@ -439,5 +439,9 @@
     "c3_title": "Correct KV billing text",
     "c4_title": "Review 2026-Q1 additional claim",
     "c5_title": "GUI font size in laboratory window too small"
+  },
+  "splash": {
+    "title": "🩺 Support Cockpit",
+    "loading": "⏳ Loading application data and layouts..."
   }
 }

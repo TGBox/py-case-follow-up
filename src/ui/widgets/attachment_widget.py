@@ -26,10 +26,11 @@ class AttachmentWidget(ctk.CTkFrame):
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
         top_frame.pack(fill="x", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_frame, text=tr("attachments.title", "Fall-Dateianhänge"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+        self.hdr_lbl = ctk.CTkLabel(top_frame, text=tr("attachments.title", "Fall-Dateianhänge"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.hdr_lbl.pack(side="left")
 
-        open_exp_btn = ctk.CTkButton(top_frame, text=tr("attachments.open_explorer", "📁 Explorer öffnen"), command=self.on_open_explorer, width=120)
-        open_exp_btn.pack(side="right")
+        self.open_exp_btn = ctk.CTkButton(top_frame, text=tr("attachments.open_explorer", "📁 Explorer öffnen"), command=self.on_open_explorer, width=120)
+        self.open_exp_btn.pack(side="right")
 
         # Scrollable file list
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent", height=130)
@@ -46,10 +47,25 @@ class AttachmentWidget(ctk.CTkFrame):
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=5, pady=5)
 
-        add_file_btn = ctk.CTkButton(btn_frame, text=tr("attachments.add_file", "+ Datei hinzufügen..."), command=self.on_add_file, width=150)
-        add_file_btn.pack(side="left")
+        self.add_file_btn = ctk.CTkButton(btn_frame, text=tr("attachments.add_file", "+ Datei hinzufügen..."), command=self.on_add_file, width=150)
+        self.add_file_btn.pack(side="left")
 
-        ctk.CTkLabel(btn_frame, text=tr("attachments.tip", "💡 Tipp: Strg+V fügt Screenshot als PNG ein"), font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
+        self.tip_lbl = ctk.CTkLabel(btn_frame, text=tr("attachments.tip", "💡 Tipp: Strg+V fügt Screenshot als PNG ein"), font=ctk.CTkFont(size=10), text_color=("gray40", "gray70"))
+        self.tip_lbl.pack(side="right")
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "hdr_lbl"):
+            self.hdr_lbl.configure(text=tr("attachments.title", "Fall-Dateianhänge"))
+        if hasattr(self, "open_exp_btn"):
+            self.open_exp_btn.configure(text=tr("attachments.open_explorer", "📁 Explorer öffnen"))
+        if hasattr(self, "preview_label") and not self.preview_label.cget("text").startswith("📄") and not self.preview_label.cget("text").startswith("🖼"):
+            self.preview_label.configure(text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"))
+        if hasattr(self, "add_file_btn"):
+            self.add_file_btn.configure(text=tr("attachments.add_file", "+ Datei hinzufügen..."))
+        if hasattr(self, "tip_lbl"):
+            self.tip_lbl.configure(text=tr("attachments.tip", "💡 Tipp: Strg+V fügt Screenshot als PNG ein"))
+        self.load_attachments(self.current_case)
 
     def load_attachments(self, case: Case | None):
         from services.i18n_service import tr

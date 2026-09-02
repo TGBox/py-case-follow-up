@@ -25,7 +25,8 @@ class TimelineWidget(ctk.CTkFrame):
         from services.i18n_service import tr
 
         # Header
-        ctk.CTkLabel(self, text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
+        self.hdr_lbl = ctk.CTkLabel(self, text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.hdr_lbl.pack(anchor="w", padx=10, pady=(10, 5))
 
         # Scrollable list
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -40,9 +41,10 @@ class TimelineWidget(ctk.CTkFrame):
         ctrl_row = ctk.CTkFrame(input_frame, fg_color="transparent")
         ctrl_row.pack(fill="x", padx=5, pady=(5, 2))
 
-        ctk.CTkLabel(ctrl_row, text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"), font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+        self.ctrl_lbl = ctk.CTkLabel(ctrl_row, text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"), font=ctk.CTkFont(size=11, weight="bold"))
+        self.ctrl_lbl.pack(side="left")
 
-        snip_btn = ctk.CTkButton(
+        self.snip_btn = ctk.CTkButton(
             ctrl_row,
             text=tr("cockpit.snippets_btn", "📝 Textbaustein"),
             width=110,
@@ -50,7 +52,7 @@ class TimelineWidget(ctk.CTkFrame):
             hover_color="darkmagenta",
             command=self.on_click_snippet,
         )
-        snip_btn.pack(side="right")
+        self.snip_btn.pack(side="right")
 
         self.channel_combo = ctk.CTkOptionMenu(input_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=200)
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
@@ -62,8 +64,20 @@ class TimelineWidget(ctk.CTkFrame):
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
 
-        add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=140)
-        add_btn.pack(side="right", padx=5, pady=(0, 5))
+        self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=140)
+        self.add_btn.pack(side="right", padx=5, pady=(0, 5))
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "hdr_lbl"):
+            self.hdr_lbl.configure(text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"))
+        if hasattr(self, "ctrl_lbl"):
+            self.ctrl_lbl.configure(text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"))
+        if hasattr(self, "snip_btn"):
+            self.snip_btn.configure(text=tr("cockpit.snippets_btn", "📝 Textbaustein"))
+        if hasattr(self, "add_btn"):
+            self.add_btn.configure(text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"))
+        self.load_timeline(self.timeline_entries)
 
     def on_click_snippet(self):
         if self.on_open_snippet_picker:

@@ -439,5 +439,9 @@
     "c3_title": "KV-Abrechnungstext korrigieren",
     "c4_title": "Prüfung Nachforderung 2026-Q1",
     "c5_title": "GUI-Schriftgröße im Laborfenster zu klein"
+  },
+  "splash": {
+    "title": "🩺 Support-Cockpit",
+    "loading": "⏳ Anwendungsdaten und Layouts werden geladen..."
   }
 }

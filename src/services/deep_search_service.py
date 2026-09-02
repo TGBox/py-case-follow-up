@@ -12,20 +12,25 @@ class DeepSearchService:
 
     def __init__(self, workspace_dir: Path | str | None = None):
         self.workspace_dir = Path(workspace_dir) if workspace_dir else Path.cwd()
-        self._file_lines_cache: dict[str, tuple[float, list[str]]] = {}
-        self._wiki_cache_data: tuple[float, list[dict]] | None = None
+        self._file_lines_cache: dict[str, tuple[float, int, list[str]]] = {}
+        self._wiki_cache_data: tuple[float, int, list[dict]] | None = None
 
     def _get_file_lines(self, file_path: Path) -> list[str]:
         path_str = str(file_path)
         try:
-            mtime = file_path.stat().st_mtime
+            stat_result = file_path.stat()
+            # mtime allein reicht als Cache-Key nicht: bei sehr schnell
+            # aufeinanderfolgenden Schreibvorgängen (insb. unter Windows) kann
+            # st_mtime unverändert bleiben, obwohl sich der Inhalt geändert hat.
+            # Dateigröße zusätzlich zu vergleichen faengt diesen Fall zuverlaessig ab.
+            cache_key = (stat_result.st_mtime, stat_result.st_size)
             if path_str in self._file_lines_cache:
-                cached_mtime, lines = self._file_lines_cache[path_str]
-                if cached_mtime == mtime:
+                cached_mtime, cached_size, lines = self._file_lines_cache[path_str]
+                if (cached_mtime, cached_size) == cache_key:
                     return lines
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
-            self._file_lines_cache[path_str] = (mtime, lines)
+            self._file_lines_cache[path_str] = (cache_key[0], cache_key[1], lines)
             return lines
         except Exception:
             return []
@@ -76,15 +81,16 @@ class DeepSearchService:
 
     def _get_wiki_articles(self, cache_path: Path) -> list[dict]:
         try:
-            mtime = cache_path.stat().st_mtime
+            stat_result = cache_path.stat()
+            cache_key = (stat_result.st_mtime, stat_result.st_size)
             if self._wiki_cache_data:
-                cached_mtime, articles = self._wiki_cache_data
-                if cached_mtime == mtime:
+                cached_mtime, cached_size, articles = self._wiki_cache_data
+                if (cached_mtime, cached_size) == cache_key:
                     return articles
             with open(cache_path, "r", encoding="utf-8", errors="ignore") as f:
                 articles = json.load(f)
             if isinstance(articles, list):
-                self._wiki_cache_data = (mtime, articles)
+                self._wiki_cache_data = (cache_key[0], cache_key[1], articles)
                 return articles
         except Exception:
             pass

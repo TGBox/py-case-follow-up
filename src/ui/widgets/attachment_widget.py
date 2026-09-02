@@ -103,6 +103,9 @@ class AttachmentWidget(ctk.CTkFrame):
             )
             btn_del.pack(side="right", padx=2)
 
+        from utils.ui_utils import bind_mouse_wheel_to_canvas
+        bind_mouse_wheel_to_canvas(self.scroll_frame)
+
     def show_file_preview(self, filepath: Path):
         self.clear_preview()
         ext = filepath.suffix.lower()

@@ -56,6 +56,10 @@ class SearchableCombobox(ctk.CTkFrame):
         display_str = val if val else self.placeholder_text
         self.btn.configure(text=f"  {display_str}  ▼")
 
+    def set(self, val: str) -> None:
+        """Alias for set_selected to ensure CTkComboBox/CTkOptionMenu API compatibility."""
+        self.set_selected(val)
+
     def get(self) -> str:
         return self._selected_value
 

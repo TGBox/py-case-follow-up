@@ -12,7 +12,8 @@ class ToastNotification(ctk.CTkToplevel):
 
     def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None):
         super().__init__(parent)
-        self.title("Erinnerung")
+        from services.i18n_service import tr
+        self.title(tr("toast.reminder_title", "Erinnerung"))
         self.on_open = on_open
 
         # Always construct internal CTk frame & widgets
@@ -22,7 +23,7 @@ class ToastNotification(ctk.CTkToplevel):
         if on_open:
             btn_open = ctk.CTkButton(
                 frame,
-                text="👁 Öffnen",
+                text=tr("common.open", "👁 Öffnen"),
                 width=95,
                 height=32,
                 font=ctk.CTkFont(size=12, weight="bold"),
@@ -106,7 +107,7 @@ class ToastNotification(ctk.CTkToplevel):
         if on_open:
             btn_open = ctk.CTkButton(
                 frame,
-                text="👁 Öffnen",
+                text=tr("common.open", "👁 Öffnen"),
                 width=95,
                 height=32,
                 font=ctk.CTkFont(size=12, weight="bold"),

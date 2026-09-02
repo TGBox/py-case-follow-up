@@ -10,20 +10,22 @@ class WikiWidget(ctk.CTkFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Header & Sync Button
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
         top_frame.pack(fill="x", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_frame, text="BookStack Offline Wiki", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+        ctk.CTkLabel(top_frame, text=tr("wiki.header", "BookStack Offline Wiki"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
 
-        sync_btn = ctk.CTkButton(top_frame, text="🔄 Wiki Sync", command=self.on_sync_wiki, width=100)
+        sync_btn = ctk.CTkButton(top_frame, text=tr("wiki.sync_btn", "🔄 Wiki Sync"), command=self.on_sync_wiki, width=100)
         sync_btn.pack(side="right")
 
         # Search Bar
         search_frame = ctk.CTkFrame(self, fg_color="transparent")
         search_frame.pack(fill="x", padx=10, pady=(0, 5))
 
-        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text="📖 Wiki durchsuchen (z. B. ERR_DB_902)...")
+        self.search_entry = ctk.CTkEntry(search_frame, placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", lambda e: self.on_search())
 
@@ -39,19 +41,21 @@ class WikiWidget(ctk.CTkFrame):
         self.search_entry.focus_set()
 
     def on_search(self):
+        from services.i18n_service import tr
+
         query = self.search_entry.get().strip()
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
         if not query:
-            self.status_label.configure(text="Bitte Suchbegriff eingeben.")
+            self.status_label.configure(text=tr("wiki.enter_query", "Bitte Suchbegriff eingeben."))
             return
 
         results = self.wiki_service.search(query)
-        self.status_label.configure(text=f"{len(results)} Wiki-Artikel gefunden")
+        self.status_label.configure(text=f"{len(results)} {tr('wiki.articles_found', 'Wiki-Artikel gefunden')}")
 
         if not results:
-            ctk.CTkLabel(self.scroll_frame, text="Keine treffenden Artikel im Offline-Index.").pack(pady=10)
+            ctk.CTkLabel(self.scroll_frame, text=tr("wiki.no_results", "Keine treffenden Artikel im Offline-Index.")).pack(pady=10)
             return
 
         for item in results:
@@ -73,10 +77,12 @@ class WikiWidget(ctk.CTkFrame):
                 snip_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
     def on_sync_wiki(self):
+        from services.i18n_service import tr
+
         if getattr(self, "_is_syncing", False):
             return
         self._is_syncing = True
-        self.status_label.configure(text="⏳ Synchronisiere Wiki im Hintergrund...", text_color="orange")
+        self.status_label.configure(text=tr("wiki.syncing", "⏳ Synchronisiere Wiki im Hintergrund..."), text_color="orange")
 
         def _completion_cb(success: bool, msg: str):
             self.after(0, lambda: self.on_sync_finished(success, msg))

@@ -268,10 +268,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         new_btn = ctk.CTkButton(menu_frame, text=tr("menu.new_case", "+ Neuer Fall (Strg+N)"), command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
         new_btn.pack(side="left", padx=3, pady=4)
 
+        from constants import (
+            get_localized_menu_options_stammdaten,
+            get_localized_menu_options_vorlagen,
+            get_localized_menu_options_datenaustausch,
+        )
+
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=MENU_OPTIONS_STAMMDATEN,
+            values=get_localized_menu_options_stammdaten(),
             command=self._on_stammdaten_selected,
             width=150,
         )
@@ -281,7 +287,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=MENU_OPTIONS_VORLAGEN,
+            values=get_localized_menu_options_vorlagen(),
             command=self._on_vorlagen_selected,
             width=165,
         )
@@ -291,7 +297,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
             menu_frame,
-            values=MENU_OPTIONS_DATENAUSTAUSCH,
+            values=get_localized_menu_options_datenaustausch(),
             command=self._on_datenaustausch_selected,
             width=145,
         )
@@ -317,7 +323,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.demo_toggle_btn = ctk.CTkButton(
             menu_frame,
-            text="🧪 Beispieldaten: AN",
+            text=tr("menu.demo_on", "🧪 Beispieldaten: AN"),
             command=self.toggle_demo_data,
             width=135,
             fg_color="darkblue",
@@ -337,38 +343,43 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.user_btn.pack(side="right", padx=6, pady=4)
 
     def _on_stammdaten_selected(self, choice: str):
-        self.stammdaten_combo.set("⚙ Stammdaten")
-        if choice == "🏥 Praxen":
+        from services.i18n_service import tr
+        self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
+        if choice.startswith("🏥"):
             self.open_customer_management_dialog()
         elif choice.startswith("🐍"):
             self.open_cobra_import_dialog()
-        elif choice == "👥 Mitarbeiter":
+        elif choice.startswith("👥"):
             self.open_colleague_management_dialog()
-        elif choice.startswith("🏷"):
-            self.open_tag_management_dialog(initial_tab="tags")
         elif choice.startswith("🧩"):
             self.open_module_tag_management_dialog()
+        elif choice.startswith("🏷"):
+            self.open_tag_management_dialog(initial_tab="tags")
 
     def _on_vorlagen_selected(self, choice: str):
-        self.vorlagen_combo.set("📄 Vorlagen & Formulare")
+        from services.i18n_service import tr
+        self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
         if choice.startswith("🛠"):
             self.open_schema_builder_dialog()
-        elif choice == "📄 Vorlagen":
+        elif choice.startswith("📄"):
             self.open_template_manager_dialog()
         elif choice.startswith("📝"):
             self.open_snippet_management_dialog()
+        elif choice.startswith("🏷"):
+            self.open_tag_management_dialog(initial_tab="tags")
 
     def _on_datenaustausch_selected(self, choice: str):
-        self.datenaustausch_combo.set("🔄 Datenaustausch")
-        if choice.startswith("📥 E-Mail"):
+        from services.i18n_service import tr
+        self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
+        if choice.startswith("📥"):
             self.open_email_import_dialog()
-        elif choice.startswith("📤 Export"):
+        elif choice.startswith("📤"):
             self.open_export_dialog(self.active_case)
-        elif choice == "📦 ZIP-Backup":
+        elif choice.startswith("📦"):
             self.open_zip_export_dialog()
-        elif choice == "🔄 P2P-Sync":
+        elif choice.startswith("🔄"):
             self.open_p2p_dialog()
-        elif choice.startswith("📖 Hilfe"):
+        elif choice.startswith("📖"):
             self.open_help_dialog()
 
     def get_filtered_cases(self) -> list[Case]:
@@ -492,11 +503,12 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         else:
             show_demo = not has_user_cases
 
+        from services.i18n_service import tr
         if self.__dict__.get("demo_toggle_btn"):
             if show_demo:
-                self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AN", fg_color="darkblue")
+                self.demo_toggle_btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color="darkblue")
             else:
-                self.demo_toggle_btn.configure(text="🧪 Beispieldaten: AUS", fg_color="gray40")
+                self.demo_toggle_btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color="gray40")
 
         self.check_due_followups()
 

@@ -76,24 +76,26 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         self.render_tag_checkboxes()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         hdr = ctk.CTkFrame(self, fg_color="transparent")
         hdr.pack(fill="x", padx=12, pady=(10, 4))
 
-        ctk.CTkLabel(hdr, text="🧩 Programmbereiche auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w")
+        ctk.CTkLabel(hdr, text=tr("dynamic_form.select_tags", "🧩 Programmbereiche auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w")
 
         # Search Bar & Quick Action Buttons
         tools_frame = ctk.CTkFrame(self, fg_color="transparent")
         tools_frame.pack(fill="x", padx=12, pady=(0, 6))
 
-        self.search_entry = ctk.CTkEntry(tools_frame, placeholder_text="🔍 Programmbereich suchen...")
+        self.search_entry = ctk.CTkEntry(tools_frame, placeholder_text=tr("dynamic_form.search_tags", "🔍 Programmbereich suchen..."))
         self.search_entry.pack(fill="x", pady=(0, 6))
         self.search_entry.bind("<KeyRelease>", lambda e: self.render_tag_checkboxes())
 
         btn_row = ctk.CTkFrame(tools_frame, fg_color="transparent")
         btn_row.pack(fill="x")
 
-        ctk.CTkButton(btn_row, text="Alle auswählen", width=110, height=24, fg_color="gray30", command=self.select_all).pack(side="left", padx=(0, 5))
-        ctk.CTkButton(btn_row, text="Keine auswählen", width=110, height=24, fg_color="gray30", command=self.select_none).pack(side="left")
+        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_all", "Alle auswählen"), width=110, height=24, fg_color="gray30", command=self.select_all).pack(side="left", padx=(0, 5))
+        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_none", "Keine auswählen"), width=110, height=24, fg_color="gray30", command=self.select_none).pack(side="left")
 
         # Scrollable List
         self.scroll_frame = ctk.CTkScrollableFrame(self)
@@ -105,9 +107,11 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         ftr = ctk.CTkFrame(self, fg_color="transparent")
         ftr.pack(fill="x", padx=12, pady=(4, 10))
 
-        ctk.CTkButton(ftr, text="✓ Übernehmen & Schließen", fg_color="forestgreen", command=self.apply_and_close).pack(side="right")
+        ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "✓ Übernehmen & Schließen"), fg_color="forestgreen", command=self.apply_and_close).pack(side="right")
 
     def render_tag_checkboxes(self):
+        from services.i18n_service import tr
+
         for w in self.scroll_frame.winfo_children():
             w.destroy()
 
@@ -115,7 +119,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         filtered = [t for t in self.available_tags if query in t.lower()] if query else self.available_tags
 
         if not filtered:
-            ctk.CTkLabel(self.scroll_frame, text="Kein Programmbereich gefunden.", text_color="gray").pack(pady=15)
+            ctk.CTkLabel(self.scroll_frame, text=tr("dynamic_form.no_tags", "Kein Programmbereich gefunden."), text_color="gray").pack(pady=15)
         else:
             for tag in filtered:
                 is_on = tag in self.selected_tags
@@ -544,16 +548,18 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         hdr_row = ctk.CTkFrame(attach_box, fg_color="transparent")
         hdr_row.pack(fill="x", padx=8, pady=4)
 
+        from services.i18n_service import tr
+
         self.mini_attach_hdr_label = ctk.CTkLabel(
             hdr_row,
-            text="📎 Abgelegte Dateien im Fallordner: Keine (0)",
+            text=tr("dynamic_form.no_files", "📎 Abgelegte Dateien im Fallordner: Keine (0)"),
             font=ctk.CTkFont(size=11, weight="bold"),
         )
         self.mini_attach_hdr_label.pack(side="left")
 
         ctk.CTkButton(
             hdr_row,
-            text="+ Datei(en) importieren...",
+            text=tr("dynamic_form.import_files", "+ Datei(en) importieren..."),
             height=24,
             width=150,
             fg_color="gray30",
@@ -566,7 +572,8 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.refresh_mini_attachment_list(case)
 
     def import_general_files(self, case: Case):
-        files = filedialog.askopenfilenames(title="Dateien in Fallordner importieren")
+        from services.i18n_service import tr
+        files = filedialog.askopenfilenames(title=tr("dynamic_form.import_title", "Dateien in Fallordner importieren"))
         if not files:
             return
 
@@ -578,6 +585,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.refresh_mini_attachment_list(case)
 
     def refresh_mini_attachment_list(self, case: Case):
+        from services.i18n_service import tr
         if not hasattr(self, "mini_attach_scroll"):
             return
 
@@ -590,11 +598,11 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             files = [f for f in os.listdir(target_dir) if os.path.isfile(os.path.join(target_dir, f))]
 
         if not files:
-            self.mini_attach_hdr_label.configure(text="📎 Abgelegte Dateien im Fallordner: Keine (0)")
+            self.mini_attach_hdr_label.configure(text=tr("dynamic_form.no_files", "📎 Abgelegte Dateien im Fallordner: Keine (0)"))
             self.mini_attach_scroll.pack_forget()
             return
 
-        self.mini_attach_hdr_label.configure(text=f"📎 Abgelegte Dateien im Fallordner ({len(files)}):")
+        self.mini_attach_hdr_label.configure(text=f"📎 {tr('dynamic_form.files_attached', 'Abgelegte Dateien im Fallordner')} ({len(files)}):")
         self.mini_attach_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 4))
 
         for f_name in files:
@@ -612,7 +620,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
             ctk.CTkButton(
                 frow,
-                text="👁 Öffnen",
+                text=tr("common.open", "👁 Öffnen"),
                 width=65,
                 height=20,
                 fg_color="gray35",

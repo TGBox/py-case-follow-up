@@ -57,8 +57,9 @@ class CaseListWidget(ctk.CTkFrame):
         )
         self.deep_btn.pack(side="left", padx=2)
 
+        from services.i18n_service import tr
         # Header Info
-        self.count_label = ctk.CTkLabel(self, text="0 Fälle", font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+        self.count_label = ctk.CTkLabel(self, text=tr("case_list.zero_cases", "0 Fälle"), font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
         self.count_label.pack(fill="x", padx=15, pady=(0, 5))
 
         # Scrollable Cases Container
@@ -127,13 +128,15 @@ class CaseListWidget(ctk.CTkFrame):
         self.render_list()
 
     def render_list(self):
+        from services.i18n_service import tr
+
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.wrap_labels.clear()
         self._card_widgets: dict[str, Any] = {}
 
         if not self.cases:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Fälle gefunden.").pack(pady=20)
+            ctk.CTkLabel(self.scroll_frame, text=tr("case_list.no_cases", "Keine Fälle gefunden.")).pack(pady=20)
             return
 
         w = self.winfo_width()
@@ -173,7 +176,7 @@ class CaseListWidget(ctk.CTkFrame):
             if case.workflow_status.is_completed:
                 done_lbl = ctk.CTkLabel(
                     top_row,
-                    text="✓ ERLEDIGT",
+                    text=tr("case_list.completed_badge", "✓ ERLEDIGT"),
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color="white",
                     fg_color="forestgreen",

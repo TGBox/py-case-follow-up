@@ -1,6 +1,6 @@
 {
   "menu": {
-    "title": " 🩺 Support Cockpit ",
+    "title": " 🩺 Support-Cockpit ",
     "layout": "Layout:",
     "new_case": "+ Nytt ärende (Ctrl+N)",
     "master_data": "⚙ Stamdata",
@@ -10,17 +10,17 @@
     "quit": "❌ Avsluta",
     "demo_on": "🧪 Demodata: PÅ",
     "demo_off": "🧪 Demodata: AV",
-    "opt_practices": "🏥 Kliniker",
+    "opt_practices": "🏥 Mottagningar",
     "opt_cobra": "🐍 Cobra CRM Import",
     "opt_colleagues": "👥 Medarbetare",
-    "opt_modules": "🧩 Programområden",
+    "opt_modules": "🧩 Moduler",
     "opt_forms": "🛠 Formulär",
     "opt_templates": "📄 Mallar",
-    "opt_snippets": "📝 Textmallar",
+    "opt_snippets": "📝 Textbyggblock",
     "opt_tags": "🏷 Taggar",
     "opt_email_import": "📥 E-postimport",
     "opt_export": "📤 Exportera (Ctrl+E)",
-    "opt_zip": "📦 ZIP-backup",
+    "opt_zip": "📦 ZIP-säkerhetskopia",
     "opt_p2p": "🔄 P2P-synk",
     "opt_help": "📖 Hjälp (F1)"
   },
@@ -30,11 +30,11 @@
     "filter_urgent": "🔥 Brådskande",
     "filter_followup": "🔔 Uppföljning",
     "filter_deep": "🔍 Djupsökning",
-    "select_case_prompt": "Välj ett ärende",
+    "select_case_prompt": "Vänligen välj ett ärende",
     "more_actions": "⚙ Fler åtgärder...",
-    "copy_email": "📧 Kopiera klinikens e-post",
+    "copy_email": "📧 Kopiera mottagnings-e-post",
     "export_case": "📤 Exportera ärende",
-    "print_case": "🖨 Skriv ut ärende",
+    "print_case": "🖨 Skriv ut ärendeakt",
     "convert_form": "🔄 Konvertera formulär",
     "save": "💾 Spara",
     "email_ai": "✉ E-post & 🤖 AI",
@@ -48,40 +48,40 @@
     "tab_wiki": "Wiki / Kunskapsbas",
     "timeline_title": "Historik & tidslinjeanteckningar",
     "add_new_note": "Lägg till ny anteckning:",
-    "snippets_btn": "📝 Textmall",
+    "snippets_btn": "📝 Textbyggblock",
     "add_note_btn": "+ Lägg till anteckning"
   },
   "dialog_titles": {
     "new_case": "Skapa nytt supportärende",
-    "quick_customer": "🏥 SnabbSkapa ny klinik",
-    "print_report": "🖨 Ärendefil utskrift & HTML-export",
-    "customer_mgmt": "🏥 Klinik- & kundhantering",
-    "colleague_mgmt": "👥 Personal- & medarbetarinlägg",
-    "tag_mgmt": "🏷 Hantera taggar & moduler",
-    "profile_settings": "⚙ Profil & Inställningar",
+    "quick_customer": "🏥 Snabbkoppla ny mottagning",
+    "print_report": "🖨 Ärendeakt utskrift & HTML-export",
+    "customer_mgmt": "🏥 Mottagnings- & kundhantering",
+    "colleague_mgmt": "👥 Medarbetar- & kollegeposter",
+    "tag_mgmt": "🏷 Taggar & modulhantering",
+    "profile_settings": "⚙ Profil & inställningar",
     "template_mgmt": "📄 Hantera exportmallar",
     "edit_template": "✏ Redigera mall",
     "new_template": "➕ Ny exportmall",
-    "schema_builder": "Formulärbyggare i appen (Hantera scheman)",
-    "new_schema": "🆕 Skapa nytt formulär (Schema)",
+    "schema_builder": "Formulärbyggare i appen (hantera scheman)",
+    "new_schema": "🆕 Skapa nytt formulär (schema)",
     "convert_schema": "🔄 Konvertera formulärschema",
-    "followup_flyout": "🔔 Förfallna uppföljningar & tidsgränser",
+    "followup_flyout": "🔔 Förfallna uppföljningar & tidsfrister",
     "handover": "👤 Överlämna ansvar",
     "zip_import": "📥 Importera säkerhetskopia — Ange målsökvägar",
-    "snippet_mgmt": "📝 Hantera textmallar",
-    "snippet_picker": "🧩 Välj & infoga textmall",
+    "snippet_mgmt": "📝 Hantera textbyggblock",
+    "snippet_picker": "🧩 Välj & infoga textbyggblock",
     "email_draft": "✉ Skriv e-post",
     "calendar_export": "📅 Skapa kalenderpost (.ics)",
-    "help": "📖 Manual & applikationsdokumentation",
-    "cobra_import": "🐍 Cobra CRM Klinikimport (CSV / TXT / JSON)",
+    "help": "📖 Handbok & applikationsdokumentation",
+    "cobra_import": "🐍 Cobra CRM mottagningsimport (CSV / TXT / JSON)",
     "export": "Överlämnings- & exportassistent",
-    "p2p_diff": "Fleranvändar-P2P-synk & jämförelse av kollegedata",
+    "p2p_diff": "Fleranvändarsynk P2P & medarbetardatajämförelse",
     "email_calendar": "✉ E-post & 📅 kalenderutkast",
     "ai_assistant": "🤖 AI- & supportassistent",
-    "email_import": "📥 E-postinkorg & importhub"
+    "email_import": "📥 E-postinkorg & importhubb"
   },
   "dialog_headers": {
-    "email_import_hub": "📥 E-postinkorg & Auto-Matching"
+    "email_import_hub": "📥 E-postimporthubb & automatisk matchning"
   },
   "ui_buttons": {
     "save": "Spara",
@@ -94,49 +94,51 @@
     "import": "Importera",
     "export": "Exportera",
     "new_case": "+ Nytt ärende",
-    "new_snippet": "+ Ny textmall",
-    "new_customer": "+ Ny klinik",
+    "new_snippet": "+ Nytt textbyggblock",
+    "new_customer": "+ Ny mottagning",
     "new_colleague": "+ Kollega",
     "print_pdf": "🖨 Skriv ut PDF-rapport",
     "open_html": "🌐 HTML-rapport",
     "save_file": "💾 Spara...",
+    "save_template": "💾 Spara mall",
     "regenerate_summary": "🔄 Generera om sammanfattning",
     "copy_clipboard": "📋 Kopiera till urklipp",
     "insert_timeline": "📌 Infoga i tidslinje",
     "rerun_solutions": "🔄 Sök lösningar igen",
     "generate_draft": "🔄 Generera svarsutkast",
-    "open_email_draft": "✉ Öppna i e-postutkast"
+    "open_email_draft": "✉ Öppna i e-postutkast",
+    "clear": "❌ Rensa"
   },
   "status_messages": {
-    "snippet_saved": "✓ Textmall sparad.",
-    "snippet_deleted": "✓ Textmall borttagen.",
-    "customer_saved": "✓ Klinikinlägg sparat.",
-    "colleague_saved": "✓ Kollegedata sparad.",
-    "tags_updated": "✓ Taggar uppdaterade.",
+    "snippet_saved": "✓ Textbyggblock sparat.",
+    "snippet_deleted": "✓ Textbyggblock borttaget.",
+    "customer_saved": "✓ Mottagningspost sparades framgångsrikt.",
+    "colleague_saved": "✓ Medarbetardata sparades framgångsrikt.",
+    "tags_updated": "✓ Taggar uppdaterades framgångsrikt.",
     "profile_saved": "✓ Profil & inställningar sparade.",
-    "ai_summary_generated": "✓ Sammanfattning genererad.",
-    "ai_summary_copied": "✓ Sammanfattning kopierad till urklipp.",
-    "ai_summary_timeline_saved": "✓ AI-sammanfattning sparad i tidslinjen.",
-    "ai_draft_generated": "✓ E-postsvarsutkast genererat.",
-    "ai_ollama_online": "🟢 Ollama Lokal LLM Aktiv ({model})",
-    "ai_ollama_offline": "⚡ Regelbaserad NLP-läge (Ollama offline)",
+    "ai_summary_generated": "✓ Sammanfattning skapades framgångsrikt.",
+    "ai_summary_copied": "✓ Sammanfattning kopierades till urklipp.",
+    "ai_summary_timeline_saved": "✓ AI-sammanfattning sparades i tidslinjen.",
+    "ai_draft_generated": "✓ E-postutkast genererades framgångsrikt.",
+    "ai_ollama_online": "🟢 Ollama lokal LLM aktiv ({model})",
+    "ai_ollama_offline": "⚡ Regelbaserat NLP-läge (Ollama offline)",
     "ai_processing": "🤖 AI behandlar begäran..."
   },
   "departments": {
-    "Support": "Support",
+    "Support": "Support / Hotline",
     "Entwicklung": "Utveckling",
     "Technik": "Teknik / IT",
     "Vertrieb": "Försäljning",
     "Buchhaltung": "Bokföring",
-    "Geschäftsführung": "Företagsledning",
+    "Geschäftsführung": "Ledning",
     "Sonstige": "Övrigt"
   },
   "handover_channels": {
     "Persönliche Absprache": "Personlig överenskommelse",
     "E-Mail": "E-post",
     "Telefonanruf": "Telefonsamtal",
-    "Slacknachricht": "Slackmeddelande",
-    "GitLab Issue": "GitLab Issue",
+    "Slacknachricht": "Slack-meddelande",
+    "GitLab Issue": "GitLab-ärende",
     "Sonstiges": "Övrigt"
   },
   "internal_task_categories": {
@@ -151,72 +153,136 @@
   "board": {
     "handover": "👤 Överlämna",
     "remind": "🔔 Påminn",
-    "reopen": "✓ Öppna igen",
-    "col_support": "📥 Support / Pågår",
+    "reopen": "✓ Öppna",
+    "col_support": "📥 Support / Pågående",
     "col_dev": "💻 Utvecklare / Dev-team",
     "col_followup": "🔔 Uppföljning / Väntar",
     "col_completed": "✓ Avslutade ärenden"
   },
   "table_columns": {
     "case_id": "ID ⇅",
-    "practice": "Klinik / Kund ⇅",
+    "practice": "Mottagning / Kund ⇅",
     "title": "Titel / Ämne ⇅",
     "actor": "Ansvar ⇅",
     "followup": "Uppföljning ⇅",
     "score": "Poäng ⇅"
   },
   "analytics": {
-    "header": "Analyser & Support Cockpit Nyckeltal",
+    "header": "Analys & Support-Cockpit Nyckeltal",
     "copy_report_btn": "📋 Kopiera statistikrapport",
-    "no_data": "Ingen utvärderingsdata tillgänglig.",
-    "total_cases": "📋 Ärenden totalt",
+    "no_data": "Inga analysdata tillgängliga.",
+    "total_cases": "📋 Totalt antal ärenden",
     "open_cases": "⏳ Öppna ärenden",
     "completed_cases": "✓ Avslutade",
     "overdue_cases": "⚠ Förfallna",
     "avg_res_time": "⏱ Genomsnittlig hanteringstid",
     "vip_rate": "⭐ VIP-andel",
-    "urgency_title": "🚨 Brådskandegrad (Poängsättning)",
+    "urgency_title": "🚨 Brådskandefördelning (Poäng)",
     "schema_title": "📄 Fördelning per formulär / schema",
-    "top_practices_title": "🏆 Top 5 kliniker efter ärendevolym",
-    "assignee_title": "👤 Handläggarbelastning",
+    "top_practices_title": "🏆 Topp 5 mottagningar efter ärendevolym",
+    "assignee_title": "👤 Arbetsbelastning per handläggare",
     "department_title": "👥 Öppna ärenden per avdelning / ansvar"
   },
   "profile": {
-    "title": "⚙ Profil & Inställningar",
+    "title": "⚙ Profil & inställningar",
     "header": "⚙ Profil & applikationsinställningar",
     "tab_user": "👤 Användarprofil",
     "tab_ui": "🎨 Utseende",
     "tab_paths": "📁 Lagring & sökvägar",
     "tab_profile": "📊 Basprofil",
     "tab_ai": "🤖 AI & NLP",
-    "tab_shortcuts": "⌨ Genvägar & Poäng",
+    "tab_shortcuts": "⌨ Genvägar & poängsättning",
     "tab_backup": "💾 Säkerhetskopiering",
     "user_details": "Personuppgifter & kontaktinformation",
-    "user_name": "Användarnamn / Initialer:",
-    "department": "Avdelning / Område:",
-    "extension": "Anknytning / Telefon:",
+    "user_name": "Användarnamn / initialer:",
+    "department": "Avdelning / område:",
+    "extension": "Anknytning / telefon:",
     "email": "E-postadress:",
     "mobile": "Mobilnummer:",
     "email_sig": "Standard e-postsignatur:",
-    "appearance_layout": "Utseende & Layout",
+    "appearance_layout": "Utseende & layout",
     "language": "Språk / Language:",
     "theme": "Färgtema:",
     "default_layout": "Standardlayout vid start:",
     "demo_data_toggle": "🧪 Visa demodata i alla vyerna",
     "os_popup_toggle": "🔔 Aktivera Windows-systemmeddelanden (OS Native Toast)",
-    "popup_position": "Position för ytterligare fönster & meddelanden:",
-    "popup_target_app": "Appskärm (aktuell/senaste)",
+    "popup_position": "Placering av extra fönster & meddelanden:",
+    "popup_target_app": "App-skärm (aktuell/senaste)",
     "popup_target_primary": "Huvudskärm",
-    "saved_widths": "Sparade kolumnbredder (Profilnivå)",
-    "reset_widths_btn": "Återställ alla kolumnbredder till standard",
+    "saved_widths": "Sparade kolumnbredder (profilnivå)",
+    "reset_widths_btn": "🔄 Återställ alla kolumnbredder till standard",
     "save_btn": "💾 Spara inställningar",
-    "saved_msg": "✓ Inställningar & profil sparade!"
+    "saved_msg": "✓ Inställningar & profil sparades!",
+    "user_tab_header": "Hantera & byt användarprofil",
+    "active_profile": "Aktiv profil:",
+    "btn_new_profile": "➕ Skapa ny profil",
+    "user_info_header": "Användarinformation (aktiv profil)",
+    "display_name": "Namn / visningsnamn *:",
+    "name_placeholder": "Ditt namn",
+    "dept": "Avdelning *:",
+    "ext": "Anknytning:",
+    "signature": "E-postsignatur (för utkast):",
+    "paths_title": "Lagringsplatser & filsökvägar (EXE / extern data)",
+    "workspace_label": "Arbetsyta / datasökväg:",
+    "browse_folder": "📁 Välj mapp",
+    "custom_overrides": "Anpassade filsökvägar (valfritt):",
+    "cases_file": "Ärenden (cases.json):",
+    "cust_file": "Kunder (customers.json):",
+    "wiki_file": "Wiki DB (sqlite):",
+    "default_in_data": "Standard i datamappen",
+    "file_browse": "Fil...",
+    "reset_paths_btn": "🔄 Återställ enskilda sökvägar till standard",
+    "wiki_title": "BookStack serverkonfiguration",
+    "wiki_url": "BookStack API-URL:",
+    "wiki_token_id": "API Token ID:",
+    "wiki_token_secret": "API Token Secret:",
+    "wiki_sync_mode": "Synkroniseringsläge:",
+    "wiki_sync_startup": "Synkronisera wiki-innehåll vid programstart",
+    "status_saved": "✔ Inställningar & sökvägar sparade!",
+    "backup_title": "📦 Fullständig datasäkerhetskopiering & ZIP-arkivering",
+    "backup_desc": "Exportera hela din databas (alla ärenden, kunder, formulär, exportmallar, personal och bilagemapp) till en komprimerad ZIP-fil för säkerhetskopiering eller datorbyte.",
+    "backup_exp_title": "1. Exportera hela datamängden som ZIP",
+    "backup_exp_desc": "Skapar ett säkerhetskopieringsarkiv inkl. alla filer i data/ och alla dokument i attachments/.",
+    "backup_exp_btn": "📦 Exportera fullständig säkerhetskopia som ZIP...",
+    "backup_imp_title": "2. Importera säkerhetskopia från ZIP-fil",
+    "backup_imp_desc": "Återställer poster och bilagor från ett ZIP-arkiv till dina valda målsökvägar.",
+    "backup_imp_btn": "📥 Importera säkerhetskopia från ZIP..."
+  },
+  "help_dialog": {
+    "header": "📖 Handbok & hjälp",
+    "search_placeholder": "🔍 Sök ämnen & nyckelord...",
+    "nav_title": "Ämnesöversikt"
+  },
+  "template_editor": {
+    "preview_btn": "👁 Rendera förhandsgranskning"
+  },
+  "snippet_picker": {
+    "insert_btn": "🧩 Infoga valt textbyggblock"
+  },
+  "convert_schema": {
+    "convert_btn": "Konvertera formulär"
+  },
+  "cobra_import": {
+    "import_btn": "🐍 Importera mottagningar"
+  },
+  "email_draft": {
+    "open_mailto": "✉ Öppna i standard-e-postapp",
+    "transfer_outlook": "📬 Överför till Outlook"
+  },
+  "email_calendar": {
+    "open_mailto": "✉ Öppna i e-postklient",
+    "open_ics": "📅 Öppna .ics-kalenderfil",
+    "save_ics": "💾 Spara .ics-fil..."
+  },
+  "calendar_export": {
+    "open_ics": "📅 Öppna direkt i kalendern",
+    "save_ics": "💾 Spara som .ics-fil..."
   },
   "layouts": {
     "cockpit": "Cockpit (Huvudvy)",
     "board": "Kanban-tavla (Ansvar)",
-    "table": "Tabell & detaljer (Sorteringsmatris)",
-    "analytics": "Analyser & Nyckeltal"
+    "table": "Tabell & detaljer (Sortering)",
+    "analytics": "Analys & nyckeltal"
   },
   "actors": {
     "support_team": "Support / Hotline",
@@ -227,8 +293,8 @@
   "channels": {
     "email": "E-post",
     "phone": "Telefonsamtal",
-    "ticket": "Ticket / Portal",
-    "personal": "Personligen / Annat",
+    "ticket": "Ärende / Portal",
+    "personal": "Personligt / Övrigt",
     "internal_note": "Intern anteckning"
   },
   "common": {
@@ -239,5 +305,139 @@
     "search": "Sök...",
     "error": "Fel",
     "info": "Information"
+  },
+  "help_content": {
+    "basics": {
+      "title": "🚀 Grundläggande & layouter",
+      "category": "Grundläggande",
+      "content": "### 🚀 Användargränssnittets grundläggande funktioner\n\n**Support Cockpit** hjälper dig att effektivt spåra, kategorisera och prioritera supportärenden och mottagningsförfrågningar."
+    },
+    "ui_customization": {
+      "title": "📅 Datumformat, kalender & kolumnbredder",
+      "category": "Användargränssnitt",
+      "content": "### 📅 Datumformatering, kalenderväljare & kolumnbredder\n\nAlla datum visas i standardiserat format DD.MM.YYYY."
+    },
+    "praxis": {
+      "title": "🏥 Mottagnings- & kundhantering",
+      "category": "Kunder",
+      "content": "### 🏥 Hantering av mottagningar och kunddata\n\nHantera alla kundposter centralt under Stamdata -> Mottagningar."
+    },
+    "scoring": {
+      "title": "📊 Poängsättning & prioritering",
+      "category": "Arbetsflöde",
+      "content": "### 📊 Automatisk poängsättning av brådskande ärenden\n\nSystemet beräknar automatiskt poäng för öppna ärenden."
+    },
+    "schemas": {
+      "title": "📄 Formulärbyggare & scheman",
+      "category": "Formulär",
+      "content": "### 📄 Anpassade dynamiska formulär\n\nSkapa skräddarsydda formulär för olika supportscenarier."
+    },
+    "export": {
+      "title": "📤 Exportmotor & mallar",
+      "category": "Export",
+      "content": "### 📤 Export- och överlämningsassistent\n\nGenerera rapportsammanfattningar och e-postmeddelanden med ett klick."
+    },
+    "wiki": {
+      "title": "📚 BookStack Wiki-integration",
+      "category": "Wiki",
+      "content": "### 📚 BookStack Wiki-integration\n\nAnslut direkt till din BookStack-kunskapsbas."
+    },
+    "p2p": {
+      "title": "🔄 Peer-to-Peer-synk (kollegor)",
+      "category": "Synk",
+      "content": "### 🔄 P2P-datasynkronisering\n\nSynkronisera ärenden direkt mellan kollegor på det lokala nätverket."
+    },
+    "shortcuts": {
+      "title": "⌨ Tangentbordsgenvägar & snabbknappar",
+      "category": "Genvägar",
+      "content": "### ⌨ Tangentbordsgenvägar\n\n- `Ctrl+N`: Nytt ärende\n- `Ctrl+S`: Spara ärende\n- `Ctrl+E`: Exportera ärende\n- `F1`: Hjälp"
+    },
+    "storage_paths": {
+      "title": "📁 Lagringsplatser, datamappar & EXE-drift",
+      "category": "Konfiguration",
+      "content": "### 📁 Lagringsplatser & mapplänkar\n\nSeparera arbetsdata från applikationsfiler för säker portabilitet."
+    },
+    "template_editor": {
+      "title": "📄 Mallredigerare för export",
+      "category": "Export",
+      "content": "### 📄 Redigera exportmallar i realtid\n\nRedigera HTML/Jinja2-mallar med direkt förhandsgranskning."
+    },
+    "handover_followup": {
+      "title": "🔔 Ärendeöverlämningar & uppföljningar",
+      "category": "Arbetsflöde",
+      "content": "### 🔔 Överlämningar & uppföljningspåminnelser\n\nÖverlämna ärenden till kollegor eller ställ in påminnelser."
+    },
+    "email_calendar_outlook": {
+      "title": "✉ E-post, kalender (.ics) & Outlook",
+      "category": "Kommunikation",
+      "content": "### ✉ E-postutkast, kalender & Outlook-integration\n\nSkriv e-postmeddelanden, exportera kalenderhändelser eller överför till Outlook."
+    },
+    "case_print_reporting": {
+      "title": "🖨 Utskriftsvy för ärende, PDF & bilder",
+      "category": "Export",
+      "content": "### 🖨 Utskrift & PDF-export\n\nGenerera utskriftsrapporter och PDF-dokument med inbäddade bildbilagor."
+    },
+    "ai_ollama_management": {
+      "title": "🤖 AI-assistent, Ollama-server & modellval",
+      "category": "AI & Ollama",
+      "content": "### 🤖 Lokal AI-supportassistent\n\nDataskyddsanpassad AI-support med Ollama eller Google Gemini Cloud API."
+    },
+    "stepper_time_picker": {
+      "title": "⏱ Tidsval (07:00-20:00) & stegreglage",
+      "category": "Användargränssnitt",
+      "content": "### ⏱ Interaktiv tidsväljare\n\nAnpassade tidsval för mottagningstider med snabba stegknappar."
+    },
+    "internal_cases": {
+      "title": "🏢 Interna ärenden & uppgifter (utan kundkoppling)",
+      "category": "Arbetsflöde",
+      "content": "### 🏢 Interna ärenden & uppgifter\n\nHantera interna IT-uppgifter och underhåll utan kundkoppling."
+    },
+    "cobra_crm_import": {
+      "title": "🐍 Cobra CRM mottagnings- & kundimport",
+      "category": "Kunder",
+      "content": "### 🐍 Cobra CRM importassistent\n\nImportera kunddatabaser direkt från Cobra CRM-exporter."
+    },
+    "snippets_manager": {
+      "title": "📝 Textbyggblock & snabbsvarsmallar",
+      "category": "Kommunikation",
+      "content": "### 📝 Hantera textbyggblock\n\nSpara tid vid återkommande svar med mallbyggblock."
+    },
+    "repeatable_sub_forms": {
+      "title": "📂 Dynamiska flerkortsformulär",
+      "category": "Formulär",
+      "content": "### 📂 Dynamiska formulär med flera underkort\n\nRegistrera flera oberoende förfrågningar i ett enda ärende."
+    },
+    "analytics_kpi_dashboard": {
+      "title": "Analys & nyckeltalspanel",
+      "category": "Analys",
+      "content": "### Analys- och nyckeltalspanel\n\nFullständig statistisk översikt över arbetsbelastning och hanteringstider."
+    },
+    "advanced_search_filters": {
+      "title": "🔍 Avancerad sökning & söktokens",
+      "category": "Grundläggande",
+      "content": "### 🔍 Söktokens och snabbfilter\n\nFiltrera ärenden med söktokens som `is:internal`, `vip:true`, `reminder:due`."
+    },
+    "attachments_and_screenshots": {
+      "title": "📂 Filbilagor & skärmdumpar (Ctrl+V)",
+      "category": "Dokument",
+      "content": "### 📂 Bilagshantering & skärmdumpar från urklipp\n\nKlistra in skärmdumpar direkt med `Ctrl+V`."
+    },
+    "zip_backup_restore": {
+      "title": "📦 Fullständig ZIP-säkerhetskopia & återställning",
+      "category": "Konfiguration",
+      "content": "### 📦 Säkerhetskopiering av arbetsyta\n\nExportera alla ärenden och bilagor till ett ZIP-arkiv."
+    },
+    "email_webhook_integration": {
+      "title": "🔌 E-post IMAP-import & REST-webhooks",
+      "category": "Integrationer",
+      "content": "### 🔌 E-postimport & webhooks\n\nHämta e-post via IMAP och utlös REST-webhooks för Jira/GitLab."
+    }
+  },
+  "demo_cases": {
+    "c1_title": "Tilläggsbetalningsfil genererad med fel",
+    "c2_title": "Krasch vid utskrift av BMA-recept",
+    "c3_title": "Korrigera KV-faktureringstext",
+    "c4_title": "Granskning av tilläggsanspråk 2026-Q1",
+    "c5_title": "GUI-teckenstorlek i laboratoriefönstret för liten"
   }
 }

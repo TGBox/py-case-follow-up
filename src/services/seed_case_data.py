@@ -12,6 +12,8 @@ from enums import BoardColumn, Actor, Channel
 
 
 def build_seed_cases() -> list[Case]:
+    from services.i18n_service import tr
+
     cases = [
         Case(
             case_id="T-2026-0001",
@@ -28,7 +30,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_zuzahlungsnachforderung",
-                title="Zuzahlungsnachforderungsdatei fehlerhaft erzeugt",
+                title=tr("demo_cases.c1_title", "Zuzahlungsnachforderungsdatei fehlerhaft erzeugt"),
                 deadline_callback="2026-08-23T16:00:00",
             ),
             workflow_status=WorkflowStatus(
@@ -83,7 +85,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_bug_report",
-                title="Absturz beim Drucken von BMA-Rezepten",
+                title=tr("demo_cases.c2_title", "Absturz beim Drucken von BMA-Rezepten"),
                 deadline_callback="2026-08-21T10:00:00",  # Overdue
             ),
             workflow_status=WorkflowStatus(
@@ -120,7 +122,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_abrechnungskorrektur",
-                title="KV-Abrechnungstext korrigieren",
+                title=tr("demo_cases.c3_title", "KV-Abrechnungstext korrigieren"),
                 deadline_callback="",
             ),
             workflow_status=WorkflowStatus(
@@ -151,7 +153,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_zuzahlungsnachforderung",
-                title="Prüfung Nachforderung 2026-Q1",
+                title=tr("demo_cases.c4_title", "Prüfung Nachforderung 2026-Q1"),
                 deadline_callback="",
             ),
             workflow_status=WorkflowStatus(
@@ -182,7 +184,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_bug_report",
-                title="GUI-Schriftgröße im Laborfenster zu klein",
+                title=tr("demo_cases.c5_title", "GUI-Schriftgröße im Laborfenster zu klein"),
                 deadline_callback="",
             ),
             workflow_status=WorkflowStatus(

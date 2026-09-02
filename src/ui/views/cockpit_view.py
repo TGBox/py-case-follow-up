@@ -61,11 +61,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.app_config = app_config
         self.profile = profile
         self.storage_service = storage_service
-        self.on_manage_module_tags = on_manage_module_tags
+        self.on_manage_module_tags = on_manage_module_tags if on_manage_module_tags is not None else (lambda: None)
         self.on_open_email_calendar = on_open_email_calendar
         self.on_open_email = on_open_email
         self.on_open_calendar = on_open_calendar
-        self.on_open_snippet_picker = on_open_snippet_picker
+        self.on_open_snippet_picker = on_open_snippet_picker if on_open_snippet_picker is not None else (lambda x=None: None)
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
@@ -295,16 +295,17 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
-        if choice == "📧 Praxis-E-Mail kopieren":
+        if choice.startswith("📧"):
             self.on_copy_practice_email()
-        elif choice == "📤 Fall Exportieren":
+        elif choice.startswith("📤"):
             self.on_click_export()
-        elif choice == "🖨 Fall Drucken":
+        elif choice.startswith("🖨"):
             self.on_click_print()
-        elif choice == "🔄 Formular umwandeln":
+        elif choice.startswith("🔄"):
             self.open_convert_schema_dialog()
         if hasattr(self, "more_actions_combo"):
-            self.more_actions_combo.set("⚙ Weitere Aktionen...")
+            from services.i18n_service import tr
+            self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
 
     def on_copy_practice_email(self):
         if not self.current_case or not self.current_case.customer:
@@ -321,16 +322,18 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.clipboard_clear()
             self.clipboard_append(email_clean)
             from ui.widgets.toast_notification import ToastNotification
+            from services.i18n_service import tr
             ToastNotification(
                 self.winfo_toplevel(),
-                title="📋 E-Mail kopiert",
+                title=tr("cockpit.email_copied_title", "📋 E-Mail kopiert"),
                 message=f"Praxis-E-Mail '{email_clean}' wurde in die Zwischenablage kopiert.",
             )
         else:
             from ui.widgets.toast_notification import ToastNotification
+            from services.i18n_service import tr
             ToastNotification(
                 self.winfo_toplevel(),
-                title="⚠ Keine E-Mail-Adresse",
+                title=tr("cockpit.no_email_title", "⚠ Keine E-Mail-Adresse"),
                 message="Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
             )
 
@@ -526,7 +529,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             w = max(200, w - 10)
 
         self._last_info_w = w
-        self.wv_hdr_label.configure(text="🔔 Nachfragen am:", wraplength=w)
+        from services.i18n_service import tr
+        self.wv_hdr_label.configure(text=tr("cockpit.followup_at", "🔔 Nachfragen am:"), wraplength=w)
         self.wv_date_label.configure(text=f"  {fw_date_str}", wraplength=w)
         self.wv_time_label.configure(text=f"  {fw_time_str}", wraplength=w)
 

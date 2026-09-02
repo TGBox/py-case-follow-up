@@ -550,8 +550,10 @@ Binden Sie das Support-Cockpit an externe Systeme an.
 class HelpDialog(ctk.CTkToplevel):
     def __init__(self, parent):
         super().__init__(parent)
+        from services.i18n_service import tr
+
         w, h = DIALOG_DIMENSIONS["help"]
-        self.title(DIALOG_TITLES["help"])
+        self.title(tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"))
         self.geometry(f"{w}x{h}")
         self.minsize(960, 600)
         from utils.ui_utils import center_window
@@ -561,20 +563,36 @@ class HelpDialog(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
 
-        self.filtered_articles = list(HELP_ARTICLES)
-        self.active_article = HELP_ARTICLES[0]
+        self.articles = self.get_localized_articles()
+        self.filtered_articles = list(self.articles)
+        self.active_article = self.articles[0]
 
         self.create_widgets()
         self.select_article(self.active_article["id"])
 
+    def get_localized_articles(self) -> list[dict]:
+        from services.i18n_service import tr
+        result = []
+        for art in HELP_ARTICLES:
+            art_id = art["id"]
+            result.append({
+                "id": art_id,
+                "title": tr(f"help_content.{art_id}.title", art["title"]),
+                "category": tr(f"help_content.{art_id}.category", art["category"]),
+                "content": tr(f"help_content.{art_id}.content", art["content"]),
+            })
+        return result
+
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Main Layout: Top search bar, Left navigation list, Right detail view
         top_bar = ctk.CTkFrame(self, height=50, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="📖 Handbuch & Hilfe", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text=tr("help_dialog.header", "📖 Handbuch & Hilfe"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
-        self.search_entry = ctk.CTkEntry(top_bar, placeholder_text="🔍 Themen & Stichworte suchen...", width=320)
+        self.search_entry = ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=320)
         self.search_entry.pack(side="right", padx=10)
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
 
@@ -586,7 +604,7 @@ class HelpDialog(ctk.CTkToplevel):
         left_frame.pack(side="left", fill="y", padx=(0, 5), pady=0)
         left_frame.pack_propagate(False)
 
-        ctk.CTkLabel(left_frame, text="Themenübersicht", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
+        ctk.CTkLabel(left_frame, text=tr("help_dialog.nav_title", "Themenübersicht"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
 
         self.nav_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
         self.nav_scroll.pack(fill="both", expand=True, padx=5, pady=5)
@@ -604,11 +622,13 @@ class HelpDialog(ctk.CTkToplevel):
         self.render_nav_list()
 
     def render_nav_list(self):
+        from services.i18n_service import tr
+
         for w in self.nav_scroll.winfo_children():
             w.destroy()
 
         if not self.filtered_articles:
-            ctk.CTkLabel(self.nav_scroll, text="Keine Themen gefunden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.nav_scroll, text=tr("help_dialog.no_topics", "Keine Themen gefunden."), text_color="gray").pack(pady=20)
             return
 
         for art in self.filtered_articles:
@@ -626,7 +646,7 @@ class HelpDialog(ctk.CTkToplevel):
             btn.pack(fill="x", pady=3, padx=2)
 
     def select_article(self, article_id: str):
-        article = next((a for a in HELP_ARTICLES if a["id"] == article_id), None)
+        article = next((a for a in self.articles if a["id"] == article_id), None)
         if not article:
             return
 
@@ -745,10 +765,10 @@ class HelpDialog(ctk.CTkToplevel):
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()
         if not query:
-            self.filtered_articles = list(HELP_ARTICLES)
+            self.filtered_articles = list(self.articles)
         else:
             self.filtered_articles = [
-                a for a in HELP_ARTICLES
+                a for a in self.articles
                 if query in a["title"].lower() or query in a["content"].lower() or query in a["category"].lower()
             ]
 

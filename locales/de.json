@@ -32,9 +32,9 @@
     "filter_deep": "🔍 Tiefensuche",
     "select_case_prompt": "Bitte einen Fall auswählen",
     "more_actions": "⚙ Weitere Aktionen...",
-    "copy_email": "📧 Praxis-E-Mail kopieren",
-    "export_case": "📤 Fall Exportieren",
-    "print_case": "🖨 Fall Drucken",
+    "copy_email": "📧 Praxis E-Mail kopieren",
+    "export_case": "📤 Fall exportieren",
+    "print_case": "🖨 Fall-Akte drucken",
     "convert_form": "🔄 Formular umwandeln",
     "save": "💾 Speichern",
     "email_ai": "✉ E-Mail & 🤖 KI",
@@ -100,32 +100,34 @@
     "print_pdf": "🖨 PDF-Bericht drucken",
     "open_html": "🌐 HTML-Bericht",
     "save_file": "💾 Speichern...",
+    "save_template": "💾 Vorlage Speichern",
     "regenerate_summary": "🔄 Zusammenfassung neu generieren",
     "copy_clipboard": "📋 In Zwischenablage kopieren",
     "insert_timeline": "📌 In Fall-Zeitleiste einfügen",
     "rerun_solutions": "🔄 Lösungssuche erneut ausführen",
-    "generate_draft": "🔄 Antwort-Entwurf generieren",
-    "open_email_draft": "✉ In E-Mail-Entwurf öffnen"
+    "generate_draft": "🔄 Entwurf generieren",
+    "open_email_draft": "✉ In E-Mail-Entwurf öffnen",
+    "clear": "❌ Entfernen"
   },
   "status_messages": {
     "snippet_saved": "✓ Textbaustein gespeichert.",
     "snippet_deleted": "✓ Textbaustein gelöscht.",
-    "customer_saved": "✓ Praxis-Eintrag erfolgreich gespeichert.",
-    "colleague_saved": "✓ Kollegendaten erfolgreich gespeichert.",
+    "customer_saved": "✓ Praxiseintrag erfolgreich gespeichert.",
+    "colleague_saved": "✓ Mitarbeiterdaten erfolgreich gespeichert.",
     "tags_updated": "✓ Tags erfolgreich aktualisiert.",
     "profile_saved": "✓ Profil & Einstellungen gespeichert.",
-    "ai_summary_generated": "✓ Zusammenfassung erfolgreich generiert.",
+    "ai_summary_generated": "✓ Zusammenfassung erfolgreich erstellt.",
     "ai_summary_copied": "✓ Zusammenfassung in Zwischenablage kopiert.",
-    "ai_summary_timeline_saved": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.",
-    "ai_draft_generated": "✓ E-Mail-Antwort-Entwurf generiert.",
-    "ai_ollama_online": "🟢 Ollama Local LLM aktiv ({model})",
-    "ai_ollama_offline": "⚡ Regelbasierter NLP-Modus (Ollama offline)",
+    "ai_summary_timeline_saved": "✓ KI-Zusammenfassung in Zeitleiste gespeichert.",
+    "ai_draft_generated": "✓ E-Mail-Entwurf erfolgreich generiert.",
+    "ai_ollama_online": "🟢 Ollama Lokales LLM Aktiv ({model})",
+    "ai_ollama_offline": "⚡ Regel-basierter NLP-Modus (Ollama offline)",
     "ai_processing": "🤖 KI verarbeitet Anfrage..."
   },
   "departments": {
-    "Support": "Support",
+    "Support": "Support / Hotline",
     "Entwicklung": "Entwicklung",
-    "Technik": "Technik",
+    "Technik": "Technik / IT",
     "Vertrieb": "Vertrieb",
     "Buchhaltung": "Buchhaltung",
     "Geschäftsführung": "Geschäftsführung",
@@ -135,7 +137,7 @@
     "Persönliche Absprache": "Persönliche Absprache",
     "E-Mail": "E-Mail",
     "Telefonanruf": "Telefonanruf",
-    "Slacknachricht": "Slacknachricht",
+    "Slacknachricht": "Slack-Nachricht",
     "GitLab Issue": "GitLab Issue",
     "Sonstiges": "Sonstiges"
   },
@@ -166,19 +168,19 @@
     "score": "Score ⇅"
   },
   "analytics": {
-    "header": "Auswertungen & Support Cockpit KPIs",
+    "header": "Auswertungen & Support-Cockpit Kennzahlen",
     "copy_report_btn": "📋 Statistik-Bericht kopieren",
     "no_data": "Keine Auswertungsdaten verfügbar.",
     "total_cases": "📋 Fälle Gesamt",
     "open_cases": "⏳ Offene Fälle",
     "completed_cases": "✓ Erledigt",
     "overdue_cases": "⚠ Überfällig",
-    "avg_res_time": "⏱ Ø Bearbeitung",
+    "avg_res_time": "⏱ Ø Bearbeitungszeit",
     "vip_rate": "⭐ VIP-Quote",
-    "urgency_title": "🚨 Dringlichkeits-Verteilung (Scoring)",
+    "urgency_title": "🚨 Dringlichkeits-Aufschlüsselung (Scoring)",
     "schema_title": "📄 Verteilung nach Formular / Schema",
     "top_practices_title": "🏆 Top 5 Praxen nach Fallaufkommen",
-    "assignee_title": "👤 Bearbeiter-Auslastung",
+    "assignee_title": "👤 Auslastung nach Bearbeitern",
     "department_title": "👥 Offene Fälle nach Abteilung / Zuständigkeit"
   },
   "profile": {
@@ -187,7 +189,7 @@
     "tab_user": "👤 Benutzerprofil",
     "tab_ui": "🎨 Erscheinungsbild",
     "tab_paths": "📁 Speicherort & Pfade",
-    "tab_profile": "📊 Basis-Steckbrief",
+    "tab_profile": "📊 Basis-Profil",
     "tab_ai": "🤖 KI & NLP",
     "tab_shortcuts": "⌨ Tastenkürzel & Scoring",
     "tab_backup": "💾 Datensicherung",
@@ -196,26 +198,90 @@
     "department": "Abteilung / Bereich:",
     "extension": "Durchwahl / Telefon:",
     "email": "E-Mail-Adresse:",
-    "mobile": "Mobilnummer / Handy:",
-    "email_sig": "Standard E-Mail Signatur:",
+    "mobile": "Mobilnummer:",
+    "email_sig": "Standard E-Mail-Signatur:",
     "appearance_layout": "Erscheinungsbild & Layout",
     "language": "Sprache / Language:",
     "theme": "Farb-Thema (Theme):",
-    "default_layout": "Standard-Layout beim Start:",
-    "demo_data_toggle": "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden",
-    "os_popup_toggle": "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren",
+    "default_layout": "Standard Layout beim Start:",
+    "demo_data_toggle": "🧪 Beispieldaten in allen Ansichten einblenden",
+    "os_popup_toggle": "🔔 Windows Systembenachrichtigungen (OS Native Toast) aktivieren",
     "popup_position": "Position zusätzlicher Fenster & Benachrichtigungen:",
     "popup_target_app": "App-Bildschirm (aktuell/zuletzt)",
     "popup_target_primary": "Hauptbildschirm",
-    "saved_widths": "Gespeicherte Spaltenbreiten (Profile-Level)",
+    "saved_widths": "Gespeicherte Spaltenbreiten (Profile Level)",
     "reset_widths_btn": "🔄 Alle Spaltenbreiten auf Standard zurücksetzen",
     "save_btn": "💾 Einstellungen Speichern",
-    "saved_msg": "✓ Einstellungen & Profil gespeichert!"
+    "saved_msg": "✓ Einstellungen & Pfade gespeichert!",
+    "user_tab_header": "Mitarbeiter-Profil verwalten & wechseln",
+    "active_profile": "Aktives Profil:",
+    "btn_new_profile": "➕ Neues Profil anlegen",
+    "user_info_header": "Benutzerinformationen (Aktives Profil)",
+    "display_name": "Name / Anzeigename *:",
+    "name_placeholder": "Ihr Name",
+    "dept": "Abteilung / Department *:",
+    "ext": "Durchwahl / Extension:",
+    "signature": "E-Mail Signatur (für E-Mail-Entwürfe):",
+    "paths_title": "Speicherort & Dateipfade (EXE / Externe Daten)",
+    "workspace_label": "Arbeitsbereich / Datenordner-Pfad:",
+    "browse_folder": "📁 Ordner wählen",
+    "custom_overrides": "Benutzerdefinierte Einzeldateipfade (Optional):",
+    "cases_file": "Fälle (cases.json):",
+    "cust_file": "Kunden (customers.json):",
+    "wiki_file": "Wiki DB (sqlite):",
+    "default_in_data": "Standard im Datenordner",
+    "file_browse": "Datei...",
+    "reset_paths_btn": "🔄 Einzelpfade auf Standard zurücksetzen",
+    "wiki_title": "BookStack Server Konfiguration",
+    "wiki_url": "BookStack API URL:",
+    "wiki_token_id": "API Token ID:",
+    "wiki_token_secret": "API Token Secret:",
+    "wiki_sync_mode": "Synchronisations-Modus:",
+    "wiki_sync_startup": "Wiki-Inhalte beim Anwendungsstart synchronisieren",
+    "status_saved": "✔ Einstellungen & Pfade gespeichert!",
+    "backup_title": "📦 Komplett-Datensicherung & ZIP-Archivierung",
+    "backup_desc": "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für den Wechsel auf einen anderen Arbeitsplatz genutzt werden.",
+    "backup_exp_title": "1. Komplett-Datensatz als ZIP exportieren",
+    "backup_exp_desc": "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.",
+    "backup_exp_btn": "📦 Komplett-Backup als ZIP exportieren...",
+    "backup_imp_title": "2. Datensicherung aus ZIP-Datei importieren",
+    "backup_imp_desc": "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.",
+    "backup_imp_btn": "📥 Datensicherung aus ZIP importieren..."
+  },
+  "help_dialog": {
+    "header": "📖 Handbuch & Hilfe",
+    "search_placeholder": "🔍 Themen & Stichworte suchen...",
+    "nav_title": "Themenübersicht"
+  },
+  "template_editor": {
+    "preview_btn": "👁 Live-Vorschau rendern"
+  },
+  "snippet_picker": {
+    "insert_btn": "🧩 Ausgewählten Baustein einfügen"
+  },
+  "convert_schema": {
+    "convert_btn": "Formular umwandeln"
+  },
+  "cobra_import": {
+    "import_btn": "🐍 Praxen importieren"
+  },
+  "email_draft": {
+    "open_mailto": "✉ In Standard-Mail-App öffnen",
+    "transfer_outlook": "📬 In Outlook übertragen"
+  },
+  "email_calendar": {
+    "open_mailto": "✉ Im Mail-Client öffnen",
+    "open_ics": "📅 .ics Kalenderdatei öffnen",
+    "save_ics": "💾 .ics Datei speichern..."
+  },
+  "calendar_export": {
+    "open_ics": "📅 Direkt im Kalender öffnen",
+    "save_ics": "💾 Als .ics Datei speichern..."
   },
   "layouts": {
     "cockpit": "Cockpit (Hauptansicht)",
     "board": "Kanban-Board (Zuständigkeiten)",
-    "table": "Tabelle & Details (Sortier-Matrix)",
+    "table": "Tabelle & Details (Sortiermatrix)",
     "analytics": "Auswertungen & Kennzahlen"
   },
   "actors": {
@@ -229,7 +295,7 @@
     "phone": "Telefonat",
     "ticket": "Ticket / Portal",
     "personal": "Persönlich / Sonstiges",
-    "internal_note": "Interne Notiz"
+    "internal_note": "Interner Vermerk"
   },
   "common": {
     "ok": "OK",
@@ -239,5 +305,139 @@
     "search": "Suchen...",
     "error": "Fehler",
     "info": "Information"
+  },
+  "help_content": {
+    "basics": {
+      "title": "🚀 Grundlagen & Layouts",
+      "category": "Grundlagen",
+      "content": "\n### 🚀 Grundlagen der Benutzeroberfläche\n\nDas **Support-Cockpit** unterstützt Sie bei der effizienten Nachverfolgung, Kategorisierung und Priorisierung von Support-Fällen und Praxisanfragen.\n\n#### Die 4 Ansichten (Layout-Modi)\nIn der oberen Menüleiste können Sie jederzeit zwischen 4 Ansichten umschalten (`Strg+1` bis `Strg+4`):\n\n1. **Cockpit-Ansicht (Standard, `Strg+1`)**: \n   - Dreigeteiltes Haupt-Layout mit Fallliste, Falldetails/Formular und BookStack-Wiki.\n\n2. **Kanban-Board (`Strg+2`)**:\n   - Board-Ansicht sortiert nach Spalten & Zuständigkeiten (*Neu*, *Aktion erforderlich*, *Warten*, *In Bearbeitung*, *Erledigt*).\n\n3. **Tabelle & Details (`Strg+3`)**:\n   - Tabellarische Matrix mit Falldetails für kompakte Übersicht, Sortierung und Filterung.\n\n4. **Auswertungen & Kennzahlen (`Strg+4`)**:\n   - Vollständiges Statistik-Dashboard mit Durchlaufzeiten, überfälligen Fristen, VIP-Quoten und Berichtsexport.\n\n---\n\n#### 🔍 Such- & Filterfunktion\n- Nutzen Sie das Suchfeld oben in der Fallliste, um Fälle nach **Fall-ID**, **Praxisname**, **Betreff** oder **Tags** zu filtern.\n- Tastenkürzel zum Fokussieren der Suche: `Strg+F`\n"
+    },
+    "ui_customization": {
+      "title": "📅 Datumsformate, Kalender & Spaltenbreiten",
+      "category": "Benutzeroberfläche",
+      "content": "\n### 📅 Datumsformatierung, Kalender-Picker & Spaltenbreiten\n\n#### 1. 📅 Deutsche Datumsformatierung\n- Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.\n\n#### 2. 🗓 Interaktiver Kalender-Picker\n- Bei allen Datumseingaben (z. B. Wiedervorlage einplanen, Rückruf-Deadline festlegen) steht ein interaktiver Kalender-Dialog zur Verfügung.\n- Klicken Sie neben dem Eingabefeld auf **📅 Kalender**, um den Monatskalender zu öffnen und das gewünschte Datum bequem per Klick auszuwählen.\n- Schnellauswahl-Tasten für *Heute*, *+ 1 Tag* und *+ 1 Woche* beschleunigen die Eingabe.\n\n#### 3. 📐 Individuelle & dauerhafte Spaltenbreiten\n- Über den Button **📐 Spalten** in der oberen Menüleiste können Sie die Breiten der einzelnen Spalten im Cockpit (Fallliste, Details/Formular, Zeitleiste) sowie im Kanban-Board frei anpassen.\n- Ihre gewählten Breiten werden automatisch in der Benutzerkonfiguration (`user_config.json`) gespeichert und bleiben beim Neustart der Anwendung erhalten.\n"
+    },
+    "praxis": {
+      "title": "🏥 Praxis- & Kundenverwaltung",
+      "category": "Kunden",
+      "content": "\n### 🏥 Praxis- & Kundenverwaltung\n\nJeder Support-Fall ist einer bestimmten Praxis (Kunde) zugeordnet.\n\n#### 1. Praxis-Verwaltung öffnen\n- Klicken Sie in der oberen Menüleiste auf **🏥 Praxen**.\n- Hier sehen Sie eine vollständige Liste aller registrierten Praxen mit Kundennummer, Praxisname, Hauptansprechpartner, E-Mail und Telefon.\n\n#### 2. Neue Praxis anlegen\n- Öffnen Sie **🏥 Praxen** -> **+ Neue Praxis anlegen**.\n- Oder direkt beim Erstellen eines neuen Falls im Dialog **+ Neuer Fall**: Klicken Sie auf den Button **+ Neue Praxis** neben der Praxisauswahl. Die neue Praxis steht sofort zur Auswahl bereit!\n\n#### 3. Ansprechpartner (Kontakte) verwalten\n- In den Praxis-Details können Sie mehrere Ansprechpartner (z.B. Praxisinhaber, IT-Beauftragter, MFAs) hinterlegen.\n"
+    },
+    "scoring": {
+      "title": "📊 Fall-Scoring & Priorisierung",
+      "category": "Workflow",
+      "content": "\n### 📊 Automatisches Dringlichkeits-Scoring\n\nDas Support-Cockpit berechnet für jeden offenen Fall automatisch einen **Dringlichkeits-Score** (Punkte), damit Sie dringende Fälle sofort erkennen.\n\n#### Wie setzt sich der Score zusammen?\n- **Priorität**: Critical (60 Pkt), High (40 Pkt), Medium (20 Pkt), Low (10 Pkt).\n- **VIP-Status**: VIP-Praxen erhalten einen Bonus von +30 Punkten.\n- **Wartezeit (Liegezeit)**: Je länger ein Fall offen ist, desto höher steigt der Score (+2 Pkt / Tag).\n- **Inaktivität**: Fälle ohne Update in den letzten 48 Stunden erhalten zusätzliche Punkte.\n- **Workflow-Status**: In Bearbeitung (+10 Pkt), Warten auf Kunden (+0 Pkt), Vorort-Termin nötig (+20 Pkt).\n\n#### Automatische Stundenneuberechnung\nEin Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich.\n"
+    },
+    "schemas": {
+      "title": "📄 Formular-Baukasten (Schemas)",
+      "category": "Formulare",
+      "content": "\n### 📄 Dynamische Formular-Baukästen\n\nUnterschiedliche Support-Typen (z.B. Hardware-Tausch, Abrechnungsfrage, Schnittstellen-Problem) erfordern unterschiedliche Informationen.\n\n#### Eigene Formulare erstellen & anpassen\n1. Klicken Sie in der Menüleiste auf **🛠 Formular-Baukasten**.\n2. Erstellen Sie ein neues Schema (z.B. *\"PVS-Schnittstelle\"*) oder bearbeiten Sie ein bestehendes.\n3. Fügen Sie eigene Felder hinzu:\n   - **Text-Felder** (z.B. Fehlermeldung)\n   - **Zahlen-Felder** (z.B. Port-Nummer)\n   - **Ja/Nein Kontrollkästchen** (z.B. Dienst neu gestartet)\n   - **Drop-Down Auswahlfelder** (z.B. PVS-Hersteller)\n4. Legen Sie Pflichtfelder fest (*).\n\nBeim Ausfüllen eines Falls im Cockpit passt sich das Formular automatisch an das gewählte Schema an!\n"
+    },
+    "export": {
+      "title": "📤 Export-Engine & Vorlagen",
+      "category": "Export",
+      "content": "\n### 📤 Übergabe- & Export-Engine\n\nGenerieren Sie mit einem Klick fertige Übergabeprotokolle, E-Mails oder Dokumentationen für Kollegen oder Ticketsysteme.\n\n#### Fall exportieren\n1. Wählen Sie den gewünschten Fall aus und klicken Sie auf **📤 Export (Strg+E)**.\n2. Wählen Sie eine Vorlage (z.B. *\"Standard Übergabe\"*, *\"Kunden-Zusammenfassung\"*, *\"Entwickler-Bugreport\"*).\n3. Wählen Sie das Ausgabeformat:\n   - **Markdown** (ideal für Wikis / Jira / GitHub)\n   - **HTML / Text** (ideal für E-Mails)\n   - **PDF** (für Ausdruck / Archivierung)\n4. Nutzen Sie den Button **📋 In Zwischenablage kopieren** oder **💾 Als Datei speichern**.\n"
+    },
+    "wiki": {
+      "title": "📚 BookStack Wiki Integration",
+      "category": "Wiki",
+      "content": "\n### 📚 BookStack Wiki Integration\n\nDas Support-Cockpit ist direkt mit Ihrem BookStack Wiki verbunden, um Lösungsartikel sofort griffbereit zu haben.\n\n#### Funktionen\n- **Automatische Suche**: Tippen Sie Suchbegriffe in die Wiki-Suchleiste ein, um passende Artikel zu finden.\n- **Artikel-Vorschau**: Artikel-Inhalte werden direkt im rechten Cockpit-Panel gerendert.\n- **In BookStack öffnen**: Öffnen Sie Artikel mit einem Klick in Ihrem Standard-Browser.\n- **Fall-Verknüpfung**: Verknüpfen Sie gelöste Fälle mit dem entsprechenden Wiki-Artikel.\n- **Konfiguration**: Tragen Sie Ihre BookStack URL und API-Tokens in **Profil & Einstellungen** (`👤`) ein.\n"
+    },
+    "p2p": {
+      "title": "🔄 Peer-to-Peer Sync (Kollegen)",
+      "category": "Sync",
+      "content": "\n### 🔄 Peer-to-Peer (P2P) Synchronisation\n\nArbeiten Sie mit Kollegen ohne zentralen Server zusammen! Die P2P-Sync ermöglicht das Abgleichen von Fällen direkt zwischen lokalen Arbeitsplätzen.\n\n#### Ablauf\n1. Klicken Sie auf **🔄 P2P-Sync**.\n2. Wählen Sie den Kollegen aus, mit dem Sie synchronisieren möchten.\n3. Das System vergleicht den Versionsstand der Fälle.\n4. Im **Diff-Dialog** sehen Sie Konflikte oder neu hinzugefügte Fälle und können Änderungen sicher zusammenführen.\n"
+    },
+    "shortcuts": {
+      "title": "⌨ Tastenkürzel & Hotkeys",
+      "category": "Tastenkürzel",
+      "content": "\n### ⌨ Tastenkürzel (Shortcuts)\n\nArbeiten Sie noch schneller mit folgenden Hotkeys:\n\n| Aktion | Standard-Hotkey |\n| :--- | :--- |\n| **Neuer Fall** | `Strg + N` |\n| **Fall speichern** | `Strg + S` |\n| **Fall archivieren** | `Strg + Umschalt + A` |\n| **Fall exportieren** | `Strg + E` |\n| **Einstellungen öffnen** | `Strg + P` |\n| **Snippet-Picker öffnen** | `Strg + M` |\n| **Wiki-Suche fokussieren** | `Strg + W` |\n| **Kundensuche fokussieren** | `Strg + F` |\n| **Cockpit-Ansicht** | `Strg + 1` |\n| **Tab-Ansicht** | `Strg + 2` |\n| **Split-Ansicht** | `Strg + 3` |\n| **Auswertung & Kennzahlen** | `Strg + 4` |\n| **Theme umschalten** | `Strg + T` |\n| **Hilfe-Dialog** | `F1` |\n| **Textbaustein-Makros** | e.g. `Strg + Alt + 1` |\n\n*Hinweis: Alle Tastenkürzel und Textbaustein-Makros können in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) frei angepasst und interaktiv per Taste erfasst werden.*\n"
+    },
+    "storage_paths": {
+      "title": "📁 Speicherorte, Datenordner & Exe-Betrieb",
+      "category": "Konfiguration",
+      "content": "\n### 📁 Speicherorte, Datenstruktur & Exe-Betrieb\n\nDas **Support-Cockpit** speichert Arbeitsdaten getrennt von Programmdateien. Dies ermöglicht die sichere Ausführung aus einer geschützten Einzel-Datei (PyInstaller `.exe`) und verhindert das Versionieren echter Kundendaten in Git-Repositories.\n\n#### 1. Datenordner & Pfade anpassen\n- Öffnen Sie **Profil & Einstellungen** (`👤 [Ihr Name]`) -> Reiter **📁 Speicherort & Pfade**.\n- **Haupt-Datenordner**: Klicken Sie auf **📁 Ordner wählen**, um Ihren Arbeitsbereich (z. B. auf `D:\\SupportDaten` oder ein Netzwerklaufwerk) frei festzulegen.\n- **Einzelne Dateipfade**: Sie können bei Bedarf einzelne Dateien (`cases.json`, `customers.json`, `wiki_index.sqlite`) an abweichende Orte koppeln oder über **🔄 Einzelpfade auf Standard zurücksetzen** zum Standard zurückkehren.\n\n#### 2. Verhalten beim Ausführen als Einzeldatei (Exe)\n- Wenn die Anwendung als kompilierte `.exe` ausgeführt wird, werden keine Ordner am Ausführungsort (z. B. `C:\\Program Files\\`) erstellt.\n- Stattdessen wird die zentrale Benutzerkonfiguration in Ihrem Benutzerprofil gespeichert:\n  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`\n  - Linux/Mac: `~/.config/SupportCockpit/user_config.json`\n- Fehlt die Konfiguration, wird als Standard-Datenordner automatisch `Dokumente\\SupportCockpitData` verwendet.\n\n#### 3. Beispieldateien & Automatische Initialisierung\n- **Vorlagen im Repository (`data_examples/`)**: Werden beim ersten Start Vorlagendateien aus `data_examples/` in Ihren gewählten Datenordner kopiert.\n- **Leere Dateien**: Sollten weder Daten noch Vorlagen existieren, erzeugt die Anwendung automatisch neue, leere Datendateien, damit der Betrieb reibungslos startet.\n"
+    },
+    "template_editor": {
+      "title": "📄 Export-Vorlagen-Editor",
+      "category": "Export",
+      "content": "\n### 📄 Eigene Export-Vorlagen erstellen & anpassen\n\nIm **Export-Vorlagen-Editor** können Sie bestehende Übergabevorlagen anpassen oder völlig neue Exportformate definieren.\n\n#### Vorlagen-Manager öffnen\n- Klicken Sie in der oberen Menüleiste auf **📄 Vorlagen** oder im Export-Dialog (`Strg+E`) auf **🛠 Vorlagen verwalten**.\n\n#### Vorlage konfigurieren\n1. **Name & ID**: Vergeben Sie eine eindeutige ID und einen lesbaren Anzeigenamen.\n2. **Ziel-Aktion**: Wählen Sie zwischen Zwischenablage-Text und Datei-Export.\n3. **Zugeordnete Formulare**: Aktivieren Sie die Häkchen bei den Formular-Schemas, für die die Vorlage angeboten werden soll.\n4. **Erforderliche Pflichtfelder**: Legen Sie fest, welche Felder im Fall ausgefüllt sein müssen, bevor exportiert werden darf.\n5. **Jinja2-Template**: Schreiben Sie den Vorlagentext in Markdown/HTML. Nutzen Sie den Button **👁 Live-Vorschau rendern**, um das Ergebnis sofort zu prüfen!\n"
+    },
+    "handover_followup": {
+      "title": "🔔 Zuständigkeitswechsel & Wiedervorlage",
+      "category": "Workflow",
+      "content": "\n### 🔔 Zuständigkeitswechsel & Wiedervorlage\n\nBehalten Sie stets den Überblick darüber, wann ein Fall an wen übergeben wurde und wann Sie beim Kollegen nachfragen müssen.\n\n#### 1. Automatische Übergabe-Protokollierung\n- Sobald Sie den **Zuständig (Akteur)** eines Falls ändern (z. B. von *Support* auf *Entwicklung*), erstellt das System automatisch einen präzisen Eintrag in der **Zeitleiste**:\n  - *Zeitstempel & Urheber*\n  - *Statusänderung: ZUSTÄNDIGKEIT: Support -> Entwicklung*\n  - *Hinweis: Zuständigkeit übergeben an: Entwicklung (vorher: Support)*\n\n#### 2. Wiedervorlage & Nachfrage-Erinnerung einplanen\n- Beim Wechsel der Zuständigkeit öffnet sich automatisch der Dialog **🔔 Wiedervorlage einplanen**.\n- Oder klicken Sie in den Falldetails jederzeit auf den Button **🔔 Wiedervorlage**.\n- Wählen Sie ein Schnell-Preset (`+ 1 Tag`, `+ 2 Tage`, `+ 1 Woche`) oder ein freies Datum mit Notiz.\n- Fälle mit aktiver Wiedervorlage werden in der Fallliste 3-zeilig hervorgehoben (Nachfragen am, Datum mit Relativangabe `(morgen)` / `(heute)` / `(in X Tagen)`, Uhrzeit).\n"
+    },
+    "email_calendar_outlook": {
+      "title": "✉ E-Mail, Kalender (.ics) & Outlook",
+      "category": "Kommunikation",
+      "content": "\n### ✉ E-Mail-Verfassen, Kalender-Export & Microsoft Outlook Integration\n\nIm Cockpit stehen Ihnen zwei getrennte Funktionen zur Verfügung:\n\n#### 1. ✉ E-Mail verfassen\n- Klicken Sie auf **✉ E-Mail**, um den E-Mail-Entwurf für den aktuellen Fall zu öffnen.\n- Empfänger und Betreff sind anhand der Praxisdaten und des Themas vorausgefüllt.\n- Über **🧩 Textbaustein** können Sie vorgefertigte Support-Vorlagen (z. B. TI-Entstörung, Abrechnungskorrektur) per Klick einfügen.\n- **In Outlook übertragen**: Öffnet die E-Mail direkt in Microsoft Outlook mit allen Feldern.\n- **In Standard-Mail-App öffnen**: Startet Ihren Standard-Mail-Client über das `mailto:`-Protokoll.\n\n#### 2. 📅 Kalendereintrag erstellen (.ics)\n- Klicken Sie auf **📅 Kalender**, um einen Kalendertermin für Wiedervorlagen oder Rückruf-Deadlines zu erzeugen.\n- **Direkt im Kalender öffnen**: Erzeugt eine temporäre `.ics`-Datei und öffnet Ihren Kalender (Outlook / Thunderbird).\n- **Als .ics Datei speichern...**: Speichert die Termindatei an einem beliebigen Ort.\n\n#### 3. 📬 Outlook Add-in / Makro (E-Mails in Support-Cockpit übertragen)\n- Mit dem integrierten Outlook-Makro können Sie empfangene Kundenmails direkt aus Outlook an das Support-Cockpit übergeben, um automatisch einen neuen Fall anzulegen oder eine Notiz zur Zeitleiste hinzuzufügen.\n"
+    },
+    "case_print_reporting": {
+      "title": "🖨 Fall-Druckansicht, PDF & Bilder",
+      "category": "Export",
+      "content": "\n### 🖨 Fall-Druckansicht, PDF-Export & Bildanhänge\n\nErstellen Sie vollständige Aktenübersichten für die Archivierung oder Besprechungen.\n\n#### 1. Druckdialog öffnen\n- Klicken Sie im Cockpit auf **🖨 Drucken**.\n- Wählen Sie aus, welche Bereiche enthalten sein sollen (Kundendaten, Formularfelder, Zeitleisteneinträge, Bilder).\n\n#### 2. Bilder & Screenshots am Dokumentende\n- Alle Bilddateien (`.png`, `.jpg`, `.jpeg`, `.webp`, `.bmp`) aus dem Fallordner werden automatisch am Ende der Seite eingebettet.\n- Sie können die Screenshots durch einfaches Scrollen im Bericht sofort betrachten und mit ausdrucken.\n\n#### 3. Export-Möglichkeiten\n- **🖨 Im Browser öffnen & Drucken**: Öffnet die Seite im Standardbrowser und startet automatisch den Druck- bzw. PDF-Exportdialog.\n- **💾 Als HTML/PDF-Bericht speichern...**: Speichert die vollständige, eigenständige HTML-Akte auf Ihrer Festplatte.\n"
+    },
+    "ai_ollama_management": {
+      "title": "🤖 KI-Assistent, Ollama Server & Modell-Verwaltung",
+      "category": "KI & Ollama",
+      "content": "\n### 🤖 Lokaler KI-Assistent & Ollama Server-Steuerung\n\nDas Support-Cockpit bietet eine vollständige, datenschutzkonforme KI-Unterstützung auf Basis lokaler Open-Source Sprachmodelle (z. B. Ollama mit Qwen2.5 / Llama3). Sämtliche Anfragen bleiben 100% auf Ihrem PC!\n\n#### 1. ⚙ Ollama Server-Steuerung (Start & Beenden aus der App)\nUnter **Profil & Einstellungen** (`👤`) -> Reiter **🤖 KI & NLP** können Sie den Ollama-Server direkt aus der Anwendung bedienen:\n- **`▶ Ollama Server Starten`**: Startet den Ollama-Hintergrundprozess (`ollama serve`), ohne dass Sie ein Terminal öffnen müssen.\n- **`🛑 Server Beenden`**: Beendet den Ollama-Serverprozess sauber und gibt belegten Speicherplatz sofort frei.\n- **`🌐 Download-Links`**: Sollte Ollama noch nicht installiert sein oder fehlen lokale Modelle, bietet die App direkte Download-Links zu `ollama.com`, `qwen2.5` und `llama3`.\n\n#### 2. ⚡ PVS-Support Modell per Klick erstellen\n- Über den Button **`⚡ PVS-Support Modell aus Modelfile erstellen`** wird automatisch ein spezialisiertes KI-Modell (`pvs-support`) aus dem hinterlegten `Modelfile` generiert.\n- Dieses Modell ist speziell auf deutschen IT-Support im Gesundheitswesen (PVS, TI-Konnektoren, GKV-Abrechnung, KV-SafeNet) vorbereitet.\n\n#### 3. 🎚 Globaler KI-Schalter & Automatisches Entladen\n- Über den Schalter **`🤖 KI Global Aktiv`** (oben rechts in KI-Dialogen und Profil) können Sie die KI jederzeit global deaktivieren.\n- Beim Deaktivieren wird das aktuell geladene KI-Modell automatisch aus dem RAM/VRAM entladen.\n- Alle KI-Generierungs-Buttons werden bei inaktivem Schalter geschützt deaktiviert.\n\n#### 4. 🚦 Präzise Status-Farbcodierung\nDer KI-Status wird durch eindeutige Farbcodes angezeigt:\n- **`🔴 Rot`**: Ollama Offline oder Server nicht erreichbar.\n- **`⚪ Grau`**: Ollama Online, aber KI ist global ausgeschaltet (Schalter OFF).\n- **`🔵 Blau`**: Ollama Online & KI Aktiv, aber Standby (kein Modell im RAM).\n- **`🟢 Grün`**: Ollama Online & KI Aktiv und Modell einsatzbereit im RAM geladen.\n\n#### 5. 🎯 Hierarchische Prompt-Regeln & Sonderanweisungen\nBei jeder KI-Generierung gilt eine strikte Prioritäten-Hierarchie:\n1. **Globale Basis-Regeln** (Grundregeln im Benutzerprofil).\n2. **Praxis-Spezifische Vorrang-Regeln** (In den Praxisdetails hinterlegt, übersteuern Basis-Regeln).\n3. **⚡ Priorisierte Sonderanweisung** (Im Dialog eingegebene Einzeldirektive, hat **allerhöchste Priorität**).\n"
+    },
+    "stepper_time_picker": {
+      "title": "⏱ Zeitauswahl (07:00-20:00) & Stepper",
+      "category": "Benutzeroberfläche",
+      "content": "\n### ⏱ Zeitauswahl & Stepper-Pfeile\n\nDie Zeitauswahl in Kalender- und Wiedervorlage-Dialogen ist speziell auf Praxis-Arbeitszeiten optimiert:\n\n- **Praxisnaher Zeitbereich**: Stunden sind auf die Kernarbeitszeit von **07:00 Uhr bis 20:00 Uhr** fokussiert.\n- **Schnelle Stepper-Buttons**: Neben den Dropdown-Menüs stehen Pfeiltasten (`▲` / `▼`) zur Verfügung:\n  - Stunden: Schrittweise um `+/- 1 Stunde` anpassen.\n  - Minuten: Schrittweise im 5-Minuten-Takt (`+/- 5 Min.`) anpassen.\n"
+    },
+    "internal_cases": {
+      "title": "🏢 Interne Vorgänge & Aufgaben (ohne Kunde)",
+      "category": "Workflow",
+      "content": "\n### 🏢 Interne Vorgänge & Aufgaben\n\nNeben kundenbezogenen Support-Fällen können Sie im Cockpit auch **rein interne Vorgänge** (z. B. Server-Wartung, System-Updates, Notizen oder Entwicklungsaufgaben) verwalten.\n\n#### Funktionen:\n- **Kein Kunde erforderlich**: Beim Erstellen eines neuen Falls (`+ Neuer Fall` / `Strg+N`) kann das Feld Praxis/Kunde leer gelassen oder auf *\"🏢 Interner Vorgang / Keine Praxis\"* gesetzt werden.\n- **Automatische Schema-Anpassung**: Das Formular schaltet automatisch auf das Schema *\"🏢 Interne Aufgabe / Notiz\"* um.\n- **Optische Hervorhebung**: Interne Fälle erhalten in der Fallliste ein prägnantes blaues **`🏢 INTERN`**-Badge.\n- **Suchfilter**: Mit dem Schnellfilter **`[🏢 Intern]`** oder dem Suchtoken `is:internal` filtern Sie auf einen Klick alle internen Vorgänge heraus.\n"
+    },
+    "cobra_crm_import": {
+      "title": "🐍 Cobra CRM Praxen- & Kundenimport",
+      "category": "Kunden",
+      "content": "\n### 🐍 Cobra CRM Praxen- & Kundenimport\n\nImportieren Sie Ihre bestehende Praxendatenbank direkt aus Cobra CRM in das Support-Cockpit.\n\n#### Ablauf:\n1. Öffnen Sie die Praxenverwaltung (**🏥 Praxen**).\n2. Klicken Sie auf **🐍 Cobra CRM Import...**.\n3. Wählen Sie Ihre Export-Datei aus (unterstützt `.csv`, `.txt`, `.json`).\n4. **Automatische Spaltenerkennung**: Das System erkennt Cobra-Felder (wie Kundennummer, Praxisname, Ansprechpartner, E-Mail, Telefon, VIP-Kennzeichnung) automatisch per Aliasing.\n5. Nach Bestätigung stehen alle Praxen sofort zur Fall-Zuordnung bereit.\n"
+    },
+    "snippets_manager": {
+      "title": "📝 Textbausteine & Snippet-Manager",
+      "category": "Kommunikation",
+      "content": "\n### 📝 Textbausteine (Snippets) verwalten & einfügen\n\nSparen Sie Zeit bei wiederkehrenden Antworten und Standardnotizen durch den integrierten Textbaustein-Manager.\n\n#### 1. Textbausteine verwalten\n- Klicken Sie im Hauptmenü auf **📝 Textbausteine**.\n- Erstellen Sie neue Bausteine mit Titel, Kategorie (z.B. *Abrechnung*, *Hardware*, *TI-Entstörung*), Tags und Vorlagentext.\n\n#### 2. Bausteine in Notizen oder E-Mails einfügen\n- Im Notizfeld oder im E-Mail-Dialog (`✉ E-Mail`): Klicken Sie auf **🧩 Textbaustein**.\n- Es öffnet sich der `SnippetPickerDialog` mit Suchfeld und Kategoriefilter.\n- Wählen Sie den gewünschten Baustein aus - der Text wird an der aktuellen Cursor-Position eingefügt!\n"
+    },
+    "repeatable_sub_forms": {
+      "title": "📂 Dynamische Mehrfach-Eingabemasken",
+      "category": "Formulare",
+      "content": "\n### 📂 Dynamische Mehrfach-Eingabemasken (Wiederholbare Blöcke)\n\nEinige Formular-Typen (wie *\"Zuzahlungsnachforderung & Abrechnungskorrektur\"*) erfordern die Erfassung mehrerer voneinander unabhängiger Anfragen (z.B. mehrere ESOL-Dateien oder Rechnungen) in einem einzigen Fall.\n\n#### Bedienung:\n1. Wählen Sie im Fall das Formular **\"Zuzahlungsnachforderung & Abrechnungskorrektur\"**.\n2. **Karten-Container**: Das Formular erstellt eigenständige Karteikarten für jede Anforderung (mit ESOL-Dateiname, Geforderter Aktion, Rechnungs-Nr. & Datum, Verordnungs-Nr., Patientenname(n) und Begründung).\n3. **➕ Weitere Datei / Korrektur-Anforderung anfordern**: Fügt per Klick dynamisch eine neue leere Anforderungs-Karteikarte hinzu.\n4. **🗑 Anfrage #N entfernen**: Löscht einzelne Karteikarten bei Bedarf (bei mehr als einer Karte).\n5. **E-Mail & Export**: In E-Mail-Entwürfen und Exporten werden alle Karteikarten automatisch als nummerierte Abschnitte (`--- Datei-Anforderung #1 ---`) formatiert!\n"
+    },
+    "analytics_kpi_dashboard": {
+      "title": "Auswertungs- & KPI-Dashboard",
+      "category": "Auswertungen",
+      "content": "\n### Auswertungs- & KPI-Dashboard\n\nErhalten Sie auf einen Blick umfassende und tiefe Einblicke in Ihre Support-Performance und Kennzahlen.\n\n#### Dashboard öffnen:\n- Klicken Sie in der Menüleiste auf **Auswertungen & Kennzahlen** oder drücken Sie `Strg + 4`.\n\n#### 6 Haupt-KPI-Karten (Obere Reihe):\n- **📋 Fälle Gesamt**: Gesamtzahl aller erfassten Vorgänge.\n- **⏳ Offene Fälle**: Vorgänge in Bearbeitung oder Warten.\n- **✓ Erledigt (%)**: Anzahl erledigter Fälle inkl. prozentualem Erfolgsanteil.\n- **⚠ Überfällig**: Anzahl offener Fälle mit überschrittener Wiedervorlage / Frist (`due_date`).\n- **⏱ Ø Bearbeitung**: Durchschnittliche Durchlaufzeit von Fallerstellung bis Erledigung in Tagen oder Stunden.\n- **⭐ VIP-Quote**: Prozentsatz der Fälle von Premium-/VIP-Praxen.\n\n#### 2-Spalten Dashboard Layout:\n- **Linke Spalte**:\n  - **🚨 Dringlichkeits-Verteilung (Scoring)**: Ampelanzeige für `🔴 Kritisch`, `🟡 Hoch`, `🟢 Normal` mit Prozentanteilen.\n  - **📄 Verteilung nach Formular / Schema**: Übersicht, wie viele Fälle je Formulartyp vorliegen.\n- **Rechte Spalte**:\n  - **🏆 Top 5 Praxen nach Fallaufkommen**: Ranking mit VIP-Kennzeichnung (`★ VIP`).\n  - **👤 Bearbeiter-Auslastung**: Offene vs. erledigte Fälle je zugewiesenem Bearbeiter (`assigned_to`).\n  - **👥 Offene Fälle nach Abteilung**: Aufschlüsselung nach *Support, Entwicklung, Technik, Kunde*.\n\n#### 📋 Statistik-Bericht kopieren:\n- Über den Button oben rechts kopieren Sie eine vollständige Markdown-Zusammenfassung aller Auswertungen direkt in die Zwischenablage!\n"
+    },
+    "advanced_search_filters": {
+      "title": "🔍 Erweitertes Suchsystem & Such-Tokens",
+      "category": "Grundlagen",
+      "content": "\n### 🔍 Erweitertes Suchsystem & Such-Tokens\n\nDie Suchleiste im Cockpit unterstützt neben Freitextsuche auch leistungsfähige Filter-Tokens.\n\n#### 1. Schnellfilter-Buttons\nÜber der Fallliste finden Sie praktische Schnellfilter:\n- **`[Alle]`**: Alle Fälle anzeigen.\n- **`[🔥 Dringend]`**: Zeigt nur Fälle mit hohem Urgency-Score.\n- **`[🔔 Wiedervorlagen]`**: Zeigt fällige Wiedervorlagen.\n- **`[🏢 Intern]`**: Zeigt rein interne Vorgänge.\n\n#### 2. Such-Tokens für die Suchleiste (`Strg+F`):\nKombinierbare Tokens zur präzisen Eingrenzung:\n- `is:internal` / `is:customer`: Nur interne oder kundenbezogene Fälle.\n- `vip:true`: Nur VIP-Praxen.\n- `reminder:due`: Nur fällige Wiedervorlagen.\n- `actor:dev` / `actor:support` / `actor:tech`: Nach Zuständigkeit filtern.\n- `status:open` / `status:closed`: Nach Status filtern.\n- `error:XYZ`: Nach Fehlercodes oder Freitext in Notizen suchen.\n"
+    },
+    "attachments_and_screenshots": {
+      "title": "📂 Dateianhänge & Screenshots (Strg+V)",
+      "category": "Dokumente",
+      "content": "\n### 📂 Dateianhänge, Screenshots & Vorschau\n\nVerwalten Sie Logfiles, Screenshots und Dokumente direkt im Fall.\n\n#### 1. Screenshots direkt per `Strg+V` einfügen\n- Erstellen Sie einen Screenshot (z. B. mit `Win+Shift+S`).\n- Drücken Sie im Cockpit einfach **`Strg + V`**: Das Bild wird automatisch im Fallordner gespeichert und in die Zeitleiste eingebunden!\n\n#### 2. Live-Vorschau & OS-Öffnung\n- Bilddateien (`.png`, `.jpg`, `.webp`) und Text-Anhangsdateien (`.log`, `.json`, `.txt`) können in der Anhänge-Leiste direkt per Vorschau betrachtet werden.\n- Ein Doppelklick öffnet die Datei im Standardprogramm Ihres Betriebssystems.\n"
+    },
+    "zip_backup_restore": {
+      "title": "📦 Komplett-ZIP Backup & Import/Export",
+      "category": "Konfiguration",
+      "content": "\n### 📦 Komplett-ZIP Backup & Import/Export\n\nSichern Sie Ihren gesamten Datenbestand inkl. aller Fälle, Kundendaten, Formulare und Dateianhänge in einer einzigen ZIP-Datei.\n\n#### Ablauf:\n1. Öffnen Sie **Profil & Einstellungen** (`👤`) -> **📦 Sicherung & Wiederherstellung**.\n2. **`💾 Komplett-Backup erstellen...`**: Speichert alle JSON-Dateien und den Anhänge-Ordner als ZIP-Archiv.\n3. **`📥 Backup wiederherstellen...`**: Entpackt und stellt einen früheren Datenstand wieder her (inkl. Sicherheits-Sicherung des aktuellen Stands).\n"
+    },
+    "email_webhook_integration": {
+      "title": "🔌 E-Mail-Import & REST Webhooks (Jira/GitLab)",
+      "category": "Integrationen",
+      "content": "\n### 🔌 E-Mail-Import & REST Webhooks\n\nBinden Sie das Support-Cockpit an externe Systeme an.\n\n#### 1. 📬 Automatische E-Mail-Import (IMAP)\n- Das System kann ein Support-Postfach per IMAP abfragen und neue E-Mails automatisch als Fall-Entwürfe im Cockpit anlegen.\n\n#### 2. 🔗 REST Webhook Integration (GitLab / Jira)\n- Konfigurieren Sie Webhook-URLs unter Einstellungen, um bei Erstellung oder Übergabe eines Falls automatisch Issue-Payloads an GitLab, Jira oder eigene APIs zu senden.\n"
+    }
+  },
+  "demo_cases": {
+    "c1_title": "Zuzahlungsnachforderungsdatei fehlerhaft erzeugt",
+    "c2_title": "Absturz beim Drucken von BMA-Rezepten",
+    "c3_title": "KV-Abrechnungstext korrigieren",
+    "c4_title": "Prüfung Nachforderung 2026-Q1",
+    "c5_title": "GUI-Schriftgröße im Laborfenster zu klein"
   }
 }

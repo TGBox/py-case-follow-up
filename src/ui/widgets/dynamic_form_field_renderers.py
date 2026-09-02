@@ -16,10 +16,14 @@ import os
 import shutil
 import customtkinter as ctk
 from tkinter import filedialog
-from typing import Any
+from typing import Any, Callable, TYPE_CHECKING
 from models.schema import SchemaField
 from models.case import Case
 from constants import DEFAULT_MODULE_TAGS
+
+if TYPE_CHECKING:
+    from models.profile import UserProfile
+    from services.storage_service import StorageService
 
 
 class FieldRendererMixin:
@@ -28,12 +32,38 @@ class FieldRendererMixin:
     self.current_case / self.update_conditional_visibility / ... Attributen
     und Methoden) nutzbar.
     """
+    profile: Any = None
+    storage_service: Any = None
+    current_case: Case | None = None
+    on_manage_module_tags: Callable[[], None] | None = None
+
+    def update_conditional_visibility(self) -> None:
+        pass
+
+    def open_calendar_picker(self, entry: Any) -> None:
+        pass
+
+    def import_db_backup_file(self, case: Case, bool_var: Any) -> None:
+        pass
+
+    def render_mini_attachment_section(self, parent: Any, case: Case) -> None:
+        pass
+
+    def _get_target_dir(self, case: Case) -> str:
+        return ""
+
+    def refresh_mini_attachment_list(self, case: Case) -> None:
+        pass
+
+    def winfo_toplevel(self) -> Any:
+        pass
 
     def _render_module_tags_field(self, row_frame: ctk.CTkFrame, label_row: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any]):
         if self.on_manage_module_tags:
+            from services.i18n_service import tr
             ctk.CTkButton(
                 label_row,
-                text="⚙ Programmbereiche verwalten",
+                text=tr("dynamic_form.manage_tags", "⚙ Programmbereiche verwalten"),
                 width=140,
                 height=22,
                 fg_color=("gray75", "gray30"),
@@ -154,9 +184,11 @@ class FieldRendererMixin:
             entry.insert(0, str(val))
         entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
+        from services.i18n_service import tr
+
         cal_btn = ctk.CTkButton(
             entry_row,
-            text="📅 Kalender",
+            text=tr("cockpit.calendar", "📅 Kalender"),
             width=95,
             fg_color="gray30",
             hover_color="gray40",
@@ -199,9 +231,10 @@ class FieldRendererMixin:
         is_db_backup_field = "database_dump" in fid_lower or "backup" in fid_lower or "datenbank" in flabel_lower
 
         if is_db_backup_field and case:
+            from services.i18n_service import tr
             import_db_btn = ctk.CTkButton(
                 chk_frame,
-                text="📁 .backup-Datei importieren...",
+                text=tr("dynamic_form.import_backup", "📁 .backup-Datei importieren..."),
                 width=190,
                 fg_color="darkblue",
                 hover_color="blue",
@@ -245,9 +278,10 @@ class FieldRendererMixin:
                     except Exception:
                         pass
 
+        from services.i18n_service import tr
         ctk.CTkButton(
             file_row,
-            text="📁 Datei wählen...",
+            text=tr("dynamic_form.choose_file", "📁 Datei wählen..."),
             width=120,
             fg_color="dodgerblue",
             hover_color="deepskyblue",
@@ -257,7 +291,8 @@ class FieldRendererMixin:
         target_widget_dict[f.field_id] = (f.field_type, file_entry)
 
     def _render_number_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
-        entry = ctk.CTkEntry(row_frame, placeholder_text="Zahl...", **entry_kwargs)
+        from services.i18n_service import tr
+        entry = ctk.CTkEntry(row_frame, placeholder_text=tr("dynamic_form.number_placeholder", "Zahl..."), **entry_kwargs)
         if val is not None:
             entry.insert(0, str(val))
         entry.pack(fill="x")

@@ -128,8 +128,10 @@ class EditTemplateDialog(ctk.CTkToplevel):
         if self.template:
             self.template_textbox.insert("1.0", self.template.template_string)
 
+        from services.i18n_service import tr
+
         # Live Preview Panel
-        preview_btn = ctk.CTkButton(scroll_frame, text="👁 Live-Vorschau rendern", command=self.render_preview, fg_color="dodgerblue")
+        preview_btn = ctk.CTkButton(scroll_frame, text=tr("template_editor.preview_btn", "👁 Live-Vorschau rendern"), command=self.render_preview, fg_color="dodgerblue")
         preview_btn.pack(anchor="w", pady=4)
 
         self.preview_textbox = ctk.CTkTextbox(scroll_frame, height=120, font=ctk.CTkFont(family="Consolas", size=11))
@@ -140,8 +142,8 @@ class EditTemplateDialog(ctk.CTkToplevel):
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        ctk.CTkButton(bottom_bar, text="💾 Vorlage Speichern", command=self.save, fg_color="forestgreen", width=160).pack(side="right", padx=5)
-        ctk.CTkButton(bottom_bar, text="Abbrechen", command=self.destroy, fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), width=90).pack(side="left", padx=5)
+        ctk.CTkButton(bottom_bar, text=tr("ui_buttons.save_template", "💾 Vorlage Speichern"), command=self.save, fg_color="forestgreen", width=160).pack(side="right", padx=5)
+        ctk.CTkButton(bottom_bar, text=tr("common.cancel", "Abbrechen"), command=self.destroy, fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), width=90).pack(side="left", padx=5)
 
     def render_preview(self):
         tmpl_str = self.template_textbox.get("1.0", "end-1c")
@@ -223,15 +225,17 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         top_bar = ctk.CTkFrame(self, height=50, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="📄 Export-Vorlagen-Verwaltung", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text=tr("template_mgmt.header", "📄 Export-Vorlagen-Verwaltung"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
-        btn_new = ctk.CTkButton(top_bar, text="+ Neue Vorlage", command=self.on_add_template, fg_color="forestgreen", width=140)
+        btn_new = ctk.CTkButton(top_bar, text=tr("template_mgmt.new_template", "+ Neue Vorlage"), command=self.on_add_template, fg_color="forestgreen", width=140)
         btn_new.pack(side="right", padx=5)
 
-        btn_reset = ctk.CTkButton(top_bar, text="🔄 Standard-Vorlagen laden", command=self.on_reset_templates, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), width=180)
+        btn_reset = ctk.CTkButton(top_bar, text=tr("template_mgmt.load_defaults", "🔄 Standard-Vorlagen laden"), command=self.on_reset_templates, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), width=180)
         btn_reset.pack(side="right", padx=5)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self)
@@ -246,6 +250,8 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             self.on_templates_updated(self.templates)
 
     def render_list(self):
+        from services.i18n_service import tr
+
         for w in self.scroll_frame.winfo_children():
             w.destroy()
 
@@ -259,7 +265,7 @@ class TemplateManagerDialog(ctk.CTkToplevel):
                 display_templates.append(st)
 
         if not display_templates:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Vorlagen vorhanden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.scroll_frame, text=tr("template_mgmt.no_templates", "Keine Vorlagen vorhanden."), text_color="gray").pack(pady=20)
             return
 
         for tmpl in display_templates:
@@ -275,10 +281,10 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             id_lbl.pack(side="left", padx=8)
 
-            btn_del = ctk.CTkButton(top_row, text="🗑 Löschen", width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
+            btn_del = ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
             btn_del.pack(side="right", padx=4)
 
-            btn_edit = ctk.CTkButton(top_row, text="✏ Bearbeiten", width=100, command=lambda t=tmpl: self.on_edit_template(t))
+            btn_edit = ctk.CTkButton(top_row, text=tr("common.edit", "✏ Bearbeiten"), width=100, command=lambda t=tmpl: self.on_edit_template(t))
             btn_edit.pack(side="right", padx=4)
 
             is_already_saved = any(

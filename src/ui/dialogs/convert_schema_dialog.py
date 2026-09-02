@@ -43,9 +43,11 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
+        from services.i18n_service import tr
+
         # Header
         ctk.CTkLabel(
-            main_frame, text="🔄 Formular-Schema umwandeln", font=ctk.CTkFont(size=16, weight="bold")
+            main_frame, text=tr("convert_schema.header", "🔄 Formular-Schema umwandeln"), font=ctk.CTkFont(size=16, weight="bold")
         ).pack(anchor="w", pady=(0, 10))
 
         # Case info
@@ -72,7 +74,7 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
 
         # Target Schema selection
         ctk.CTkLabel(
-            main_frame, text="Neues Ziel-Formular auswählen:", font=ctk.CTkFont(size=13, weight="bold")
+            main_frame, text=tr("convert_schema.select_target", "Neues Ziel-Formular auswählen:"), font=ctk.CTkFont(size=13, weight="bold")
         ).pack(anchor="w", pady=(4, 2))
 
         schema_options = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
@@ -106,12 +108,12 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         btn_row.pack(fill="x", side="bottom")
 
         ctk.CTkButton(
-            btn_row, text="Abbrechen", fg_color="gray", command=self.destroy, width=110
+            btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=110
         ).pack(side="left")
 
         ctk.CTkButton(
             btn_row,
-            text="Formular umwandeln",
+            text=tr("convert_schema.convert_btn", "Formular umwandeln"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
             command=self.on_convert,
@@ -119,14 +121,15 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     def on_convert(self):
+        from services.i18n_service import tr
         selected_val = self.schema_combo.get()
         target_schema = next((s for s in self.schemas if f"[{s.schema_id}]" in selected_val), None)
         if not target_schema:
-            self.error_label.configure(text="Bitte ein gültiges Ziel-Formular auswählen.")
+            self.error_label.configure(text=tr("convert_schema.select_valid", "Bitte ein gültiges Ziel-Formular auswählen."))
             return
 
         if target_schema.schema_id == self.case.classification.schema_id:
-            self.error_label.configure(text="Der Fall verwendet bereits dieses Formular-Schema.")
+            self.error_label.configure(text=tr("convert_schema.already_used", "Der Fall verwendet bereits dieses Formular-Schema."))
             return
 
         # 1. Prepare timeline backup of existing form data

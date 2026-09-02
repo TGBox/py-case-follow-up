@@ -81,7 +81,8 @@ class TimelineWidget(ctk.CTkFrame):
             widget.destroy()
 
         if not self.timeline_entries:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Notizen vorhanden.").pack(pady=10)
+            from services.i18n_service import tr
+            ctk.CTkLabel(self.scroll_frame, text=tr("timeline.no_notes", "Keine Notizen vorhanden.")).pack(pady=10)
             return
 
         for entry in reversed(self.timeline_entries):

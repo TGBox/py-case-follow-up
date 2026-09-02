@@ -89,13 +89,15 @@ class CalendarExportDialog(ctk.CTkToplevel):
         self.status_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11), text_color="forestgreen")
         self.status_lbl.pack(anchor="w", pady=(0, 5))
 
+        from services.i18n_service import tr
+
         # Action Buttons
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_box.pack(fill="x", pady=(5, 0))
 
         ctk.CTkButton(
             btn_box,
-            text="📅 Direkt im Kalender öffnen",
+            text=tr("calendar_export.open_ics", "📅 Direkt im Kalender öffnen"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_open_ics,
@@ -104,16 +106,16 @@ class CalendarExportDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_box,
-            text="💾 Als .ics Datei speichern...",
+            text=tr("calendar_export.save_ics", "💾 Als .ics Datei speichern..."),
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.on_save_ics,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ).pack(side="left")
 
         ctk.CTkButton(
             btn_box,
-            text="Schließen",
+            text=tr("common.cancel", "Abbrechen"),
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
             command=self.destroy,

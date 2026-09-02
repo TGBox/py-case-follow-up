@@ -167,10 +167,12 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.content_scroll = content_scroll
         enable_auto_hiding_scrollbar(content_scroll)
 
+        from services.i18n_service import tr
+
         # Recipient Email Header & Row
         ctk.CTkLabel(
             content_scroll,
-            text="Empfänger (E-Mail):",
+            text=tr("email_draft.recipient_lbl", "Empfänger (E-Mail):"),
             font=ctk.CTkFont(size=12, weight="bold")
         ).pack(anchor="w", pady=(2, 1))
 
@@ -222,7 +224,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             sug_hdr,
-            text="✕ Schließen",
+            text=tr("email_draft.close_btn", "✕ Schließen"),
             width=70,
             height=20,
             font=ctk.CTkFont(size=10),
@@ -240,7 +242,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         enable_auto_hiding_scrollbar(self.suggestions_scroll)
 
         # Subject
-        ctk.CTkLabel(content_scroll, text="Betreff:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(content_scroll, text=tr("email_draft.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text="Betreff eingeben...")
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
@@ -250,7 +252,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         body_hdr_row.pack(fill="x", pady=(4, 1))
 
-        ctk.CTkLabel(body_hdr_row, text="E-Mail Nachrichtentext:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+        ctk.CTkLabel(body_hdr_row, text=tr("email_draft.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
 
         if self.snippet_service:
             ctk.CTkButton(
@@ -320,13 +322,15 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.status_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11), text_color="dodgerblue")
         self.status_lbl.pack(anchor="w", pady=(0, 4))
 
+        from services.i18n_service import tr
+
         # Action Buttons
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_box.pack(fill="x", pady=(4, 0))
 
         ctk.CTkButton(
             btn_box,
-            text="✉ In Standard-Mail-App öffnen",
+            text=tr("email_draft.open_mailto", "✉ In Standard-Mail-App öffnen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,
@@ -335,7 +339,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_box,
-            text="📬 In Outlook übertragen",
+            text=tr("email_draft.transfer_outlook", "📬 In Outlook übertragen"),
             fg_color="royalblue",
             hover_color="blue",
             command=self.on_transfer_to_outlook,
@@ -344,16 +348,16 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_box,
-            text="📋 In Zwischenablage kopieren",
+            text=tr("ui_buttons.copy_clipboard", "📋 In Zwischenablage kopieren"),
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.on_copy_text,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ).pack(side="left")
 
         ctk.CTkButton(
             btn_box,
-            text="Schließen",
+            text=tr("common.cancel", "Abbrechen"),
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
             command=self.destroy,
@@ -486,10 +490,12 @@ class EmailDraftDialog(ctk.CTkToplevel):
         )
 
     def insert_snippet_text(self, text: str):
+        from services.i18n_service import tr
         self.body_textbox.insert("insert", text)
-        self.status_lbl.configure(text="✓ Textbaustein eingefügt.")
+        self.status_lbl.configure(text=tr("email_draft.snippet_inserted", "✓ Textbaustein eingefügt."))
 
     def on_open_mailto(self):
+        from services.i18n_service import tr
         to = self.to_entry.get().strip()
         subject = self.subject_entry.get().strip()
         body = self.body_textbox.get("1.0", "end-1c")
@@ -505,12 +511,13 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         try:
             webbrowser.open(mailto_url)
-            self.status_lbl.configure(text="✓ Standard-Mail-Programm aufgerufen.")
+            self.status_lbl.configure(text=tr("email_draft.mailto_opened", "✓ Standard-Mail-Programm aufgerufen."))
         except Exception as e:
             self.status_lbl.configure(text=f"Fehler beim Öffnen: {e}")
 
     def on_transfer_to_outlook(self):
         """Transfers the drafted email directly into Microsoft Outlook."""
+        from services.i18n_service import tr
         to = self.to_entry.get().strip()
         subject = self.subject_entry.get().strip()
         body = self.body_textbox.get("1.0", "end-1c")
@@ -529,7 +536,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 mail.Body = body
             mail.Display(True)  # Display the Outlook Inspector window
             success = True
-            self.status_lbl.configure(text="✓ E-Mail erfolgreich in Outlook geöffnet.")
+            self.status_lbl.configure(text=tr("email_draft.outlook_opened", "✓ E-Mail erfolgreich in Outlook geöffnet."))
         except Exception:
             success = False
 
@@ -555,11 +562,12 @@ class EmailDraftDialog(ctk.CTkToplevel):
                     os.startfile(str(eml_path))
                 else:
                     webbrowser.open(f"file:///{eml_path.resolve()}")
-                self.status_lbl.configure(text="✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml).")
+                self.status_lbl.configure(text=tr("email_draft.eml_handed_over", "✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml)."))
             except Exception as e:
                 self.status_lbl.configure(text=f"Fehler bei Outlook-Übergabe: {e}")
 
     def on_copy_text(self):
+        from services.i18n_service import tr
         to = self.to_entry.get().strip()
         subject = self.subject_entry.get().strip()
         body = self.body_textbox.get("1.0", "end-1c")
@@ -568,7 +576,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         try:
             self.clipboard_clear()
             self.clipboard_append(formatted)
-            self.status_lbl.configure(text="✓ E-Mail in Zwischenablage kopiert.")
+            self.status_lbl.configure(text=tr("email_draft.copied_to_clipboard", "✓ E-Mail in Zwischenablage kopiert."))
         except Exception as e:
             self.status_lbl.configure(text=f"Kopieren fehlgeschlagen: {e}")
 
@@ -576,6 +584,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
     def _create_loading_overlay(self):
         """Creates a semi-transparent loading overlay for AI generation."""
+        from services.i18n_service import tr
         self._overlay_frame = ctk.CTkFrame(self, fg_color=("gray95", "gray15"))
 
         card = ctk.CTkFrame(self._overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=120)
@@ -583,7 +592,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self._overlay_msg_lbl = ctk.CTkLabel(
             card,
-            text="🤖 KI generiert E-Mail-Entwurf...",
+            text=tr("email_draft.ai_generating", "🤖 KI generiert E-Mail-Entwurf..."),
             font=ctk.CTkFont(size=14, weight="bold"),
         )
         self._overlay_msg_lbl.pack(pady=(20, 10))
@@ -593,7 +602,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             card,
-            text="Bitte einen Moment gedulden — Modell generiert Antwort",
+            text=tr("email_draft.ai_please_wait", "Bitte einen Moment gedulden — Modell generiert Antwort"),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
         ).pack(pady=(0, 15))
@@ -652,8 +661,10 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
     def _on_generate_ai_draft(self):
         """Generates an AI-powered email draft and fills the body textbox."""
+        from services.i18n_service import tr
         if not self.case:
-            self.status_lbl.configure(text="⚠ KI-Entwurf benötigt einen aktiven Fall.", text_color="darkorange")
+            self.status_lbl.configure(text=tr("email_draft.case_required_for_ai", "⚠ KI-Entwurf benötigt einen aktiven Fall."), text_color="darkorange")
+            return
             return
 
         self._show_overlay("🤖 KI generiert E-Mail-Entwurf... Bitte warten")

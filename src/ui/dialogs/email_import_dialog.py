@@ -53,9 +53,11 @@ class EmailImportDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left")
 
+        from services.i18n_service import tr
+
         ctk.CTkButton(
             hdr_frame,
-            text="🔄 Posteingang aktualisieren",
+            text=tr("email_import.refresh_btn", "🔄 Posteingang aktualisieren"),
             width=170,
             height=28,
             fg_color=("gray75", "gray30"),
@@ -66,7 +68,7 @@ class EmailImportDialog(ctk.CTkToplevel):
         # Info label
         self.info_lbl = ctk.CTkLabel(
             main_frame,
-            text="Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen.",
+            text=tr("email_import.info_msg", "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen."),
             font=ctk.CTkFont(size=11),
             text_color="gray",
             anchor="w",
@@ -88,7 +90,7 @@ class EmailImportDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             footer_frame,
-            text="Schließen",
+            text=tr("common.close", "Schließen"),
             width=100,
             height=30,
             fg_color=("gray70", "gray40"),
@@ -97,7 +99,8 @@ class EmailImportDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     def refresh_emails(self):
-        self.status_lbl.configure(text="⏳ Rufe Posteingang ab...")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("email_import.fetching", "⏳ Rufe Posteingang ab..."))
         self.update_idletasks()
 
         self.emails = OutlookIntegrationService.fetch_recent_emails(max_count=15)
@@ -105,13 +108,14 @@ class EmailImportDialog(ctk.CTkToplevel):
         self.status_lbl.configure(text=f"✓ {len(self.emails)} E-Mails aus Posteingang geladen.")
 
     def render_email_list(self):
+        from services.i18n_service import tr
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
         if not self.emails:
             ctk.CTkLabel(
                 self.scroll_frame,
-                text="Keine neuen E-Mails im Posteingang gefunden.",
+                text=tr("email_import.no_emails", "Keine neuen E-Mails im Posteingang gefunden."),
                 font=ctk.CTkFont(size=13),
                 text_color="gray",
             ).pack(pady=40)

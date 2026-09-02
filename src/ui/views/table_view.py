@@ -130,9 +130,11 @@ class TableView(ctk.CTkFrame):
         bottom_header = ctk.CTkFrame(bottom_frame, height=38, fg_color="transparent")
         bottom_header.pack(fill="x", padx=10, pady=(6, 2))
 
+        from services.i18n_service import tr
+
         self.detail_title_label = ctk.CTkLabel(
             bottom_header,
-            text="📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)",
+            text=tr("table.details_header", "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"),
             font=ctk.CTkFont(size=13, weight="bold"),
             anchor="w",
         )
@@ -140,7 +142,7 @@ class TableView(ctk.CTkFrame):
 
         self.save_btn = ctk.CTkButton(
             bottom_header,
-            text="💾 Ändern & Speichern",
+            text=tr("table.save_btn", "💾 Ändern & Speichern"),
             command=self.on_click_save,
             fg_color="forestgreen",
             width=150,

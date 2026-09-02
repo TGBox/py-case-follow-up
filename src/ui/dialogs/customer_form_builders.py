@@ -118,12 +118,13 @@ class CustomerFormBuilderMixin:
         self._build_contacts_section()
 
     def _build_basic_info_fields(self):
+        from services.i18n_service import tr
         # Form fields
-        self.form_title_lbl = ctk.CTkLabel(self.right_frame, text="Praxis-Details", font=ctk.CTkFont(size=16, weight="bold"))
+        self.form_title_lbl = ctk.CTkLabel(self.right_frame, text=tr("customer_mgmt.details_title", "Praxis-Details"), font=ctk.CTkFont(size=16, weight="bold"))
         self.form_title_lbl.pack(anchor="w", padx=15, pady=(15, 10))
 
         # Customer ID
-        ctk.CTkLabel(self.right_frame, text="Kunden-ID (z.B. CUST-1001):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(5, 2))
+        ctk.CTkLabel(self.right_frame, text=tr("customer_mgmt.cust_id_lbl", "Kunden-ID (z.B. CUST-1001):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=15, pady=(5, 2))
         self.cust_id_entry = ctk.CTkEntry(self.right_frame, placeholder_text="CUST-...")
         self.cust_id_entry.pack(fill="x", padx=15, pady=(0, 10))
 
@@ -133,7 +134,7 @@ class CustomerFormBuilderMixin:
 
         name_left = ctk.CTkFrame(name_row, fg_color="transparent")
         name_left.pack(side="left", fill="x", expand=True, padx=(0, 5))
-        ctk.CTkLabel(name_left, text="Praxisname *:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
+        ctk.CTkLabel(name_left, text=tr("customer_mgmt.practice_name_lbl", "Praxisname *:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(0, 2))
         self.name_entry = ctk.CTkEntry(name_left, placeholder_text="z.B. Hausarztpraxis Dr. Med. Weber")
         self.name_entry.pack(fill="x")
 

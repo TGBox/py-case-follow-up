@@ -268,9 +268,11 @@ class NewCaseDialog(ctk.CTkToplevel):
         r = next_idx // num_cols
         c = next_idx % num_cols
 
+        from services.i18n_service import tr
+
         add_tag_btn = ctk.CTkButton(
             grid_frame,
-            text="+ Tag",
+            text=tr("new_case.add_tag", "+ Tag"),
             height=28,
             corner_radius=14,
             font=ctk.CTkFont(size=11, weight="bold"),
@@ -287,7 +289,8 @@ class NewCaseDialog(ctk.CTkToplevel):
             self.render_tags_checkboxes()
 
     def open_quick_add_tag(self):
-        dialog = ctk.CTkInputDialog(text="Geben Sie den Namen des neuen Tags ein:", title="Neuen Tag hinzufügen")
+        from services.i18n_service import tr
+        dialog = ctk.CTkInputDialog(text=tr("new_case.tag_input_prompt", "Geben Sie den Namen des neuen Tags ein:"), title=tr("new_case.tag_input_title", "Neuen Tag hinzufügen"))
         new_tag = dialog.get_input()
         if new_tag and new_tag.strip():
             tag_name = new_tag.strip()
@@ -339,9 +342,10 @@ class NewCaseDialog(ctk.CTkToplevel):
         return f"T-{year}-{timestamp_part}"
 
     def on_save(self):
+        from services.i18n_service import tr
         title = self.title_entry.get().strip()
         if not title:
-            self.error_label.configure(text="Bitte einen Titel für den Fall eingeben.")
+            self.error_label.configure(text=tr("new_case.title_required", "Bitte einen Titel für den Fall eingeben."))
             return
 
         # Parse & validate creation date
@@ -350,11 +354,11 @@ class NewCaseDialog(ctk.CTkToplevel):
             try:
                 created_at_iso = self.created_at_picker.get_iso()
                 if not created_at_iso:
-                    self.error_label.configure(text="Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).")
+                    self.error_label.configure(text=tr("new_case.invalid_date", "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM)."))
                     return
                 created_dt = parse_iso(created_at_iso)
             except Exception:
-                self.error_label.configure(text="Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).")
+                self.error_label.configure(text=tr("new_case.invalid_date", "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM)."))
                 return
         else:
             created_at_iso = now_iso()
@@ -363,7 +367,8 @@ class NewCaseDialog(ctk.CTkToplevel):
         # Disallow future creation date (with 1 minute tolerance for clock drift)
         now_dt = get_local_now()
         if created_dt > now_dt + timedelta(minutes=1):
-            self.error_label.configure(text="Das Erstellungsdatum darf nicht in der Zukunft liegen.")
+            self.error_label.configure(text=tr("new_case.future_date", "Das Erstellungsdatum darf nicht in der Zukunft liegen."))
+            return
             return
 
         is_internal = self.is_internal_var.get()

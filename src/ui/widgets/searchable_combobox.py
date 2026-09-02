@@ -105,9 +105,11 @@ class SearchableCombobox(ctk.CTkFrame):
         outer.pack(fill="both", expand=True)
 
         # Search Entry
+        from services.i18n_service import tr
+
         self.search_entry = ctk.CTkEntry(
             outer,
-            placeholder_text="🔍 Buchstaben eintippen zum Suchen...",
+            placeholder_text=tr("searchable_combo.placeholder", "🔍 Buchstaben eintippen zum Suchen..."),
             height=30,
             font=ctk.CTkFont(size=11),
         )
@@ -163,9 +165,11 @@ class SearchableCombobox(ctk.CTkFrame):
             w.destroy()
 
         if not items:
+            from services.i18n_service import tr
+
             ctk.CTkLabel(
                 self.options_scroll,
-                text="Keine Praxen gefunden",
+                text=tr("searchable_combo.no_results", "Keine Praxen gefunden"),
                 font=ctk.CTkFont(size=11),
                 text_color="gray",
             ).pack(pady=10)

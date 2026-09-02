@@ -140,8 +140,10 @@ class TagManagementDialog(ctk.CTkToplevel):
         query = self.search_tag_entry.get().strip().lower()
         tags = [t for t in self.profile.available_tags if query in t.lower()] if query else self.profile.available_tags
 
+        from services.i18n_service import tr
+
         if not tags:
-            ctk.CTkLabel(self.tags_scroll, text="Keine Tags gefunden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.tags_scroll, text=tr("tag_mgmt.no_tags", "Keine Tags gefunden."), text_color="gray").pack(pady=20)
         else:
             for idx, tag in enumerate(tags):
                 row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
@@ -149,25 +151,27 @@ class TagManagementDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(row, text=f"🏷  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text="🗑 Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
+                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.tags_scroll)
 
     def on_add_tag(self):
+        from services.i18n_service import tr
+
         new_tag = self.new_tag_entry.get().strip()
         if not new_tag:
-            self.status_lbl.configure(text="⚠ Tag Name darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_empty", "⚠ Tag Name darf nicht leer sein!"), text_color="red")
             return
 
         if new_tag in self.profile.available_tags:
-            self.status_lbl.configure(text="⚠ Tag existiert bereits!", text_color="red")
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_exists", "⚠ Tag existiert bereits!"), text_color="red")
             return
 
         self.profile.available_tags.append(new_tag)
         self.storage_service.save_profile(self.profile)
         self.new_tag_entry.delete(0, "end")
-        self.status_lbl.configure(text="✅ Tag erfolgreich hinzugefügt!", text_color="green")
+        self.status_lbl.configure(text=tr("tag_mgmt.tag_added", "✅ Tag erfolgreich hinzugefügt!"), text_color="green")
 
         self.render_tags_list()
         if self.on_tags_updated:
@@ -184,6 +188,8 @@ class TagManagementDialog(ctk.CTkToplevel):
 
     # --- MODULE TAGS LOGIC ---
     def render_modules_list(self):
+        from services.i18n_service import tr
+
         for w in self.modules_scroll.winfo_children():
             w.destroy()
 
@@ -191,7 +197,7 @@ class TagManagementDialog(ctk.CTkToplevel):
         mods = [m for m in self.profile.available_module_tags if query in m.lower()] if query else self.profile.available_module_tags
 
         if not mods:
-            ctk.CTkLabel(self.modules_scroll, text="Keine Programmbereiche gefunden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.modules_scroll, text=tr("tag_mgmt.no_modules", "Keine Programmbereiche gefunden."), text_color="gray").pack(pady=20)
         else:
             for idx, mod in enumerate(mods):
                 row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
@@ -199,25 +205,26 @@ class TagManagementDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text="🗑 Löschen", fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
+                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.modules_scroll)
 
     def on_add_module(self):
+        from services.i18n_service import tr
         new_mod = self.new_mod_entry.get().strip()
         if not new_mod:
-            self.status_lbl.configure(text="⚠ Programmbereich darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text=tr("tag_mgmt.module_empty", "⚠ Programmbereich darf nicht leer sein!"), text_color="red")
             return
 
         if new_mod in self.profile.available_module_tags:
-            self.status_lbl.configure(text="⚠ Programmbereich existiert bereits!", text_color="red")
+            self.status_lbl.configure(text=tr("tag_mgmt.module_exists", "⚠ Programmbereich existiert bereits!"), text_color="red")
             return
 
         self.profile.available_module_tags.append(new_mod)
         self.storage_service.save_profile(self.profile)
         self.new_mod_entry.delete(0, "end")
-        self.status_lbl.configure(text="✅ Programmbereich erfolgreich hinzugefügt!", text_color="green")
+        self.status_lbl.configure(text=tr("tag_mgmt.module_added", "✅ Programmbereich erfolgreich hinzugefügt!"), text_color="green")
 
         self.render_modules_list()
         if self.on_tags_updated:

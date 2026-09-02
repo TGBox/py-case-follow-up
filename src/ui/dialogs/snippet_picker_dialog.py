@@ -41,8 +41,10 @@ class SnippetPickerDialog(ctk.CTkToplevel):
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 10))
 
+        from services.i18n_service import tr
+
         self.search_entry = ctk.CTkEntry(
-            hdr_frame, placeholder_text="🔍 Textbaustein suchen...", width=320
+            hdr_frame, placeholder_text=tr("snippet_picker.search", "🔍 Textbaustein suchen..."), width=320
         )
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.search_entry.bind("<KeyRelease>", lambda e: self.refresh_snippet_list())
@@ -72,7 +74,7 @@ class SnippetPickerDialog(ctk.CTkToplevel):
         preview_box = ctk.CTkFrame(content_frame)
         preview_box.grid(row=0, column=1, sticky="nsew")
 
-        ctk.CTkLabel(preview_box, text="Vorschau des Textbausteins:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
+        ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
         
         self.preview_textbox = ctk.CTkTextbox(preview_box)
         self.preview_textbox.pack(fill="both", expand=True, padx=10, pady=(0, 10))
@@ -83,7 +85,7 @@ class SnippetPickerDialog(ctk.CTkToplevel):
 
         self.insert_btn = ctk.CTkButton(
             btn_frame,
-            text="🧩 Ausgewählten Baustein einfügen",
+            text=tr("snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_click_insert,
@@ -93,13 +95,14 @@ class SnippetPickerDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_frame,
-            text="Abbrechen",
+            text=tr("common.cancel", "Abbrechen"),
             fg_color="gray50",
             command=self.destroy,
             width=90,
         ).pack(side="right")
 
     def refresh_snippet_list(self):
+        from services.i18n_service import tr
         query = self.search_entry.get()
         cat = self.cat_combo.get()
         snippets = self.service.search_snippets(query=query, category=cat)
@@ -108,7 +111,7 @@ class SnippetPickerDialog(ctk.CTkToplevel):
             widget.destroy()
 
         if not snippets:
-            ctk.CTkLabel(self.list_scroll, text="Keine Textbausteine gefunden.").pack(pady=20)
+            ctk.CTkLabel(self.list_scroll, text=tr("snippet_picker.no_snippets", "Keine Textbausteine gefunden.")).pack(pady=20)
             return
 
         for snip in snippets:

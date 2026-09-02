@@ -100,12 +100,14 @@
     "print_pdf": "🖨 Print PDF Report",
     "open_html": "🌐 HTML Report",
     "save_file": "💾 Save...",
+    "save_template": "💾 Save Template",
     "regenerate_summary": "🔄 Regenerate Summary",
     "copy_clipboard": "📋 Copy to Clipboard",
     "insert_timeline": "📌 Insert into Timeline",
     "rerun_solutions": "🔄 Search Solutions Again",
     "generate_draft": "🔄 Generate Draft Reply",
-    "open_email_draft": "✉ Open in Email Draft"
+    "open_email_draft": "✉ Open in Email Draft",
+    "clear": "❌ Clear"
   },
   "status_messages": {
     "snippet_saved": "✓ Text snippet saved.",
@@ -210,7 +212,71 @@
     "saved_widths": "Saved Column Widths (Profile Level)",
     "reset_widths_btn": "🔄 Reset all column widths to default",
     "save_btn": "💾 Save Settings",
-    "saved_msg": "✓ Settings & profile saved!"
+    "saved_msg": "✓ Settings & profile saved!",
+    "user_tab_header": "Manage & Switch User Profile",
+    "active_profile": "Active Profile:",
+    "btn_new_profile": "➕ Create New Profile",
+    "user_info_header": "User Information (Active Profile)",
+    "display_name": "Name / Display Name *:",
+    "name_placeholder": "Your Name",
+    "dept": "Department *:",
+    "ext": "Extension:",
+    "signature": "Email Signature (for Drafts):",
+    "paths_title": "Storage Locations & File Paths (EXE / External Data)",
+    "workspace_label": "Workspace / Data Directory Path:",
+    "browse_folder": "📁 Select Folder",
+    "custom_overrides": "Custom Individual File Path Overrides (Optional):",
+    "cases_file": "Cases (cases.json):",
+    "cust_file": "Customers (customers.json):",
+    "wiki_file": "Wiki DB (sqlite):",
+    "default_in_data": "Default in Data Folder",
+    "file_browse": "File...",
+    "reset_paths_btn": "🔄 Reset Individual Paths to Default",
+    "wiki_title": "BookStack Server Configuration",
+    "wiki_url": "BookStack API URL:",
+    "wiki_token_id": "API Token ID:",
+    "wiki_token_secret": "API Token Secret:",
+    "wiki_sync_mode": "Sync Mode:",
+    "wiki_sync_startup": "Sync Wiki Content on Application Launch",
+    "status_saved": "✔ Settings & paths saved!",
+    "backup_title": "📦 Complete Data Backup & ZIP Archiving",
+    "backup_desc": "Export your entire dataset (all cases, customers, forms, export templates, staff and attachments folder) into a compressed ZIP file for backup or workplace migration.",
+    "backup_exp_title": "1. Export Full Dataset as ZIP",
+    "backup_exp_desc": "Creates a backup archive including all files in data/ and all documents in attachments/.",
+    "backup_exp_btn": "📦 Export Complete Backup as ZIP...",
+    "backup_imp_title": "2. Import Data Backup from ZIP File",
+    "backup_imp_desc": "Restores records and attachments from a ZIP archive into your selected target storage paths.",
+    "backup_imp_btn": "📥 Import Data Backup from ZIP..."
+  },
+  "help_dialog": {
+    "header": "📖 Manual & Help",
+    "search_placeholder": "🔍 Search topics & keywords...",
+    "nav_title": "Topics Overview"
+  },
+  "template_editor": {
+    "preview_btn": "👁 Render Live Preview"
+  },
+  "snippet_picker": {
+    "insert_btn": "🧩 Insert Selected Snippet"
+  },
+  "convert_schema": {
+    "convert_btn": "Convert Form"
+  },
+  "cobra_import": {
+    "import_btn": "🐍 Import Practices"
+  },
+  "email_draft": {
+    "open_mailto": "✉ Open in Default Mail App",
+    "transfer_outlook": "📬 Transfer to Outlook"
+  },
+  "email_calendar": {
+    "open_mailto": "✉ Open in Mail Client",
+    "open_ics": "📅 Open .ics Calendar File",
+    "save_ics": "💾 Save .ics File..."
+  },
+  "calendar_export": {
+    "open_ics": "📅 Open Directly in Calendar",
+    "save_ics": "💾 Save as .ics File..."
   },
   "layouts": {
     "cockpit": "Cockpit (Main View)",
@@ -239,5 +305,139 @@
     "search": "Search...",
     "error": "Error",
     "info": "Information"
+  },
+  "help_content": {
+    "basics": {
+      "title": "🚀 Basics & Layouts",
+      "category": "Basics",
+      "content": "### 🚀 User Interface Basics\n\nThe **Support Cockpit** assists you in efficiently tracking, categorizing, and prioritizing support cases and medical practice requests.\n\n#### The 4 Views (Layout Modes)\nIn the top menu bar, you can switch between 4 views at any time (`Ctrl+1` to `Ctrl+4`):\n\n1. **Cockpit View (Default, `Ctrl+1`)**:\n   - Tri-pane main layout with case list, case details/form, and BookStack wiki.\n\n2. **Kanban Board (`Ctrl+2`)**:\n   - Board view organized by columns & responsibilities (*New*, *Action Required*, *Waiting*, *In Progress*, *Completed*).\n\n3. **Table & Details (`Ctrl+3`)**:\n   - Tabular matrix showing case details for a compact overview, sorting, and filtering.\n\n4. **Analytics & Metrics (`Ctrl+4`)**:\n   - Full statistics dashboard showing resolution times, overdue deadlines, VIP ratios, and report exports.\n\n---\n\n#### 🔍 Search & Filter Function\n- Use the search bar at the top of the case list to filter cases by **Case ID**, **Practice Name**, **Subject**, or **Tags**.\n- Shortcut to focus search: `Ctrl+F`"
+    },
+    "ui_customization": {
+      "title": "📅 Date Formats, Calendar & Column Widths",
+      "category": "User Interface",
+      "content": "### 📅 Date Formatting, Calendar Picker & Column Widths\n\n#### 1. 📅 Date Formatting\n- All dates in the Support Cockpit (deadlines, callbacks, follow-ups, timeline) are displayed consistently in standard date format (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`).\n\n#### 2. 🗓 Interactive Calendar Picker\n- An interactive calendar dialog is available for all date entries (e.g. scheduling follow-ups, setting callback deadlines).\n- Click **📅 Calendar** next to the input field to open the monthly calendar and conveniently select the desired date with a click.\n- Quick selection buttons for *Today*, *+ 1 Day*, and *+ 1 Week* speed up data entry."
+    },
+    "praxis": {
+      "title": "🏥 Practice & Customer Management",
+      "category": "Customers",
+      "content": "### 🏥 Practice & Customer Data Management\n\n#### Central Practice Catalog\n- Manage all customer entries centrally under **Stammdaten -> 🏥 Praxen**.\n- Practice entries contain contact persons, phone numbers, email addresses, customer numbers, VIP status, and preferred support contacts."
+    },
+    "scoring": {
+      "title": "📊 Urgency Scoring & Prioritization",
+      "category": "Workflow",
+      "content": "### 📊 Automatic Urgency Scoring\n\nThe Support Cockpit automatically calculates an **Urgency Score** for every open case to help you identify urgent cases immediately."
+    },
+    "schemas": {
+      "title": "📄 Form Builder & Schemas",
+      "category": "Forms",
+      "content": "### 📄 Custom Dynamic Forms & Schemas\n\nCreate tailored input forms for specific medical device types, software modules, or support scenarios using the built-in Schema Builder."
+    },
+    "export": {
+      "title": "📤 Export Engine & Templates",
+      "category": "Export",
+      "content": "### 📤 Export & Handover Assistant\n\nGenerate summary reports, emails, or documentation for colleagues or external ticketing systems with a single click."
+    },
+    "wiki": {
+      "title": "📚 BookStack Wiki Integration",
+      "category": "Wiki",
+      "content": "### 📚 BookStack Wiki Integration\n\nThe Support Cockpit is directly connected to your BookStack Wiki to keep solution articles readily accessible."
+    },
+    "p2p": {
+      "title": "🔄 Peer-to-Peer Sync (Colleagues)",
+      "category": "Sync",
+      "content": "### 🔄 Peer-to-Peer (P2P) Synchronization\n\nCollaborate with colleagues without a central server. P2P Sync allows matching case data directly between local workstations."
+    },
+    "shortcuts": {
+      "title": "⌨ Keyboard Shortcuts & Hotkeys",
+      "category": "Shortcuts",
+      "content": "### ⌨ Keyboard Shortcuts\n\n- `Ctrl+N`: New Case\n- `Ctrl+S`: Save Case\n- `Ctrl+E`: Export Case\n- `Ctrl+P`: Open Settings\n- `Ctrl+1` - `Ctrl+4`: Switch Views\n- `F1`: Open Help"
+    },
+    "storage_paths": {
+      "title": "📁 Storage Locations & File Paths",
+      "category": "Configuration",
+      "content": "### 📁 Storage Locations & Directory Structure\n\nThe Support Cockpit keeps application data separated from workspace files for clean portability and EXE execution."
+    },
+    "template_editor": {
+      "title": "📄 Export Template Editor",
+      "category": "Export",
+      "content": "### 📄 Export Template Editor & Live Preview\n\nCustomize existing templates or define new export formats with side-by-side live rendering."
+    },
+    "handover_followup": {
+      "title": "🔔 Case Handovers & Follow-ups",
+      "category": "Workflow",
+      "content": "### 🔔 Responsibility Handovers & Follow-up Reminders\n\nReassign cases to colleagues or departments with automated timeline logging and follow-up alerts."
+    },
+    "email_calendar_outlook": {
+      "title": "✉ Email, Calendar (.ics) & Outlook",
+      "category": "Communication",
+      "content": "### ✉ Email Drafts, iCalendar & Outlook Integration\n\nCompose customer emails, export `.ics` calendar events, or transfer items directly to Microsoft Outlook."
+    },
+    "case_print_reporting": {
+      "title": "🖨 Case Print View, PDF & Images",
+      "category": "Export",
+      "content": "### 🖨 Case File Print & PDF Export\n\nGenerate print reports and PDF documents with embedded screenshots and complete timeline histories."
+    },
+    "ai_ollama_management": {
+      "title": "🤖 AI Assistant, Ollama Server & Model Control",
+      "category": "AI & Ollama",
+      "content": "### 🤖 Local AI Support Assistant & Ollama Management\n\n100% local, privacy-compliant AI assistance using local Ollama LLMs (Qwen2.5 / Llama3) or Google Gemini Cloud API."
+    },
+    "stepper_time_picker": {
+      "title": "⏱ Time Selection (07:00-20:00) & Stepper",
+      "category": "User Interface",
+      "content": "### ⏱ Interactive Time Picker\n\nOptimized time selection for medical practice office hours (07:00 to 20:00) with quick stepper arrows."
+    },
+    "internal_cases": {
+      "title": "🏢 Internal Cases & Tasks (Non-Customer)",
+      "category": "Workflow",
+      "content": "### 🏢 Internal Operations & Sub-Tasks\n\nManage internal IT tasks, server maintenance, or dev notes without requiring a customer assignment."
+    },
+    "cobra_crm_import": {
+      "title": "🐍 Cobra CRM Practice & Customer Import",
+      "category": "Customers",
+      "content": "### 🐍 Cobra CRM Import Assistant\n\nImport customer databases directly from Cobra CRM exports (.csv, .txt, .json)."
+    },
+    "snippets_manager": {
+      "title": "📝 Text Snippets & Macro Manager",
+      "category": "Communication",
+      "content": "### 📝 Text Snippets & Quick Response Templates\n\nSave time on recurring responses with reusable text snippet macros."
+    },
+    "repeatable_sub_forms": {
+      "title": "📂 Dynamic Multi-Card Forms",
+      "category": "Forms",
+      "content": "### 📂 Dynamic Multi-Card Forms & Repeatable Sub-Entries\n\nCapture multiple billing items or claims within a single structured support case."
+    },
+    "analytics_kpi_dashboard": {
+      "title": "Auswertungs- & KPI-Dashboard",
+      "category": "Analytics",
+      "content": "### Analytics & KPI Dashboard\n\nComprehensive statistical overview of workload, average resolution times, VIP rates, and department distribution."
+    },
+    "advanced_search_filters": {
+      "title": "🔍 Advanced Search & Search Tokens",
+      "category": "Basics",
+      "content": "### 🔍 Search Tokens & Quick Filters\n\nFilter cases using search tokens like `is:internal`, `vip:true`, `reminder:due`, or `actor:dev`."
+    },
+    "attachments_and_screenshots": {
+      "title": "📂 File Attachments & Screenshots (Ctrl+V)",
+      "category": "Documents",
+      "content": "### 📂 Attachment Management & Clipboard Screenshots\n\nPaste screenshots directly into cases with `Ctrl+V` and view file previews."
+    },
+    "zip_backup_restore": {
+      "title": "📦 Complete ZIP Backup & Restoration",
+      "category": "Configuration",
+      "content": "### 📦 Full Workspace Backup & Restore\n\nBackup all cases, customers, schemas, templates, and attachments into a compressed ZIP file."
+    },
+    "email_webhook_integration": {
+      "title": "🔌 Email Import & REST Webhooks (Jira/GitLab)",
+      "category": "Integrations",
+      "content": "### 🔌 Email IMAP Ingestion & Webhooks\n\nIngest emails via IMAP and trigger REST webhooks for external tools like GitLab or Jira."
+    }
+  },
+  "demo_cases": {
+    "c1_title": "Additional co-payment claim file generated with errors",
+    "c2_title": "Crash when printing BMA prescriptions",
+    "c3_title": "Correct KV billing text",
+    "c4_title": "Review 2026-Q1 additional claim",
+    "c5_title": "GUI font size in laboratory window too small"
   }
 }

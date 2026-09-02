@@ -120,8 +120,10 @@ class CalendarDialog(ctk.CTkToplevel):
             time_card = ctk.CTkFrame(main_frame, fg_color=("gray85", "gray20"), corner_radius=8)
             time_card.pack(fill="x", pady=(4, 4))
 
+            from services.i18n_service import tr
+
             ctk.CTkLabel(
-                time_card, text="⏰ Uhrzeit:", font=ctk.CTkFont(size=11, weight="bold")
+                time_card, text=tr("date_picker.time_lbl", "⏰ Uhrzeit:"), font=ctk.CTkFont(size=11, weight="bold")
             ).pack(side="left", padx=(10, 8))
 
             # Hours: 07 to 20
@@ -208,7 +210,7 @@ class CalendarDialog(ctk.CTkToplevel):
             btn_m_down.pack(fill="x", pady=(0, 1))
 
             ctk.CTkLabel(
-                time_card, text="Uhr", font=ctk.CTkFont(size=11, weight="bold"),
+                time_card, text=tr("date_picker.o_clock", "Uhr"), font=ctk.CTkFont(size=11, weight="bold"),
                 text_color=("gray30", "gray70")
             ).pack(side="left", padx=(6, 8))
 
@@ -244,15 +246,17 @@ class CalendarDialog(ctk.CTkToplevel):
         action_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         action_frame.pack(fill="x", side="bottom", pady=(2, 0))
 
+        from services.i18n_service import tr
+
         btn_cancel = ctk.CTkButton(
-            action_frame, text="Abbrechen", fg_color=("gray70", "gray40"),
+            action_frame, text=tr("common.cancel", "Abbrechen"), fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"), command=self.destroy,
             width=90, height=28
         )
         btn_cancel.pack(side="left")
 
         btn_apply = ctk.CTkButton(
-            action_frame, text="✓ Übernehmen", fg_color="forestgreen",
+            action_frame, text=tr("ui_buttons.apply", "✓ Übernehmen"), fg_color="forestgreen",
             command=self.on_apply, width=120, height=28
         )
         btn_apply.pack(side="right")
@@ -446,8 +450,10 @@ class DatePickerWidget(ctk.CTkFrame):
                 formatted = format_german_datetime(initial_value) if include_time else format_german_date(initial_value)
                 self.entry.insert(0, formatted)
 
+        from services.i18n_service import tr
+
         self.cal_btn = ctk.CTkButton(
-            self, text="📅 Kalender", width=95, command=self.open_calendar, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            self, text=tr("cockpit.calendar", "📅 Kalender"), width=95, command=self.open_calendar, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         self.cal_btn.pack(side="right")
 

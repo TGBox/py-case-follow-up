@@ -107,6 +107,8 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.status_lbl.pack(anchor="w", pady=(0, 5))
 
         # Action Buttons Container (2 structured rows)
+        from services.i18n_service import tr
+
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_box.pack(fill="x", pady=(8, 0))
 
@@ -116,7 +118,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row1_btns,
-            text="✉ Im Mail-Client öffnen",
+            text=tr("email_calendar.open_mailto", "✉ Im Mail-Client öffnen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,
@@ -125,7 +127,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row1_btns,
-            text="📋 Text in Zwischenablage kopieren",
+            text=tr("ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren"),
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_copy_text,
@@ -138,7 +140,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row2_btns,
-            text="📅 .ics Kalenderdatei öffnen",
+            text=tr("email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_open_ics,
@@ -147,7 +149,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row2_btns,
-            text="💾 .ics Datei speichern...",
+            text=tr("email_calendar.save_ics", "💾 .ics Datei speichern..."),
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_save_ics,
@@ -156,7 +158,7 @@ class EmailCalendarDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             row2_btns,
-            text="Schließen",
+            text=tr("common.close", "Schließen"),
             fg_color="gray50",
             hover_color="gray60",
             command=self.destroy,
@@ -184,14 +186,16 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         subject = self.subject_entry.get().strip()
         body = self.body_textbox.get("1.0", "end-1c").strip()
 
+        from services.i18n_service import tr
         self.service.open_mailto_link(to, subject, body)
-        self.status_lbl.configure(text="✓ Mail-Client wurde mit dem Entwurf aufgerufen.", text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.client_opened", "✓ Mail-Client wurde mit dem Entwurf aufgerufen."), text_color="lightgreen")
 
     def on_copy_text(self):
+        from services.i18n_service import tr
         body = self.body_textbox.get("1.0", "end-1c").strip()
         self.clipboard_clear()
         self.clipboard_append(body)
-        self.status_lbl.configure(text="✓ E-Mail Text wurde in die Zwischenablage kopiert.", text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.text_copied", "✓ E-Mail Text wurde in die Zwischenablage kopiert."), text_color="lightgreen")
 
     def on_open_ics(self):
         ics_path = self.service.generate_ics_file(self.case, user_name=self.user_name)

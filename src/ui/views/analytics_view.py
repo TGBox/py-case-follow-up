@@ -268,6 +268,7 @@ class AnalyticsView(ctk.CTkFrame):
 
         try:
             from ui.widgets.toast_notification import ToastNotification
-            ToastNotification(self.winfo_toplevel(), title="📋 Statistik kopiert", message="Statistik-Bericht wurde in die Zwischenablage kopiert.")
+            from services.i18n_service import tr
+            ToastNotification(self.winfo_toplevel(), title=tr("analytics.copied_title", "📋 Statistik kopiert"), message="Statistik-Bericht wurde in die Zwischenablage kopiert.")
         except Exception:
             pass

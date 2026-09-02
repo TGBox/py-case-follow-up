@@ -32,15 +32,17 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
+        from services.i18n_service import tr
+
         # Title Header
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(hdr_frame, text="📝 Textbaustein-Bibliothek verwalten", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
+        ctk.CTkLabel(hdr_frame, text=tr("snippet_mgmt.header", "📝 Textbaustein-Bibliothek verwalten"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left")
 
         ctk.CTkButton(
             hdr_frame,
-            text="+ Neuer Textbaustein",
+            text=tr("snippet_mgmt.new_snippet", "+ Neuer Textbaustein"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_click_new,
@@ -64,19 +66,19 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.form_box.grid(row=0, column=1, sticky="nsew")
         enable_auto_hiding_scrollbar(self.form_box)
 
-        ctk.CTkLabel(self.form_box, text="Titel:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.title_lbl", "Titel:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.title_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. 📸 Rückfrage: Screenshots")
         self.title_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(self.form_box, text="Kategorie:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.cat_lbl", "Kategorie:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.category_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. Rückfrage, Anleitung, SQL")
         self.category_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(self.form_box, text="Inhalt / Baustein-Text:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.content_lbl", "Inhalt / Baustein-Text:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.content_textbox = ctk.CTkTextbox(self.form_box, height=180)
         self.content_textbox.pack(fill="x", expand=True, pady=(0, 8))
 
-        ctk.CTkLabel(self.form_box, text="Tags (kommagetrennt):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
+        ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.tags_lbl", "Tags (kommagetrennt):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. fehler, sql, anleitung")
         self.tags_entry.pack(fill="x", pady=(0, 8))
 
@@ -106,7 +108,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         self.save_btn = ctk.CTkButton(
             btn_row,
-            text="💾 Speichern",
+            text=tr("cockpit.save", "💾 Speichern"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_click_save,
@@ -115,7 +117,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         self.delete_btn = ctk.CTkButton(
             btn_row,
-            text="🗑 Löschen",
+            text=tr("common.delete", "🗑 Löschen"),
             fg_color="crimson",
             hover_color="darkred",
             command=self.on_click_delete,
@@ -123,10 +125,12 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         )
         self.delete_btn.pack(side="left")
 
+        from services.i18n_service import tr
+
         # Bottom Close Button
         ctk.CTkButton(
             main_frame,
-            text="Schließen",
+            text=tr("common.close", "Schließen"),
             fg_color="gray50",
             command=self.destroy,
             width=90,
@@ -140,13 +144,14 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         HotkeyRecorderDialog(self, on_recorded)
 
     def refresh_list(self):
+        from services.i18n_service import tr
         snippets = self.service.get_all_snippets()
 
         for widget in self.list_scroll.winfo_children():
             widget.destroy()
 
         if not snippets:
-            ctk.CTkLabel(self.list_scroll, text="Keine Textbausteine vorhanden.").pack(pady=20)
+            ctk.CTkLabel(self.list_scroll, text=tr("snippet_mgmt.no_snippets", "Keine Textbausteine vorhanden.")).pack(pady=20)
             return
 
         for snip in snippets:
@@ -157,41 +162,46 @@ class SnippetManagementDialog(ctk.CTkToplevel):
             card.pack(fill="x", pady=4, padx=4)
             card.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-            hdr_row = ctk.CTkFrame(card, fg_color="transparent")
-            hdr_row.pack(fill="x", padx=8, pady=(6, 2))
-            hdr_row.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
+            top = ctk.CTkFrame(card, fg_color="transparent")
+            top.pack(fill="x", padx=6, pady=(4, 1))
 
-            title_text = f"{snip.title} ⌨ {snip.shortcut}" if snip.shortcut else snip.title
-            title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
-            title_lbl.pack(side="left", fill="x", expand=True)
-            title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
+            lbl_t = ctk.CTkLabel(top, text=snip.title, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+            lbl_t.pack(side="left", fill="x", expand=True)
+            lbl_t.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-            cat_lbl = ctk.CTkLabel(hdr_row, text=snip.category, font=ctk.CTkFont(size=10), text_color="dodgerblue")
-            cat_lbl.pack(side="right")
+            if snip.shortcut:
+                lbl_sc = ctk.CTkLabel(top, text=f"⌨ {snip.shortcut}", font=ctk.CTkFont(size=10), text_color="dodgerblue")
+                lbl_sc.pack(side="right")
+                lbl_sc.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-    def select_snippet(self, snippet: Snippet):
-        self.selected_snippet = snippet
+            cat_lbl = ctk.CTkLabel(card, text=f"Kategorie: {snip.category}", font=ctk.CTkFont(size=10), text_color="gray70", anchor="w")
+            cat_lbl.pack(fill="x", padx=6, pady=(0, 4))
+            cat_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
+
+    def select_snippet(self, snip: Snippet):
+        self.selected_snippet = snip
         self.title_entry.delete(0, "end")
-        self.title_entry.insert(0, snippet.title)
+        self.title_entry.insert(0, snip.title)
 
         self.category_entry.delete(0, "end")
-        self.category_entry.insert(0, snippet.category)
+        self.category_entry.insert(0, snip.category)
 
         self.content_textbox.delete("1.0", "end")
-        self.content_textbox.insert("1.0", snippet.content)
+        self.content_textbox.insert("1.0", snip.content)
 
         self.tags_entry.delete(0, "end")
-        self.tags_entry.insert(0, ", ".join(snippet.tags))
+        self.tags_entry.insert(0, ", ".join(snip.tags))
 
         self.shortcut_entry.delete(0, "end")
-        if snippet.shortcut:
-            self.shortcut_entry.insert(0, snippet.shortcut)
+        if snip.shortcut:
+            self.shortcut_entry.insert(0, snip.shortcut)
 
         self.delete_btn.configure(state="normal")
-        self.status_lbl.configure(text=f"Ausgewählt: {snippet.snippet_id}", text_color="dodgerblue")
+        self.status_lbl.configure(text=f"Ausgewählt: {snip.snippet_id}", text_color="dodgerblue")
         self.refresh_list()
 
     def on_click_new(self):
+        from services.i18n_service import tr
         self.selected_snippet = None
         self.title_entry.delete(0, "end")
         self.category_entry.delete(0, "end")
@@ -200,10 +210,11 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.tags_entry.delete(0, "end")
         self.shortcut_entry.delete(0, "end")
         self.delete_btn.configure(state="disabled")
-        self.status_lbl.configure(text="Neuer Textbaustein (wird beim Speichern angelegt)", text_color="gray")
+        self.status_lbl.configure(text=tr("snippet_mgmt.new_snippet_status", "Neuer Textbaustein (wird beim Speichern angelegt)"), text_color="gray")
         self.refresh_list()
 
     def on_click_save(self):
+        from services.i18n_service import tr
         title = self.title_entry.get().strip()
         cat = self.category_entry.get().strip() or "Allgemein"
         content = self.content_textbox.get("1.0", "end-1c").strip()
@@ -212,10 +223,10 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         sc = self.shortcut_entry.get().strip()
 
         if not title:
-            self.status_lbl.configure(text="⚠ Bitte einen Titel eingeben.", text_color="crimson")
+            self.status_lbl.configure(text=tr("snippet_mgmt.title_required", "⚠ Bitte einen Titel eingeben."), text_color="crimson")
             return
         if not content:
-            self.status_lbl.configure(text="⚠ Der Inhalt darf nicht leer sein.", text_color="crimson")
+            self.status_lbl.configure(text=tr("snippet_mgmt.content_required", "⚠ Der Inhalt darf nicht leer sein."), text_color="crimson")
             return
 
         sid = self.selected_snippet.snippet_id if self.selected_snippet else ""

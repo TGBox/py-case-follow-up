@@ -1,0 +1,56 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch: {}
+
+jobs:
+  pytest:
+    # Die App ist windows-first (Tray-Icon, Outlook-COM, native Notifications),
+    # daher laufen die Tests auf einem Windows-Runner - identisch zur echten Zielumgebung.
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies (uv.lock)
+        run: uv sync --locked
+
+      - name: Run test suite
+        run: uv run pytest -q
+
+      # Hinweis: Fuer Coverage-Zahlen (pytest-cov) muesste die Dependency erst lokal
+      # per "uv add --dev pytest-cov" hinzugefuegt werden (aktualisiert die uv.lock).
+      # Das konnte hier nicht gemacht werden, da diese Sandbox keinen Zugriff auf
+      # PyPI hat. Danach kann dieser Schritt um --cov=src --cov-report=xml erweitert
+      # und ein Upload-Schritt fuer den Report ergaenzt werden.
+
+  typecheck:
+    # Nicht blockierend: markiert Typfehler sichtbar in den Checks, ohne den Build rot zu machen,
+    # solange die bestehende Codebasis nicht vollstaendig pyright-sauber ist.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies (uv.lock)
+        run: uv sync --locked
+
+      - name: Run pyright
+        run: uvx pyright src

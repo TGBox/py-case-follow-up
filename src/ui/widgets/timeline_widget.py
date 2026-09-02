@@ -22,8 +22,10 @@ class TimelineWidget(ctk.CTkFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Header
-        ctk.CTkLabel(self, text="Verlauf & Timeline Notizen", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
+        ctk.CTkLabel(self, text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", padx=10, pady=(10, 5))
 
         # Scrollable list
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
@@ -38,11 +40,11 @@ class TimelineWidget(ctk.CTkFrame):
         ctrl_row = ctk.CTkFrame(input_frame, fg_color="transparent")
         ctrl_row.pack(fill="x", padx=5, pady=(5, 2))
 
-        ctk.CTkLabel(ctrl_row, text="Neue Notiz hinzufügen:", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
+        ctk.CTkLabel(ctrl_row, text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"), font=ctk.CTkFont(size=11, weight="bold")).pack(side="left")
 
         snip_btn = ctk.CTkButton(
             ctrl_row,
-            text="🧩 Textbaustein",
+            text=tr("cockpit.snippets_btn", "📝 Textbaustein"),
             width=110,
             fg_color="gray30",
             hover_color="darkmagenta",
@@ -50,7 +52,7 @@ class TimelineWidget(ctk.CTkFrame):
         )
         snip_btn.pack(side="right")
 
-        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=list(CHANNEL_DISPLAY.values()), width=200)
+        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=200)
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
         self.channel_combo.pack(anchor="w", padx=5, pady=(0, 5))
 
@@ -60,7 +62,7 @@ class TimelineWidget(ctk.CTkFrame):
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
 
-        add_btn = ctk.CTkButton(input_frame, text="+ Notiz Hinzufügen", command=self.on_add_note, width=140)
+        add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=140)
         add_btn.pack(side="right", padx=5, pady=(0, 5))
 
     def on_click_snippet(self):

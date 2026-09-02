@@ -41,11 +41,13 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.render_modules_list()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Header Bar
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="🏷 System-Tags & Programmbereiche", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text=tr("tag_mgmt.header", "🏷 System-Tags & Programmbereiche"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=(5, 10))
@@ -57,32 +59,32 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.status_lbl = ctk.CTkLabel(btn_frame, text="", text_color="green")
         self.status_lbl.pack(side="left")
 
-        close_btn = ctk.CTkButton(btn_frame, text="Schließen", command=self.destroy, width=120)
+        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), command=self.destroy, width=120)
         close_btn.pack(side="right")
 
         # Tabview (Fills remaining space above footer)
         self.tabview = ctk.CTkTabview(main_frame, command=self._on_tab_changed)
         self.tabview.pack(fill="both", expand=True, pady=(0, 5))
 
-        tab_tags = self.tabview.add("🏷 Allgemeine Tags")
-        tab_modules = self.tabview.add("🧩 Programmbereiche")
+        tab_tags = self.tabview.add(tr("tag_mgmt.tab_tags", "🏷 Allgemeine Tags"))
+        tab_modules = self.tabview.add(tr("tag_mgmt.tab_modules", "🧩 Programmbereiche"))
 
         # --- TAB 1: ALLGEMEINE TAGS ---
         # Search & Add Box
         add_box1 = ctk.CTkFrame(tab_tags)
         add_box1.pack(fill="x", pady=5, padx=5)
 
-        self.search_tag_entry = ctk.CTkEntry(add_box1, placeholder_text="🔍 Tags durchsuchen...")
+        self.search_tag_entry = ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen..."))
         self.search_tag_entry.pack(fill="x", padx=10, pady=(8, 4))
         self.search_tag_entry.bind("<KeyRelease>", lambda e: self.render_tags_list())
 
         add_row1 = ctk.CTkFrame(add_box1, fg_color="transparent")
         add_row1.pack(fill="x", padx=10, pady=(4, 8))
 
-        self.new_tag_entry = ctk.CTkEntry(add_row1, placeholder_text="Neuen Tag erstellen (z. B. Schnittstelle)...")
+        self.new_tag_entry = ctk.CTkEntry(add_row1, placeholder_text=tr("tag_mgmt.new_tag_placeholder", "Neuen Tag erstellen (z. B. Schnittstelle)..."))
         self.new_tag_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        add_btn1 = ctk.CTkButton(add_row1, text="+ Tag Hinzufügen", command=self.on_add_tag, fg_color="forestgreen", width=140)
+        add_btn1 = ctk.CTkButton(add_row1, text=tr("tag_mgmt.add_tag_btn", "+ Tag Hinzufügen"), command=self.on_add_tag, fg_color="forestgreen", width=140)
         add_btn1.pack(side="right")
 
         self.tags_scroll = ctk.CTkScrollableFrame(tab_tags)
@@ -94,17 +96,17 @@ class TagManagementDialog(ctk.CTkToplevel):
         add_box2 = ctk.CTkFrame(tab_modules)
         add_box2.pack(fill="x", pady=5, padx=5)
 
-        self.search_mod_entry = ctk.CTkEntry(add_box2, placeholder_text="🔍 Programmbereiche durchsuchen...")
+        self.search_mod_entry = ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen..."))
         self.search_mod_entry.pack(fill="x", padx=10, pady=(8, 4))
         self.search_mod_entry.bind("<KeyRelease>", lambda e: self.render_modules_list())
 
         add_row2 = ctk.CTkFrame(add_box2, fg_color="transparent")
         add_row2.pack(fill="x", padx=10, pady=(4, 8))
 
-        self.new_mod_entry = ctk.CTkEntry(add_row2, placeholder_text="Neuen Programmbereich erstellen (z. B. Rezeptdruck)...")
+        self.new_mod_entry = ctk.CTkEntry(add_row2, placeholder_text=tr("tag_mgmt.new_module_placeholder", "Neuen Programmbereich erstellen (z. B. Rezeptdruck)..."))
         self.new_mod_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        add_btn2 = ctk.CTkButton(add_row2, text="+ Bereich Hinzufügen", command=self.on_add_module, fg_color="dodgerblue", width=160)
+        add_btn2 = ctk.CTkButton(add_row2, text=tr("tag_mgmt.add_module_btn", "+ Bereich Hinzufügen"), command=self.on_add_module, fg_color="dodgerblue", width=160)
         add_btn2.pack(side="right")
 
         self.modules_scroll = ctk.CTkScrollableFrame(tab_modules)

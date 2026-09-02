@@ -50,8 +50,33 @@ DISPLAY_BOARD_COLUMN_NAMES = {
     "DONE": "Erledigt",
 }
 
+from typing import Any
+
+
+class LocalizedDict(dict):
+    def __init__(self, prefix: str, initial_dict: dict[str, str]):
+        super().__init__(initial_dict)
+        self._prefix = prefix
+
+    def __getitem__(self, key: str) -> str:
+        default = super().get(key, key)
+        try:
+            from services.i18n_service import tr
+            return tr(f"{self._prefix}.{key}", default=default)
+        except Exception:
+            return default
+
+    def get(self, key: str, default: Any = None) -> Any:
+        try:
+            from services.i18n_service import tr
+            fallback = super().get(key, default)
+            return tr(f"{self._prefix}.{key}", default=fallback if fallback is not None else key)
+        except Exception:
+            return super().get(key, default)
+
+
 # --- Dialog Titles & Window Headers ---
-DIALOG_TITLES = {
+DIALOG_TITLES = LocalizedDict("dialog_titles", {
     "new_case": "Neuen Support-Fall anlegen",
     "quick_customer": "🏥 Neue Praxis schnell anlegen",
     "print_report": "🖨 Fall-Akte Druck- & HTML Export",
@@ -79,12 +104,12 @@ DIALOG_TITLES = {
     "email_calendar": "✉ E-Mail & 📅 Kalender-Entwurf",
     "ai_assistant": "🤖 KI- & Support-Assistent",
     "email_import": "📥 E-Mail Posteingang & Import Hub",
-}
+})
 
 # --- Sub-Header Labels inside Dialogs ---
-DIALOG_HEADERS = {
+DIALOG_HEADERS = LocalizedDict("dialog_headers", {
     "email_import_hub": "📥 E-Mail Import Hub & Auto-Matching",
-}
+})
 
 # --- Dropdown Menu & Navigation Option Lists ---
 MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🧩 Programmbereiche"]
@@ -92,7 +117,7 @@ MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine"
 MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"]
 
 # --- Button Labels & UI Action Texts ---
-UI_BUTTON_TEXTS = {
+UI_BUTTON_TEXTS = LocalizedDict("ui_buttons", {
     "save": "Speichern",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -115,10 +140,10 @@ UI_BUTTON_TEXTS = {
     "rerun_solutions": "🔄 Lösungssuche erneut ausführen",
     "generate_draft": "🔄 Antwort-Entwurf generieren",
     "open_email_draft": "✉ In E-Mail-Entwurf öffnen",
-}
+})
 
 # --- Status & Feedback Messages ---
-STATUS_MESSAGES = {
+STATUS_MESSAGES = LocalizedDict("status_messages", {
     "snippet_saved": "✓ Textbaustein gespeichert.",
     "snippet_deleted": "✓ Textbaustein gelöscht.",
     "customer_saved": "✓ Praxis-Eintrag erfolgreich gespeichert.",
@@ -132,7 +157,7 @@ STATUS_MESSAGES = {
     "ai_ollama_online": "🟢 Ollama Local LLM aktiv ({model})",
     "ai_ollama_offline": "⚡ Regelbasierter NLP-Modus (Ollama offline)",
     "ai_processing": "🤖 KI verarbeitet Anfrage...",
-}
+})
 
 # --- Validation Error Messages ---
 VALIDATION_MESSAGES = {
@@ -417,6 +442,21 @@ DEFAULT_HANDOVER_CHANNELS = [
     "GitLab Issue",
     "Sonstiges",
 ]
+
+
+def get_localized_departments() -> list[str]:
+    from services.i18n_service import tr
+    return [tr(f"departments.{d}", default=d) for d in DEFAULT_DEPARTMENTS]
+
+
+def get_localized_handover_channels() -> list[str]:
+    from services.i18n_service import tr
+    return [tr(f"handover_channels.{c}", default=c) for c in DEFAULT_HANDOVER_CHANNELS]
+
+
+def get_localized_task_categories() -> list[str]:
+    from services.i18n_service import tr
+    return [tr(f"internal_task_categories.{c}", default=c) for c in DEFAULT_INTERNAL_TASK_CATEGORIES]
 
 DEFAULT_SNIPPET_CATEGORY = "Allgemein"
 

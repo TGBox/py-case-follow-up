@@ -665,7 +665,6 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if not self.case:
             self.status_lbl.configure(text=tr("email_draft.case_required_for_ai", "⚠ KI-Entwurf benötigt einen aktiven Fall."), text_color="darkorange")
             return
-            return
 
         self._show_overlay("🤖 KI generiert E-Mail-Entwurf... Bitte warten")
 

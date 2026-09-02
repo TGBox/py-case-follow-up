@@ -313,7 +313,7 @@ class CockpitView(ctk.CTkFrame):
 
         self.more_actions_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
-            values=["⚙ Weitere Aktionen...", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
+            values=["⚙ Weitere Aktionen...", "📧 Praxis-E-Mail kopieren", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
             command=self.on_more_actions_selected,
             width=165,
             fg_color=("gray70", "gray35"),
@@ -483,7 +483,9 @@ class CockpitView(ctk.CTkFrame):
         self.attachment_widget.load_attachments(case)
 
     def on_more_actions_selected(self, choice: str):
-        if choice == "📤 Fall Exportieren":
+        if choice == "📧 Praxis-E-Mail kopieren":
+            self.on_copy_practice_email()
+        elif choice == "📤 Fall Exportieren":
             self.on_click_export()
         elif choice == "🖨 Fall Drucken":
             self.on_click_print()
@@ -491,6 +493,34 @@ class CockpitView(ctk.CTkFrame):
             self.open_convert_schema_dialog()
         if hasattr(self, "more_actions_combo"):
             self.more_actions_combo.set("⚙ Weitere Aktionen...")
+
+    def on_copy_practice_email(self):
+        if not self.current_case or not self.current_case.customer:
+            return
+
+        email = self.current_case.customer.email
+        if not email and getattr(self.current_case.customer, "all_emails", None):
+            emails = self.current_case.customer.all_emails
+            if emails:
+                email = emails[0]
+
+        if email and email.strip():
+            email_clean = email.strip()
+            self.clipboard_clear()
+            self.clipboard_append(email_clean)
+            from ui.widgets.toast_notification import ToastNotification
+            ToastNotification(
+                self.winfo_toplevel(),
+                title="📋 E-Mail kopiert",
+                message=f"Praxis-E-Mail '{email_clean}' wurde in die Zwischenablage kopiert.",
+            )
+        else:
+            from ui.widgets.toast_notification import ToastNotification
+            ToastNotification(
+                self.winfo_toplevel(),
+                title="⚠️ Keine E-Mail-Adresse",
+                message="Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
+            )
 
     def open_convert_schema_dialog(self):
         if not self.current_case:
@@ -572,8 +602,8 @@ class CockpitView(ctk.CTkFrame):
         if self.current_case:
             self.current_case.workflow_status.followup_at = followup_at
             self.current_case.workflow_status.followup_note = followup_note
+            self._update_wiedervorlage_display()
             self.on_click_save()
-            self.on_select_case_from_list(self.current_case)
 
     def on_toggle_complete(self):
         if self.current_case:

@@ -528,6 +528,9 @@ class SupportCockpitApp(ctk.CTk):
                 )
                 case.timeline.append(entry)
             self.on_case_updated(case)
+            if self.active_case and self.active_case.case_id == case.case_id:
+                if self.active_view == self.cockpit_view and hasattr(self.cockpit_view, "_update_wiedervorlage_display"):
+                    self.cockpit_view._update_wiedervorlage_display()
 
         FollowupDialog(self, case=case, on_followup_set=on_followup_set)
 

@@ -209,10 +209,10 @@ class FollowupDialog(ctk.CTkToplevel):
     def on_save(self):
         iso_val = self.date_picker.get_iso()
         note = self.note_entry.get().strip()
+        self.safe_destroy()
         if iso_val:
             self.on_followup_set(iso_val, note)
-        self.safe_destroy()
 
     def on_clear(self):
-        self.on_followup_set("", "")
         self.safe_destroy()
+        self.on_followup_set("", "")

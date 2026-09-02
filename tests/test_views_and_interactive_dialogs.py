@@ -160,3 +160,40 @@ def test_export_template_validation(tmp_path: Path):
     )
     assert template.template_id == "tpl_test"
     assert "{{ case.case_id }}" in template.template_string
+
+
+def test_cockpit_view_copy_practice_email(tmp_path: Path):
+    """Test CockpitView copy practice email option under 'Weitere Aktionen' dropdown."""
+    from ui.views.cockpit_view import CockpitView
+
+    cockpit = CockpitView.__new__(CockpitView)
+
+    copied_text = []
+
+    def mock_clear():
+        copied_text.clear()
+
+    def mock_append(text):
+        copied_text.append(text)
+
+    cockpit.clipboard_clear = mock_clear
+    cockpit.clipboard_append = mock_append
+    cockpit.winfo_toplevel = lambda: None
+
+    # Case with practice email
+    customer = Customer(customer_id="K123", practice_name="Dr. Test", email_address="praxis@test.de")
+    case_with_email = Case(case_id="FALL-001", customer=customer)
+
+    cockpit.current_case = case_with_email
+    cockpit.on_more_actions_selected("📧 Praxis-E-Mail kopieren")
+    assert copied_text == ["praxis@test.de"]
+
+    # Case without email
+    copied_text.clear()
+    customer_no_email = Customer(customer_id="K456", practice_name="Dr. NoMail", email_address="")
+    case_no_email = Case(case_id="FALL-002", customer=customer_no_email)
+
+    cockpit.current_case = case_no_email
+    cockpit.on_more_actions_selected("📧 Praxis-E-Mail kopieren")
+    assert copied_text == []
+

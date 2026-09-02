@@ -111,9 +111,9 @@ class DebouncedSaver:
         self._data: dict[Path, Any] = {}
         self._lock = threading.Lock()
 
-    def save_debounced(self, target_path: Path, data: Any, delay_seconds: float = 0.15):
+    def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = 0.15):
         with self._lock:
-            self._data[target_path] = data
+            self._data[target_path] = data_or_producer
             if target_path in self._timers:
                 self._timers[target_path].cancel()
 
@@ -123,7 +123,8 @@ class DebouncedSaver:
                     self._timers.pop(target_path, None)
                 if val is not None:
                     try:
-                        atomic_save_json(target_path, val)
+                        data = val() if callable(val) else val
+                        atomic_save_json(target_path, data)
                     except Exception as e:
                         logger.error(f"Debounced background save failed for {target_path}: {e}")
 
@@ -141,8 +142,9 @@ class DebouncedSaver:
             self._timers.clear()
             self._data.clear()
 
-        for path, data in pending_data.items():
+        for path, val in pending_data.items():
             try:
+                data = val() if callable(val) else val
                 atomic_save_json(path, data)
             except Exception as e:
                 logger.error(f"Flush save failed for {path}: {e}")
@@ -196,11 +198,15 @@ class StorageService:
 
     def save_cases(self, cases: list[Case], sync: bool = False) -> None:
         self._cases_cache = cases
-        data = [case.to_dict() for case in cases]
         if sync:
+            data = [case.to_dict() for case in cases]
             atomic_save_json(self.config.cases_path, data)
         else:
-            self.saver.save_debounced(self.config.cases_path, data)
+            cases_snapshot = list(cases)
+            self.saver.save_debounced(
+                self.config.cases_path,
+                lambda: [c.to_dict() for c in cases_snapshot]
+            )
 
     def update_single_case(self, case: Case) -> None:
         """Updates or adds a single case in the cache and persists the cases file."""
@@ -232,11 +238,15 @@ class StorageService:
 
     def save_archive(self, cases: list[Case], sync: bool = False) -> None:
         self._archive_cache = cases
-        data = [case.to_dict() for case in cases]
         if sync:
+            data = [case.to_dict() for case in cases]
             atomic_save_json(self.config.archive_path, data)
         else:
-            self.saver.save_debounced(self.config.archive_path, data)
+            cases_snapshot = list(cases)
+            self.saver.save_debounced(
+                self.config.archive_path,
+                lambda: [c.to_dict() for c in cases_snapshot]
+            )
 
     def archive_single_case(self, case_id: str) -> bool:
         cases = self.load_cases()
@@ -326,11 +336,15 @@ class StorageService:
 
     def save_customers(self, customers: list[Customer], sync: bool = False) -> None:
         self._customers_cache = customers
-        data = [c.to_dict() for c in customers]
         if sync:
+            data = [c.to_dict() for c in customers]
             atomic_save_json(self.config.customers_path, data)
         else:
-            self.saver.save_debounced(self.config.customers_path, data)
+            customers_snapshot = list(customers)
+            self.saver.save_debounced(
+                self.config.customers_path,
+                lambda: [c.to_dict() for c in customers_snapshot]
+            )
 
     # --- Profile ---
     @property
@@ -384,18 +398,19 @@ class StorageService:
 
     def save_profile(self, profile: UserProfile, sync: bool = False) -> None:
         self._profile_cache = profile
-        p_dict = profile.to_dict()
         if sync:
+            p_dict = profile.to_dict()
             atomic_save_json(self.config.app_profile_path, p_dict)
         else:
-            self.saver.save_debounced(self.config.app_profile_path, p_dict)
+            self.saver.save_debounced(self.config.app_profile_path, lambda: profile.to_dict())
         safe_filename = "".join(c for c in profile.user.name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
         if safe_filename:
             target_path = self.profiles_dir / f"profile_{safe_filename}.json"
             if sync:
+                p_dict = profile.to_dict() if 'p_dict' not in locals() else p_dict
                 atomic_save_json(target_path, p_dict)
             else:
-                self.saver.save_debounced(target_path, p_dict)
+                self.saver.save_debounced(target_path, lambda: profile.to_dict())
 
     # --- Schemas ---
     def load_schemas(self, use_cache: bool = True) -> list[QuestionSchema]:
@@ -435,11 +450,15 @@ class StorageService:
 
     def save_schemas(self, schemas: list[QuestionSchema], sync: bool = False) -> None:
         self._schemas_cache = schemas
-        data = {"schemas": [s.to_dict() for s in schemas]}
         if sync:
+            data = {"schemas": [s.to_dict() for s in schemas]}
             atomic_save_json(self.config.question_schemas_path, data)
         else:
-            self.saver.save_debounced(self.config.question_schemas_path, data)
+            schemas_snapshot = list(schemas)
+            self.saver.save_debounced(
+                self.config.question_schemas_path,
+                lambda: {"schemas": [s.to_dict() for s in schemas_snapshot]}
+            )
 
     def reset_schemas_to_defaults(self) -> list[QuestionSchema]:
         """Overwrites working schemas with data_examples/question_schemas.json."""

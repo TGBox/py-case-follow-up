@@ -337,8 +337,10 @@ class CockpitView(ctk.CTkFrame):
         )
         self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
 
+        self._loaded_tab_case_ids: dict[str, str] = {}
+
         # 3. Right Pane: Tabbed Sidebar
-        self.right_tabview = ctk.CTkTabview(self.paned)
+        self.right_tabview = ctk.CTkTabview(self.paned, command=self._on_sidebar_tab_changed)
 
         tab_timeline = self.right_tabview.add("Zeitleiste")
         tab_attachments = self.right_tabview.add("Anhänge")
@@ -378,6 +380,7 @@ class CockpitView(ctk.CTkFrame):
 
     def focus_timeline_note(self):
         self.right_tabview.set("Zeitleiste")
+        self._on_sidebar_tab_changed("Zeitleiste")
         self.timeline_widget.note_textbox.focus_set()
 
     def on_click_print(self):
@@ -472,15 +475,30 @@ class CockpitView(ctk.CTkFrame):
         self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
         self.complete_btn.configure(text="✓ Wieder öffnen" if case.workflow_status.is_completed else "✓ Erledigen")
 
+        # Reset sidebar loaded tabs cache for new case
+        self._loaded_tab_case_ids.clear()
+
         # Load active schema
         schema = next((s for s in self.schemas if s.schema_id == case.classification.schema_id), None)
         if schema:
             SchemaService.update_case_completion(case, schema)
         self.form_widget.load_schema(schema, case.form_data, case.missing_required_fields, case=case)
 
-        # Load right sidebar
-        self.timeline_widget.load_timeline(case.timeline)
-        self.attachment_widget.load_attachments(case)
+        # Lazy load active sidebar tab content on-demand
+        self._on_sidebar_tab_changed()
+
+    def _on_sidebar_tab_changed(self, tab_name: str | None = None):
+        if not self.current_case:
+            return
+        curr_tab = tab_name or self.right_tabview.get()
+        if self._loaded_tab_case_ids.get(curr_tab) == self.current_case.case_id:
+            return
+
+        self._loaded_tab_case_ids[curr_tab] = self.current_case.case_id
+        if curr_tab == "Zeitleiste":
+            self.timeline_widget.load_timeline(self.current_case.timeline)
+        elif curr_tab == "Anhänge":
+            self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
         if choice == "📧 Praxis-E-Mail kopieren":
@@ -518,7 +536,7 @@ class CockpitView(ctk.CTkFrame):
             from ui.widgets.toast_notification import ToastNotification
             ToastNotification(
                 self.winfo_toplevel(),
-                title="⚠️ Keine E-Mail-Adresse",
+                title="⚠ Keine E-Mail-Adresse",
                 message="Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
             )
 

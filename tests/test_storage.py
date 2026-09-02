@@ -124,6 +124,17 @@ def test_custom_workspace_and_path_overrides(tmp_path: Path):
     assert loaded[0].case_id == "T-999"
 
 
+def test_debounced_producer_saving(tmp_config: AppConfig):
+    storage = StorageService(tmp_config)
+    case = Case(case_id="T-DEBOUNCE")
+    storage.save_cases([case], sync=False)
+    storage.flush_all_saves()
+
+    loaded = storage.load_cases(use_cache=False)
+    assert len(loaded) == 1
+    assert loaded[0].case_id == "T-DEBOUNCE"
+
+
 def test_followup_data_serialization(tmp_config: AppConfig):
     storage = StorageService(tmp_config)
     case = Case(case_id="T-777")

@@ -102,6 +102,9 @@ class TimelineWidget(ctk.CTkFrame):
                 sc_lbl = ctk.CTkLabel(card, text=f"Status: {entry.status_change}", font=ctk.CTkFont(size=10), text_color="dodgerblue")
                 sc_lbl.pack(anchor="w", padx=10, pady=(0, 4))
 
+        from utils.ui_utils import bind_mouse_wheel_to_canvas
+        bind_mouse_wheel_to_canvas(self.scroll_frame)
+
     def on_add_note(self):
         text = self.note_textbox.get("1.0", "end-1c").strip()
         if not text:

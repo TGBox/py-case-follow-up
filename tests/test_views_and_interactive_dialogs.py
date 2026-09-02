@@ -197,3 +197,30 @@ def test_cockpit_view_copy_practice_email(tmp_path: Path):
     cockpit.on_more_actions_selected("📧 Praxis-E-Mail kopieren")
     assert copied_text == []
 
+
+def test_bind_mouse_wheel_to_canvas_utility():
+    """Test bind_mouse_wheel_to_canvas attaches scroll bindings recursively without crashing."""
+    from utils.ui_utils import bind_mouse_wheel_to_canvas
+
+    class DummyWidget:
+        def __init__(self):
+            self.bound = []
+            self.children = []
+
+        def bind(self, event, func, add=None):
+            self.bound.append(event)
+
+        def winfo_children(self):
+            return self.children
+
+    scroll_frame = DummyWidget()
+    scroll_frame._parent_canvas = DummyWidget()
+    scroll_frame._parent_canvas.yview_scroll = lambda n, u: None
+
+    child = DummyWidget()
+    scroll_frame.children.append(child)
+
+    bind_mouse_wheel_to_canvas(scroll_frame, scroll_frame=scroll_frame)
+    assert "<MouseWheel>" in child.bound
+
+

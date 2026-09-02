@@ -100,10 +100,28 @@ class CaseListWidget(ctk.CTkFrame):
 
     def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
         """Sets cases list sorted by score descending."""
-        self.cases = sorted(cases, key=lambda c: c.classification.calculated_score, reverse=True)
+        new_cases = sorted(cases, key=lambda c: c.classification.calculated_score, reverse=True)
         if deep_results is not None:
             self.deep_search_results = deep_results
+
+        sig = lambda c: (c.case_id, round(c.classification.calculated_score, 1), c.workflow_status.is_completed, c.workflow_status.followup_at, c.workflow_status.current_actor)
+        old_sigs = [sig(c) for c in self.cases]
+        new_sigs = [sig(c) for c in new_cases]
+
+        self.cases = new_cases
         self.count_label.configure(text=f"{len(self.cases)} Support-Fälle")
+
+        if old_sigs == new_sigs and hasattr(self, "_card_widgets") and self._card_widgets and len(self._card_widgets) == len(new_cases):
+            for case in self.cases:
+                is_selected = case.case_id == self.selected_case_id
+                row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
+                if case.case_id in self._card_widgets:
+                    try:
+                        self._card_widgets[case.case_id].configure(fg_color=row_bg)
+                    except Exception:
+                        pass
+            return
+
         self.render_list()
 
     def render_list(self):
@@ -354,6 +372,9 @@ class CaseListWidget(ctk.CTkFrame):
                 return "\n".join(lines)
 
             CTkTooltip(card, text_or_func=lambda c=case: build_tooltip(c), delay_ms=400)
+
+        from utils.ui_utils import bind_mouse_wheel_to_canvas
+        bind_mouse_wheel_to_canvas(self.scroll_frame)
 
     def select_case(self, case: Case):
         from ui.widgets.ctk_tooltip import CTkTooltip

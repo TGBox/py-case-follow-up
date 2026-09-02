@@ -76,8 +76,101 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
     window.geometry(f"{w}x{h}+{x}+{y}")
 
 
+def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkScrollableFrame | None = None) -> None:
+    """Recursively binds MouseWheel events on all child widgets of a scrollable frame to ensure 100% fluid, stutter-free scrolling everywhere."""
+    if scroll_frame is None and isinstance(container_or_widget, ctk.CTkScrollableFrame):
+        scroll_frame = container_or_widget
+
+    if not scroll_frame:
+        return
+
+    canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
+    if not canvas or not hasattr(canvas, "yview_scroll"):
+        return
+
+    def _scroll_canvas(delta: int):
+        try:
+            if delta != 0:
+                canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+        except Exception:
+            pass
+
+    def _on_mouse_wheel(event):
+        _scroll_canvas(event.delta)
+
+    def _on_button_4(event):
+        try:
+            canvas.yview_scroll(-1, "units")
+        except Exception:
+            pass
+
+    def _on_button_5(event):
+        try:
+            canvas.yview_scroll(1, "units")
+        except Exception:
+            pass
+
+    def _on_textbox_mouse_wheel(event, textbox):
+        try:
+            tk_text = getattr(textbox, "_textbox", None)
+            if tk_text:
+                top, bottom = tk_text.yview()
+                all_text_visible = (top <= 0.001 and bottom >= 0.999)
+                if not all_text_visible:
+                    can_scroll_up = (event.delta > 0 and top > 0.001)
+                    can_scroll_down = (event.delta < 0 and bottom < 0.999)
+                    if can_scroll_up or can_scroll_down:
+                        return
+            _scroll_canvas(event.delta)
+            return "break"
+        except Exception:
+            pass
+
+    def _apply_recursive(w):
+        if w is None or not hasattr(w, "bind"):
+            return
+
+        if getattr(w, "_mw_bound", False):
+            return
+        try:
+            setattr(w, "_mw_bound", True)
+        except Exception:
+            pass
+
+        if isinstance(w, ctk.CTkTextbox):
+            tb_target = getattr(w, "_textbox", w)
+            try:
+                tb_target.bind("<MouseWheel>", lambda e, tb=w: _on_textbox_mouse_wheel(e, tb))
+            except Exception:
+                pass
+        else:
+            sub_targets = [w]
+            for attr in ("_label", "_canvas", "_entry", "_button", "_text_label"):
+                t = getattr(w, attr, None)
+                if t and hasattr(t, "bind"):
+                    sub_targets.append(t)
+
+            for target in sub_targets:
+                try:
+                    target.bind("<MouseWheel>", _on_mouse_wheel)
+                    target.bind("<Button-4>", _on_button_4)
+                    target.bind("<Button-5>", _on_button_5)
+                except Exception:
+                    pass
+
+        if hasattr(w, "winfo_children"):
+            try:
+                children = w.winfo_children()
+                for child in children:
+                    _apply_recursive(child)
+            except Exception:
+                pass
+
+    _apply_recursive(container_or_widget)
+
+
 def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
-    """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame."""
+    """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
     canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
     scrollbar = getattr(scroll_frame, "_scrollbar", None)
 
@@ -97,43 +190,52 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     except Exception:
         pass
 
-    _updating = False
+    _last_dims = (0, 0)
+    _scheduled = False
 
     def update_scrollbar_visibility(*_args):
-        nonlocal _updating
-        if _updating:
+        nonlocal _last_dims, _scheduled
+        if _scheduled:
             return
-        try:
-            if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
-                return
-            _updating = True
-            bbox = canvas.bbox("all")
-            canvas_h = canvas.winfo_height()
-            content_h = (bbox[3] - bbox[1]) if bbox else 0
+        _scheduled = True
 
-            if canvas_h > 1 and content_h <= canvas_h + 2:
-                # All content fits in canvas -> reset view offset to top & hide scrollbar
-                canvas.yview_moveto(0.0)
-                if hasattr(scrollbar, "grid_remove"):
-                    scrollbar.grid_remove()
-                elif hasattr(scrollbar, "pack_forget"):
-                    scrollbar.pack_forget()
-            else:
-                # Content overflows -> show scrollbar
-                if hasattr(scrollbar, "grid"):
-                    scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
-                elif hasattr(scrollbar, "pack"):
-                    scrollbar.pack(side="right", fill="y")
+        def _do_update():
+            nonlocal _last_dims, _scheduled
+            _scheduled = False
+            try:
+                if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
+                    return
+                canvas_h = canvas.winfo_height()
+                bbox = canvas.bbox("all")
+                content_h = (bbox[3] - bbox[1]) if bbox else 0
+
+                curr_dims = (canvas_h, content_h)
+                if curr_dims == _last_dims:
+                    return
+                _last_dims = curr_dims
+
+                if canvas_h > 1 and content_h <= canvas_h + 2:
+                    if hasattr(scrollbar, "grid_remove"):
+                        scrollbar.grid_remove()
+                    elif hasattr(scrollbar, "pack_forget"):
+                        scrollbar.pack_forget()
+                else:
+                    if hasattr(scrollbar, "grid"):
+                        scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
+                    elif hasattr(scrollbar, "pack"):
+                        scrollbar.pack(side="right", fill="y")
+            except Exception:
+                pass
+
+        try:
+            scroll_frame.after_idle(_do_update)
         except Exception:
-            pass
-        finally:
-            _updating = False
+            _do_update()
 
     canvas.bind("<Configure>", update_scrollbar_visibility, add="+")
     scroll_frame.bind("<Configure>", update_scrollbar_visibility, add="+")
     try:
-        scroll_frame.after(50, update_scrollbar_visibility)
-        scroll_frame.after(200, update_scrollbar_visibility)
+        scroll_frame.after(100, update_scrollbar_visibility)
     except Exception:
         pass
 

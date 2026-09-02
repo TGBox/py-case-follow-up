@@ -17,6 +17,8 @@ import tkinter as tk
 from enums import ACTOR_DISPLAY
 from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
 
+from typing import TYPE_CHECKING, Any, Callable, cast
+
 from ui.widgets.case_list_widget import CaseListWidget
 from ui.widgets.dynamic_form_widget import DynamicFormWidget
 from ui.widgets.timeline_widget import TimelineWidget
@@ -29,6 +31,32 @@ class CockpitLayoutBuilderMixin:
     einer Klasse mit denselben self.paned / self.center_frame / self.profile /
     ... Attributen und Methoden) nutzbar.
     """
+
+    if TYPE_CHECKING:
+        profile: Any
+        app_config: Any
+        storage_service: Any
+        attachment_service: Any
+        wiki_service: Any
+        author_name: str
+        on_paned_sash_released: Callable[..., Any]
+        on_select_case_from_list: Callable[..., Any]
+        on_search_changed: Callable[..., Any]
+        on_manage_module_tags: Callable[..., Any]
+        _get_wiedervorlage_tooltip_text: Callable[..., Any]
+        _on_info_frame_configure: Callable[..., Any]
+        on_click_archive: Callable[..., Any]
+        on_toggle_complete: Callable[..., Any]
+        on_actor_changed: Callable[..., Any]
+        on_click_email: Callable[..., Any]
+        on_click_calendar: Callable[..., Any]
+        open_followup_dialog: Callable[..., Any]
+        focus_timeline_note: Callable[..., Any]
+        on_click_save: Callable[..., Any]
+        on_more_actions_selected: Callable[..., Any]
+        _on_sidebar_tab_changed: Callable[..., Any]
+        on_timeline_updated: Callable[..., Any]
+        on_open_snippet_picker: Callable[..., Any]
 
     def _build_paned_window(self):
         widths = {}
@@ -45,7 +73,7 @@ class CockpitLayoutBuilderMixin:
 
         # Native PanedWindow for 100% reliable 60fps drag resizing
         self.paned = tk.PanedWindow(
-            self,
+            cast(Any, self),
             orient=tk.HORIZONTAL,
             sashwidth=6,
             sashpad=1,
@@ -218,7 +246,7 @@ class CockpitLayoutBuilderMixin:
 
         self.more_actions_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
-            values=["⚙ Weitere Aktionen...", "📧 Praxis-E-Mail kopieren", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
+            values=["📧 Praxis-E-Mail kopieren", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
             command=self.on_more_actions_selected,
             width=165,
             fg_color=("gray70", "gray35"),

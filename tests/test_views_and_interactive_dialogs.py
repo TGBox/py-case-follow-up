@@ -176,12 +176,12 @@ def test_cockpit_view_copy_practice_email(tmp_path: Path):
     def mock_append(text):
         copied_text.append(text)
 
-    cockpit.clipboard_clear = mock_clear
-    cockpit.clipboard_append = mock_append
-    cockpit.winfo_toplevel = lambda: None
+    setattr(cockpit, "clipboard_clear", mock_clear)
+    setattr(cockpit, "clipboard_append", mock_append)
+    setattr(cockpit, "winfo_toplevel", lambda: None)
 
     # Case with practice email
-    customer = Customer(customer_id="K123", practice_name="Dr. Test", email_address="praxis@test.de")
+    customer = CaseCustomer(customer_id="K123", practice_name="Dr. Test", email="praxis@test.de")
     case_with_email = Case(case_id="FALL-001", customer=customer)
 
     cockpit.current_case = case_with_email
@@ -190,7 +190,7 @@ def test_cockpit_view_copy_practice_email(tmp_path: Path):
 
     # Case without email
     copied_text.clear()
-    customer_no_email = Customer(customer_id="K456", practice_name="Dr. NoMail", email_address="")
+    customer_no_email = CaseCustomer(customer_id="K456", practice_name="Dr. NoMail", email="")
     case_no_email = Case(case_id="FALL-002", customer=customer_no_email)
 
     cockpit.current_case = case_no_email
@@ -201,11 +201,17 @@ def test_cockpit_view_copy_practice_email(tmp_path: Path):
 def test_bind_mouse_wheel_to_canvas_utility():
     """Test bind_mouse_wheel_to_canvas attaches scroll bindings recursively without crashing."""
     from utils.ui_utils import bind_mouse_wheel_to_canvas
+    from typing import cast
 
     class DummyWidget:
+        _parent_canvas: Any
+        yview_scroll: Any
+
         def __init__(self):
             self.bound = []
             self.children = []
+            self._parent_canvas = None
+            self.yview_scroll = None
 
         def bind(self, event, func, add=None):
             self.bound.append(event)
@@ -220,7 +226,18 @@ def test_bind_mouse_wheel_to_canvas_utility():
     child = DummyWidget()
     scroll_frame.children.append(child)
 
-    bind_mouse_wheel_to_canvas(scroll_frame, scroll_frame=scroll_frame)
+    bind_mouse_wheel_to_canvas(cast(Any, scroll_frame), scroll_frame=cast(Any, scroll_frame))
     assert "<MouseWheel>" in child.bound
+
+
+def test_more_actions_combo_does_not_contain_header_label():
+    """Verify that '⚙ Weitere Aktionen...' is not in the dropdown selectable values."""
+    from ui.views.cockpit_layout_builders import CockpitLayoutBuilderMixin
+    import inspect
+
+    source = inspect.getsource(CockpitLayoutBuilderMixin._build_toolbar_row)
+    values_line = [line for line in source.splitlines() if "values=[" in line][0]
+    assert '"⚙ Weitere Aktionen..."' not in values_line
+
 
 

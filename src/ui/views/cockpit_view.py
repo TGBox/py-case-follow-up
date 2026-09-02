@@ -569,6 +569,10 @@ class CockpitView(ctk.CTkFrame):
         schema = next((s for s in self.schemas if s.schema_id == self.current_case.classification.schema_id), None)
         if schema:
             SchemaService.update_case_completion(self.current_case, schema)
+            # Formular neu aufbauen, damit rote Umrandungen fehlender Pflichtfelder
+            # sofort verschwinden (bzw. neu erscheinen), sobald sich der
+            # Vollstaendigkeitsstatus durch das Speichern geaendert hat.
+            self.form_widget.load_schema(schema, self.current_case.form_data, self.current_case.missing_required_fields, case=self.current_case)
 
         self.scoring_service.update_case_scoring(self.current_case)
         self.on_case_updated(self.current_case)

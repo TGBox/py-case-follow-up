@@ -123,9 +123,10 @@ class ExportDialog(ctk.CTkToplevel):
         self.update_render_preview()
 
     def update_render_preview(self):
+        from services.i18n_service import tr
         if not self.active_template:
             self.preview_textbox.delete("1.0", "end")
-            self.status_label.configure(text="Keine Vorlage ausgewählt.")
+            self.status_label.configure(text=tr("export.no_template", "Keine Vorlage ausgewählt."))
             return
 
         # Re-build inplace completion fields
@@ -145,7 +146,7 @@ class ExportDialog(ctk.CTkToplevel):
 
         if missing_fields:
             ctk.CTkLabel(
-                self.inplace_frame, text="⚠ Fehlende Pflichtfelder direkt ergänzen:", font=ctk.CTkFont(weight="bold"), text_color="orange"
+                self.inplace_frame, text=tr("export.missing_fields_hdr", "⚠ Fehlende Pflichtfelder direkt ergänzen:"), font=ctk.CTkFont(weight="bold"), text_color="orange"
             ).pack(anchor="w", padx=10, pady=(5, 5))
 
             for fid in missing_fields:
@@ -161,6 +162,7 @@ class ExportDialog(ctk.CTkToplevel):
         self.render_current_state()
 
     def render_current_state(self):
+        from services.i18n_service import tr
         if not self.active_template:
             return
 
@@ -182,12 +184,12 @@ class ExportDialog(ctk.CTkToplevel):
         self.preview_textbox.delete("1.0", "end")
         if success:
             self.preview_textbox.insert("1.0", rendered)
-            self.status_label.configure(text="✅ Vorlage bereit zum Export.", text_color="green")
+            self.status_label.configure(text=tr("export.ready", "✅ Vorlage bereit zum Export."), text_color="green")
         else:
             missing_names = [self.schema.fields[i].label if self.schema else m for m in missing for i, f in enumerate(self.schema.fields) if f.field_id == m] if self.schema else missing
             self.preview_textbox.insert("1.0", f"[FEHLENDE PFLICHTFELDER: {', '.join(missing)}]")
             self.status_label.configure(
-                text=f"⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.", text_color="red"
+                text=tr("export.incomplete", "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren."), text_color="red"
             )
 
     def apply_inplace_values_to_case(self):
@@ -201,11 +203,12 @@ class ExportDialog(ctk.CTkToplevel):
         self.on_case_updated(self.case)
 
     def on_copy_clipboard(self):
+        from services.i18n_service import tr
         self.apply_inplace_values_to_case()
         text = self.preview_textbox.get("1.0", "end-1c")
         if text:
             self.export_service.copy_to_clipboard(text)
-            self.status_label.configure(text="📋 Erfolgreich in Zwischenablage kopiert!", text_color="green")
+            self.status_label.configure(text=tr("export.copied", "📋 Erfolgreich in Zwischenablage kopiert!"), text_color="green")
 
     def on_save_file(self):
         self.apply_inplace_values_to_case()

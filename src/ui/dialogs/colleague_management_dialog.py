@@ -109,19 +109,19 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.dept_combo.set(departments[0])
         self.dept_combo.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="Durchwahl / Telefon:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.phone", "Durchwahl / Telefon:")).pack(anchor="w", pady=(4, 2))
         self.ext_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. 4012")
         self.ext_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="E-Mail-Adresse:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(4, 2))
         self.email_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. m.mueller@praxis.de")
         self.email_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="Mobiltelefon:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(4, 2))
         self.mobile_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. 0170 1234567")
         self.mobile_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="Aufgabengebiet / Notizen:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.notes", "Aufgabengebiet / Notizen:")).pack(anchor="w", pady=(4, 2))
         self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuständig für PVS-Schnittstellen...")
         self.notes_entry.pack(fill="x", pady=(0, 10))
 
@@ -144,7 +144,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         self.delete_btn = ctk.CTkButton(
             action_bar,
-            text="🗑 Löschen",
+            text=tr("common.delete", "🗑 Löschen"),
             command=self.on_click_delete,
             fg_color="firebrick",
             hover_color="darkred",
@@ -155,9 +155,10 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         self.save_btn = ctk.CTkButton(
             action_bar,
-            text="💾 Speichern",
+            text=tr("cockpit.save", "💾 Speichern"),
             command=self.on_click_save,
             fg_color="forestgreen",
+            hover_color="darkgreen",
             width=140,
         )
         self.save_btn.pack(side="right")

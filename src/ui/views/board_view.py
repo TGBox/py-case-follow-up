@@ -107,9 +107,11 @@ class KanbanCardWidget(ctk.CTkFrame):
         action_frame = ctk.CTkFrame(self, fg_color="transparent")
         action_frame.pack(fill="x", padx=8, pady=(4, 8))
 
+        from services.i18n_service import tr
+
         ctk.CTkButton(
             action_frame,
-            text="🎯 Cockpit",
+            text=tr("board.cockpit_btn", "🎯 Cockpit"),
             command=lambda: self.on_switch_to_cockpit(self.case),
             width=70,
             height=24,
@@ -258,7 +260,7 @@ class BoardView(ctk.CTkFrame):
                 # Collapse button
                 btn_col = ctk.CTkButton(
                     header_frame,
-                    text="◀ Zuklappen",
+                    text=tr("board.collapse_btn", "◀ Zuklappen"),
                     width=80,
                     height=24,
                     font=ctk.CTkFont(size=10),

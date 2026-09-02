@@ -112,6 +112,34 @@ DIALOG_HEADERS = LocalizedDict("dialog_headers", {
 })
 
 # --- Dropdown Menu & Navigation Option Lists ---
+def get_localized_menu_options_stammdaten() -> list[str]:
+    from services.i18n_service import tr
+    return [
+        tr("menu.opt_practices", "🏥 Praxen"),
+        tr("menu.opt_cobra", "🐍 Cobra CRM Import"),
+        tr("menu.opt_colleagues", "👥 Mitarbeiter"),
+        tr("menu.opt_modules", "🧩 Programmbereiche"),
+    ]
+
+def get_localized_menu_options_vorlagen() -> list[str]:
+    from services.i18n_service import tr
+    return [
+        tr("menu.opt_forms", "🛠 Formulare"),
+        tr("menu.opt_templates", "📄 Vorlagen"),
+        tr("menu.opt_snippets", "📝 Textbausteine"),
+        tr("menu.opt_tags", "🏷 Tags"),
+    ]
+
+def get_localized_menu_options_datenaustausch() -> list[str]:
+    from services.i18n_service import tr
+    return [
+        tr("menu.opt_email_import", "📥 E-Mail Import"),
+        tr("menu.opt_export", "📤 Export (Strg+E)"),
+        tr("menu.opt_zip", "📦 ZIP-Backup"),
+        tr("menu.opt_p2p", "🔄 P2P-Sync"),
+        tr("menu.opt_help", "📖 Hilfe (F1)"),
+    ]
+
 MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "🐍 Cobra CRM Import", "👥 Mitarbeiter", "🧩 Programmbereiche"]
 MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine", "🏷 Tags"]
 MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync", "📖 Hilfe (F1)"]

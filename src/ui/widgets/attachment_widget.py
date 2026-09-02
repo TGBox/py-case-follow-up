@@ -20,13 +20,15 @@ class AttachmentWidget(ctk.CTkFrame):
         tk.Misc.bind_all(self, "<Control-v>", self.on_clipboard_paste)
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Header
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
         top_frame.pack(fill="x", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_frame, text="Fall-Dateianhänge", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+        ctk.CTkLabel(top_frame, text=tr("attachments.title", "Fall-Dateianhänge"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
 
-        open_exp_btn = ctk.CTkButton(top_frame, text="📁 Explorer öffnen", command=self.on_open_explorer, width=120)
+        open_exp_btn = ctk.CTkButton(top_frame, text=tr("attachments.open_explorer", "📁 Explorer öffnen"), command=self.on_open_explorer, width=120)
         open_exp_btn.pack(side="right")
 
         # Scrollable file list
@@ -37,31 +39,33 @@ class AttachmentWidget(ctk.CTkFrame):
         self.preview_frame = ctk.CTkFrame(self, height=120, fg_color=("gray90", "gray15"))
         self.preview_frame.pack(fill="x", padx=5, pady=2)
         
-        self.preview_label = ctk.CTkLabel(self.preview_frame, text="Keine Datei zur Vorschau ausgewählt", font=ctk.CTkFont(size=11), text_color=("gray50", "gray60"))
+        self.preview_label = ctk.CTkLabel(self.preview_frame, text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"), font=ctk.CTkFont(size=11), text_color=("gray50", "gray60"))
         self.preview_label.pack(expand=True, pady=10)
 
         # Bottom Bar
         btn_frame = ctk.CTkFrame(self, fg_color="transparent")
         btn_frame.pack(fill="x", padx=5, pady=5)
 
-        add_file_btn = ctk.CTkButton(btn_frame, text="+ Datei hinzufügen...", command=self.on_add_file, width=150)
+        add_file_btn = ctk.CTkButton(btn_frame, text=tr("attachments.add_file", "+ Datei hinzufügen..."), command=self.on_add_file, width=150)
         add_file_btn.pack(side="left")
 
-        ctk.CTkLabel(btn_frame, text="💡 Tip: Strg+V fügt Screenshot als PNG ein", font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
+        ctk.CTkLabel(btn_frame, text=tr("attachments.tip", "💡 Tipp: Strg+V fügt Screenshot als PNG ein"), font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
 
     def load_attachments(self, case: Case | None):
+        from services.i18n_service import tr
+
         self.current_case = case
         self.clear_preview()
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
         if not case:
-            ctk.CTkLabel(self.scroll_frame, text="Kein Fall ausgewählt.").pack(pady=10)
+            ctk.CTkLabel(self.scroll_frame, text=tr("attachments.no_case", "Kein Fall ausgewählt.")).pack(pady=10)
             return
 
         files = self.attachment_service.list_attachments(case)
         if not files:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Dateianhänge im Fallordner.").pack(pady=10)
+            ctk.CTkLabel(self.scroll_frame, text=tr("attachments.no_files", "Keine Dateianhänge im Fallordner.")).pack(pady=10)
             return
 
         for f in files:
@@ -85,7 +89,7 @@ class AttachmentWidget(ctk.CTkFrame):
 
             btn_open = ctk.CTkButton(
                 f_frame,
-                text="📂 Öffnen",
+                text=tr("common.open", "📂 Öffnen"),
                 width=65,
                 fg_color="gray30",
                 hover_color="gray40",

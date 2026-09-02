@@ -48,8 +48,10 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
         scroll.pack(fill="both", expand=True, pady=(0, 10))
 
+        from services.i18n_service import tr
+
         if not self.due_cases:
-            ctk.CTkLabel(scroll, text="Keine fälligen Wiedervorlagen aktuell vorhanden.", font=ctk.CTkFont(size=13)).pack(pady=20)
+            ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=13)).pack(pady=20)
         else:
             for case in self.due_cases:
                 card = ctk.CTkFrame(scroll, fg_color=("gray85", "gray20"), corner_radius=6)
@@ -62,7 +64,7 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 lbl_title = ctk.CTkLabel(top_row, text=title_str, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
                 lbl_title.pack(side="left", fill="x", expand=True)
 
-                btn_select = ctk.CTkButton(top_row, text="👁 Öffnen", width=80, command=lambda c=case: self.select_case(c))
+                btn_select = ctk.CTkButton(top_row, text=tr("common.open", "👁 Öffnen"), width=80, command=lambda c=case: self.select_case(c))
                 btn_select.pack(side="right")
 
                 info_str = f"Kunde: {case.customer.practice_name} | Fällig seit: {format_german_datetime(case.workflow_status.followup_at)}"
@@ -83,7 +85,7 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 ctk.CTkButton(act_row1, text="+ 2 Std.", width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_hours(c, 2)).pack(side="left", padx=2)
                 ctk.CTkButton(act_row1, text="Heute 16:30", width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.set_preset_today_1630(c)).pack(side="left", padx=2)
 
-                ctk.CTkButton(act_row1, text="✓ Erledigt", width=95, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)).pack(side="right", padx=2)
+                ctk.CTkButton(act_row1, text=tr("cockpit.complete", "✓ Erledigt"), width=95, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)).pack(side="right", padx=2)
 
                 # Row 2: Daily & Weekly shifts (Morgen 08:00, +1 Tag, +1 Woche)
                 act_row2 = ctk.CTkFrame(act_frame, fg_color="transparent")
@@ -93,7 +95,7 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 ctk.CTkButton(act_row2, text="+ 1 Tag", width=90, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_days(c, 1)).pack(side="left", padx=2)
                 ctk.CTkButton(act_row2, text="+ 1 Woche", width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_days(c, 7)).pack(side="left", padx=2)
 
-        btn_close = ctk.CTkButton(main_frame, text="Schließen", fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100)
+        btn_close = ctk.CTkButton(main_frame, text=tr("common.close", "Schließen"), fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100)
         btn_close.pack(side="right")
 
     def select_case(self, case: Case):

@@ -43,11 +43,13 @@ class P2PDiffDialog(ctk.CTkToplevel):
         top_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(top_frame, text="Kollege auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
+        from services.i18n_service import tr
+
+        ctk.CTkLabel(top_frame, text=tr("p2p.select_colleague", "Kollege auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
         colleague_names = [f"{c.name} (@{c.username})" for c in self.colleagues]
         self.colleague_combo = ctk.CTkOptionMenu(
             top_frame,
-            values=colleague_names if colleague_names else ["Keine Kollegen konfiguriert"],
+            values=colleague_names if colleague_names else [tr("p2p.no_colleagues_cfg", "Keine Kollegen konfiguriert")],
             command=self.on_colleague_selected,
             width=360,
         )
@@ -55,7 +57,7 @@ class P2PDiffDialog(ctk.CTkToplevel):
             self.colleague_combo.set(f"{self.active_colleague.name} (@{self.active_colleague.username})")
         self.colleague_combo.pack(side="left", padx=(0, 10))
 
-        load_btn = ctk.CTkButton(top_frame, text="Neu Laden / Vergleichen", command=self.load_and_compare, width=180)
+        load_btn = ctk.CTkButton(top_frame, text=tr("p2p.reload_compare", "Neu Laden / Vergleichen"), command=self.load_and_compare, width=180)
         load_btn.pack(side="left")
 
         # Status Banner
@@ -70,10 +72,10 @@ class P2PDiffDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x")
 
-        close_btn = ctk.CTkButton(btn_frame, text="Schließen", fg_color="gray", command=self.destroy, width=120)
+        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120)
         close_btn.pack(side="left")
 
-        import_btn = ctk.CTkButton(btn_frame, text="Ausgewählte Fälle übernehmen", command=self.on_import_selected, width=240)
+        import_btn = ctk.CTkButton(btn_frame, text=tr("p2p.import_selected", "Ausgewählte Fälle übernehmen"), command=self.on_import_selected, width=240)
         import_btn.pack(side="right")
 
     def on_colleague_selected(self, selected_str: str):
@@ -81,8 +83,9 @@ class P2PDiffDialog(ctk.CTkToplevel):
         self.load_and_compare()
 
     def load_and_compare(self):
+        from services.i18n_service import tr
         if not self.active_colleague:
-            self.status_label.configure(text="Kein Kollege ausgewählt.", text_color="red")
+            self.status_label.configure(text=tr("p2p.no_colleague_selected", "Kein Kollege ausgewählt."), text_color="red")
             return
 
         success, msg, remote_cases = self.p2p_service.read_colleague_cases(self.active_colleague)
@@ -98,12 +101,13 @@ class P2PDiffDialog(ctk.CTkToplevel):
         self.render_diff_list(self.diff_items)
 
     def render_diff_list(self, items: list[CaseDiffItem]):
+        from services.i18n_service import tr
         for widget in self.diff_scroll.winfo_children():
             widget.destroy()
         self.selected_vars.clear()
 
         if not items:
-            ctk.CTkLabel(self.diff_scroll, text="Keine abweichenden Fälle vorhanden.").pack(pady=20)
+            ctk.CTkLabel(self.diff_scroll, text=tr("p2p.no_diff_cases", "Keine abweichenden Fälle vorhanden.")).pack(pady=20)
             return
 
         for idx, item in enumerate(items):
@@ -145,13 +149,14 @@ class P2PDiffDialog(ctk.CTkToplevel):
             ctk.CTkLabel(row, text=ts_str, text_color="gray70", font=ctk.CTkFont(size=11)).pack(side="right", padx=10)
 
     def on_import_selected(self):
+        from services.i18n_service import tr
         selected_cases = []
         for item in self.diff_items:
             if self.selected_vars.get(item.case_id, ctk.BooleanVar()).get():
                 selected_cases.append(item.remote_case)
 
         if not selected_cases:
-            self.status_label.configure(text="Bitte mindestens einen Fall zur Übernahme auswählen.", text_color="orange")
+            self.status_label.configure(text=tr("p2p.select_at_least_one", "Bitte mindestens einen Fall zur Übernahme auswählen."), text_color="orange")
             return
 
         count = self.p2p_service.import_selected_cases(selected_cases)

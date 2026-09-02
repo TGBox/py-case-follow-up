@@ -362,8 +362,9 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         self.render_list()
 
     def on_click_new_customer(self):
+        from services.i18n_service import tr
         self.selected_customer = None
-        self.form_title_lbl.configure(text="🆕 Neue Praxis anlegen")
+        self.form_title_lbl.configure(text=tr("customer_mgmt.new_practice_hdr", "🆕 Neue Praxis anlegen"))
 
         next_num = len(self.customers) + 1001
         new_id = f"CUST-{next_num}"
@@ -404,11 +405,12 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         self.render_list()
 
     def save_current_customer(self):
+        from services.i18n_service import tr
         cust_id = self.cust_id_entry.get().strip()
         name = self.name_entry.get().strip()
 
         if not cust_id or not name:
-            self.status_lbl.configure(text="⚠ ID und Praxisname erforderlich!", text_color="red")
+            self.status_lbl.configure(text=tr("customer_mgmt.missing_id_name", "⚠ ID und Praxisname erforderlich!"), text_color="red")
             return
 
         website = self.website_entry.get().strip()
@@ -482,7 +484,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         self.customers = self.customer_service.get_all_customers()
         self.selected_customer = customer
 
-        self.status_lbl.configure(text="✅ Praxis gespeichert!", text_color="green")
+        self.status_lbl.configure(text=tr("customer_mgmt.saved_msg", "✅ Praxis gespeichert!"), text_color="green")
         self.on_search_changed()
         self.select_customer(cust_id)
 

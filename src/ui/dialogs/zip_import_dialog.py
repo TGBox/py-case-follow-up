@@ -73,10 +73,12 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         )
         sub_lbl.pack(fill="x", padx=12, pady=(0, 10))
 
+        from services.i18n_service import tr
+
         # Selection Mode Selector
         ctk.CTkLabel(
             main_frame,
-            text="Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:",
+            text=tr("zip_import.select_mode", "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:"),
             font=ctk.CTkFont(weight="bold", size=12),
         ).pack(anchor="w", pady=(5, 8))
 
@@ -85,7 +87,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
         self.btn_mode_root = ctk.CTkButton(
             mode_frame,
-            text="📁 Gesamt-Zielordner wählen",
+            text=tr("zip_import.root_folder_btn", "📁 Gesamt-Zielordner wählen"),
             command=self.set_mode_root,
             fg_color="dodgerblue",
             width=230,
@@ -94,7 +96,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
         self.btn_mode_custom = ctk.CTkButton(
             mode_frame,
-            text="⚙ Einzelne Pfade anpassen",
+            text=tr("zip_import.custom_paths_btn", "⚙ Einzelne Pfade anpassen"),
             command=self.set_mode_custom,
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
@@ -111,7 +113,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         # Status / Warning Info
         warn_lbl = ctk.CTkLabel(
             main_frame,
-            text="⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.",
+            text=tr("zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben."),
             font=ctk.CTkFont(size=11),
             text_color=("darkgoldenrod", "gold"),
             anchor="w",
@@ -159,10 +161,12 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         for w in self.paths_frame.winfo_children():
             w.destroy()
 
+        from services.i18n_service import tr
+
         if self.mode == "root":
             ctk.CTkLabel(
                 self.paths_frame,
-                text="Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):",
+                text=tr("zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):"),
                 font=ctk.CTkFont(size=11, weight="bold"),
             ).pack(anchor="w", padx=12, pady=(10, 2))
 
@@ -176,7 +180,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
             ctk.CTkButton(
                 row,
-                text="Durchsuchen...",
+                text=tr("common.browse", "Durchsuchen..."),
                 width=120,
                 command=self.browse_root_dir,
             ).pack(side="left")
@@ -185,7 +189,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
             # Custom Data Dir
             ctk.CTkLabel(
                 self.paths_frame,
-                text="1. Speicherort für Datendateien & Profile (data/):",
+                text=tr("zip_import.data_loc", "1. Speicherort für Datendateien & Profile (data/):"),
                 font=ctk.CTkFont(size=11, weight="bold"),
             ).pack(anchor="w", padx=12, pady=(10, 2))
 
@@ -198,7 +202,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
             ctk.CTkButton(
                 row1,
-                text="Durchsuchen...",
+                text=tr("common.browse", "Durchsuchen..."),
                 width=120,
                 command=self.browse_data_dir,
             ).pack(side="left")
@@ -206,7 +210,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
             # Custom Attachments Dir
             ctk.CTkLabel(
                 self.paths_frame,
-                text="2. Speicherort für Fall-Anhänge (attachments/):",
+                text=tr("zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):"),
                 font=ctk.CTkFont(size=11, weight="bold"),
             ).pack(anchor="w", padx=12, pady=(4, 2))
 
@@ -219,7 +223,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
             ctk.CTkButton(
                 row2,
-                text="Durchsuchen...",
+                text=tr("common.browse", "Durchsuchen..."),
                 width=120,
                 command=self.browse_att_dir,
             ).pack(side="left")

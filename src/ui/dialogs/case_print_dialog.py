@@ -71,13 +71,15 @@ class CasePrintDialog(ctk.CTkToplevel):
                 lbl_text = f"[{formatted_ts}] {entry.author}: {entry.note[:60]}..."
                 ctk.CTkCheckBox(scroll, text=lbl_text, variable=var).pack(anchor="w", pady=3, padx=5)
 
+        from services.i18n_service import tr
+
         # Action bar
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom", pady=(5, 0))
 
         ctk.CTkButton(
             btn_frame,
-            text="Abbrechen",
+            text=tr("common.cancel", "Abbrechen"),
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
             command=self.safe_destroy,
@@ -86,7 +88,7 @@ class CasePrintDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_frame,
-            text="🖨 PDF-Bericht drucken",
+            text=tr("ui_buttons.print_pdf", "🖨 PDF-Bericht drucken"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.generate_and_print_pdf,

@@ -43,9 +43,11 @@ class FollowupDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self)
         main_frame.pack(fill="both", expand=True, padx=12, pady=(0, 10))
 
+        from services.i18n_service import tr
+
         ctk.CTkLabel(
             main_frame,
-            text="⚡ Schnellauswahl / Presets:",
+            text=tr("followup.presets_lbl", "⚡ Schnellauswahl / Presets:"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
         ).pack(fill="x", padx=12, pady=(8, 3))
@@ -98,7 +100,7 @@ class FollowupDialog(ctk.CTkToplevel):
         # Custom Date Entry using DatePickerWidget
         ctk.CTkLabel(
             main_frame,
-            text="📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):",
+            text=tr("followup.date_lbl", "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
         ).pack(fill="x", padx=12, pady=(6, 2))
@@ -122,7 +124,7 @@ class FollowupDialog(ctk.CTkToplevel):
         # Note entry
         ctk.CTkLabel(
             main_frame,
-            text="📝 Notiz / Nachfrage-Grund (Optional):",
+            text=tr("followup.note_lbl", "📝 Notiz / Nachfrage-Grund (Optional):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
         ).pack(fill="x", padx=12, pady=(4, 2))
@@ -137,17 +139,19 @@ class FollowupDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             bottom_frame,
-            text="💾 Wiedervorlage Speichern",
+            text=tr("followup.save_btn", "💾 Wiedervorlage Speichern"),
             command=self.on_save,
             fg_color="forestgreen",
             height=30,
             width=180
         ).pack(side="right", padx=(4, 0))
 
+        from services.i18n_service import tr
+
         if self.case.workflow_status.followup_at:
             ctk.CTkButton(
                 bottom_frame,
-                text="❌ Entfernen",
+                text=tr("ui_buttons.clear", "❌ Entfernen"),
                 command=self.on_clear,
                 fg_color="darkred",
                 height=30,
@@ -156,7 +160,7 @@ class FollowupDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             bottom_frame,
-            text="Abbrechen",
+            text=tr("common.cancel", "Abbrechen"),
             command=self.safe_destroy,
             fg_color=("gray70", "gray40"),
             height=30,

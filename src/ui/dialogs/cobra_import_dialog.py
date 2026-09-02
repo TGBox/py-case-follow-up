@@ -89,13 +89,15 @@ class CobraImportDialog(ctk.CTkToplevel):
         self.preview_box = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
         self.preview_box.pack(fill="x", pady=(0, 10))
 
+        from services.i18n_service import tr
+
         # Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", pady=(5, 0))
 
         self.import_btn = ctk.CTkButton(
             btn_frame,
-            text="🐍 Praxen importieren",
+            text=tr("cobra_import.import_btn", "🐍 Praxen importieren"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_click_import,
@@ -103,7 +105,7 @@ class CobraImportDialog(ctk.CTkToplevel):
         )
         self.import_btn.pack(side="right", padx=(6, 0))
 
-        ctk.CTkButton(btn_frame, text="Abbrechen", fg_color="gray50", command=self.destroy, width=90).pack(side="right")
+        ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray50", command=self.destroy, width=90).pack(side="right")
 
     def on_browse_file(self):
         fp = filedialog.askopenfilename(

@@ -210,10 +210,12 @@ class CockpitLayoutBuilderMixin:
         self.status_right_frame.pack(side="right", anchor="e")
         self.info_right_frame = self.status_right_frame
 
-        self.archive_btn = ctk.CTkButton(self.status_right_frame, text="📦 Archivieren", command=self.on_click_archive, width=95, fg_color="darkred")
+        from services.i18n_service import tr
+
+        self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=95, fg_color="darkred")
         self.archive_btn.pack(side="right", padx=2)
 
-        self.complete_btn = ctk.CTkButton(self.status_right_frame, text="✓ Erledigt", command=self.on_toggle_complete, width=90, fg_color="green")
+        self.complete_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.complete", "✓ Erledigt"), command=self.on_toggle_complete, width=90, fg_color="green")
         self.complete_btn.pack(side="right", padx=2)
 
         self.actor_combo = ctk.CTkOptionMenu(self.status_right_frame, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=130)
@@ -250,7 +252,12 @@ class CockpitLayoutBuilderMixin:
 
         self.more_actions_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
-            values=["📧 Praxis-E-Mail kopieren", "📤 Fall Exportieren", "🖨 Fall Drucken", "🔄 Formular umwandeln"],
+            values=[
+                tr("cockpit.copy_email", "📧 Praxis E-Mail kopieren"),
+                tr("cockpit.export_case", "📤 Fall exportieren"),
+                tr("cockpit.print_case", "🖨 Fall-Akte drucken"),
+                tr("cockpit.convert_form", "🔄 Formular umwandeln"),
+            ],
             command=self.on_more_actions_selected,
             width=165,
             fg_color=("gray70", "gray35"),
@@ -278,6 +285,10 @@ class CockpitLayoutBuilderMixin:
             self.add_note_btn.configure(text=tr("cockpit.note", "📝 Notiz"))
         if hasattr(self, "save_btn"):
             self.save_btn.configure(text=tr("cockpit.save", "💾 Speichern"))
+        if hasattr(self, "complete_btn"):
+            self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+        if hasattr(self, "archive_btn"):
+            self.archive_btn.configure(text=tr("cockpit.archive", "📦 Archivieren"))
 
         # Aliases for export, print, convert_schema buttons to maintain backward compatibility
         self.export_btn = self.more_actions_combo

@@ -1,3 +1,4 @@
+from models import schema
 import os
 import shutil
 import customtkinter as ctk
@@ -355,7 +356,8 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.field_row_frames: dict[str, ctk.CTkFrame] = {}
 
         if not schema or not schema.fields:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Formularfelder definiert.").pack(pady=20)
+            from services.i18n_service import tr
+            ctk.CTkLabel(self.scroll_frame, text=tr("form.no_fields", "Keine Formularfelder definiert.")).pack(pady=20)
             return
 
         sorted_fields = sorted(schema.fields, key=lambda f: f.order)
@@ -394,6 +396,10 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         self._bind_mouse_wheel_recursive(self.scroll_frame)
         self.update_conditional_visibility()
+
+    def refresh_ui_labels(self):
+        if hasattr(self, "schema") and self.schema:
+            self.load_schema(self.schema, self.get_form_data(), self.missing_fields, self.current_case)
 
     def render_repeatable_cards(self):
         if not hasattr(self, "repeatable_container"):
@@ -541,8 +547,8 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         if hasattr(self, "mini_attach_scroll"):
             self.refresh_mini_attachment_list(case)
 
-    def render_mini_attachment_section(self, parent_frame, case: Case):
-        attach_box = ctk.CTkFrame(parent_frame, fg_color=("gray92", "gray18"), corner_radius=6)
+    def render_mini_attachment_section(self, parent: Any, case: Case):
+        attach_box = ctk.CTkFrame(parent, fg_color=("gray92", "gray18"), corner_radius=6)
         attach_box.pack(fill="x", pady=(6, 4))
 
         hdr_row = ctk.CTkFrame(attach_box, fg_color="transparent")

@@ -308,129 +308,129 @@
   },
   "help_content": {
     "basics": {
-      "title": "🚀 Grundläggande & layouter",
+      "title": "🚀 Grundläggande & Layouter",
       "category": "Grundläggande",
-      "content": "### 🚀 Användargränssnittets grundläggande funktioner\n\n**Support Cockpit** hjälper dig att effektivt spåra, kategorisera och prioritera supportärenden och mottagningsförfrågningar."
+      "content": "### 🚀 Grundläggande om användargränssnittet\n\n**Support-Cockpit** hjälper dig att effektivt spåra, kategorisera och prioritera supportärenden och klinikförfrågningar.\n\n#### De 4 vyerna (Layoutlägen)\nI den övre menyraden kan du när som helst växla mellan 4 vyer (`Ctrl+1` till `Ctrl+4`):\n\n1. **Cockpit-vy (Standard, `Ctrl+1`)**:\n   - Tredelad huvudlayout med ärendelista, ärendedetaljer/formulär och BookStack-wiki.\n\n2. **Kanban-tavla (`Ctrl+2`)**:\n   - Tavla organiserad efter kolumner & ansvar (*Ny*, *Åtgärd krävs*, *Väntar*, *Pågår*, *Klar*).\n\n3. **Tabell & Detaljer (`Ctrl+3`)**:\n   - Tabellmatris som visar ärendedetaljer för en kompakt översikt, sortering och filtrering.\n\n4. **Analys & Nyckeltal (`Ctrl+4`)**:\n   - Fullständig statistikpanel som visar handläggningstider, förfallna tidsgränser, VIP-andel och rapportexport.\n\n---\n\n#### 🔍 Sök- & filterfunktion\n- Använd sökfältet högst upp i ärendelistan för att filtrera ärenden efter **Ärende-ID**, **Kliniknamn**, **Ämne** eller **Taggar**.\n- Kortkommando för att fokusera sökningen: `Ctrl+F`\n"
     },
     "ui_customization": {
-      "title": "📅 Datumformat, kalender & kolumnbredder",
+      "title": "📅 Datumformat, Kalender & Kolumnbredder",
       "category": "Användargränssnitt",
-      "content": "### 📅 Datumformatering, kalenderväljare & kolumnbredder\n\nAlla datum visas i standardiserat format DD.MM.YYYY."
+      "content": "### 📅 Datumformatering, Kalenderväljare & Kolumnbredder\n\n#### 1. 📅 Datumformatering\n- Alla datum i Support-Cockpit (tidsgränser, återuppringningar, uppföljningar, tidslinje) visas enhetligt i standarddatumformat (`DD.MM.YYYY` eller `DD.MM.YYYY HH:MM`).\n\n#### 2. 🗓 Interaktiv kalenderväljare\n- En interaktiv kalenderdialog finns tillgänglig för alla datumangivelser (t.ex. planera uppföljningar, ange tidsgränser för återuppringning).\n- Klicka på **📅 Kalender** bredvid inmatningsfältet för att öppna månadskalendern och enkelt välja önskat datum.\n- Snabbvalsknappar för *Idag*, *+ 1 dag* och *+ 1 vecka* snabbar upp inmatningen.\n\n#### 3. 📐 Individuella & permanenta kolumnbredder\n- Använd knappen **📐 Kolumner** i den övre menyraden för att fritt anpassa bredden på enskilda kolumner i cockpit och Kanban-tavlan.\n- Dina valda bredder sparas automatiskt i användarkonfigurationen (`user_config.json`) och finns kvar vid omstart.\n"
     },
     "praxis": {
-      "title": "🏥 Mottagnings- & kundhantering",
+      "title": "🏥 Klinik- & Kundhantering",
       "category": "Kunder",
-      "content": "### 🏥 Hantering av mottagningar och kunddata\n\nHantera alla kundposter centralt under Stamdata -> Mottagningar."
+      "content": "### 🏥 Klinik- & Kundhantering\n\nVarje supportärende är tilldelat en specifik klinik (kund).\n\n#### 1. Öppna klinikhantering\n- Klicka på **🏥 Kliniker** i den övre menyraden.\n- Här ser du en fullständig lista över alla registrerade kliniker med kundnummer, kliniknamn, kontaktperson, e-post och telefon.\n\n#### 2. Skapa ny klinik\n- Öppna **🏥 Kliniker** -> **+ Skapa ny klinik**.\n- Eller direkt när du skapar ett nytt ärende i dialogen **+ Nytt ärende**: Klicka på **+ Ny klinik** bredvid klinikvalet. Den nya kliniken blir omedelbart tillgänglig!\n\n#### 3. Hantera kontaktpersoner\n- I klinikdetaljerna kan du lägga till flera kontaktpersoner (t.ex. klinikägare, IT-ansvarig, assistenter).\n"
     },
     "scoring": {
-      "title": "📊 Poängsättning & prioritering",
+      "title": "📊 Ärendepoäng & Prioritering",
       "category": "Arbetsflöde",
-      "content": "### 📊 Automatisk poängsättning av brådskande ärenden\n\nSystemet beräknar automatiskt poäng för öppna ärenden."
+      "content": "### 📊 Automatisk brådskepoängsättning\n\nSupport-Cockpit beräknar automatiskt en **Brådskepoäng** (Urgency Score) för varje öppet ärende så att du omedelbart kan identifiera brådskande ärenden.\n\n#### Hur beräknas poängen?\n- **Prioritet**: Kritisk (60 poäng), Hög (40 poäng), Medium (20 poäng), Låg (10 poäng).\n- **VIP-status**: VIP-kliniker får en bonus på +30 poäng.\n- **Väntetid**: Ju längre ett ärende förblir öppet, desto högre stiger poängen (+2 poäng / dag).\n- **Inaktivitet**: Ärenden utan uppdatering de senaste 48 timmarna får extra poäng.\n- **Status**: Pågår (+10 poäng), Väntar på kund (+0 poäng), Platsbesök krävs (+20 poäng).\n\n#### Automatisk timvis omberäkning\nEn bakgrundstimer uppdaterar poängen för alla öppna ärenden varje timme.\n"
     },
     "schemas": {
-      "title": "📄 Formulärbyggare & scheman",
+      "title": "📄 Formulärbyggare (Scheman)",
       "category": "Formulär",
-      "content": "### 📄 Anpassade dynamiska formulär\n\nSkapa skräddarsydda formulär för olika supportscenarier."
+      "content": "### 📄 Dynamiska formulärscheman\n\nOlika supporttyper (t.ex. byte av hårdvara, faktureringsfråga, gränssnittsproblem) kräver olika information.\n\n#### Skapa & anpassa egna formulär\n1. Klicka på **🛠 Formulärbyggare** i menyraden.\n2. Skapa ett nytt schema (t.ex. *\"PVS-gränssnitt\"*) eller redigera ett befintligt.\n3. Lägg till egna fält:\n   - **Textfält** (t.ex. felmeddelande)\n   - **Nummerfält** (t.ex. portnummer)\n   - **Ja/Nej-kryssrutor** (t.ex. tjänst omstartad)\n   - **Rullgardinsfält** (t.ex. PVS-tillverkare)\n4. Ange obligatoriska fält (*).\n\nNär du fyller i ett ärende i cockpit anpassas formuläret automatiskt till det valda schemat!\n"
     },
     "export": {
-      "title": "📤 Exportmotor & mallar",
+      "title": "📤 Exportmotor & Mallar",
       "category": "Export",
-      "content": "### 📤 Export- och överlämningsassistent\n\nGenerera rapportsammanfattningar och e-postmeddelanden med ett klick."
+      "content": "### 📤 Överlämnings- & exportmotor\n\nGenerera färdiga överlämningsprotokoll, e-postmeddelanden eller dokumentation för kollegor eller ärendesystem med ett klick.\n\n#### Exportera ärende\n1. Välj önskat ärende och klicka på **📤 Exportera (Ctrl+E)**.\n2. Välj en mall (t.ex. *\"Standardöverlämning\"*, *\"Kundsammanfattning\"*, *\"Utvecklarrapport\"*).\n3. Välj utdataformat:\n   - **Markdown** (idealiskt för wiki / Jira / GitHub)\n   - **HTML / Text** (idealiskt för e-post)\n   - **PDF** (för utskrift / arkivering)\n4. Använd knappen **📋 Kopiera till urklipp** eller **💾 Spara som fil**.\n"
     },
     "wiki": {
       "title": "📚 BookStack Wiki-integration",
       "category": "Wiki",
-      "content": "### 📚 BookStack Wiki-integration\n\nAnslut direkt till din BookStack-kunskapsbas."
+      "content": "### 📚 BookStack Wiki-integration\n\nSupport-Cockpit är direkt ansluten till din BookStack Wiki för att hålla lösningsartiklar lättillgängliga.\n\n#### Funktioner\n- **Automatisk sökning**: Skriv sökord i wiki-sökfältet för att hitta matchande artiklar.\n- **Förhandsvisning**: Artikelinnehåll renderas direkt i den högra cockpitpanelen.\n- **Öppna i BookStack**: Öppna artiklar med ett klick i din standardwebbläsare.\n- **Koppla ärende**: Koppla lösta ärenden till motsvarande wiki-artikel.\n- **Konfiguration**: Ange din BookStack URL och API-tokens under **Profil & Inställningar** (`👤`).\n"
     },
     "p2p": {
-      "title": "🔄 Peer-to-Peer-synk (kollegor)",
+      "title": "🔄 Peer-to-Peer Sync (Kollegor)",
       "category": "Synk",
-      "content": "### 🔄 P2P-datasynkronisering\n\nSynkronisera ärenden direkt mellan kollegor på det lokala nätverket."
+      "content": "### 🔄 Peer-to-Peer (P2P) Synkronisering\n\nSamarbeta med kollegor utan en central server! P2P-synk gör det möjligt att jämföra ärendedata direkt mellan lokala arbetsstationer.\n\n#### Arbetsflöde\n1. Klicka på **🔄 P2P-synk**.\n2. Välj den kollega du vill synkronisera med.\n3. Systemet jämför ärendenas versionsstatus.\n4. I **Skillnadsdialogen** ser du konflikter eller nyligen tillagda ärenden och kan säkert sammanfoga ändringar.\n"
     },
     "shortcuts": {
-      "title": "⌨ Tangentbordsgenvägar & snabbknappar",
-      "category": "Genvägar",
-      "content": "### ⌨ Tangentbordsgenvägar\n\n- `Ctrl+N`: Nytt ärende\n- `Ctrl+S`: Spara ärende\n- `Ctrl+E`: Exportera ärende\n- `F1`: Hjälp"
+      "title": "⌨ Kortkommandon & Hotkeys",
+      "category": "Kortkommandon",
+      "content": "### ⌨ Kortkommandon\n\nArbeta ännu snabbare med följande kortkommandon:\n\n| Åtgärd | Standardkortkommando |\n| :--- | :--- |\n| **Nytt ärende** | `Ctrl + N` |\n| **Spara ärende** | `Ctrl + S` |\n| **Arkivera ärende** | `Ctrl + Skift + A` |\n| **Exportera ärende** | `Ctrl + E` |\n| **Öppna inställningar** | `Ctrl + P` |\n| **Öppna textmallsväljare** | `Ctrl + M` |\n| **Fokusera wiki-sökning** | `Ctrl + W` |\n| **Fokusera kundsökning** | `Ctrl + F` |\n| **Cockpit-vy** | `Ctrl + 1` |\n| **Tabb-vy** | `Ctrl + 2` |\n| **Split-vy** | `Ctrl + 3` |\n| **Analys & Nyckeltal** | `Ctrl + 4` |\n| **Växla tema** | `Ctrl + T` |\n| **Hjälp-dialog** | `F1` |\n| **Textmallsmakron** | t.ex. `Ctrl + Alt + 1` |\n\n*Obs: Alla kortkommandon kan anpassas i inställningarna (`⚙ Profil & Inställningar` -> `⌨ Kortkommandon`).*\n"
     },
     "storage_paths": {
-      "title": "📁 Lagringsplatser, datamappar & EXE-drift",
+      "title": "📁 Lagringsplatser & Sökvägar",
       "category": "Konfiguration",
-      "content": "### 📁 Lagringsplatser & mapplänkar\n\nSeparera arbetsdata från applikationsfiler för säker portabilitet."
+      "content": "### 📁 Lagringsplatser, Datastruktur & EXE-körning\n\n**Support-Cockpit** håller applikationsdata separerade från programfiler. Detta möjliggör säker körning från en enda exekverbar fil (PyInstaller `.exe`).\n\n#### 1. Datamapp & sökvägar\n- Öppna **Profil & Inställningar** (`👤 [Ditt namn]`) -> **📁 Lagring & Sökvägar**.\n- **Huvuddatamapp**: Klicka på **📁 Välj mapp** för att ange din arbetsyta (t.ex. `D:\\SupportData`).\n- **Enskilda filsökvägar**: Koppla enskilda filer (`cases.json`, `customers.json`) till andra platser vid behov.\n\n#### 2. Körning som enkel fil (.exe)\n- När appen körs som en kompilerad `.exe` skapas inga mappar i körningskatalogen.\n- Istället sparas konfigurationen i din användarprofil:\n  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`\n  - Linux/Mac: `~/.config/SupportCockpit/user_config.json`\n\n#### 3. Exempelfiler\n- Exempelfiler från `data_examples/` kopieras automatiskt till din datamapp vid första starten.\n"
     },
     "template_editor": {
-      "title": "📄 Mallredigerare för export",
+      "title": "📄 Redigerare för exportmallar",
       "category": "Export",
-      "content": "### 📄 Redigera exportmallar i realtid\n\nRedigera HTML/Jinja2-mallar med direkt förhandsgranskning."
+      "content": "### 📄 Skapa & anpassa exportmallar\n\nI **Redigeraren för exportmallar** kan du anpassa befintliga överlämningsmallar eller definiera helt nya exportformat.\n\n#### Öppna mallhanteraren\n- Klicka på **📄 Mallar** i menyraden eller **🛠 Hantera mallar** i exportdialogen (`Ctrl+E`).\n\n#### Konfigurera mall\n1. **Namn & ID**: Ange ett unikt ID och ett läsbart visningsnamn.\n2. **Målåtgärd**: Välj mellan text till urklipp och filexport.\n3. **Tilldelade scheman**: Välj vilka formulärscheman mallen ska erbjudas för.\n4. **Obligatoriska fält**: Ange vilka fält som måste fyllas i innan export tillåts.\n5. **Jinja2-mall**: Skriv malltexten i Markdown/HTML och förhandsgranska direkt!\n"
     },
     "handover_followup": {
-      "title": "🔔 Ärendeöverlämningar & uppföljningar",
+      "title": "🔔 Överlämningar & Uppföljningar",
       "category": "Arbetsflöde",
-      "content": "### 🔔 Överlämningar & uppföljningspåminnelser\n\nÖverlämna ärenden till kollegor eller ställ in påminnelser."
+      "content": "### 🔔 Ansvarsöverlämning & Uppföljningspåminnelser\n\nHåll alltid koll på när ett ärende överlämnades till vem och när det är dags att följa upp.\n\n#### 1. Automatisk överlämningsloggning\n- När du ändrar **Ansvarig (Aktör)** för ett ärende (t.ex. från *Support* till *Utveckling*) skapas automatiskt en post i **tidslinjen**.\n\n#### 2. Planera uppföljning\n- Klicka på **🔔 Uppföljning** i ärendedetaljerna.\n- Välj en snabbinställning (`+ 1 dag`, `+ 2 dagar`, `+ 1 vecka`) eller ett valfritt datum med en anteckning.\n- Ärenden med aktiv uppföljning framhävs i ärendelistan.\n"
     },
     "email_calendar_outlook": {
-      "title": "✉ E-post, kalender (.ics) & Outlook",
+      "title": "✉ E-post, Kalender (.ics) & Outlook",
       "category": "Kommunikation",
-      "content": "### ✉ E-postutkast, kalender & Outlook-integration\n\nSkriv e-postmeddelanden, exportera kalenderhändelser eller överför till Outlook."
+      "content": "### ✉ Skriva e-post, Kalenderexport & Microsoft Outlook-integration\n\nTvå separata funktioner finns tillgängliga i Cockpit:\n\n#### 1. ✉ Skriva e-post\n- Klicka på **✉ E-post** för att öppna e-postutkastet för det aktuella ärendet.\n- Mottagare och ämne förifylls utifrån klinikdata.\n- Klicka på **🧩 Textmall** för att infoga färdiga supportmallar.\n- **Överför till Outlook**: Öppnar e-postmeddelandet direkt i Microsoft Outlook.\n\n#### 2. 📅 Skapa kalenderhändelse (.ics)\n- Klicka på **📅 Kalender** för att generera en kalenderbokning för uppföljning eller återuppringningsfrist.\n- **Spara som .ics-fil...**: Sparar händelsefilen på valfri plats.\n"
     },
     "case_print_reporting": {
-      "title": "🖨 Utskriftsvy för ärende, PDF & bilder",
+      "title": "🖨 Utskrift, PDF & Bilder",
       "category": "Export",
-      "content": "### 🖨 Utskrift & PDF-export\n\nGenerera utskriftsrapporter och PDF-dokument med inbäddade bildbilagor."
+      "content": "### 🖨 Ärendreutskrift & PDF-export\n\nSkapa fullständiga ärendeöversikter för arkivering eller möten.\n\n#### 1. Öppna utskriftsdialog\n- Klicka på **🖨 Skriv ut** i Cockpit.\n- Välj vilka avsnitt som ska ingå (kunddata, formulärfält, tidslinje, bilder).\n\n#### 2. Bilder & Skärmdumpar\n- Alla bildfiler (`.png`, `.jpg`, `.webp`) bäddas automatiskt in i slutet av dokumentet.\n\n#### 3. Exportalternativ\n- **🖨 Öppna i webbläsare & skriv ut**: Öppnar sidan i standardwebbläsaren och startar utskriftsdialogen.\n- **💾 Spara som HTML/PDF-rapport...**: Sparar rapporten på din hårddisk.\n"
     },
     "ai_ollama_management": {
-      "title": "🤖 AI-assistent, Ollama-server & modellval",
+      "title": "🤖 AI-assistent, Ollama-server & Modellhantering",
       "category": "AI & Ollama",
-      "content": "### 🤖 Lokal AI-supportassistent\n\nDataskyddsanpassad AI-support med Ollama eller Google Gemini Cloud API."
+      "content": "### 🤖 Lokal AI-supportassistent & Ollama-serverstyring\n\nSupport-Cockpit erbjuder 100 % integritetssäker AI-hjälp baserad på lokala öppen källkod-modeller (t.ex. Ollama med Qwen2.5 / Llama3). Alla förfrågningar stannar 100 % på din dator!\n\n#### 1. ⚙ Hantera Ollama-server\nUnder **Profil & Inställningar** (`👤`) -> **🤖 AI & NLP** kan du starta och stoppa Ollama-servern direkt.\n\n#### 2. ⚡ Skapa PVS-supportmodell med ett klick\n- Klicka på **`⚡ Skapa PVS-supportmodell från Modelfile`** för att generera en specialiserad modell (`pvs-support`).\n\n#### 3. 🎚 Global AI-brytare\n- Inaktivera AI när som helst med den globala brytaren. Att inaktivera laddar automatiskt ur modellen från RAM.\n"
     },
     "stepper_time_picker": {
-      "title": "⏱ Tidsval (07:00-20:00) & stegreglage",
+      "title": "⏱ Tidsval (07:00-20:00) & Stegarpilar",
       "category": "Användargränssnitt",
-      "content": "### ⏱ Interaktiv tidsväljare\n\nAnpassade tidsval för mottagningstider med snabba stegknappar."
+      "content": "### ⏱ Interaktiv tidsväljare\n\nOptimering av tidsval för klinikers arbetstider (07:00 till 20:00) med snabba piltangenter (`▲` / `▼`).\n"
     },
     "internal_cases": {
-      "title": "🏢 Interna ärenden & uppgifter (utan kundkoppling)",
+      "title": "🏢 Interna ärenden & uppgifter (Utan kund)",
       "category": "Arbetsflöde",
-      "content": "### 🏢 Interna ärenden & uppgifter\n\nHantera interna IT-uppgifter och underhåll utan kundkoppling."
+      "content": "### 🏢 Interna ärenden & underuppgifter\n\nFörutom kundrelaterade supportärenden kan du hantera **rent interna uppgifter** (t.ex. serverunderhåll, systemuppdateringar, anteckningar).\n\n#### Funktioner:\n- **Ingen kund krävs**: Välj *\"🏢 Internt ärende / Ingen klinik\"*.\n- **Visuell markering**: Interna ärenden får en blå **`🏢 INTERNT`**-bricka i ärendelistan.\n"
     },
     "cobra_crm_import": {
-      "title": "🐍 Cobra CRM mottagnings- & kundimport",
+      "title": "🐍 Cobra CRM Klinik- & Kundimport",
       "category": "Kunder",
-      "content": "### 🐍 Cobra CRM importassistent\n\nImportera kunddatabaser direkt från Cobra CRM-exporter."
+      "content": "### 🐍 Cobra CRM Importassistent\n\nImportera din kunddatabas direkt från Cobra CRM-exporter (`.csv`, `.txt`, `.json`).\n\n#### Arbetsflöde:\n1. Öppna Klinikhantering (**🏥 Kliniker**).\n2. Klicka på **🐍 Cobra CRM Import...**.\n3. Välj fil och bekräfta fältkopplingen.\n"
     },
     "snippets_manager": {
-      "title": "📝 Textbyggblock & snabbsvarsmallar",
+      "title": "📝 Textmallar & Mallsystem",
       "category": "Kommunikation",
-      "content": "### 📝 Hantera textbyggblock\n\nSpara tid vid återkommande svar med mallbyggblock."
+      "content": "### 📝 Hantera & infoga textmallar\n\nSpara tid vid återkommande svar med den inbyggda mallhanteraren.\n\n#### 1. Hantera textmallar\n- Klicka på **📝 Textmallar** i huvudmenyn för att skapa nya mallar med rubrik, kategori och taggar.\n\n#### 2. Infoga mallar i anteckningar eller e-post\n- Klicka på **🧩 Textmall** i e-postdialogen för att välja och infoga mallen vid markören.\n"
     },
     "repeatable_sub_forms": {
-      "title": "📂 Dynamiska flerkortsformulär",
+      "title": "📂 Dynamiska fler-kortsformulär",
       "category": "Formulär",
-      "content": "### 📂 Dynamiska formulär med flera underkort\n\nRegistrera flera oberoende förfrågningar i ett enda ärende."
+      "content": "### 📂 Dynamiska fler-kortsformulär (Upprepningsbara block)\n\nVissa formulärtyper tillåter registrering av flera oberoende förfrågningar i ett enda ärende (t.ex. flera fakturor eller filer).\n"
     },
     "analytics_kpi_dashboard": {
-      "title": "Analys & nyckeltalspanel",
+      "title": "Analys- & KPI-panel",
       "category": "Analys",
-      "content": "### Analys- och nyckeltalspanel\n\nFullständig statistisk översikt över arbetsbelastning och hanteringstider."
+      "content": "### Analys- & KPI-panel\n\nFå omfattande insikter i din supportprestanda och nyckeltal med ett ögonkast.\n\n#### Huvudnyckeltal:\n- **📋 Ärenden totalt**: Totalt antal registrerade ärenden.\n- **⏳ Öppna ärenden**: Ärenden som pågår eller väntar.\n- **✓ Klara (%)**: Antal klara ärenden med procentuell andel.\n- **⏱ Genomsnittlig handläggningstid**: Genomsnittlig tid från skapande till färdigställande.\n"
     },
     "advanced_search_filters": {
-      "title": "🔍 Avancerad sökning & söktokens",
+      "title": "🔍 Avancerat söksystem & söksymboler",
       "category": "Grundläggande",
-      "content": "### 🔍 Söktokens och snabbfilter\n\nFiltrera ärenden med söktokens som `is:internal`, `vip:true`, `reminder:due`."
+      "content": "### 🔍 Avancerade sökfilter & söksymboler\n\nSökfältet stöder kombinerbara söksymboler som `is:internal`, `vip:true`, `reminder:due` och `actor:dev`.\n"
     },
     "attachments_and_screenshots": {
-      "title": "📂 Filbilagor & skärmdumpar (Ctrl+V)",
+      "title": "📂 Bilagor & Skärmdumpar (Ctrl+V)",
       "category": "Dokument",
-      "content": "### 📂 Bilagshantering & skärmdumpar från urklipp\n\nKlistra in skärmdumpar direkt med `Ctrl+V`."
+      "content": "### 📂 Bilagshantering & skärmdumpar\n\nKlistra in skärmdumpar direkt med **`Ctrl + V`** och förhandsgranska loggfiler och bilder i bilagsraden.\n"
     },
     "zip_backup_restore": {
-      "title": "📦 Fullständig ZIP-säkerhetskopia & återställning",
+      "title": "📦 Komplett ZIP-säkerhetskopiering",
       "category": "Konfiguration",
-      "content": "### 📦 Säkerhetskopiering av arbetsyta\n\nExportera alla ärenden och bilagor till ett ZIP-arkiv."
+      "content": "### 📦 Säkerhetskopiera & återställ arbetsyta\n\nSäkerhetskopiera alla ärenden, kunder, scheman, mallar och bilagor i en enda komprimerad ZIP-fil under **Profil & Inställningar** (`👤`).\n"
     },
     "email_webhook_integration": {
-      "title": "🔌 E-post IMAP-import & REST-webhooks",
+      "title": "🔌 E-postimport & REST Webhooks (Jira/GitLab)",
       "category": "Integrationer",
-      "content": "### 🔌 E-postimport & webhooks\n\nHämta e-post via IMAP och utlös REST-webhooks för Jira/GitLab."
+      "content": "### 🔌 E-postimport & REST Webhooks\n\nAnslut Support-Cockpit till externa system. Importera e-post via IMAP och utlös REST-webhooks för GitLab eller Jira.\n"
     }
   },
   "demo_cases": {
@@ -439,5 +439,9 @@
     "c3_title": "Korrigera KV-faktureringstext",
     "c4_title": "Granskning av tilläggsanspråk 2026-Q1",
     "c5_title": "GUI-teckenstorlek i laboratoriefönstret för liten"
+  },
+  "splash": {
+    "title": "🩺 Support-Cockpit",
+    "loading": "⏳ Läser in applikationsdata och layouter..."
   }
 }

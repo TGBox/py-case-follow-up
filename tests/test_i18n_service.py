@@ -68,3 +68,21 @@ def test_ui_settings_language_serialization():
     # Invalid language falls back to 'de'
     invalid = UISettings.from_dict({"language": "invalid_lang"})
     assert invalid.language == "de"
+
+
+def test_dynamic_language_switch_updates_dialog_and_cockpit(tmp_path: Path):
+    from services.i18n_service import get_i18n
+    get_i18n().current_language = "de"
+    assert get_i18n().current_language == "de"
+
+    # Switch to Swedish
+    get_i18n().current_language = "sv"
+    assert get_i18n().current_language == "sv"
+    assert get_i18n().tr("cockpit.save") == "💾 Spara"
+    assert get_i18n().tr("cockpit.archive") == "📦 Arkivera"
+    assert get_i18n().tr("cockpit.complete") == "✓ Klar"
+
+    # Switch back to German
+    get_i18n().current_language = "de"
+    assert get_i18n().tr("cockpit.save") == "💾 Speichern"
+

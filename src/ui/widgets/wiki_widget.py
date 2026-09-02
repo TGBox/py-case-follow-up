@@ -16,10 +16,11 @@ class WikiWidget(ctk.CTkFrame):
         top_frame = ctk.CTkFrame(self, fg_color="transparent")
         top_frame.pack(fill="x", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_frame, text=tr("wiki.header", "BookStack Offline Wiki"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left")
+        self.hdr_lbl = ctk.CTkLabel(top_frame, text=tr("wiki.header", "BookStack Offline Wiki"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.hdr_lbl.pack(side="left")
 
-        sync_btn = ctk.CTkButton(top_frame, text=tr("wiki.sync_btn", "🔄 Wiki Sync"), command=self.on_sync_wiki, width=100)
-        sync_btn.pack(side="right")
+        self.sync_btn = ctk.CTkButton(top_frame, text=tr("wiki.sync_btn", "🔄 Wiki Sync"), command=self.on_sync_wiki, width=100)
+        self.sync_btn.pack(side="right")
 
         # Search Bar
         search_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -36,6 +37,15 @@ class WikiWidget(ctk.CTkFrame):
         # Scrollable Results Container
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
         self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "hdr_lbl"):
+            self.hdr_lbl.configure(text=tr("wiki.header", "BookStack Offline Wiki"))
+        if hasattr(self, "sync_btn"):
+            self.sync_btn.configure(text=tr("wiki.sync_btn", "🔄 Wiki Sync"))
+        if hasattr(self, "search_entry"):
+            self.search_entry.configure(placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
 
     def focus_search(self):
         self.search_entry.focus_set()

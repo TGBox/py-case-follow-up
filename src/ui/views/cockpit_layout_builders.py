@@ -274,6 +274,12 @@ class CockpitLayoutBuilderMixin:
     def refresh_ui_labels(self):
         from services.i18n_service import tr
         if hasattr(self, "more_actions_combo"):
+            self.more_actions_combo.configure(values=[
+                tr("cockpit.copy_email", "📧 Praxis E-Mail kopieren"),
+                tr("cockpit.export_case", "📤 Fall exportieren"),
+                tr("cockpit.print_case", "🖨 Fall-Akte drucken"),
+                tr("cockpit.convert_form", "🔄 Formular umwandeln"),
+            ])
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
         if hasattr(self, "email_btn"):
             self.email_btn.configure(text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"))
@@ -295,14 +301,44 @@ class CockpitLayoutBuilderMixin:
         self.print_btn = self.more_actions_combo
         self.convert_schema_btn = self.more_actions_combo
 
+        # Refresh right pane tabs ("Zeitleiste", "Anhänge", "Wiki")
+        if hasattr(self, "right_tabview") and hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):
+            btns = self.right_tabview._segmented_button._buttons_dict
+            if hasattr(self, "_sidebar_tab_names"):
+                for tab_key, orig_name in self._sidebar_tab_names.items():
+                    if orig_name in btns:
+                        btns[orig_name].configure(text=tr(f"cockpit.tab_{tab_key}", orig_name))
+
+        # Refresh child widgets
+        if hasattr(self, "case_list_widget") and hasattr(self.case_list_widget, "refresh_ui_labels"):
+            self.case_list_widget.refresh_ui_labels()
+        if hasattr(self, "timeline_widget") and hasattr(self.timeline_widget, "refresh_ui_labels"):
+            self.timeline_widget.refresh_ui_labels()
+        if hasattr(self, "attachment_widget") and hasattr(self.attachment_widget, "refresh_ui_labels"):
+            self.attachment_widget.refresh_ui_labels()
+        if hasattr(self, "wiki_widget") and hasattr(self.wiki_widget, "refresh_ui_labels"):
+            self.wiki_widget.refresh_ui_labels()
+        if hasattr(self, "form_widget") and hasattr(self.form_widget, "refresh_ui_labels"):
+            self.form_widget.refresh_ui_labels()
+
     def _build_right_pane(self):
         from services.i18n_service import tr
         # 3. Right Pane: Tabbed Sidebar
         self.right_tabview = ctk.CTkTabview(self.paned, command=self._on_sidebar_tab_changed)
 
-        tab_timeline = self.right_tabview.add(tr("cockpit.tab_timeline", "Zeitleiste"))
-        tab_attachments = self.right_tabview.add(tr("cockpit.tab_attachments", "Anhänge"))
-        tab_wiki = self.right_tabview.add(tr("cockpit.tab_wiki", "Wiki"))
+        t_title = tr("cockpit.tab_timeline", "Zeitleiste")
+        t_attach = tr("cockpit.tab_attachments", "Anhänge")
+        t_wiki = tr("cockpit.tab_wiki", "Wiki")
+
+        self._sidebar_tab_names = {
+            "timeline": t_title,
+            "attachments": t_attach,
+            "wiki": t_wiki,
+        }
+
+        tab_timeline = self.right_tabview.add(t_title)
+        tab_attachments = self.right_tabview.add(t_attach)
+        tab_wiki = self.right_tabview.add(t_wiki)
 
         self.timeline_widget = TimelineWidget(
             tab_timeline,

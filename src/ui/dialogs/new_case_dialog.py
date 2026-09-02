@@ -369,7 +369,6 @@ class NewCaseDialog(ctk.CTkToplevel):
         if created_dt > now_dt + timedelta(minutes=1):
             self.error_label.configure(text=tr("new_case.future_date", "Das Erstellungsdatum darf nicht in der Zukunft liegen."))
             return
-            return
 
         is_internal = self.is_internal_var.get()
         case_id = self.generate_case_id(created_dt.year)

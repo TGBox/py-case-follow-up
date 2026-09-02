@@ -38,19 +38,24 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.load_colleagues()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+        from constants import get_localized_departments
+
+        departments = get_localized_departments()
+
         # Header Bar
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
         ctk.CTkLabel(
             top_bar,
-            text="👥 Mitarbeiter- & Kollegeneinträge",
+            text=tr("colleague_mgmt.header", "👥 Mitarbeiter- & Kollegeneinträge"),
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left", padx=10)
 
         new_btn = ctk.CTkButton(
             top_bar,
-            text="+ Neuen Mitarbeiter anlegen",
+            text=tr("colleague_mgmt.new_colleague_btn", "+ Neuen Mitarbeiter anlegen"),
             command=self.on_click_new_colleague,
             fg_color="forestgreen",
             width=180,
@@ -67,7 +72,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         left_frame.pack_propagate(False)
 
         self.search_entry = ctk.CTkEntry(
-            left_frame, placeholder_text="🔍 Name, Kürzel, Abteilung..."
+            left_frame, placeholder_text=tr("colleague_mgmt.search_placeholder", "🔍 Name, Kürzel, Abteilung...")
         )
         self.search_entry.pack(fill="x", padx=10, pady=(10, 5))
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
@@ -81,7 +86,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         self.form_header_lbl = ctk.CTkLabel(
             right_frame,
-            text="Mitarbeiterdetails",
+            text=tr("colleague_mgmt.details_header", "Mitarbeiterdetails"),
             font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w",
         )
@@ -91,17 +96,17 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         form_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         # Fields
-        ctk.CTkLabel(form_scroll, text="Kürzel / Username *:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.username", "Kürzel / Username *:")).pack(anchor="w", pady=(4, 2))
         self.username_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. mmueller")
         self.username_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="Name / Anzeigename *:").pack(anchor="w", pady=(4, 2))
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.name", "Name / Anzeigename *:")).pack(anchor="w", pady=(4, 2))
         self.name_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Max Müller")
         self.name_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text="Abteilung / Department:").pack(anchor="w", pady=(4, 2))
-        self.dept_combo = ctk.CTkOptionMenu(form_scroll, values=DEPARTMENTS)
-        self.dept_combo.set(DEPARTMENTS[0])
+        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.department", "Abteilung / Department:")).pack(anchor="w", pady=(4, 2))
+        self.dept_combo = ctk.CTkOptionMenu(form_scroll, values=departments)
+        self.dept_combo.set(departments[0])
         self.dept_combo.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text="Durchwahl / Telefon:").pack(anchor="w", pady=(4, 2))

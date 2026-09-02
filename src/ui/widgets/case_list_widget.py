@@ -27,12 +27,14 @@ class CaseListWidget(ctk.CTkFrame):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Search Bar
         search_frame = ctk.CTkFrame(self, fg_color="transparent")
         search_frame.pack(fill="x", padx=10, pady=10)
 
         self.search_entry = ctk.CTkEntry(
-            search_frame, placeholder_text="🔍 Suche / Token (z. B. vip:true status:open)..."
+            search_frame, placeholder_text=tr("cockpit.search_placeholder", "🔍 Suche / Token (z. B. vip:true status:open)...")
         )
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", lambda e: self.on_search_changed(self.search_entry.get()))
@@ -41,13 +43,13 @@ class CaseListWidget(ctk.CTkFrame):
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
         qfilter_frame.pack(fill="x", padx=10, pady=(0, 6))
 
-        ctk.CTkButton(qfilter_frame, text="Alle", width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔥 Dringend", width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
-        ctk.CTkButton(qfilter_frame, text="🔔 Wiedervorlage", width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_all", "Alle"), width=45, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "🔥 Dringend"), width=80, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true")).pack(side="left", padx=2)
+        ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due")).pack(side="left", padx=2)
         
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
-            text="🔍 Tiefensuche",
+            text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
             width=100,
             fg_color="gray30",
             hover_color="darkmagenta",

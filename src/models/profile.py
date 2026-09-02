@@ -33,6 +33,7 @@ class UserInfo:
 class UISettings:
     theme: str = "SYSTEM"
     default_layout: str = LayoutMode.COCKPIT
+    language: str = "de"
     column_widths: dict[str, int] = field(
         default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
@@ -63,6 +64,7 @@ class UISettings:
         return {
             "theme": self.theme,
             "default_layout": self.default_layout,
+            "language": self.language,
             "column_widths": self.column_widths,
             "board_collapsed": self.board_collapsed,
             "table_column_widths": self.table_column_widths,
@@ -101,9 +103,14 @@ class UISettings:
         if popup_target not in ("APP_SCREEN", "PRIMARY_SCREEN"):
             popup_target = "APP_SCREEN"
 
+        lang = str(data.get("language", "de"))
+        if lang not in ("de", "en", "sv"):
+            lang = "de"
+
         return cls(
             theme=data.get("theme", "SYSTEM"),
             default_layout=data.get("default_layout", LayoutMode.COCKPIT),
+            language=lang,
             column_widths=default_widths,
             board_collapsed=b_collapsed,
             table_column_widths=t_widths,

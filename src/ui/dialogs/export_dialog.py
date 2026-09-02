@@ -46,24 +46,26 @@ class ExportDialog(ctk.CTkToplevel):
         self.grab_set()
         self.create_widgets()
         self.update_render_preview()
-
     def create_widgets(self):
+        from services.i18n_service import tr
+
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Header
-        header = ctk.CTkLabel(main_frame, text=f"Export für Fall {self.case.case_id}", font=ctk.CTkFont(size=18, weight="bold"))
+        header = ctk.CTkLabel(main_frame, text=f"{tr('export_dialog.export_for', 'Export für Fall')} {self.case.case_id}", font=ctk.CTkFont(size=18, weight="bold"))
         header.pack(anchor="w", pady=(0, 10))
 
         # Template Selection Dropdown
         tpl_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         tpl_frame.pack(fill="x", pady=(0, 10))
-        ctk.CTkLabel(tpl_frame, text="Vorlage auswählen:", font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(0, 10))
+
+        ctk.CTkLabel(tpl_frame, text=tr("export_dialog.select_template", "Vorlage auswählen:"), font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(0, 10))
         
         tpl_names = [t.display_name for t in self.templates]
         self.tpl_combo = ctk.CTkOptionMenu(
             tpl_frame,
-            values=tpl_names if tpl_names else ["Keine Vorlage"],
+            values=tpl_names if tpl_names else [tr("export_dialog.no_template", "Keine Vorlage")],
             command=self.on_template_selected,
             width=300,
         )
@@ -73,7 +75,7 @@ class ExportDialog(ctk.CTkToplevel):
 
         btn_manage = ctk.CTkButton(
             tpl_frame,
-            text="🛠 Vorlagen verwalten",
+            text=tr("export_dialog.manage_templates_btn", "🛠 Vorlagen verwalten"),
             command=self.on_open_template_manager,
             width=150,
             fg_color=("gray75", "gray30"),
@@ -88,14 +90,14 @@ class ExportDialog(ctk.CTkToplevel):
         # Force Export Checkbox
         self.force_chk = ctk.CTkCheckBox(
             main_frame,
-            text="Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)",
+            text=tr("export_dialog.force_export_chk", "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)"),
             variable=self.force_export_var,
             command=self.update_render_preview,
         )
         self.force_chk.pack(anchor="w", pady=(5, 10))
 
         # Rendered Output Preview Box
-        ctk.CTkLabel(main_frame, text="Vorschau des exportierten Textes:", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(main_frame, text=tr("export_dialog.preview_header", "Vorschau des exportierten Textes:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 2))
         self.preview_textbox = ctk.CTkTextbox(main_frame, width=640, height=260)
         self.preview_textbox.pack(fill="both", expand=True, pady=(0, 15))
 
@@ -107,13 +109,13 @@ class ExportDialog(ctk.CTkToplevel):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x")
 
-        close_btn = ctk.CTkButton(btn_frame, text="Schließen", fg_color="gray", command=self.destroy, width=120)
+        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120)
         close_btn.pack(side="left")
 
-        save_file_btn = ctk.CTkButton(btn_frame, text="In Datei speichern...", command=self.on_save_file, width=160)
+        save_file_btn = ctk.CTkButton(btn_frame, text=tr("export_dialog.save_file_btn", "In Datei speichern..."), command=self.on_save_file, width=160)
         save_file_btn.pack(side="right", padx=(10, 0))
 
-        copy_btn = ctk.CTkButton(btn_frame, text="In Zwischenablage kopieren", command=self.on_copy_clipboard, width=200)
+        copy_btn = ctk.CTkButton(btn_frame, text=tr("export_dialog.copy_btn", "In Zwischenablage kopieren"), command=self.on_copy_clipboard, width=200)
         copy_btn.pack(side="right")
 
     def on_template_selected(self, selected_name: str):

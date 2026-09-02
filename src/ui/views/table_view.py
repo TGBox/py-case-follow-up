@@ -14,14 +14,16 @@ from enums import get_actor_display
 from utils.datetime_utils import format_german_datetime
 
 
-COL_TITLE_MAP = {
+from constants import LocalizedDict
+
+COL_TITLE_MAP = LocalizedDict("table_columns", {
     "case_id": "ID ⇅",
     "practice": "Praxis / Kunde ⇅",
     "title": "Titel / Betreff ⇅",
     "actor": "Zuständigkeit ⇅",
     "followup": "Wiedervorlage ⇅",
     "score": "Score ⇅",
-}
+})
 
 
 class TableView(ctk.CTkFrame):

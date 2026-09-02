@@ -119,13 +119,15 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         )
         warn_lbl.pack(fill="x", pady=(0, 15))
 
+        from services.i18n_service import tr
+
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(main_frame, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom")
 
         ctk.CTkButton(
             bottom_bar,
-            text="Abbrechen",
+            text=tr("common.cancel", "Abbrechen"),
             command=self.destroy,
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
@@ -134,7 +136,7 @@ class ZipImportPathDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             bottom_bar,
-            text="📥 Daten entpacken & importieren",
+            text=tr("zip_import.unpack_btn", "📥 Daten entpacken & importieren"),
             command=self.on_confirm,
             fg_color="forestgreen",
             width=240,

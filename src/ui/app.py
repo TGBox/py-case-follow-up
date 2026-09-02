@@ -106,7 +106,12 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.load_all_data()
 
+        from services.i18n_service import get_i18n
+        get_i18n().current_language = getattr(self.profile.ui_settings, "language", "de")
+        get_i18n().register_listener(self.on_language_changed)
+
         # Build UI Structure
+        self.menu_frame: ctk.CTkFrame | None = None
         self.create_menu_bar()
 
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -228,15 +233,28 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             if not c.workflow_status.is_completed:
                 self.scoring_service.update_case_scoring(c)
 
+    def on_language_changed(self, lang_code: str):
+        self.create_menu_bar()
+        if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "refresh_ui_labels"):
+            self.cockpit_view.refresh_ui_labels()
+
     def create_menu_bar(self):
-        menu_frame = ctk.CTkFrame(self, height=48, corner_radius=8)
-        menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6))
+        from services.i18n_service import tr
+        if hasattr(self, "menu_frame") and self.menu_frame and self.menu_frame.winfo_exists():
+            self.menu_frame.destroy()
+
+        self.menu_frame = ctk.CTkFrame(self, height=48, corner_radius=8)
+        if hasattr(self, "container_frame") and self.container_frame and self.container_frame.winfo_exists():
+            self.menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6), before=self.container_frame)
+        else:
+            self.menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6))
+        menu_frame = self.menu_frame
 
         # App Title
-        ctk.CTkLabel(menu_frame, text=" 🩺 Support-Cockpit ", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=10, pady=4)
+        ctk.CTkLabel(menu_frame, text=tr("menu.title", " 🩺 Support-Cockpit "), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=10, pady=4)
 
         # Layout Switcher
-        ctk.CTkLabel(menu_frame, text="Layout:").pack(side="left", padx=(12, 5), pady=4)
+        ctk.CTkLabel(menu_frame, text=tr("menu.layout", "Layout:")).pack(side="left", padx=(12, 5), pady=4)
         self.layout_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=list(LAYOUT_DISPLAY.values()),
@@ -247,7 +265,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.layout_combo.pack(side="left", padx=5, pady=4)
 
         # Action Buttons
-        new_btn = ctk.CTkButton(menu_frame, text="+ Neuer Fall (Strg+N)", command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
+        new_btn = ctk.CTkButton(menu_frame, text=tr("menu.new_case", "+ Neuer Fall (Strg+N)"), command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
         new_btn.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 1: Stammdaten
@@ -257,7 +275,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self._on_stammdaten_selected,
             width=150,
         )
-        self.stammdaten_combo.set("⚙ Stammdaten")
+        self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
         self.stammdaten_combo.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 2: Vorlagen & Formulare
@@ -267,7 +285,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self._on_vorlagen_selected,
             width=165,
         )
-        self.vorlagen_combo.set("📄 Vorlagen & Formulare")
+        self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
         self.vorlagen_combo.pack(side="left", padx=3, pady=4)
 
         # Grouped Dropdown 3: Datenaustausch
@@ -277,14 +295,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self._on_datenaustausch_selected,
             width=145,
         )
-        self.datenaustausch_combo.set("🔄 Datenaustausch")
+        self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
         self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
 
         # Right side: User, Bell Badge & Theme Toggle
-        quit_btn = ctk.CTkButton(menu_frame, text="❌ Beenden", command=self.on_quit_app, width=90, fg_color="#8B0000", hover_color="#B22222")
+        quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=90, fg_color="#8B0000", hover_color="#B22222")
         quit_btn.pack(side="right", padx=6, pady=4)
 
-        theme_btn = ctk.CTkButton(menu_frame, text="🌗 Theme", command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
+        theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=4, pady=4)
 
         self.bell_btn = ctk.CTkButton(

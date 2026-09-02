@@ -20,19 +20,30 @@ class CustomerFormBuilderMixin:
     self.save_current_customer / ... Attributen und Methoden) nutzbar.
     """
 
+    def on_click_new_customer(self) -> None: ...
+    def on_click_cobra_import(self) -> None: ...
+    def on_search_changed(self, event: Any = None) -> None: ...
+    def on_sort_changed(self) -> None: ...
+    def toggle_sort_direction(self) -> None: ...
+    def save_current_customer(self) -> None: ...
+    def open_website_in_browser(self) -> None: ...
+    def add_contact_row(self, contact: Any = None) -> None: ...
+
     def _build_top_bar(self):
+        from services.i18n_service import tr
+
         # Top Header
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="🏥 Registrierte Praxen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text=tr("customer_mgmt.header", "🏥 Registrierte Praxen"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
-        new_btn = ctk.CTkButton(top_bar, text="+ Neue Praxis anlegen", command=self.on_click_new_customer, fg_color="forestgreen", width=160)
+        new_btn = ctk.CTkButton(top_bar, text=tr("customer_mgmt.new_practice_btn", "+ Neue Praxis anlegen"), command=self.on_click_new_customer, fg_color="forestgreen", width=160)
         new_btn.pack(side="right", padx=(5, 10))
 
         cobra_btn = ctk.CTkButton(
             top_bar,
-            text="🐍 Cobra CRM Import...",
+            text=tr("customer_mgmt.cobra_import_btn", "🐍 Cobra CRM Import..."),
             command=self.on_click_cobra_import,
             fg_color="darkmagenta",
             hover_color="purple",
@@ -41,12 +52,14 @@ class CustomerFormBuilderMixin:
         cobra_btn.pack(side="right", padx=5)
 
     def _build_customer_list_panel(self, body_frame: ctk.CTkFrame):
+        from services.i18n_service import tr
+
         # Left list
         left_frame = ctk.CTkFrame(body_frame, width=300)
         left_frame.pack(side="left", fill="y", padx=(0, 5), pady=0)
         left_frame.pack_propagate(False)
 
-        self.search_entry = ctk.CTkEntry(left_frame, placeholder_text="🔍 Praxis / ID suchen...")
+        self.search_entry = ctk.CTkEntry(left_frame, placeholder_text=tr("customer_mgmt.search_placeholder", "🔍 Praxis / ID suchen..."))
         self.search_entry.pack(fill="x", padx=10, pady=(10, 4))
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
 
@@ -79,6 +92,8 @@ class CustomerFormBuilderMixin:
         self.list_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
     def _build_customer_form_panel(self, body_frame: ctk.CTkFrame):
+        from services.i18n_service import tr
+
         # Right panel container
         right_container = ctk.CTkFrame(body_frame, fg_color="transparent")
         right_container.pack(side="right", fill="both", expand=True, padx=(5, 0), pady=0)
@@ -87,7 +102,7 @@ class CustomerFormBuilderMixin:
         btn_row = ctk.CTkFrame(right_container, fg_color=("gray85", "gray20"), height=48, corner_radius=8)
         btn_row.pack(side="bottom", fill="x", padx=0, pady=(6, 0))
 
-        self.save_btn = ctk.CTkButton(btn_row, text="💾 Praxis Speichern", command=self.save_current_customer, fg_color="forestgreen", width=160)
+        self.save_btn = ctk.CTkButton(btn_row, text=tr("customer_mgmt.save_practice_btn", "💾 Praxis Speichern"), command=self.save_current_customer, fg_color="forestgreen", width=160)
         self.save_btn.pack(side="left", padx=10, pady=8)
 
         self.status_lbl = ctk.CTkLabel(btn_row, text="", text_color="green", font=ctk.CTkFont(weight="bold"))

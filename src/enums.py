@@ -70,15 +70,38 @@ BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
 
 
 def get_channel_display(val: str) -> str:
-    return CHANNEL_DISPLAY.get(val, val)
+    from services.i18n_service import tr
+    key_map = {
+        "PHONE_INBOUND": "channels.phone",
+        "EMAIL": "channels.email",
+        "INTERNAL_NOTE": "channels.internal_note",
+    }
+    default = CHANNEL_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
 
 
 def get_actor_display(val: str) -> str:
-    return ACTOR_DISPLAY.get(val, val)
+    from services.i18n_service import tr
+    key_map = {
+        "SUPPORT": "actors.support_team",
+        "CUSTOMER": "actors.practice",
+        "DEVELOPMENT": "actors.dev",
+        "TECH": "actors.third_party",
+    }
+    default = ACTOR_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
 
 
 def get_layout_display(val: str) -> str:
-    return LAYOUT_DISPLAY.get(val, val)
+    from services.i18n_service import tr
+    key_map = {
+        "COCKPIT": "layouts.cockpit",
+        "BOARD": "layouts.board",
+        "TABLE": "layouts.table",
+        "ANALYTICS": "layouts.analytics",
+    }
+    default = LAYOUT_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
 
 
 def get_board_column_display(val: str) -> str:
@@ -86,21 +109,21 @@ def get_board_column_display(val: str) -> str:
 
 
 def get_actor_val_from_display(display: str) -> str:
-    for k, v in ACTOR_DISPLAY.items():
-        if v == display:
+    for k in ACTOR_DISPLAY:
+        if get_actor_display(k) == display or ACTOR_DISPLAY[k] == display:
             return k
     return display
 
 
 def get_channel_val_from_display(display: str) -> str:
-    for k, v in CHANNEL_DISPLAY.items():
-        if v == display:
+    for k in CHANNEL_DISPLAY:
+        if get_channel_display(k) == display or CHANNEL_DISPLAY[k] == display:
             return k
     return display
 
 
 def get_layout_val_from_display(display: str) -> str:
-    for k, v in LAYOUT_DISPLAY.items():
-        if v == display:
+    for k in LAYOUT_DISPLAY:
+        if get_layout_display(k) == display or LAYOUT_DISPLAY[k] == display:
             return k
     return display

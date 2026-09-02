@@ -142,8 +142,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         from services.snippet_service import SnippetService
         self.snippet_service = getattr(parent, "snippet_service", None) or SnippetService(self.storage_service.config.workspace_dir)
 
+        from services.i18n_service import tr
+
         w, h = DIALOG_DIMENSIONS["profile_settings"]
-        self.title(DIALOG_TITLES["profile_settings"])
+        self.title(tr("profile.title", DIALOG_TITLES["profile_settings"]))
         self.geometry(f"{w}x{h}")
         self.minsize(880, 680)
         from utils.ui_utils import center_window
@@ -155,23 +157,25 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Top Header
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text="⚙ Profil & Anwendungseinstellungen", font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
 
         # Tabview
         self.tabview = ctk.CTkTabview(self)
         self.tabview.pack(fill="both", expand=True, padx=10, pady=(5, 10))
 
-        self.tab_user = self.tabview.add("👤 Benutzerprofil")
-        self.tab_ui = self.tabview.add("🎨 Erscheinungsbild")
-        self.tab_paths = self.tabview.add("📁 Speicherort & Pfade")
+        self.tab_user = self.tabview.add(tr("profile.tab_user", "👤 Benutzerprofil"))
+        self.tab_ui = self.tabview.add(tr("profile.tab_ui", "🎨 Erscheinungsbild"))
+        self.tab_paths = self.tabview.add(tr("profile.tab_paths", "📁 Speicherort & Pfade"))
         self.tab_wiki = self.tabview.add("📚 BookStack Wiki")
-        self.tab_ai = self.tabview.add("🤖 KI & NLP")
-        self.tab_scoring = self.tabview.add("⌨ Tastenkürzel & Scoring")
-        self.tab_backup = self.tabview.add("💾 Datensicherung")
+        self.tab_ai = self.tabview.add(tr("profile.tab_ai", "🤖 KI & NLP"))
+        self.tab_scoring = self.tabview.add(tr("profile.tab_shortcuts", "⌨ Tastenkürzel & Scoring"))
+        self.tab_backup = self.tabview.add(tr("profile.tab_backup", "💾 Datensicherung"))
 
         self.setup_user_tab()
         self.setup_ui_tab()
@@ -185,7 +189,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        self.save_btn = ctk.CTkButton(bottom_bar, text="💾 Einstellungen Speichern", command=self.save_settings, fg_color="forestgreen", width=180)
+        self.save_btn = ctk.CTkButton(bottom_bar, text=tr("profile.save_btn", "💾 Einstellungen Speichern"), command=self.save_settings, fg_color="forestgreen", width=180)
         self.save_btn.pack(side="right", padx=5)
 
         self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color="green")
@@ -307,14 +311,25 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
 
     def setup_ui_tab(self):
-        ctk.CTkLabel(self.tab_ui, text="Erscheinungsbild & Layout", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
 
-        ctk.CTkLabel(self.tab_ui, text="Farb-Thema (Theme):").pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.language", "Sprache / Language:")).pack(anchor="w", pady=(5, 2))
+        self.language_combo = ctk.CTkOptionMenu(
+            self.tab_ui,
+            values=list(SUPPORTED_LANGUAGES.values())
+        )
+        curr_lang = getattr(self.profile.ui_settings, "language", "de")
+        self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
+        self.language_combo.pack(fill="x", pady=(0, 15))
+
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.theme", "Farb-Thema (Theme):")).pack(anchor="w", pady=(5, 2))
         self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=["Dark", "Light", "System"])
         self.theme_combo.set(self.profile.ui_settings.theme)
         self.theme_combo.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(self.tab_ui, text="Standard-Layout beim Start:").pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.default_layout", "Standard-Layout beim Start:")).pack(anchor="w", pady=(5, 2))
         self.layout_combo = ctk.CTkOptionMenu(
             self.tab_ui,
             values=list(LAYOUT_DISPLAY.values())
@@ -324,7 +339,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
             self.tab_ui,
-            text="🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"
+            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden")
         )
         if self.profile.ui_settings.show_demo_data is True:
             self.demo_switch.select()
@@ -334,7 +349,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
             self.tab_ui,
-            text="🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"
+            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren")
         )
         if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
             self.os_popup_switch.select()
@@ -342,17 +357,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.os_popup_switch.deselect()
         self.os_popup_switch.pack(anchor="w", pady=(0, 15))
 
-        ctk.CTkLabel(self.tab_ui, text="Position zusätzlicher Fenster & Benachrichtigungen:").pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")).pack(anchor="w", pady=(5, 2))
         self.popup_target_combo = ctk.CTkOptionMenu(
             self.tab_ui,
-            values=["App-Bildschirm (aktuell/zuletzt)", "Hauptbildschirm"]
+            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")]
         )
         curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-        self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
+        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
         self.popup_target_combo.pack(fill="x", pady=(0, 20))
 
         # Column widths reset section
-        ctk.CTkLabel(self.tab_ui, text="Gespeicherte Spaltenbreiten (Profile-Level)", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        ctk.CTkLabel(self.tab_ui, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
         widths = self.profile.ui_settings.column_widths
         w_str = (
@@ -605,6 +620,13 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.profile.user.mobile = self.user_mobile_entry.get().strip()
 
         # Update UI Settings & Reminders
+        if hasattr(self, "language_combo"):
+            lang_display = self.language_combo.get()
+            from services.i18n_service import LANGUAGE_DISPLAY_TO_CODE, get_i18n
+            lang_code = LANGUAGE_DISPLAY_TO_CODE.get(lang_display, "de")
+            self.profile.ui_settings.language = lang_code
+            get_i18n().current_language = lang_code
+
         self.profile.ui_settings.theme = self.theme_combo.get()
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
         if hasattr(self, "demo_switch"):

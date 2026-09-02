@@ -118,9 +118,11 @@ class KanbanCardWidget(ctk.CTkFrame):
             hover_color=("gray65", "gray45"),
         ).pack(side="left", padx=2)
 
+        from services.i18n_service import tr
+
         ctk.CTkButton(
             action_frame,
-            text="👤 Übergeben",
+            text=tr("board.handover", "👤 Übergeben"),
             command=lambda: self.on_change_actor(self.case),
             width=80,
             height=24,
@@ -129,7 +131,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
         ctk.CTkButton(
             action_frame,
-            text="🔔 Erinnere",
+            text=tr("board.remind", "🔔 Erinnere"),
             command=lambda: self.on_open_followup(self.case),
             width=75,
             height=24,
@@ -137,7 +139,7 @@ class KanbanCardWidget(ctk.CTkFrame):
             fg_color="darkblue",
         ).pack(side="left", padx=2)
 
-        comp_text = "✓ Erledigt" if not self.case.workflow_status.is_completed else "✓ Öffnen"
+        comp_text = tr("cockpit.complete", "✓ Erledigt") if not self.case.workflow_status.is_completed else tr("board.reopen", "✓ Öffnen")
         comp_color = "forestgreen" if not self.case.workflow_status.is_completed else "gray40"
         ctk.CTkButton(
             action_frame,
@@ -189,16 +191,18 @@ class BoardView(ctk.CTkFrame):
         self.create_board()
 
     def create_board(self):
+        from services.i18n_service import tr
+
         # Clear existing children
         for child in self.winfo_children():
             child.destroy()
 
         self.grid_rowconfigure(0, weight=1)
         cols_def = [
-            ("support", "📥 Support / In Bearbeitung"),
-            ("dev", "💻 Entwickler / Dev-Team"),
-            ("followup", "🔔 Wiedervorlage / Warten"),
-            ("completed", "✓ Erledigte Fälle"),
+            ("support", tr("board.col_support", "📥 Support / In Bearbeitung")),
+            ("dev", tr("board.col_dev", "💻 Entwickler / Dev-Team")),
+            ("followup", tr("board.col_followup", "🔔 Wiedervorlage / Warten")),
+            ("completed", tr("board.col_completed", "✓ Erledigte Fälle")),
         ]
 
         self.col_headers: dict[str, ctk.CTkLabel] = {}

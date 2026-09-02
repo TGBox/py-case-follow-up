@@ -124,9 +124,11 @@ class CockpitLayoutBuilderMixin:
         self.title_row = ctk.CTkFrame(self.header_card, fg_color="transparent")
         self.title_row.pack(fill="x", padx=10, pady=(8, 4))
 
+        from services.i18n_service import tr
+
         self.case_title_label = ctk.CTkLabel(
             self.title_row,
-            text="Bitte einen Fall auswählen",
+            text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"),
             font=ctk.CTkFont(size=15, weight="bold"),
             anchor="w",
             justify="left",
@@ -225,23 +227,25 @@ class CockpitLayoutBuilderMixin:
         self.toolbar_left = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
         self.toolbar_left.pack(side="left", padx=4, pady=4)
 
-        self.email_btn = ctk.CTkButton(self.toolbar_left, text="✉ E-Mail & 🤖 KI", command=self.on_click_email, width=130, state="disabled", fg_color="#6366f1", hover_color="#4f46e5")
+        from services.i18n_service import tr
+
+        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=130, state="disabled", fg_color="#6366f1", hover_color="#4f46e5")
         self.email_btn.pack(side="left", padx=3)
 
-        self.cal_btn = ctk.CTkButton(self.toolbar_left, text="📅 Kalender", command=self.on_click_calendar, width=95, state="disabled", fg_color="forestgreen", hover_color="darkgreen")
+        self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=95, state="disabled", fg_color="forestgreen", hover_color="darkgreen")
         self.cal_btn.pack(side="left", padx=3)
 
-        self.followup_btn = ctk.CTkButton(self.toolbar_left, text="🔔 Wiedervorlage", command=self.open_followup_dialog, width=115, fg_color="darkblue")
+        self.followup_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.followup", "🔔 Wiedervorlage"), command=self.open_followup_dialog, width=115, fg_color="darkblue")
         self.followup_btn.pack(side="left", padx=3)
 
-        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text="📝 Notiz", command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
+        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.note", "📝 Notiz"), command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
         self.add_note_btn.pack(side="left", padx=3)
 
         # Right Side of Toolbar: Save Button + Integrated Dropdown Menu for Utilities
         self.toolbar_right = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
         self.toolbar_right.pack(side="right", padx=4, pady=4)
 
-        self.save_btn = ctk.CTkButton(self.toolbar_right, text="💾 Speichern", command=self.on_click_save, width=95, state="disabled")
+        self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "💾 Speichern"), command=self.on_click_save, width=95, state="disabled")
         self.save_btn.pack(side="left", padx=3)
 
         self.more_actions_combo = ctk.CTkOptionMenu(
@@ -252,7 +256,7 @@ class CockpitLayoutBuilderMixin:
             fg_color=("gray70", "gray35"),
             button_color=("gray60", "gray40"),
         )
-        self.more_actions_combo.set("⚙ Weitere Aktionen...")
+        self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
         self.more_actions_combo.pack(side="left", padx=3)
 
         # Aliases for export, print, convert_schema buttons to maintain backward compatibility
@@ -260,13 +264,34 @@ class CockpitLayoutBuilderMixin:
         self.print_btn = self.more_actions_combo
         self.convert_schema_btn = self.more_actions_combo
 
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "more_actions_combo"):
+            self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
+        if hasattr(self, "email_btn"):
+            self.email_btn.configure(text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"))
+        if hasattr(self, "cal_btn"):
+            self.cal_btn.configure(text=tr("cockpit.calendar", "📅 Kalender"))
+        if hasattr(self, "followup_btn"):
+            self.followup_btn.configure(text=tr("cockpit.followup", "🔔 Wiedervorlage"))
+        if hasattr(self, "add_note_btn"):
+            self.add_note_btn.configure(text=tr("cockpit.note", "📝 Notiz"))
+        if hasattr(self, "save_btn"):
+            self.save_btn.configure(text=tr("cockpit.save", "💾 Speichern"))
+
+        # Aliases for export, print, convert_schema buttons to maintain backward compatibility
+        self.export_btn = self.more_actions_combo
+        self.print_btn = self.more_actions_combo
+        self.convert_schema_btn = self.more_actions_combo
+
     def _build_right_pane(self):
+        from services.i18n_service import tr
         # 3. Right Pane: Tabbed Sidebar
         self.right_tabview = ctk.CTkTabview(self.paned, command=self._on_sidebar_tab_changed)
 
-        tab_timeline = self.right_tabview.add("Zeitleiste")
-        tab_attachments = self.right_tabview.add("Anhänge")
-        tab_wiki = self.right_tabview.add("Wiki")
+        tab_timeline = self.right_tabview.add(tr("cockpit.tab_timeline", "Zeitleiste"))
+        tab_attachments = self.right_tabview.add(tr("cockpit.tab_attachments", "Anhänge"))
+        tab_wiki = self.right_tabview.add(tr("cockpit.tab_wiki", "Wiki"))
 
         self.timeline_widget = TimelineWidget(
             tab_timeline,

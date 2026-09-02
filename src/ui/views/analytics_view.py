@@ -22,19 +22,21 @@ class AnalyticsView(ctk.CTkFrame):
         self.render_dashboard()
 
     def create_widgets(self):
+        from services.i18n_service import tr
+
         # Header
         top_bar = ctk.CTkFrame(self, fg_color="transparent")
         top_bar.pack(fill="x", padx=15, pady=10)
 
         ctk.CTkLabel(
             top_bar,
-            text="Auswertungen & Support Cockpit KPIs",
+            text=tr("analytics.header", "Auswertungen & Support Cockpit KPIs"),
             font=ctk.CTkFont(size=18, weight="bold")
         ).pack(side="left")
 
         ctk.CTkButton(
             top_bar,
-            text="📋 Statistik-Bericht kopieren",
+            text=tr("analytics.copy_report_btn", "📋 Statistik-Bericht kopieren"),
             width=190,
             fg_color="gray30",
             hover_color="gray40",
@@ -46,11 +48,13 @@ class AnalyticsView(ctk.CTkFrame):
         self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
     def render_dashboard(self):
+        from services.i18n_service import tr
+
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
         if not self.cases:
-            ctk.CTkLabel(self.scroll_frame, text="Keine Auswertungsdaten verfügbar.").pack(pady=20)
+            ctk.CTkLabel(self.scroll_frame, text=tr("analytics.no_data", "Keine Auswertungsdaten verfügbar.")).pack(pady=20)
             return
 
         total_count = len(self.cases)
@@ -100,12 +104,12 @@ class AnalyticsView(ctk.CTkFrame):
         summary_row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
         summary_row.pack(fill="x", pady=(0, 12))
 
-        self.create_card(summary_row, "📋 Fälle Gesamt", str(total_count), "dodgerblue")
-        self.create_card(summary_row, "⏳ Offene Fälle", str(len(open_cases)), "darkorange")
-        self.create_card(summary_row, "✓ Erledigt", f"{len(completed_cases)} ({completed_pct:.0f}%)", "forestgreen")
-        self.create_card(summary_row, "⚠ Überfällig", str(len(overdue_cases)), "firebrick" if overdue_cases else "forestgreen")
-        self.create_card(summary_row, "⏱ Ø Bearbeitung", avg_res_str, "darkviolet")
-        self.create_card(summary_row, "⭐ VIP-Quote", f"{vip_pct:.1f}%", "gold")
+        self.create_card(summary_row, tr("analytics.total_cases", "📋 Fälle Gesamt"), str(total_count), "dodgerblue")
+        self.create_card(summary_row, tr("analytics.open_cases", "⏳ Offene Fälle"), str(len(open_cases)), "darkorange")
+        self.create_card(summary_row, tr("analytics.completed_cases", "✓ Erledigt"), f"{len(completed_cases)} ({completed_pct:.0f}%)", "forestgreen")
+        self.create_card(summary_row, tr("analytics.overdue_cases", "⚠ Überfällig"), str(len(overdue_cases)), "firebrick" if overdue_cases else "forestgreen")
+        self.create_card(summary_row, tr("analytics.avg_res_time", "⏱ Ø Bearbeitung"), avg_res_str, "darkviolet")
+        self.create_card(summary_row, tr("analytics.vip_rate", "⭐ VIP-Quote"), f"{vip_pct:.1f}%", "gold")
 
         # 2. Grid Container (2 Columns for balanced layout)
         grid_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
@@ -124,7 +128,7 @@ class AnalyticsView(ctk.CTkFrame):
         urg_frame = ctk.CTkFrame(left_col, fg_color=("gray85", "gray20"), corner_radius=8)
         urg_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(urg_frame, text="🚨 Dringlichkeits-Verteilung (Scoring)", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
+        ctk.CTkLabel(urg_frame, text=tr("analytics.urgency_title", "🚨 Dringlichkeits-Verteilung (Scoring)"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
 
         red_count = sum(1 for c in open_cases if c.classification.urgency_level == UrgencyLevel.RED)
         yellow_count = sum(1 for c in open_cases if c.classification.urgency_level == UrgencyLevel.YELLOW)
@@ -142,7 +146,7 @@ class AnalyticsView(ctk.CTkFrame):
         schema_frame = ctk.CTkFrame(left_col, fg_color=("gray85", "gray20"), corner_radius=8)
         schema_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(schema_frame, text="📄 Verteilung nach Formular / Schema", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
+        ctk.CTkLabel(schema_frame, text=tr("analytics.schema_title", "📄 Verteilung nach Formular / Schema"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
 
         schema_map = {getattr(s, "schema_id", ""): getattr(s, "display_name", "") for s in self.schemas}
         schema_counts: dict[str, int] = {}
@@ -161,7 +165,7 @@ class AnalyticsView(ctk.CTkFrame):
         prac_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
         prac_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(prac_frame, text="🏆 Top 5 Praxen nach Fallaufkommen", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
+        ctk.CTkLabel(prac_frame, text=tr("analytics.top_practices_title", "🏆 Top 5 Praxen nach Fallaufkommen"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
 
         prac_counts: dict[str, tuple[int, bool]] = {}
         for c in self.cases:
@@ -179,7 +183,7 @@ class AnalyticsView(ctk.CTkFrame):
         staff_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
         staff_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(staff_frame, text="👤 Bearbeiter-Auslastung", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
+        ctk.CTkLabel(staff_frame, text=tr("analytics.assignee_title", "👤 Bearbeiter-Auslastung"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
 
         assignee_stats: dict[str, dict[str, int]] = {}
         for c in self.cases:
@@ -198,7 +202,7 @@ class AnalyticsView(ctk.CTkFrame):
         dept_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
         dept_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(dept_frame, text="👥 Offene Fälle nach Abteilung / Zuständigkeit", font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
+        ctk.CTkLabel(dept_frame, text=tr("analytics.department_title", "👥 Offene Fälle nach Abteilung / Zuständigkeit"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
 
         actor_counts: dict[str, int] = {}
         for c in open_cases:

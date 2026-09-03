@@ -36,6 +36,7 @@ from services.search_service import SearchService
 from services.schema_service import SchemaService
 from services.customer_service import CustomerService
 from services.tray_service import TrayService
+from services.i18n_service import tr
 
 from ui.views.cockpit_view import CockpitView
 from ui.views.board_view import BoardView
@@ -86,7 +87,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         ctk.set_appearance_mode(theme_mode)
 
         # Configure Window directly in maximized mode
-        self.title(APP_WINDOW_TITLE)
+        self.title(tr("app.window_title", APP_WINDOW_TITLE))
         self.geometry("1440x880")
         self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
         try:
@@ -123,8 +124,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
         splash_box.place(relx=0.5, rely=0.5, anchor="center")
-
-        from services.i18n_service import tr
 
         self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
         self.splash_title_lbl.pack(pady=(0, 8))
@@ -238,9 +237,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self.scoring_service.update_case_scoring(c)
 
     def on_language_changed(self, lang_code: str):
+        self.title(tr("app.window_title", APP_WINDOW_TITLE))
         self.create_menu_bar()
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "refresh_ui_labels"):
             self.cockpit_view.refresh_ui_labels()
+        if hasattr(self, "board_view") and hasattr(self.board_view, "refresh_ui_labels"):
+            self.board_view.refresh_ui_labels()
+        if hasattr(self, "table_view") and hasattr(self.table_view, "refresh_ui_labels"):
+            self.table_view.refresh_ui_labels()
+        if hasattr(self, "analytics_view") and hasattr(self.analytics_view, "refresh_ui_labels"):
+            self.analytics_view.refresh_ui_labels()
+        self.refresh_views(force_all=True)
 
     def create_menu_bar(self):
         from services.i18n_service import tr
@@ -685,9 +692,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         from services.zip_backup_service import ZipBackupService
 
         dest_file = filedialog.asksaveasfilename(
-            title="Komplett-Datensicherung als ZIP speichern",
+            title=tr("app.zip_backup_title", "Komplett-Datensicherung als ZIP speichern"),
             defaultextension=".zip",
-            filetypes=[("ZIP-Archiv", "*.zip")],
+            filetypes=[(tr("app.zip_filetypes", "ZIP-Archiv"), "*.zip")],
             initialfile="SupportCockpit_Backup.zip",
             parent=self,
         )
@@ -722,7 +729,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 top_case = due_cases[0]
                 ToastNotification(
                     self,
-                    title=f"🔔 Wiedervorlage fällig ({due_count})",
+                    title=tr("app.followup_due_toast_title", "🔔 Wiedervorlage fällig ({count})", count=due_count),
                     message=f"[{top_case.case_id}] {top_case.classification.title}",
                     on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
                 )
@@ -810,3 +817,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.storage_service.flush_all_saves()
         self.tray_service.stop()
         self.destroy()
+
+    def destroy(self):
+        from services.i18n_service import get_i18n
+        try:
+            get_i18n().unregister_listener(self.on_language_changed)
+        except Exception:
+            pass
+        super().destroy()

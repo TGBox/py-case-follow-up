@@ -169,12 +169,14 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.schemas = schemas
 
     def focus_wiki_search(self):
-        self.right_tabview.set("Wiki")
+        wiki_tab = getattr(self, "_sidebar_tab_names", {}).get("wiki", "Wiki")
+        self.right_tabview.set(wiki_tab)
         self.wiki_widget.focus_search()
 
     def focus_timeline_note(self):
-        self.right_tabview.set("Zeitleiste")
-        self._on_sidebar_tab_changed("Zeitleiste")
+        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", "Zeitleiste")
+        self.right_tabview.set(tl_tab)
+        self._on_sidebar_tab_changed(tl_tab)
         self.timeline_widget.note_textbox.focus_set()
 
     def on_click_print(self):
@@ -239,7 +241,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
     def _update_title_label(self):
         if not self.current_case:
             return
-        status_tag = "  [✓ ERLEDIGT]" if self.current_case.workflow_status.is_completed else ""
+        from services.i18n_service import tr
+        status_tag = f"  [{tr('cockpit.status_completed_tag', '✓ ERLEDIGT')}]" if self.current_case.workflow_status.is_completed else ""
         self.case_title_label.configure(text=f"{self.current_case.case_id}: {self.current_case.classification.title}{status_tag}")
 
     def on_select_case_from_list(self, case: Case):
@@ -254,20 +257,21 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.convert_schema_btn.configure(state="normal")
 
         from utils.datetime_utils import format_german_datetime
+        from services.i18n_service import tr
         vip_str = " ★ VIP" if case.customer.is_vip else ""
         if case.is_internal:
-            self.kunde_label.configure(text=f"🏢 Kunde: INTERNE AUFGABE / VORGANG ({case.customer.customer_id}){vip_str}")
+            self.kunde_label.configure(text=f"🏢 {tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({case.customer.customer_id}){vip_str}")
         else:
-            self.kunde_label.configure(text=f"🏥 Kunde: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
+            self.kunde_label.configure(text=f"🏥 {tr('cockpit.customer', 'Kunde')}: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
 
         full_addr = getattr(case.customer, "full_address", "")
         addr_str = f" | 🏠 {full_addr}" if full_addr else ""
-        self.ansprechpartner_label.configure(text=f"👤 Ansprechpartner: {case.customer.contact_person}{addr_str}")
+        self.ansprechpartner_label.configure(text=f"👤 {tr('cockpit.contact_person', 'Ansprechpartner')}: {case.customer.contact_person}{addr_str}")
 
         self._update_wiedervorlage_display()
 
         self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
-        self.complete_btn.configure(text="✓ Wieder öffnen" if case.workflow_status.is_completed else "✓ Erledigen")
+        self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
 
         # Reset sidebar loaded tabs cache for new case
         self._loaded_tab_case_ids.clear()
@@ -289,9 +293,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             return
 
         self._loaded_tab_case_ids[curr_tab] = self.current_case.case_id
-        if curr_tab == "Zeitleiste":
+        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", "Zeitleiste")
+        att_tab = getattr(self, "_sidebar_tab_names", {}).get("attachments", "Anhänge")
+        if curr_tab == tl_tab or curr_tab == "Zeitleiste":
             self.timeline_widget.load_timeline(self.current_case.timeline)
-        elif curr_tab == "Anhänge":
+        elif curr_tab == att_tab or curr_tab == "Anhänge":
             self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
@@ -326,7 +332,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             ToastNotification(
                 self.winfo_toplevel(),
                 title=tr("cockpit.email_copied_title", "📋 E-Mail kopiert"),
-                message=f"Praxis-E-Mail '{email_clean}' wurde in die Zwischenablage kopiert.",
+                message=tr("cockpit.email_copied_message", "Praxis-E-Mail '{email}' wurde in die Zwischenablage kopiert.", email=email_clean),
             )
         else:
             from ui.widgets.toast_notification import ToastNotification
@@ -334,7 +340,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             ToastNotification(
                 self.winfo_toplevel(),
                 title=tr("cockpit.no_email_title", "⚠ Keine E-Mail-Adresse"),
-                message="Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
+                message=tr("cockpit.no_email_msg", "Für diese Praxis ist keine E-Mail-Adresse hinterlegt."),
             )
 
     def open_convert_schema_dialog(self):
@@ -383,14 +389,15 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
                 if self.current_case:
+                    from services.i18n_service import tr
                     prev_actor_val = self.current_case.workflow_status.current_actor
                     self.current_case.workflow_status.current_actor = new_actor_val
                     self.current_case.workflow_status.actor_since = now_iso()
 
                     person_str = f" ({person})" if person else ""
                     note_str = f" | Details: {note}" if note else ""
-                    note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
-                    change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
+                    note_text = tr("timeline.handover_note", "Zuständigkeit übergeben an: {actor}{person} via {channel}{note}", actor=get_actor_display(new_actor_val), person=person_str, channel=channel, note=note_str)
+                    change_text = tr("timeline.handover_status", "ZUSTÄNDIGKEIT: {prev} -> {curr}", prev=get_actor_display(prev_actor_val), curr=get_actor_display(new_actor_val))
 
                     entry = TimelineEntry(
                         timestamp=now_iso(),
@@ -426,15 +433,16 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
     def on_toggle_complete(self):
         if self.current_case:
+            from services.i18n_service import tr
             new_state = not self.current_case.workflow_status.is_completed
             self.current_case.workflow_status.is_completed = new_state
             if new_state:
                 self.current_case.workflow_status.followup_at = ""
-                note_text = "Fall auf erledigt gesetzt."
-                change_text = "STATUS: Erledigt"
+                note_text = tr("timeline.case_completed", "Fall auf erledigt gesetzt.")
+                change_text = tr("timeline.status_completed", "STATUS: Erledigt")
             else:
-                note_text = "Fall wieder geöffnet."
-                change_text = "STATUS: Offen"
+                note_text = tr("timeline.case_reopened", "Fall wieder geöffnet.")
+                change_text = tr("timeline.status_open", "STATUS: Offen")
 
             from models.case import TimelineEntry
             from utils.datetime_utils import now_iso
@@ -450,7 +458,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.current_case.timeline.append(entry)
             self.timeline_widget.load_timeline(self.current_case.timeline)
 
-            self.complete_btn.configure(text="✓ Wieder öffnen" if new_state else "✓ Erledigen")
+            self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if new_state else tr("cockpit.complete", "✓ Erledigen"))
             self._update_title_label()
             self._update_wiedervorlage_display()
             self.on_click_save()
@@ -517,7 +525,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
         fw_dt_str = format_german_datetime(self.current_case.workflow_status.followup_at)
         note_suffix = f" ({note})" if note else ""
-        self._wiedervorlage_full_text = f"🔔 Nachfragen am: {fw_date_str}, {fw_time_str}{note_suffix}"
+        from services.i18n_service import tr
+        self._wiedervorlage_full_text = f"{tr('cockpit.followup_at', '🔔 Nachfragen am:')} {fw_date_str}, {fw_time_str}{note_suffix}"
 
         # Compute available pixel width in info_left_frame
         w = self.info_left_frame.winfo_width()

@@ -1,0 +1,1770 @@
+{
+  "colleague_mgmt.new_colleague_btn": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:58"
+    ],
+    "defaults": [
+      "+ Neuen Mitarbeiter anlegen"
+    ]
+  },
+  "colleague_mgmt.search_placeholder": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:75"
+    ],
+    "defaults": [
+      "🔍 Name, Kürzel, Abteilung..."
+    ]
+  },
+  "colleague_mgmt.details_header": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:89"
+    ],
+    "defaults": [
+      "Mitarbeiterdetails"
+    ]
+  },
+  "common.delete": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:147",
+      "src/ui/dialogs/schema_builder_dialog.py:135",
+      "src/ui/dialogs/snippet_management_dialog.py:120",
+      "src/ui/dialogs/tag_management_dialog.py:154",
+      "src/ui/dialogs/tag_management_dialog.py:208",
+      "src/ui/dialogs/template_manager_dialog.py:284"
+    ],
+    "defaults": [
+      "🗑 Löschen"
+    ]
+  },
+  "colleague_mgmt.header": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:52"
+    ],
+    "defaults": [
+      "👥 Mitarbeiter- & Kollegeneinträge"
+    ]
+  },
+  "colleague_mgmt.username": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:99"
+    ],
+    "defaults": [
+      "Kürzel / Username *:"
+    ]
+  },
+  "colleague_mgmt.name": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:103"
+    ],
+    "defaults": [
+      "Name / Anzeigename *:"
+    ]
+  },
+  "colleague_mgmt.department": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:107"
+    ],
+    "defaults": [
+      "Abteilung / Department:"
+    ]
+  },
+  "colleague_mgmt.phone": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:112"
+    ],
+    "defaults": [
+      "Durchwahl / Telefon:"
+    ]
+  },
+  "colleague_mgmt.email": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:116"
+    ],
+    "defaults": [
+      "E-Mail-Adresse:"
+    ]
+  },
+  "colleague_mgmt.mobile": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:120"
+    ],
+    "defaults": [
+      "Mobiltelefon:"
+    ]
+  },
+  "colleague_mgmt.notes": {
+    "calls": [
+      "src/ui/dialogs/colleague_management_dialog.py:124"
+    ],
+    "defaults": [
+      "Aufgabengebiet / Notizen:"
+    ]
+  },
+  "convert_schema.select_valid": {
+    "calls": [
+      "src/ui/dialogs/convert_schema_dialog.py:128"
+    ],
+    "defaults": [
+      "Bitte ein gültiges Ziel-Formular auswählen."
+    ]
+  },
+  "convert_schema.already_used": {
+    "calls": [
+      "src/ui/dialogs/convert_schema_dialog.py:132"
+    ],
+    "defaults": [
+      "Der Fall verwendet bereits dieses Formular-Schema."
+    ]
+  },
+  "convert_schema.header": {
+    "calls": [
+      "src/ui/dialogs/convert_schema_dialog.py:50"
+    ],
+    "defaults": [
+      "🔄 Formular-Schema umwandeln"
+    ]
+  },
+  "convert_schema.select_target": {
+    "calls": [
+      "src/ui/dialogs/convert_schema_dialog.py:77"
+    ],
+    "defaults": [
+      "Neues Ziel-Formular auswählen:"
+    ]
+  },
+  "customer_mgmt.new_practice_btn": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:41"
+    ],
+    "defaults": [
+      "+ Neue Praxis anlegen"
+    ]
+  },
+  "customer_mgmt.cobra_import_btn": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:46"
+    ],
+    "defaults": [
+      "🐍 Cobra CRM Import..."
+    ]
+  },
+  "customer_mgmt.search_placeholder": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:62"
+    ],
+    "defaults": [
+      "🔍 Praxis / ID suchen..."
+    ]
+  },
+  "customer_mgmt.save_practice_btn": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:105"
+    ],
+    "defaults": [
+      "💾 Praxis Speichern"
+    ]
+  },
+  "customer_mgmt.details_title": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:123"
+    ],
+    "defaults": [
+      "Praxis-Details"
+    ]
+  },
+  "customer_mgmt.header": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:39"
+    ],
+    "defaults": [
+      "🏥 Registrierte Praxen"
+    ]
+  },
+  "customer_mgmt.cust_id_lbl": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:127"
+    ],
+    "defaults": [
+      "Kunden-ID (z.B. CUST-1001):"
+    ]
+  },
+  "customer_mgmt.practice_name_lbl": {
+    "calls": [
+      "src/ui/dialogs/customer_form_builders.py:137"
+    ],
+    "defaults": [
+      "Praxisname *:"
+    ]
+  },
+  "customer_mgmt.new_practice_hdr": {
+    "calls": [
+      "src/ui/dialogs/customer_management_dialog.py:367"
+    ],
+    "defaults": [
+      "🆕 Neue Praxis anlegen"
+    ]
+  },
+  "customer_mgmt.saved_msg": {
+    "calls": [
+      "src/ui/dialogs/customer_management_dialog.py:487"
+    ],
+    "defaults": [
+      "✅ Praxis gespeichert!"
+    ]
+  },
+  "customer_mgmt.missing_id_name": {
+    "calls": [
+      "src/ui/dialogs/customer_management_dialog.py:413"
+    ],
+    "defaults": [
+      "⚠ ID und Praxisname erforderlich!"
+    ]
+  },
+  "email_calendar.client_opened": {
+    "calls": [
+      "src/ui/dialogs/email_calendar_dialog.py:191"
+    ],
+    "defaults": [
+      "✓ Mail-Client wurde mit dem Entwurf aufgerufen."
+    ]
+  },
+  "email_calendar.text_copied": {
+    "calls": [
+      "src/ui/dialogs/email_calendar_dialog.py:198"
+    ],
+    "defaults": [
+      "✓ E-Mail Text wurde in die Zwischenablage kopiert."
+    ]
+  },
+  "email_draft.snippet_inserted": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:495"
+    ],
+    "defaults": [
+      "✓ Textbaustein eingefügt."
+    ]
+  },
+  "email_draft.ai_generating": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:595"
+    ],
+    "defaults": [
+      "🤖 KI generiert E-Mail-Entwurf..."
+    ]
+  },
+  "email_draft.mailto_opened": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:514"
+    ],
+    "defaults": [
+      "✓ Standard-Mail-Programm aufgerufen."
+    ]
+  },
+  "email_draft.outlook_opened": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:539"
+    ],
+    "defaults": [
+      "✓ E-Mail erfolgreich in Outlook geöffnet."
+    ]
+  },
+  "email_draft.copied_to_clipboard": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:579"
+    ],
+    "defaults": [
+      "✓ E-Mail in Zwischenablage kopiert."
+    ]
+  },
+  "email_draft.case_required_for_ai": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:666"
+    ],
+    "defaults": [
+      "⚠ KI-Entwurf benötigt einen aktiven Fall."
+    ]
+  },
+  "email_draft.recipient_lbl": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:175"
+    ],
+    "defaults": [
+      "Empfänger (E-Mail):"
+    ]
+  },
+  "email_draft.close_btn": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:227"
+    ],
+    "defaults": [
+      "✕ Schließen"
+    ]
+  },
+  "email_draft.subject_lbl": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:245"
+    ],
+    "defaults": [
+      "Betreff:"
+    ]
+  },
+  "email_draft.body_lbl": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:255"
+    ],
+    "defaults": [
+      "E-Mail Nachrichtentext:"
+    ]
+  },
+  "email_draft.eml_handed_over": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:565"
+    ],
+    "defaults": [
+      "✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml)."
+    ]
+  },
+  "email_draft.ai_please_wait": {
+    "calls": [
+      "src/ui/dialogs/email_draft_dialog.py:605"
+    ],
+    "defaults": [
+      "Bitte einen Moment gedulden — Modell generiert Antwort"
+    ]
+  },
+  "email_import.info_msg": {
+    "calls": [
+      "src/ui/dialogs/email_import_dialog.py:71"
+    ],
+    "defaults": [
+      "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen."
+    ]
+  },
+  "email_import.fetching": {
+    "calls": [
+      "src/ui/dialogs/email_import_dialog.py:103"
+    ],
+    "defaults": [
+      "⏳ Rufe Posteingang ab..."
+    ]
+  },
+  "email_import.refresh_btn": {
+    "calls": [
+      "src/ui/dialogs/email_import_dialog.py:60"
+    ],
+    "defaults": [
+      "🔄 Posteingang aktualisieren"
+    ]
+  },
+  "email_import.no_emails": {
+    "calls": [
+      "src/ui/dialogs/email_import_dialog.py:118"
+    ],
+    "defaults": [
+      "Keine neuen E-Mails im Posteingang gefunden."
+    ]
+  },
+  "export_dialog.manage_templates_btn": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:78"
+    ],
+    "defaults": [
+      "🛠 Vorlagen verwalten"
+    ]
+  },
+  "export_dialog.force_export_chk": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:93"
+    ],
+    "defaults": [
+      "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)"
+    ]
+  },
+  "export_dialog.save_file_btn": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:115"
+    ],
+    "defaults": [
+      "In Datei speichern..."
+    ]
+  },
+  "export_dialog.copy_btn": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:118"
+    ],
+    "defaults": [
+      "In Zwischenablage kopieren"
+    ]
+  },
+  "export.no_template": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:129"
+    ],
+    "defaults": [
+      "Keine Vorlage ausgewählt."
+    ]
+  },
+  "export.ready": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:187"
+    ],
+    "defaults": [
+      "✅ Vorlage bereit zum Export."
+    ]
+  },
+  "export.incomplete": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:192"
+    ],
+    "defaults": [
+      "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren."
+    ]
+  },
+  "export.copied": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:211"
+    ],
+    "defaults": [
+      "📋 Erfolgreich in Zwischenablage kopiert!"
+    ]
+  },
+  "export_dialog.export_for": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:56"
+    ],
+    "defaults": [
+      "Export für Fall"
+    ]
+  },
+  "export_dialog.select_template": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:63"
+    ],
+    "defaults": [
+      "Vorlage auswählen:"
+    ]
+  },
+  "export_dialog.no_template": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:68"
+    ],
+    "defaults": [
+      "Keine Vorlage"
+    ]
+  },
+  "export_dialog.preview_header": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:100"
+    ],
+    "defaults": [
+      "Vorschau des exportierten Textes:"
+    ]
+  },
+  "export.missing_fields_hdr": {
+    "calls": [
+      "src/ui/dialogs/export_dialog.py:149"
+    ],
+    "defaults": [
+      "⚠ Fehlende Pflichtfelder direkt ergänzen:"
+    ]
+  },
+  "followup.presets_lbl": {
+    "calls": [
+      "src/ui/dialogs/followup_dialog.py:50"
+    ],
+    "defaults": [
+      "⚡ Schnellauswahl / Presets:"
+    ]
+  },
+  "followup.date_lbl": {
+    "calls": [
+      "src/ui/dialogs/followup_dialog.py:103"
+    ],
+    "defaults": [
+      "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):"
+    ]
+  },
+  "followup.note_lbl": {
+    "calls": [
+      "src/ui/dialogs/followup_dialog.py:127"
+    ],
+    "defaults": [
+      "📝 Notiz / Nachfrage-Grund (Optional):"
+    ]
+  },
+  "followup.save_btn": {
+    "calls": [
+      "src/ui/dialogs/followup_dialog.py:142"
+    ],
+    "defaults": [
+      "💾 Wiedervorlage Speichern"
+    ]
+  },
+  "common.open": {
+    "calls": [
+      "src/ui/dialogs/followup_flyout_dialog.py:67",
+      "src/ui/widgets/attachment_widget.py:108",
+      "src/ui/widgets/dynamic_form_widget.py:629",
+      "src/ui/widgets/toast_notification.py:26",
+      "src/ui/widgets/toast_notification.py:110"
+    ],
+    "defaults": [
+      "📂 Öffnen",
+      "👁 Öffnen"
+    ]
+  },
+  "followup.no_due_cases": {
+    "calls": [
+      "src/ui/dialogs/followup_flyout_dialog.py:54"
+    ],
+    "defaults": [
+      "Keine fälligen Wiedervorlagen aktuell vorhanden."
+    ]
+  },
+  "handover_dialog.no_colleagues": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:87"
+    ],
+    "defaults": [
+      "- Keine Mitarbeiter in Liste -"
+    ]
+  },
+  "handover_dialog.person_placeholder": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:94"
+    ],
+    "defaults": [
+      "Empfänger-Name..."
+    ]
+  },
+  "handover_dialog.note_placeholder": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:104"
+    ],
+    "defaults": [
+      "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten..."
+    ]
+  },
+  "handover_dialog.select_colleague": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:87"
+    ],
+    "defaults": [
+      "- Aus Mitarbeiterliste wählen -"
+    ]
+  },
+  "handover_dialog.new_actor": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:69"
+    ],
+    "defaults": [
+      "Neue verantwortliche Stelle *:"
+    ]
+  },
+  "handover_dialog.channel": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:76"
+    ],
+    "defaults": [
+      "Art der Weitergabe / Kanal *:"
+    ]
+  },
+  "handover_dialog.recipient": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:82"
+    ],
+    "defaults": [
+      "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):"
+    ]
+  },
+  "handover_dialog.note": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:102"
+    ],
+    "defaults": [
+      "Notiz / Details zur Übergabe (optional):"
+    ]
+  },
+  "handover_dialog.confirm_btn": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:121"
+    ],
+    "defaults": [
+      "🤝 Übergabe bestätigen"
+    ]
+  },
+  "handover_dialog.header": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:56"
+    ],
+    "defaults": [
+      "Zuständigkeit für"
+    ]
+  },
+  "handover_dialog.header_suffix": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:56"
+    ],
+    "defaults": [
+      "übergeben"
+    ]
+  },
+  "handover_dialog.curr_actor": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:63"
+    ],
+    "defaults": [
+      "Aktuelle Zuständigkeit:"
+    ]
+  },
+  "handover_dialog.customer": {
+    "calls": [
+      "src/ui/dialogs/handover_dialog.py:63"
+    ],
+    "defaults": [
+      "Kunde:"
+    ]
+  },
+  "help_dialog.no_topics": {
+    "calls": [
+      "src/ui/dialogs/help_dialog.py:631"
+    ],
+    "defaults": [
+      "Keine Themen gefunden."
+    ]
+  },
+  "new_case_dialog.create_btn": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:127"
+    ],
+    "defaults": [
+      "Fall anlegen"
+    ]
+  },
+  "new_case_dialog.header": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:141"
+    ],
+    "defaults": [
+      "Neuen Support-Fall erfassen"
+    ]
+  },
+  "new_case_dialog.is_internal": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:148"
+    ],
+    "defaults": [
+      "🏢 Interner Vorgang (ohne Kundenelement)"
+    ]
+  },
+  "new_case_dialog.add_practice_btn": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:166"
+    ],
+    "defaults": [
+      "+ Neue Praxis"
+    ]
+  },
+  "new_case.add_tag": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:275"
+    ],
+    "defaults": [
+      "+ Tag"
+    ]
+  },
+  "new_case.tag_input_prompt": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:293"
+    ],
+    "defaults": [
+      "Geben Sie den Namen des neuen Tags ein:"
+    ]
+  },
+  "new_case.tag_input_title": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:293"
+    ],
+    "defaults": [
+      "Neuen Tag hinzufügen"
+    ]
+  },
+  "quick_customer.err_name": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:59"
+    ],
+    "defaults": [
+      "Bitte Praxisnamen eingeben."
+    ]
+  },
+  "new_case.title_required": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:348"
+    ],
+    "defaults": [
+      "Bitte einen Titel für den Fall eingeben."
+    ]
+  },
+  "new_case.future_date": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:370"
+    ],
+    "defaults": [
+      "Das Erstellungsdatum darf nicht in der Zukunft liegen."
+    ]
+  },
+  "quick_customer.header": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:29"
+    ],
+    "defaults": [
+      "Neue Praxis anlegen"
+    ]
+  },
+  "quick_customer.practice_name": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:31"
+    ],
+    "defaults": [
+      "Praxisname *:"
+    ]
+  },
+  "quick_customer.contact_person": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:35"
+    ],
+    "defaults": [
+      "Ansprechpartner:"
+    ]
+  },
+  "quick_customer.phone": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:39"
+    ],
+    "defaults": [
+      "Telefon:"
+    ]
+  },
+  "quick_customer.is_vip": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:44"
+    ],
+    "defaults": [
+      "⭐ VIP-Praxis"
+    ]
+  },
+  "new_case_dialog.customer": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:156"
+    ],
+    "defaults": [
+      "Kunde / Praxis:"
+    ]
+  },
+  "new_case_dialog.title_label": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:172"
+    ],
+    "defaults": [
+      "Titel / Kurzbeschreibung:"
+    ]
+  },
+  "new_case_dialog.created_at": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:177"
+    ],
+    "defaults": [
+      "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):"
+    ]
+  },
+  "new_case_dialog.schema": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:189"
+    ],
+    "defaults": [
+      "Formular-Schema:"
+    ]
+  },
+  "new_case_dialog.tags": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:198"
+    ],
+    "defaults": [
+      "Tags / Stichworte zuweisen:"
+    ]
+  },
+  "new_case_dialog.deadline": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:206"
+    ],
+    "defaults": [
+      "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):"
+    ]
+  },
+  "new_case_dialog.initial_note": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:215"
+    ],
+    "defaults": [
+      "Initiale Notiz / Eingangskanal:"
+    ]
+  },
+  "new_case.invalid_date": {
+    "calls": [
+      "src/ui/dialogs/new_case_dialog.py:357",
+      "src/ui/dialogs/new_case_dialog.py:361"
+    ],
+    "defaults": [
+      "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM)."
+    ]
+  },
+  "p2p.reload_compare": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:60"
+    ],
+    "defaults": [
+      "Neu Laden / Vergleichen"
+    ]
+  },
+  "p2p.import_selected": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:78"
+    ],
+    "defaults": [
+      "Ausgewählte Fälle übernehmen"
+    ]
+  },
+  "p2p.no_colleague_selected": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:88"
+    ],
+    "defaults": [
+      "Kein Kollege ausgewählt."
+    ]
+  },
+  "p2p.select_at_least_one": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:159"
+    ],
+    "defaults": [
+      "Bitte mindestens einen Fall zur Übernahme auswählen."
+    ]
+  },
+  "p2p.select_colleague": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:48"
+    ],
+    "defaults": [
+      "Kollege auswählen:"
+    ]
+  },
+  "p2p.no_colleagues_cfg": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:52"
+    ],
+    "defaults": [
+      "Keine Kollegen konfiguriert"
+    ]
+  },
+  "p2p.no_diff_cases": {
+    "calls": [
+      "src/ui/dialogs/p2p_diff_dialog.py:110"
+    ],
+    "defaults": [
+      "Keine abweichenden Fälle vorhanden."
+    ]
+  },
+  "profile.provider_gemini": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:107",
+      "src/ui/dialogs/profile_settings_ai_tab.py:104"
+    ],
+    "defaults": [
+      "GOOGLE GEMINI (Cloud)"
+    ]
+  },
+  "profile.provider_ollama": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:107",
+      "src/ui/dialogs/profile_settings_ai_tab.py:104"
+    ],
+    "defaults": [
+      "OLLAMA (Lokal)"
+    ]
+  },
+  "profile.anonymize_toggle": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:113"
+    ],
+    "defaults": [
+      "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)"
+    ]
+  },
+  "profile.gemini_modelfile_rules": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:180"
+    ],
+    "defaults": [
+      "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)"
+    ]
+  },
+  "profile.checking_ollama": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:197"
+    ],
+    "defaults": [
+      "🔍 Prüfe Ollama-Status..."
+    ]
+  },
+  "profile.scan_ollama_btn": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:204"
+    ],
+    "defaults": [
+      "🔄 Status & Modelle scannen"
+    ]
+  },
+  "profile.ai_header": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:91"
+    ],
+    "defaults": [
+      "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)"
+    ]
+  },
+  "profile.ai_provider_label": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:99"
+    ],
+    "defaults": [
+      "KI-Anbieter wählen:"
+    ]
+  },
+  "profile.gemini_key_lbl": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:125"
+    ],
+    "defaults": [
+      "🔑 Google Gemini API Key:"
+    ]
+  },
+  "profile.gemini_select_model": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_ai_tab.py:156"
+    ],
+    "defaults": [
+      "Gemini Modell wählen:"
+    ]
+  },
+  "profile.widths_reset_msg": {
+    "calls": [
+      "src/ui/dialogs/profile_settings_dialog.py:481"
+    ],
+    "defaults": [
+      "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!"
+    ]
+  },
+  "schema_builder.new_form": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:120"
+    ],
+    "defaults": [
+      "+ Neues Formular"
+    ]
+  },
+  "schema_builder.adopt_schema": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:125"
+    ],
+    "defaults": [
+      "📥 Zu Realdaten übernehmen"
+    ]
+  },
+  "schema_builder.default_schemas": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:132"
+    ],
+    "defaults": [
+      "🔄 Standard-Formulare"
+    ]
+  },
+  "schema_builder.field_id_ph": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:155"
+    ],
+    "defaults": [
+      "Feld-ID (z. B. reason_detail)"
+    ]
+  },
+  "schema_builder.label_ph": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:158"
+    ],
+    "defaults": [
+      "Beschriftung (Label)"
+    ]
+  },
+  "schema_builder.required_chk": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:165"
+    ],
+    "defaults": [
+      "Pflicht"
+    ]
+  },
+  "schema_builder.add_btn": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:168"
+    ],
+    "defaults": [
+      "+ Hinzufügen"
+    ]
+  },
+  "schema_builder.fields_header": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:141"
+    ],
+    "defaults": [
+      "Enthaltene Formularfelder:"
+    ]
+  },
+  "schema_builder.add_field_header": {
+    "calls": [
+      "src/ui/dialogs/schema_builder_dialog.py:150"
+    ],
+    "defaults": [
+      "Neues Feld hinzufügen (V2 mit bedingter Logik):"
+    ]
+  },
+  "snippet_mgmt.new_snippet_status": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:213"
+    ],
+    "defaults": [
+      "Neuer Textbaustein (wird beim Speichern angelegt)"
+    ]
+  },
+  "snippet_mgmt.title_required": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:226"
+    ],
+    "defaults": [
+      "⚠ Bitte einen Titel eingeben."
+    ]
+  },
+  "snippet_mgmt.content_required": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:229"
+    ],
+    "defaults": [
+      "⚠ Der Inhalt darf nicht leer sein."
+    ]
+  },
+  "snippet_mgmt.header": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:41"
+    ],
+    "defaults": [
+      "📝 Textbaustein-Bibliothek verwalten"
+    ]
+  },
+  "snippet_mgmt.new_snippet": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:45"
+    ],
+    "defaults": [
+      "+ Neuer Textbaustein"
+    ]
+  },
+  "snippet_mgmt.title_lbl": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:69"
+    ],
+    "defaults": [
+      "Titel:"
+    ]
+  },
+  "snippet_mgmt.cat_lbl": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:73"
+    ],
+    "defaults": [
+      "Kategorie:"
+    ]
+  },
+  "snippet_mgmt.content_lbl": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:77"
+    ],
+    "defaults": [
+      "Inhalt / Baustein-Text:"
+    ]
+  },
+  "snippet_mgmt.tags_lbl": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:81"
+    ],
+    "defaults": [
+      "Tags (kommagetrennt):"
+    ]
+  },
+  "snippet_mgmt.no_snippets": {
+    "calls": [
+      "src/ui/dialogs/snippet_management_dialog.py:154"
+    ],
+    "defaults": [
+      "Keine Textbausteine vorhanden."
+    ]
+  },
+  "snippet_picker.search": {
+    "calls": [
+      "src/ui/dialogs/snippet_picker_dialog.py:47"
+    ],
+    "defaults": [
+      "🔍 Textbaustein suchen..."
+    ]
+  },
+  "snippet_picker.preview": {
+    "calls": [
+      "src/ui/dialogs/snippet_picker_dialog.py:77"
+    ],
+    "defaults": [
+      "Vorschau des Textbausteins:"
+    ]
+  },
+  "snippet_picker.no_snippets": {
+    "calls": [
+      "src/ui/dialogs/snippet_picker_dialog.py:114"
+    ],
+    "defaults": [
+      "Keine Textbausteine gefunden."
+    ]
+  },
+  "tag_mgmt.tab_tags": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:69"
+    ],
+    "defaults": [
+      "🏷 Allgemeine Tags"
+    ]
+  },
+  "tag_mgmt.tab_modules": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:70"
+    ],
+    "defaults": [
+      "🧩 Programmbereiche"
+    ]
+  },
+  "tag_mgmt.search_tags_placeholder": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:77"
+    ],
+    "defaults": [
+      "🔍 Tags durchsuchen..."
+    ]
+  },
+  "tag_mgmt.new_tag_placeholder": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:84"
+    ],
+    "defaults": [
+      "Neuen Tag erstellen (z. B. Schnittstelle)..."
+    ]
+  },
+  "tag_mgmt.add_tag_btn": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:87"
+    ],
+    "defaults": [
+      "+ Tag Hinzufügen"
+    ]
+  },
+  "tag_mgmt.search_modules_placeholder": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:99"
+    ],
+    "defaults": [
+      "🔍 Programmbereiche durchsuchen..."
+    ]
+  },
+  "tag_mgmt.new_module_placeholder": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:106"
+    ],
+    "defaults": [
+      "Neuen Programmbereich erstellen (z. B. Rezeptdruck)..."
+    ]
+  },
+  "tag_mgmt.add_module_btn": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:109"
+    ],
+    "defaults": [
+      "+ Bereich Hinzufügen"
+    ]
+  },
+  "tag_mgmt.tag_added": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:174"
+    ],
+    "defaults": [
+      "✅ Tag erfolgreich hinzugefügt!"
+    ]
+  },
+  "tag_mgmt.module_added": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:227"
+    ],
+    "defaults": [
+      "✅ Programmbereich erfolgreich hinzugefügt!"
+    ]
+  },
+  "tag_mgmt.tag_empty": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:164"
+    ],
+    "defaults": [
+      "⚠ Tag Name darf nicht leer sein!"
+    ]
+  },
+  "tag_mgmt.tag_exists": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:168"
+    ],
+    "defaults": [
+      "⚠ Tag existiert bereits!"
+    ]
+  },
+  "tag_mgmt.module_empty": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:217"
+    ],
+    "defaults": [
+      "⚠ Programmbereich darf nicht leer sein!"
+    ]
+  },
+  "tag_mgmt.module_exists": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:221"
+    ],
+    "defaults": [
+      "⚠ Programmbereich existiert bereits!"
+    ]
+  },
+  "tag_mgmt.header": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:50"
+    ],
+    "defaults": [
+      "🏷 System-Tags & Programmbereiche"
+    ]
+  },
+  "tag_mgmt.no_tags": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:146"
+    ],
+    "defaults": [
+      "Keine Tags gefunden."
+    ]
+  },
+  "tag_mgmt.no_modules": {
+    "calls": [
+      "src/ui/dialogs/tag_management_dialog.py:200"
+    ],
+    "defaults": [
+      "Keine Programmbereiche gefunden."
+    ]
+  },
+  "template_mgmt.new_template": {
+    "calls": [
+      "src/ui/dialogs/template_manager_dialog.py:235"
+    ],
+    "defaults": [
+      "+ Neue Vorlage"
+    ]
+  },
+  "template_mgmt.load_defaults": {
+    "calls": [
+      "src/ui/dialogs/template_manager_dialog.py:238"
+    ],
+    "defaults": [
+      "🔄 Standard-Vorlagen laden"
+    ]
+  },
+  "common.edit": {
+    "calls": [
+      "src/ui/dialogs/template_manager_dialog.py:287"
+    ],
+    "defaults": [
+      "✏ Bearbeiten"
+    ]
+  },
+  "template_mgmt.header": {
+    "calls": [
+      "src/ui/dialogs/template_manager_dialog.py:233"
+    ],
+    "defaults": [
+      "📄 Export-Vorlagen-Verwaltung"
+    ]
+  },
+  "template_mgmt.no_templates": {
+    "calls": [
+      "src/ui/dialogs/template_manager_dialog.py:268"
+    ],
+    "defaults": [
+      "Keine Vorlagen vorhanden."
+    ]
+  },
+  "zip_import.root_folder_btn": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:90"
+    ],
+    "defaults": [
+      "📁 Gesamt-Zielordner wählen"
+    ]
+  },
+  "zip_import.custom_paths_btn": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:99"
+    ],
+    "defaults": [
+      "⚙ Einzelne Pfade anpassen"
+    ]
+  },
+  "zip_import.warning_overwrite": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:116"
+    ],
+    "defaults": [
+      "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben."
+    ]
+  },
+  "zip_import.select_mode": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:81"
+    ],
+    "defaults": [
+      "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:"
+    ]
+  },
+  "zip_import.unpack_btn": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:141"
+    ],
+    "defaults": [
+      "📥 Daten entpacken & importieren"
+    ]
+  },
+  "zip_import.main_target_dir": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:169"
+    ],
+    "defaults": [
+      "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):"
+    ]
+  },
+  "common.browse": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:183",
+      "src/ui/dialogs/zip_import_dialog.py:205",
+      "src/ui/dialogs/zip_import_dialog.py:226"
+    ],
+    "defaults": [
+      "Durchsuchen..."
+    ]
+  },
+  "zip_import.data_loc": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:192"
+    ],
+    "defaults": [
+      "1. Speicherort für Datendateien & Profile (data/):"
+    ]
+  },
+  "zip_import.att_loc": {
+    "calls": [
+      "src/ui/dialogs/zip_import_dialog.py:213"
+    ],
+    "defaults": [
+      "2. Speicherort für Fall-Anhänge (attachments/):"
+    ]
+  },
+  "analytics.copied_title": {
+    "calls": [
+      "src/ui/views/analytics_view.py:272"
+    ],
+    "defaults": [
+      "📋 Statistik kopiert"
+    ]
+  },
+  "board.cockpit_btn": {
+    "calls": [
+      "src/ui/views/board_view.py:114"
+    ],
+    "defaults": [
+      "🎯 Cockpit"
+    ]
+  },
+  "board.collapse_btn": {
+    "calls": [
+      "src/ui/views/board_view.py:263"
+    ],
+    "defaults": [
+      "◀ Zuklappen"
+    ]
+  },
+  "cockpit.followup_at": {
+    "calls": [
+      "src/ui/views/cockpit_view.py:533"
+    ],
+    "defaults": [
+      "🔔 Nachfragen am:"
+    ]
+  },
+  "cockpit.email_copied_title": {
+    "calls": [
+      "src/ui/views/cockpit_view.py:328"
+    ],
+    "defaults": [
+      "📋 E-Mail kopiert"
+    ]
+  },
+  "cockpit.no_email_title": {
+    "calls": [
+      "src/ui/views/cockpit_view.py:336"
+    ],
+    "defaults": [
+      "⚠ Keine E-Mail-Adresse"
+    ]
+  },
+  "table.details_header": {
+    "calls": [
+      "src/ui/views/table_view.py:137"
+    ],
+    "defaults": [
+      "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"
+    ]
+  },
+  "table.save_btn": {
+    "calls": [
+      "src/ui/views/table_view.py:145"
+    ],
+    "defaults": [
+      "💾 Ändern & Speichern"
+    ]
+  },
+  "attachments.title": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:29",
+      "src/ui/widgets/attachment_widget.py:59"
+    ],
+    "defaults": [
+      "Fall-Dateianhänge"
+    ]
+  },
+  "attachments.open_explorer": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:32",
+      "src/ui/widgets/attachment_widget.py:61"
+    ],
+    "defaults": [
+      "📁 Explorer öffnen"
+    ]
+  },
+  "attachments.no_preview": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:43",
+      "src/ui/widgets/attachment_widget.py:63"
+    ],
+    "defaults": [
+      "Keine Datei zur Vorschau ausgewählt"
+    ]
+  },
+  "attachments.add_file": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:50",
+      "src/ui/widgets/attachment_widget.py:65"
+    ],
+    "defaults": [
+      "+ Datei hinzufügen..."
+    ]
+  },
+  "attachments.tip": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:53",
+      "src/ui/widgets/attachment_widget.py:67"
+    ],
+    "defaults": [
+      "💡 Tipp: Strg+V fügt Screenshot als PNG ein"
+    ]
+  },
+  "attachments.no_case": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:79"
+    ],
+    "defaults": [
+      "Kein Fall ausgewählt."
+    ]
+  },
+  "attachments.no_files": {
+    "calls": [
+      "src/ui/widgets/attachment_widget.py:84"
+    ],
+    "defaults": [
+      "Keine Dateianhänge im Fallordner."
+    ]
+  },
+  "case_list.zero_cases": {
+    "calls": [
+      "src/ui/widgets/case_list_widget.py:64"
+    ],
+    "defaults": [
+      "0 Fälle"
+    ]
+  },
+  "case_list.completed_badge": {
+    "calls": [
+      "src/ui/widgets/case_list_widget.py:195"
+    ],
+    "defaults": [
+      "✓ ERLEDIGT"
+    ]
+  },
+  "case_list.no_cases": {
+    "calls": [
+      "src/ui/widgets/case_list_widget.py:155"
+    ],
+    "defaults": [
+      "Keine Fälle gefunden."
+    ]
+  },
+  "date_picker.time_lbl": {
+    "calls": [
+      "src/ui/widgets/date_picker.py:126"
+    ],
+    "defaults": [
+      "⏰ Uhrzeit:"
+    ]
+  },
+  "date_picker.o_clock": {
+    "calls": [
+      "src/ui/widgets/date_picker.py:213"
+    ],
+    "defaults": [
+      "Uhr"
+    ]
+  },
+  "dynamic_form.number_placeholder": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_field_renderers.py:295"
+    ],
+    "defaults": [
+      "Zahl..."
+    ]
+  },
+  "dynamic_form.import_backup": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_field_renderers.py:237"
+    ],
+    "defaults": [
+      "📁 .backup-Datei importieren..."
+    ]
+  },
+  "dynamic_form.choose_file": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_field_renderers.py:284"
+    ],
+    "defaults": [
+      "📁 Datei wählen..."
+    ]
+  },
+  "dynamic_form.manage_tags": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_field_renderers.py:66"
+    ],
+    "defaults": [
+      "⚙ Programmbereiche verwalten"
+    ]
+  },
+  "dynamic_form.search_tags": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:91"
+    ],
+    "defaults": [
+      "🔍 Programmbereich suchen..."
+    ]
+  },
+  "dynamic_form.no_files": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:561",
+      "src/ui/widgets/dynamic_form_widget.py:607"
+    ],
+    "defaults": [
+      "📎 Abgelegte Dateien im Fallordner: Keine (0)"
+    ]
+  },
+  "dynamic_form.import_title": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:582"
+    ],
+    "defaults": [
+      "Dateien in Fallordner importieren"
+    ]
+  },
+  "dynamic_form.select_tags": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:85"
+    ],
+    "defaults": [
+      "🧩 Programmbereiche auswählen:"
+    ]
+  },
+  "dynamic_form.select_all": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:98"
+    ],
+    "defaults": [
+      "Alle auswählen"
+    ]
+  },
+  "dynamic_form.select_none": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:99"
+    ],
+    "defaults": [
+      "Keine auswählen"
+    ]
+  },
+  "dynamic_form.apply_close": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:111"
+    ],
+    "defaults": [
+      "✓ Übernehmen & Schließen"
+    ]
+  },
+  "dynamic_form.import_files": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:568"
+    ],
+    "defaults": [
+      "+ Datei(en) importieren..."
+    ]
+  },
+  "dynamic_form.files_attached": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:611"
+    ],
+    "defaults": [
+      "Abgelegte Dateien im Fallordner"
+    ]
+  },
+  "dynamic_form.no_tags": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:123"
+    ],
+    "defaults": [
+      "Kein Programmbereich gefunden."
+    ]
+  },
+  "form.no_fields": {
+    "calls": [
+      "src/ui/widgets/dynamic_form_widget.py:360"
+    ],
+    "defaults": [
+      "Keine Formularfelder definiert."
+    ]
+  },
+  "searchable_combo.placeholder": {
+    "calls": [
+      "src/ui/widgets/searchable_combobox.py:112"
+    ],
+    "defaults": [
+      "🔍 Buchstaben eintippen zum Suchen..."
+    ]
+  },
+  "searchable_combo.no_results": {
+    "calls": [
+      "src/ui/widgets/searchable_combobox.py:172"
+    ],
+    "defaults": [
+      "Keine Praxen gefunden"
+    ]
+  },
+  "timeline.no_notes": {
+    "calls": [
+      "src/ui/widgets/timeline_widget.py:99"
+    ],
+    "defaults": [
+      "Keine Notizen vorhanden."
+    ]
+  },
+  "toast.reminder_title": {
+    "calls": [
+      "src/ui/widgets/toast_notification.py:16"
+    ],
+    "defaults": [
+      "Erinnerung"
+    ]
+  },
+  "wiki.header": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:19",
+      "src/ui/widgets/wiki_widget.py:44"
+    ],
+    "defaults": [
+      "BookStack Offline Wiki"
+    ]
+  },
+  "wiki.sync_btn": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:22",
+      "src/ui/widgets/wiki_widget.py:46"
+    ],
+    "defaults": [
+      "🔄 Wiki Sync"
+    ]
+  },
+  "wiki.search_placeholder": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:29",
+      "src/ui/widgets/wiki_widget.py:48"
+    ],
+    "defaults": [
+      "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."
+    ]
+  },
+  "wiki.syncing": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:95"
+    ],
+    "defaults": [
+      "⏳ Synchronisiere Wiki im Hintergrund..."
+    ]
+  },
+  "wiki.enter_query": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:61"
+    ],
+    "defaults": [
+      "Bitte Suchbegriff eingeben."
+    ]
+  },
+  "wiki.articles_found": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:65"
+    ],
+    "defaults": [
+      "Wiki-Artikel gefunden"
+    ]
+  },
+  "wiki.no_results": {
+    "calls": [
+      "src/ui/widgets/wiki_widget.py:68"
+    ],
+    "defaults": [
+      "Keine treffenden Artikel im Offline-Index."
+    ]
+  }
+}

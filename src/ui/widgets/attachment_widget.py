@@ -59,8 +59,14 @@ class AttachmentWidget(ctk.CTkFrame):
             self.hdr_lbl.configure(text=tr("attachments.title", "Fall-Dateianhänge"))
         if hasattr(self, "open_exp_btn"):
             self.open_exp_btn.configure(text=tr("attachments.open_explorer", "📁 Explorer öffnen"))
-        if hasattr(self, "preview_label") and not self.preview_label.cget("text").startswith("📄") and not self.preview_label.cget("text").startswith("🖼"):
-            self.preview_label.configure(text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"))
+        if getattr(self, "preview_label", None) is not None:
+            try:
+                if self.preview_label.winfo_exists():
+                    txt = self.preview_label.cget("text")
+                    if not txt.startswith("📄") and not txt.startswith("🖼"):
+                        self.preview_label.configure(text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"))
+            except Exception:
+                pass
         if hasattr(self, "add_file_btn"):
             self.add_file_btn.configure(text=tr("attachments.add_file", "+ Datei hinzufügen..."))
         if hasattr(self, "tip_lbl"):
@@ -127,16 +133,17 @@ class AttachmentWidget(ctk.CTkFrame):
         bind_mouse_wheel_to_canvas(self.scroll_frame)
 
     def show_file_preview(self, filepath: Path):
+        from services.i18n_service import tr
         self.clear_preview()
         ext = filepath.suffix.lower()
 
         if ext in (".png", ".jpg", ".jpeg", ".bmp", ".gif"):
             try:
                 pil_img = Image.open(filepath)
-                lbl = ctk.CTkLabel(self.preview_frame, text=f"🖼 Bild Vorschau: {filepath.name}\nAuflösung: {pil_img.width} x {pil_img.height} px | Format: {pil_img.format}", font=ctk.CTkFont(size=12, weight="bold"))
+                lbl = ctk.CTkLabel(self.preview_frame, text=tr("attachments.image_preview_info", "🖼 Bild Vorschau: {name}\nAuflösung: {width} x {height} px | Format: {format}", name=filepath.name, width=pil_img.width, height=pil_img.height, format=pil_img.format), font=ctk.CTkFont(size=12, weight="bold"))
                 lbl.pack(expand=True, pady=10)
             except Exception as err:
-                ctk.CTkLabel(self.preview_frame, text=f"Bild-Vorschau nicht verfügbar: {err}").pack(pady=10)
+                ctk.CTkLabel(self.preview_frame, text=tr("attachments.image_preview_error", "Bild-Vorschau nicht verfügbar: {err}", err=err)).pack(pady=10)
 
         elif ext in (".txt", ".log", ".json", ".csv", ".md", ".py"):
             try:
@@ -146,13 +153,14 @@ class AttachmentWidget(ctk.CTkFrame):
                 tb.insert("1.0", content)
                 tb.configure(state="disabled")
             except Exception as err:
-                ctk.CTkLabel(self.preview_frame, text=f"Text-Vorschau Fehler: {err}").pack(pady=10)
+                ctk.CTkLabel(self.preview_frame, text=tr("attachments.text_preview_error", "Text-Vorschau Fehler: {err}", err=err)).pack(pady=10)
         else:
-            ctk.CTkLabel(self.preview_frame, text=f"📄 Vorschau für '{filepath.name}' (Doppelklick zum Öffnen im OS)").pack(pady=10)
+            ctk.CTkLabel(self.preview_frame, text=tr("attachments.generic_preview_info", "📄 Vorschau für '{name}' (Doppelklick zum Öffnen im OS)", name=filepath.name)).pack(pady=10)
 
     def clear_preview(self):
         for w in self.preview_frame.winfo_children():
             w.destroy()
+        self.preview_label = None
 
     def open_in_os(self, filepath: Path):
         try:
@@ -174,7 +182,8 @@ class AttachmentWidget(ctk.CTkFrame):
     def on_add_file(self):
         if not self.current_case:
             return
-        file_path = filedialog.askopenfilename()
+        from services.i18n_service import tr
+        file_path = filedialog.askopenfilename(title=tr("attachments.select_file_dialog_title", "Datei zum Anhängen auswählen"))
         if file_path:
             self.attachment_service.copy_attachment(self.current_case, Path(file_path))
             self.load_attachments(self.current_case)

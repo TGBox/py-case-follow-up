@@ -1,0 +1,2380 @@
+{
+  "category_summary": {
+    "root": {
+      "file_count": 4,
+      "ui_hardcoded_count": 0,
+      "dialog_count": 0,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 13,
+      "files": [
+        "src/__init__.py",
+        "src/config.py",
+        "src/constants.py",
+        "src/enums.py"
+      ]
+    },
+    "models": {
+      "file_count": 7,
+      "ui_hardcoded_count": 0,
+      "dialog_count": 0,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 0,
+      "files": [
+        "src/models/__init__.py",
+        "src/models/case.py",
+        "src/models/customer.py",
+        "src/models/export_template.py",
+        "src/models/profile.py",
+        "src/models/schema.py",
+        "src/models/snippet.py"
+      ]
+    },
+    "services": {
+      "file_count": 24,
+      "ui_hardcoded_count": 0,
+      "dialog_count": 0,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 5,
+      "files": [
+        "src/services/__init__.py",
+        "src/services/ai_service.py",
+        "src/services/anonymizer_service.py",
+        "src/services/attachment_service.py",
+        "src/services/calendar_email_service.py",
+        "src/services/cobra_crm_import_service.py",
+        "src/services/customer_service.py",
+        "src/services/deep_search_service.py",
+        "src/services/export_service.py",
+        "src/services/i18n_service.py",
+        "src/services/imap_import_service.py",
+        "src/services/outlook_integration_service.py",
+        "src/services/p2p_sync_service.py",
+        "src/services/schema_service.py",
+        "src/services/scoring_service.py",
+        "src/services/search_service.py",
+        "src/services/seed_case_data.py",
+        "src/services/seed_service.py",
+        "src/services/snippet_service.py",
+        "src/services/storage_service.py",
+        "src/services/tray_service.py",
+        "src/services/webhook_integration_service.py",
+        "src/services/wiki_sync_service.py",
+        "src/services/zip_backup_service.py"
+      ]
+    },
+    "ui_core": {
+      "file_count": 3,
+      "ui_hardcoded_count": 1,
+      "dialog_count": 1,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 16,
+      "files": [
+        "src/ui/__init__.py",
+        "src/ui/app.py",
+        "src/ui/app_dialogs.py"
+      ]
+    },
+    "ui_views": {
+      "file_count": 5,
+      "ui_hardcoded_count": 2,
+      "dialog_count": 0,
+      "toast_count": 2,
+      "tooltip_count": 0,
+      "tr_calls_count": 59,
+      "files": [
+        "src/ui/views/analytics_view.py",
+        "src/ui/views/board_view.py",
+        "src/ui/views/cockpit_layout_builders.py",
+        "src/ui/views/cockpit_view.py",
+        "src/ui/views/table_view.py"
+      ]
+    },
+    "ui_widgets": {
+      "file_count": 10,
+      "ui_hardcoded_count": 10,
+      "dialog_count": 3,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 73,
+      "files": [
+        "src/ui/widgets/attachment_widget.py",
+        "src/ui/widgets/case_list_widget.py",
+        "src/ui/widgets/ctk_tooltip.py",
+        "src/ui/widgets/date_picker.py",
+        "src/ui/widgets/dynamic_form_field_renderers.py",
+        "src/ui/widgets/dynamic_form_widget.py",
+        "src/ui/widgets/searchable_combobox.py",
+        "src/ui/widgets/timeline_widget.py",
+        "src/ui/widgets/toast_notification.py",
+        "src/ui/widgets/wiki_widget.py"
+      ]
+    },
+    "ui_dialogs": {
+      "file_count": 26,
+      "ui_hardcoded_count": 183,
+      "dialog_count": 12,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 302,
+      "files": [
+        "src/ui/dialogs/ai_assistant_dialog.py",
+        "src/ui/dialogs/calendar_export_dialog.py",
+        "src/ui/dialogs/case_print_dialog.py",
+        "src/ui/dialogs/cobra_import_dialog.py",
+        "src/ui/dialogs/colleague_management_dialog.py",
+        "src/ui/dialogs/convert_schema_dialog.py",
+        "src/ui/dialogs/customer_form_builders.py",
+        "src/ui/dialogs/customer_management_dialog.py",
+        "src/ui/dialogs/email_calendar_dialog.py",
+        "src/ui/dialogs/email_draft_dialog.py",
+        "src/ui/dialogs/email_import_dialog.py",
+        "src/ui/dialogs/export_dialog.py",
+        "src/ui/dialogs/followup_dialog.py",
+        "src/ui/dialogs/followup_flyout_dialog.py",
+        "src/ui/dialogs/handover_dialog.py",
+        "src/ui/dialogs/help_dialog.py",
+        "src/ui/dialogs/new_case_dialog.py",
+        "src/ui/dialogs/p2p_diff_dialog.py",
+        "src/ui/dialogs/profile_settings_ai_tab.py",
+        "src/ui/dialogs/profile_settings_dialog.py",
+        "src/ui/dialogs/schema_builder_dialog.py",
+        "src/ui/dialogs/snippet_management_dialog.py",
+        "src/ui/dialogs/snippet_picker_dialog.py",
+        "src/ui/dialogs/tag_management_dialog.py",
+        "src/ui/dialogs/template_manager_dialog.py",
+        "src/ui/dialogs/zip_import_dialog.py"
+      ]
+    },
+    "utils": {
+      "file_count": 4,
+      "ui_hardcoded_count": 0,
+      "dialog_count": 0,
+      "toast_count": 0,
+      "tooltip_count": 0,
+      "tr_calls_count": 0,
+      "files": [
+        "src/utils/__init__.py",
+        "src/utils/datetime_utils.py",
+        "src/utils/security.py",
+        "src/utils/ui_utils.py"
+      ]
+    }
+  },
+  "detailed_files": {
+    "src/__init__.py": {
+      "file": "src/__init__.py",
+      "loc": 2,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/config.py": {
+      "file": "src/config.py",
+      "loc": 214,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/constants.py": {
+      "file": "src/constants.py",
+      "loc": 603,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/enums.py": {
+      "file": "src/enums.py",
+      "loc": 129,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/__init__.py": {
+      "file": "src/models/__init__.py",
+      "loc": 1,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/case.py": {
+      "file": "src/models/case.py",
+      "loc": 273,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/customer.py": {
+      "file": "src/models/customer.py",
+      "loc": 239,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/export_template.py": {
+      "file": "src/models/export_template.py",
+      "loc": 47,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/profile.py": {
+      "file": "src/models/profile.py",
+      "loc": 383,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/schema.py": {
+      "file": "src/models/schema.py",
+      "loc": 119,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/models/snippet.py": {
+      "file": "src/models/snippet.py",
+      "loc": 37,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/__init__.py": {
+      "file": "src/services/__init__.py",
+      "loc": 1,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/ai_service.py": {
+      "file": "src/services/ai_service.py",
+      "loc": 533,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/anonymizer_service.py": {
+      "file": "src/services/anonymizer_service.py",
+      "loc": 112,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/attachment_service.py": {
+      "file": "src/services/attachment_service.py",
+      "loc": 90,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/calendar_email_service.py": {
+      "file": "src/services/calendar_email_service.py",
+      "loc": 254,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/cobra_crm_import_service.py": {
+      "file": "src/services/cobra_crm_import_service.py",
+      "loc": 261,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/customer_service.py": {
+      "file": "src/services/customer_service.py",
+      "loc": 58,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/deep_search_service.py": {
+      "file": "src/services/deep_search_service.py",
+      "loc": 166,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/export_service.py": {
+      "file": "src/services/export_service.py",
+      "loc": 117,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/i18n_service.py": {
+      "file": "src/services/i18n_service.py",
+      "loc": 115,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/imap_import_service.py": {
+      "file": "src/services/imap_import_service.py",
+      "loc": 69,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/outlook_integration_service.py": {
+      "file": "src/services/outlook_integration_service.py",
+      "loc": 230,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/p2p_sync_service.py": {
+      "file": "src/services/p2p_sync_service.py",
+      "loc": 114,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/schema_service.py": {
+      "file": "src/services/schema_service.py",
+      "loc": 98,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/scoring_service.py": {
+      "file": "src/services/scoring_service.py",
+      "loc": 64,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/search_service.py": {
+      "file": "src/services/search_service.py",
+      "loc": 173,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/seed_case_data.py": {
+      "file": "src/services/seed_case_data.py",
+      "loc": 425,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/seed_service.py": {
+      "file": "src/services/seed_service.py",
+      "loc": 391,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/snippet_service.py": {
+      "file": "src/services/snippet_service.py",
+      "loc": 146,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/storage_service.py": {
+      "file": "src/services/storage_service.py",
+      "loc": 547,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/tray_service.py": {
+      "file": "src/services/tray_service.py",
+      "loc": 181,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/webhook_integration_service.py": {
+      "file": "src/services/webhook_integration_service.py",
+      "loc": 54,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/wiki_sync_service.py": {
+      "file": "src/services/wiki_sync_service.py",
+      "loc": 296,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/services/zip_backup_service.py": {
+      "file": "src/services/zip_backup_service.py",
+      "loc": 124,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/__init__.py": {
+      "file": "src/ui/__init__.py",
+      "loc": 1,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/app.py": {
+      "file": "src/ui/app.py",
+      "loc": 812,
+      "has_language_listener": true,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 16,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 320,
+          "text": "🔔 0"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 687,
+          "func": "asksaveasfilename",
+          "title": "Komplett-Datensicherung als ZIP speichern"
+        }
+      ]
+    },
+    "src/ui/app_dialogs.py": {
+      "file": "src/ui/app_dialogs.py",
+      "loc": 346,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/views/analytics_view.py": {
+      "file": "src/ui/views/analytics_view.py",
+      "loc": 274,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 15,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [
+        {
+          "line": 272,
+          "message": "Statistik-Bericht wurde in die Zwischenablage kopiert."
+        }
+      ],
+      "dialog_hardcoded": []
+    },
+    "src/ui/views/board_view.py": {
+      "file": "src/ui/views/board_view.py",
+      "loc": 346,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 10,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 226,
+          "text": "▶"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/views/cockpit_layout_builders.py": {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "loc": 356,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 28,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 158,
+          "text": "🔔 Nachfragen am:"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/views/cockpit_view.py": {
+      "file": "src/ui/views/cockpit_view.py",
+      "loc": 558,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 4,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [
+        {
+          "line": 334,
+          "message": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt."
+        }
+      ],
+      "dialog_hardcoded": []
+    },
+    "src/ui/views/table_view.py": {
+      "file": "src/ui/views/table_view.py",
+      "loc": 332,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 2,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/attachment_widget.py": {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "loc": 190,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 118,
+          "text": "🗑"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 177,
+          "func": "askopenfilename"
+        }
+      ]
+    },
+    "src/ui/widgets/case_list_widget.py": {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "loc": 423,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 184,
+          "text": "●"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 297,
+          "text": "🔔 Nachfragen am:"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/ctk_tooltip.py": {
+      "file": "src/ui/widgets/ctk_tooltip.py",
+      "loc": 153,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/date_picker.py": {
+      "file": "src/ui/widgets/date_picker.py",
+      "loc": 478,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 84,
+          "text": "◀"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 95,
+          "text": "▶"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 142,
+          "text": "▲"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 160,
+          "text": "▼"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 169,
+          "text": ":"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 187,
+          "text": "▲"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 205,
+          "text": "▼"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/dynamic_form_field_renderers.py": {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "loc": 331,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 266,
+          "func": "askopenfilename"
+        }
+      ]
+    },
+    "src/ui/widgets/dynamic_form_widget.py": {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "loc": 677,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 532,
+          "func": "askopenfilename",
+          "title": "Datenbank-Backup (.backup) importieren"
+        }
+      ]
+    },
+    "src/ui/widgets/searchable_combobox.py": {
+      "file": "src/ui/widgets/searchable_combobox.py",
+      "loc": 200,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 2,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/timeline_widget.py": {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "loc": 140,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 9,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/toast_notification.py": {
+      "file": "src/ui/widgets/toast_notification.py",
+      "loc": 186,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 3,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/widgets/wiki_widget.py": {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "loc": 108,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 10,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/ai_assistant_dialog.py": {
+      "file": "src/ui/dialogs/ai_assistant_dialog.py",
+      "loc": 560,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 127,
+          "text": "Prüfe Status..."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 175,
+          "text": "Schließen"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 192,
+          "text": "🤖 KI verarbeitet Anfrage..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 202,
+          "text": "Bitte einen Moment gedulden — Modell generiert Antwort"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 352,
+          "text": "🔄 Zusammenfassung neu generieren"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 363,
+          "text": "📋 In Zwischenablage kopieren"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 373,
+          "text": "📌 In Fall-Zeitleiste einfügen"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 444,
+          "text": "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 450,
+          "text": "🔄 Lösungssuche erneut ausführen"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 510,
+          "text": "🔄 Antwort-Entwurf generieren"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 522,
+          "text": "✉ In E-Mail-Entwurf öffnen"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/calendar_export_dialog.py": {
+      "file": "src/ui/dialogs/calendar_export_dialog.py",
+      "loc": 153,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 3,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 75,
+          "text": "Kalender-Beschreibung / Notiz:"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 138,
+          "func": "asksaveasfilename",
+          "title": "iCalendar-Datei speichern"
+        }
+      ]
+    },
+    "src/ui/dialogs/case_print_dialog.py": {
+      "file": "src/ui/dialogs/case_print_dialog.py",
+      "loc": 289,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 2,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 48,
+          "text": "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:"
+        },
+        {
+          "widget": "CTkCheckBox",
+          "prop": "text",
+          "line": 54,
+          "text": "Praxis & Kundendaten"
+        },
+        {
+          "widget": "CTkCheckBox",
+          "prop": "text",
+          "line": 55,
+          "text": "Formularfelder"
+        },
+        {
+          "widget": "CTkCheckBox",
+          "prop": "text",
+          "line": 56,
+          "text": "Bilder & Anhänge am Ende"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 58,
+          "text": "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 64,
+          "text": "Keine Notizen in der Zeitleiste."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 100,
+          "text": "🌐 HTML-Bericht"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 109,
+          "text": "💾 Speichern..."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 275,
+          "func": "asksaveasfilename",
+          "title": "Fallbericht speichern"
+        }
+      ]
+    },
+    "src/ui/dialogs/cobra_import_dialog.py": {
+      "file": "src/ui/dialogs/cobra_import_dialog.py",
+      "loc": 243,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 2,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 46,
+          "text": "🐍 Cobra CRM Praxen-Import Assistent"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 47,
+          "text": "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 53,
+          "text": "1. Cobra Export-Datei auswählen:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 58,
+          "text": "Datei auswählen (*.csv, *.txt, *.json)..."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 61,
+          "text": "📁 Durchsuchen..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 70,
+          "text": "2. Cobra Spaltenzuordnung (Feld-Mapper):"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 76,
+          "text": "3. Konfliktbehandlung für bestehende Praxen:"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 80,
+          "text": "Bestehende Praxen aktualisieren (Update)"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 80,
+          "text": "Bestehende überspringen (Skip)"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 80,
+          "text": "Alle als neu anlegen"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 86,
+          "text": "Bitte wählen Sie eine Export-Datei aus."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 111,
+          "func": "askopenfilename",
+          "title": "Cobra CRM Export-Datei auswählen"
+        }
+      ]
+    },
+    "src/ui/dialogs/colleague_management_dialog.py": {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "loc": 300,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 100,
+          "text": "z. B. mmueller"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 104,
+          "text": "z. B. Max Müller"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 113,
+          "text": "z. B. 4012"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 117,
+          "text": "z. B. m.mueller@praxis.de"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 121,
+          "text": "z. B. 0170 1234567"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 125,
+          "text": "z. B. Zuständig für PVS-Schnittstellen..."
+        },
+        {
+          "widget": "CTkCheckBox",
+          "prop": "text",
+          "line": 131,
+          "text": "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 135,
+          "text": "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 184,
+          "text": "Keine Einträge gefunden."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/convert_schema_dialog.py": {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "loc": 180,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 6,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/customer_form_builders.py": {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "loc": 363,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 8,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 72,
+          "text": "Name (A-Z)"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 72,
+          "text": "Praxisnummer / ID"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 72,
+          "text": "Zeit seit letztem Kontakt"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 82,
+          "text": "↑ Aufst."
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 128,
+          "text": "CUST-..."
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 138,
+          "text": "z.B. Hausarztpraxis Dr. Med. Weber"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 143,
+          "text": "Praxisname (Alt):"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 144,
+          "text": "z.B. Ehem. Praxis Dr. Alt"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 153,
+          "text": "Anrede:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 154,
+          "text": "Frau / Herr / Dr."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 159,
+          "text": "Vorname:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 160,
+          "text": "Vorname..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 165,
+          "text": "Nachname:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 166,
+          "text": "Nachname..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 175,
+          "text": "🏠 Straße & Hausnr.:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 176,
+          "text": "z.B. Hauptstr. 10"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 181,
+          "text": "PLZ:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 187,
+          "text": "Ort:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 188,
+          "text": "Ort..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 195,
+          "text": "📞 Telefonnummern (Cobra Export)"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 202,
+          "text": "Telefon Hauptnr.:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 203,
+          "text": "0711-..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 208,
+          "text": "Telefon direkt:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 209,
+          "text": "Durchwahl..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 214,
+          "text": "Telefon privat:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 215,
+          "text": "Privat..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 223,
+          "text": "Telefon 2:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 224,
+          "text": "Zweitnr...."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 229,
+          "text": "Telefon 3:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 230,
+          "text": "Drittnr...."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 235,
+          "text": "Mobil:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 236,
+          "text": "0171-..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 241,
+          "text": "Mobil privat:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 242,
+          "text": "Mobil privat..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 251,
+          "text": "✉ E-Mail 2:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 252,
+          "text": "zweit-email@praxis.de"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 257,
+          "text": "✉ E-Mail 3:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 258,
+          "text": "dritt-email@praxis.de"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 269,
+          "text": "🌐 Webseite:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 274,
+          "text": "https://praxis-beispiel.de"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 279,
+          "text": "🔗 Öffnen"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 290,
+          "text": "🖥 VM-Nr.:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 297,
+          "text": "🔢 Instanz-Nr.:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 304,
+          "text": "🏷 DSC:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 305,
+          "text": "DSC..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 310,
+          "text": "🏷 DSCNEU:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 311,
+          "text": "DSCNEU..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 318,
+          "text": "👥 Weitere Ansprechpartner (1 Name pro Zeile):"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 325,
+          "text": "📝 Allgemeine Notizen:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 326,
+          "text": "z.B. Erreichbarkeit, Wünsche..."
+        },
+        {
+          "widget": "CTkCheckBox",
+          "prop": "text",
+          "line": 331,
+          "text": "⭐ VIP-Kunde (erhöht den Dringlichkeits-Score um +30)"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 339,
+          "text": "⚡ Praxisspezifische KI-Regeln (haben VORRANG vor Basis-Regeln):"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 344,
+          "text": "1 Regel pro Zeile (z. B. 'Duzen erwünscht (Herr Schmidt)', 'Betreff mit [SCHMIDT] beginnen')"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 356,
+          "text": "👥 Ansprechpartner & Kontakte"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 357,
+          "text": "+ Kontakt hinzufügen"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/customer_management_dialog.py": {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "loc": 515,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 3,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 81,
+          "text": "🗑 Entfernen"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 96,
+          "text": "Name *:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 97,
+          "text": "z.B. Dr. Hans Weber"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 104,
+          "text": "Rolle / Funktion:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 105,
+          "text": "z.B. Praxisinhaber, Abrechnung..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 116,
+          "text": "E-Mail:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 117,
+          "text": "weber@praxis.de"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 124,
+          "text": "Telefon:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 125,
+          "text": "030 / 1234567"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 133,
+          "text": "Notiz:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 134,
+          "text": "z.B. Erreichbar Mo-Do Vormittag"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 216,
+          "text": "Keine Praxen gefunden."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/email_calendar_dialog.py": {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "loc": 218,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 7,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 71,
+          "text": "Empfänger (E-Mail):"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 72,
+          "text": "praxis@beispiel.de..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 78,
+          "text": "Betreff:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 79,
+          "text": "Betreff eingeben..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 88,
+          "text": "E-Mail Nachrichtentext:"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 93,
+          "text": "🧩 Textbaustein"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 206,
+          "func": "asksaveasfilename",
+          "title": "Kalenderdatei (.ics) speichern"
+        }
+      ]
+    },
+    "src/ui/dialogs/email_draft_dialog.py": {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "loc": 731,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 16,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 151,
+          "text": "Prüfe KI-Status..."
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 184,
+          "text": "praxis@beispiel.de oder Name / Praxis eingeben..."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 194,
+          "text": "📇 Praxiskartei ▾"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 219,
+          "text": "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 246,
+          "text": "Betreff eingeben..."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 260,
+          "text": "🧩 Textbaustein"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 402,
+          "text": "Keine passenden Praxiskontakte gefunden."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/email_import_dialog.py": {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "loc": 258,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 212,
+          "text": "➕ Als neuen Fall anlegen"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 221,
+          "text": "🗑 Ignorieren"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/export_dialog.py": {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "loc": 249,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 14,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 219,
+          "func": "asksaveasfilename"
+        }
+      ]
+    },
+    "src/ui/dialogs/followup_dialog.py": {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "loc": 222,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 6,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 131,
+          "text": "z. B. Beim Entwickler nach dem Stand fragen..."
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/followup_flyout_dialog.py": {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "loc": 181,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 4,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 84,
+          "text": "+ 1 Std."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 85,
+          "text": "+ 2 Std."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 86,
+          "text": "Heute 16:30"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 94,
+          "text": "Morgen 08:00"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 95,
+          "text": "+ 1 Tag"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 96,
+          "text": "+ 1 Woche"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/handover_dialog.py": {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "loc": 175,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 14,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/help_dialog.py": {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "loc": 779,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/new_case_dialog.py": {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "loc": 450,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 29,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 32,
+          "text": "z.B. Praxis Dr. Weber"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 36,
+          "text": "z.B. Dr. Hans Weber"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 40,
+          "text": "030 / 123456"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 173,
+          "text": "z. B. Zuzahlungsdatei lässt sich nicht erzeugen"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/p2p_diff_dialog.py": {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "loc": 165,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 8,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/profile_settings_ai_tab.py": {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "loc": 735,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 12,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 128,
+          "text": "AIzaSy..."
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 137,
+          "text": "👁"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/profile_settings_dialog.py": {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "loc": 930,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 72,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 253,
+          "text": "z. B. Support, Entwicklung, Technik"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 258,
+          "text": "z.B. 4012"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 263,
+          "text": "beispiel@support.de"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 268,
+          "text": "0170 / 1234567"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 273,
+          "text": "z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)"
+        },
+        {
+          "widget": "CTkInputDialog",
+          "prop": "text",
+          "line": 279,
+          "text": "Geben Sie den Namen des neuen Mitarbeiters ein:"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 402,
+          "text": "Dark"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 402,
+          "text": "Light"
+        },
+        {
+          "widget": "CTkOptionMenu",
+          "prop": "values[]",
+          "line": 402,
+          "text": "System"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 496,
+          "text": "Pfad zum Datenordner..."
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 565,
+          "text": "https://wiki.meinepraxis.de/api"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 570,
+          "text": "Token ID"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 575,
+          "text": "Token Secret"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 656,
+          "text": "Prioritäts-Scoring Punkte"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 660,
+          "text": "VIP-Bonus (Punkte):"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 542,
+          "func": "askdirectory",
+          "title": "Datenordner auswählen"
+        },
+        {
+          "line": 549,
+          "func": "askopenfilename",
+          "title": "Datei auswählen"
+        },
+        {
+          "line": 873,
+          "func": "asksaveasfilename",
+          "title": "Datensicherung als ZIP speichern"
+        },
+        {
+          "line": 896,
+          "func": "askopenfilename",
+          "title": "Datensicherung (ZIP-Datei) auswählen"
+        }
+      ]
+    },
+    "src/ui/dialogs/schema_builder_dialog.py": {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "loc": 360,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 14,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 24,
+          "text": "Neues Formular-Schema definieren"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 26,
+          "text": "Anzeigename (Titel) *:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 27,
+          "text": "z. B. Abrechnung & Tarife"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 30,
+          "text": "Schema-ID (optional):"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 31,
+          "text": "z. B. schema_abrechnung"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 34,
+          "text": "Beschreibung:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 35,
+          "text": "Optionale Beschreibung des Formulars"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 107,
+          "text": "Formular auswählen:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 175,
+          "text": "↳ Bedingte Logik (If/Else):"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 177,
+          "text": "Abhängig von Feld-ID"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 180,
+          "text": "Bei Wert (z. B. Sonstiges)"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 183,
+          "text": "↳ Dateitypen:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 184,
+          "text": ".pdf, .log, .png"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 297,
+          "text": "▲"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 300,
+          "text": "▼"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 303,
+          "text": "Pflicht +/-"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 306,
+          "text": "✕"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/snippet_management_dialog.py": {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "loc": 257,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 13,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 70,
+          "text": "z. B. 📸 Rückfrage: Screenshots"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 74,
+          "text": "z. B. Rückfrage, Anleitung, SQL"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 82,
+          "text": "z. B. fehler, sql, anleitung"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 89,
+          "text": "z. B. <Control-Alt-1>"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/snippet_picker_dialog.py": {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "loc": 152,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 5,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/tag_management_dialog.py": {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "loc": 240,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 20,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/template_manager_dialog.py": {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "loc": 343,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 9,
+      "ui_hardcoded": [
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 57,
+          "text": "Vorlage-ID *:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 58,
+          "text": "z. B. gitlab_dev_ticket"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 68,
+          "text": "Anzeigename *:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 69,
+          "text": "z. B. GitLab / Dev-Ticket"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 78,
+          "text": "Beschreibung:"
+        },
+        {
+          "widget": "CTkEntry",
+          "prop": "placeholder_text",
+          "line": 79,
+          "text": "Kurze Beschreibung des Formats..."
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 87,
+          "text": "Ziel-Aktion / Typ:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 94,
+          "text": "Zugeordnete Formular-Schemas:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 105,
+          "text": "Erforderliche Pflichtfelder vor Export:"
+        },
+        {
+          "widget": "CTkLabel",
+          "prop": "text",
+          "line": 125,
+          "text": "Jinja2 Template Text (Markdown / Text):"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 296,
+          "text": "✓ In Realdaten enthalten"
+        },
+        {
+          "widget": "CTkButton",
+          "prop": "text",
+          "line": 298,
+          "text": "📥 Zu Realdaten übernehmen"
+        }
+      ],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/ui/dialogs/zip_import_dialog.py": {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "loc": 266,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 12,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": [
+        {
+          "line": 232,
+          "func": "askdirectory",
+          "title": "Gesamt-Zielverzeichnis wählen"
+        },
+        {
+          "line": 238,
+          "func": "askdirectory",
+          "title": "Zielverzeichnis für Datendateien (data/) wählen"
+        },
+        {
+          "line": 244,
+          "func": "askdirectory",
+          "title": "Zielverzeichnis für Fall-Anhänge (attachments/) wählen"
+        }
+      ]
+    },
+    "src/utils/__init__.py": {
+      "file": "src/utils/__init__.py",
+      "loc": 1,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/utils/datetime_utils.py": {
+      "file": "src/utils/datetime_utils.py",
+      "loc": 228,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/utils/security.py": {
+      "file": "src/utils/security.py",
+      "loc": 67,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    },
+    "src/utils/ui_utils.py": {
+      "file": "src/utils/ui_utils.py",
+      "loc": 377,
+      "has_language_listener": false,
+      "has_refresh_or_on_language": false,
+      "tr_calls_count": 0,
+      "ui_hardcoded": [],
+      "tooltip_hardcoded": [],
+      "toast_hardcoded": [],
+      "dialog_hardcoded": []
+    }
+  }
+}

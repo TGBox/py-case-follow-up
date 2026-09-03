@@ -47,9 +47,10 @@ def test_ai_settings_serialization():
     assert p_restored.ai_settings.ollama_url == "http://localhost:11434"
 
 
-def test_ai_service_rule_based_fallback():
+def test_ai_service_rule_based_fallback(monkeypatch):
     case = create_sample_case()
     service = AiService()
+    monkeypatch.setattr(service, "_query_ollama", lambda *args, **kwargs: None)
 
     # Rule-Based NLP Summary
     summary = service._generate_rule_based_summary(case)

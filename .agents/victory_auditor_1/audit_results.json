@@ -1,0 +1,152 @@
+{
+  "key_parity": {
+    "de_count": 1471,
+    "en_count": 1471,
+    "sv_count": 1471,
+    "missing_in_en": [],
+    "extra_in_en": [],
+    "missing_in_sv": [],
+    "extra_in_sv": [],
+    "parity_100_percent": true
+  },
+  "format_tokens": {
+    "mismatches_count": 0,
+    "mismatches": []
+  },
+  "translation_quality": {
+    "german_in_en_count": 0,
+    "german_in_en_examples": [],
+    "german_in_sv_count": 0,
+    "german_in_sv_examples": []
+  },
+  "ast_scan": {
+    "total_files_scanned": 83,
+    "total_violations": 0,
+    "violating_files": {}
+  },
+  "constants_enums": {
+    "constants": {
+      "DISPLAY_BOARD_COLUMN_NAMES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "NEW",
+          "de": "Neu",
+          "en": "New",
+          "sv": "Nytt",
+          "differs": true
+        }
+      },
+      "DISPLAY_ACTOR_NAMES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "SUPPORT",
+          "de": "Support / Hotline",
+          "en": "Support / Hotline",
+          "sv": "Support / Hotline",
+          "differs": false
+        }
+      },
+      "DISPLAY_CHANNEL_NAMES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "PHONE_INBOUND",
+          "de": "Eingehender Telefonanruf",
+          "en": "Inbound Phone Call",
+          "sv": "Inkommande telefonsamtal",
+          "differs": true
+        }
+      },
+      "DISPLAY_LAYOUT_NAMES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "COCKPIT",
+          "de": "Cockpit (Hauptansicht)",
+          "en": "Cockpit (Main View)",
+          "sv": "Cockpit (Huvudvy)",
+          "differs": true
+        }
+      },
+      "VALIDATION_MESSAGES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "snippet_id_required",
+          "de": "Snippet-ID ist erforderlich.",
+          "en": "Snippet ID is required.",
+          "sv": "Kodavsnitts-ID kr\u00e4vs.",
+          "differs": true
+        }
+      },
+      "HOTKEY_ACTION_LABELS": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "new_case",
+          "de": "Neuer Fall:",
+          "en": "New Case:",
+          "sv": "Nytt \u00e4rende:",
+          "differs": true
+        }
+      },
+      "DIALOG_TITLES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "new_case",
+          "de": "Neuen Support-Fall anlegen",
+          "en": "Create New Support Case",
+          "sv": "Skapa nytt support\u00e4rende",
+          "differs": true
+        }
+      },
+      "UI_BUTTON_TEXTS": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "save",
+          "de": "Speichern",
+          "en": "Save",
+          "sv": "Spara",
+          "differs": true
+        }
+      },
+      "STATUS_MESSAGES": {
+        "is_localized_dict": true,
+        "dynamic_switch": {
+          "key": "snippet_saved",
+          "de": "\u2713 Textbaustein gespeichert.",
+          "en": "\u2713 Text snippet saved.",
+          "sv": "\u2713 Textbyggblock sparat.",
+          "differs": true
+        }
+      }
+    },
+    "enum_displays": {
+      "actor": {
+        "de": "Support / Hotline",
+        "en": "Support / Hotline",
+        "sv": "Support / Hotline"
+      },
+      "channel": {
+        "de": "Telefonat",
+        "en": "Phone Call",
+        "sv": "Telefonsamtal"
+      },
+      "layout": {
+        "de": "Cockpit (Hauptansicht)",
+        "en": "Cockpit (Main View)",
+        "sv": "Cockpit (Huvudvy)"
+      },
+      "board": {
+        "de": "inbox",
+        "en": "inbox",
+        "sv": "inbox"
+      }
+    }
+  },
+  "dynamic_switching": {
+    "notifications_received": [
+      "en",
+      "sv",
+      "de"
+    ],
+    "listener_unregistered_correctly": true
+  },
+  "integrity": {}
+}

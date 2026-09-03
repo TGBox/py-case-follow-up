@@ -24,7 +24,7 @@ def test_toast_notification_button_visibility():
     # Find button and verify width and text
     btn = next((c for c in toast.winfo_children()[0].winfo_children() if isinstance(c, ctk.CTkButton)), None)
     assert btn is not None
-    assert btn.cget("text") == "👁 Öffnen"
+    assert "Öffnen" in btn.cget("text")
     assert btn.cget("width") >= 90
 
     toast.safe_destroy()

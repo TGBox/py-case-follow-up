@@ -41,15 +41,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
 
 
     def open_website_in_browser(self):
+        from services.i18n_service import tr
         url = self.website_entry.get().strip()
         if not url:
-            self.status_lbl.configure(text="⚠ Keine Webseite eingetragen!", text_color="orange")
+            self.status_lbl.configure(text=tr("customer_mgmt.no_website", "⚠ Keine Webseite eingetragen!"), text_color="orange")
             return
         if not (url.startswith("http://") or url.startswith("https://")):
             url = "https://" + url
         import webbrowser
         webbrowser.open(url)
-        self.status_lbl.configure(text=f"🌐 Webseite geöffnet: {url}", text_color="green")
+        self.status_lbl.configure(text=tr("customer_mgmt.website_opened", "🌐 Webseite geöffnet: {url}", url=url), text_color="green")
 
     def render_contact_rows(self, contacts: list[Contact]):
         for r in list(self.contact_rows):
@@ -63,6 +64,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
                 self.add_contact_row(c)
 
     def add_contact_row(self, contact: Contact | None = None):
+        from services.i18n_service import tr
         c_data = contact or Contact()
         row_idx = len(self.contact_rows) + 1
 
@@ -72,13 +74,13 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         # Card header
         header = ctk.CTkFrame(card, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(6, 2))
-        ctk.CTkLabel(header, text=f"Kontakt #{row_idx}", font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
+        ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
 
         row_dict: dict[str, Any] = {"frame": card}
 
         remove_btn = ctk.CTkButton(
             header,
-            text="🗑 Entfernen",
+            text=tr("customer_mgmt.remove_contact", "🗑 Entfernen"),
             width=80,
             height=22,
             fg_color="gray40",
@@ -93,16 +95,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
 
         left_r1 = ctk.CTkFrame(r1, fg_color="transparent")
         left_r1.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        ctk.CTkLabel(left_r1, text="Name *:").pack(anchor="w", pady=(0, 1))
-        name_entry = ctk.CTkEntry(left_r1, placeholder_text="z.B. Dr. Hans Weber")
+        ctk.CTkLabel(left_r1, text=tr("customer_mgmt.name_req", "Name *:")).pack(anchor="w", pady=(0, 1))
+        name_entry = ctk.CTkEntry(left_r1, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber"))
         name_entry.insert(0, c_data.name)
         name_entry.pack(fill="x")
         row_dict["name_entry"] = name_entry
 
         right_r1 = ctk.CTkFrame(r1, fg_color="transparent")
         right_r1.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        ctk.CTkLabel(right_r1, text="Rolle / Funktion:").pack(anchor="w", pady=(0, 1))
-        role_entry = ctk.CTkEntry(right_r1, placeholder_text="z.B. Praxisinhaber, Abrechnung...")
+        ctk.CTkLabel(right_r1, text=tr("customer_mgmt.role_lbl", "Rolle / Funktion:")).pack(anchor="w", pady=(0, 1))
+        role_entry = ctk.CTkEntry(right_r1, placeholder_text=tr("customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung..."))
         role_entry.insert(0, c_data.role)
         role_entry.pack(fill="x")
         row_dict["role_entry"] = role_entry
@@ -113,16 +115,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
 
         left_r2 = ctk.CTkFrame(r2, fg_color="transparent")
         left_r2.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        ctk.CTkLabel(left_r2, text="E-Mail:").pack(anchor="w", pady=(0, 1))
-        email_entry = ctk.CTkEntry(left_r2, placeholder_text="weber@praxis.de")
+        ctk.CTkLabel(left_r2, text=tr("customer_mgmt.email_lbl", "E-Mail:")).pack(anchor="w", pady=(0, 1))
+        email_entry = ctk.CTkEntry(left_r2, placeholder_text=tr("customer_mgmt.email_placeholder", "weber@praxis.de"))
         email_entry.insert(0, c_data.email)
         email_entry.pack(fill="x")
         row_dict["email_entry"] = email_entry
 
         right_r2 = ctk.CTkFrame(r2, fg_color="transparent")
         right_r2.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        ctk.CTkLabel(right_r2, text="Telefon:").pack(anchor="w", pady=(0, 1))
-        phone_entry = ctk.CTkEntry(right_r2, placeholder_text="030 / 1234567")
+        ctk.CTkLabel(right_r2, text=tr("customer_mgmt.phone_lbl", "Telefon:")).pack(anchor="w", pady=(0, 1))
+        phone_entry = ctk.CTkEntry(right_r2, placeholder_text=tr("customer_mgmt.phone_placeholder", "030 / 1234567"))
         phone_entry.insert(0, c_data.phone)
         phone_entry.pack(fill="x")
         row_dict["phone_entry"] = phone_entry
@@ -130,8 +132,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         # Note row
         r3 = ctk.CTkFrame(card, fg_color="transparent")
         r3.pack(fill="x", padx=10, pady=(0, 8))
-        ctk.CTkLabel(r3, text="Notiz:").pack(anchor="w", pady=(0, 1))
-        note_entry = ctk.CTkEntry(r3, placeholder_text="z.B. Erreichbar Mo-Do Vormittag")
+        ctk.CTkLabel(r3, text=tr("customer_mgmt.note_lbl", "Notiz:")).pack(anchor="w", pady=(0, 1))
+        note_entry = ctk.CTkEntry(r3, placeholder_text=tr("customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag"))
         note_entry.insert(0, c_data.note)
         note_entry.pack(fill="x")
         row_dict["note_entry"] = note_entry
@@ -170,9 +172,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
             self.on_click_new_customer()
 
     def toggle_sort_direction(self):
+        from services.i18n_service import tr
         self.sort_asc_var = not getattr(self, "sort_asc_var", True)
         if hasattr(self, "sort_dir_btn"):
-            self.sort_dir_btn.configure(text="↑ Aufst." if self.sort_asc_var else "↓ Abst.")
+            self.sort_dir_btn.configure(text=tr("customer_mgmt.sort_asc", "↑ Aufst.") if self.sort_asc_var else tr("customer_mgmt.sort_desc", "↓ Abst."))
         self.on_sort_changed()
 
     def _get_customer_last_contact_ts(self, customer: Customer) -> str:
@@ -209,11 +212,12 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         self.render_list()
 
     def render_list(self):
+        from services.i18n_service import tr
         for w in self.list_scroll.winfo_children():
             w.destroy()
 
         if not self.filtered_customers:
-            ctk.CTkLabel(self.list_scroll, text="Keine Praxen gefunden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color="gray").pack(pady=20)
             return
 
         for c in self.filtered_customers:

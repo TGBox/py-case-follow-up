@@ -54,7 +54,9 @@ def _make_case(
 
 def _make_service() -> AiService:
     """Creates an AiService that will always use the rule-based fallback (no real Ollama)."""
-    return AiService(ollama_url="http://127.0.0.1:1", model_name="test-model")
+    svc = AiService(ollama_url="http://127.0.0.1:1", model_name="test-model")
+    svc._query_ollama = lambda *args, **kwargs: None
+    return svc
 
 
 # ============================================================

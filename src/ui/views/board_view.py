@@ -39,11 +39,12 @@ class KanbanCardWidget(ctk.CTkFrame):
         id_lbl.pack(side="left")
 
         # Score badge
+        from services.i18n_service import tr
         score = self.case.classification.calculated_score
         score_color = "firebrick" if score >= 100 else ("darkgoldenrod" if score >= 50 else "darkgreen")
         score_lbl = ctk.CTkLabel(
             header_frame,
-            text=f"Score {score:.0f}",
+            text=f"{tr('board.score', 'Score')} {score:.0f}",
             font=ctk.CTkFont(size=10, weight="bold"),
             text_color="white",
             fg_color=score_color,
@@ -55,7 +56,10 @@ class KanbanCardWidget(ctk.CTkFrame):
 
         # Customer Name + VIP (with auto-wrap)
         vip_str = " ★ VIP" if self.case.customer.is_vip else ""
-        cust_str = f"🏥 {self.case.customer.practice_name}{vip_str}"
+        if self.case.is_internal:
+            cust_str = f"🏢 {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')}{vip_str}"
+        else:
+            cust_str = f"🏥 {self.case.customer.practice_name}{vip_str}"
         cust_lbl = ctk.CTkLabel(
             self,
             text=cust_str,
@@ -201,10 +205,10 @@ class BoardView(ctk.CTkFrame):
 
         self.grid_rowconfigure(0, weight=1)
         cols_def = [
-            ("support", tr("board.col_support", "📥 Support / In Bearbeitung")),
-            ("dev", tr("board.col_dev", "💻 Entwickler / Dev-Team")),
-            ("followup", tr("board.col_followup", "🔔 Wiedervorlage / Warten")),
-            ("completed", tr("board.col_completed", "✓ Erledigte Fälle")),
+            ("support", tr("board.col_support_header", "📥 Support / In Bearbeitung")),
+            ("dev", tr("board.col_dev_header", "💻 Entwickler / Dev-Team")),
+            ("followup", tr("board.col_followup_header", "🔔 Wiedervorlage / Warten")),
+            ("completed", tr("board.col_completed_header", "✓ Erledigte Fälle")),
         ]
 
         self.col_headers: dict[str, ctk.CTkLabel] = {}
@@ -223,7 +227,7 @@ class BoardView(ctk.CTkFrame):
                 # Expand button
                 btn_exp = ctk.CTkButton(
                     col_frame,
-                    text="▶",
+                    text=tr("board.expand_btn", "▶"),
                     width=28,
                     height=28,
                     command=lambda k=col_key: self.toggle_column_collapse(k),
@@ -310,11 +314,12 @@ class BoardView(ctk.CTkFrame):
             else:
                 col_cases["support"].append(c)
 
+        from services.i18n_service import tr
         titles = {
-            "support": f"📥 Support ({len(col_cases['support'])})",
-            "dev": f"💻 Entwickler ({len(col_cases['dev'])})",
-            "followup": f"🔔 Wiedervorlage ({len(col_cases['followup'])})",
-            "completed": f"✓ Erledigt ({len(col_cases['completed'])})",
+            "support": f"📥 {tr('board.title_support', 'Support')} ({len(col_cases['support'])})",
+            "dev": f"💻 {tr('board.title_dev', 'Entwickler')} ({len(col_cases['dev'])})",
+            "followup": f"🔔 {tr('board.title_followup', 'Wiedervorlage')} ({len(col_cases['followup'])})",
+            "completed": f"✓ {tr('board.title_completed', 'Erledigt')} ({len(col_cases['completed'])})",
         }
 
         for k, title in titles.items():
@@ -344,3 +349,7 @@ class BoardView(ctk.CTkFrame):
                         on_change_actor=self.on_change_actor,
                     )
                     card.pack(fill="x", pady=4, padx=2)
+
+    def refresh_ui_labels(self):
+        self.create_board()
+        self.refresh_board()

@@ -153,9 +153,11 @@ class CockpitLayoutBuilderMixin:
         # Multi-line Wiedervorlage container in Cockpit Center Pane
         self.wiedervorlage_frame = ctk.CTkFrame(self.info_left_frame, fg_color="transparent")
 
+        from services.i18n_service import tr
+
         self.wv_hdr_label = ctk.CTkLabel(
             self.wiedervorlage_frame,
-            text="🔔 Nachfragen am:",
+            text=tr("cockpit.followup_at", "🔔 Nachfragen am:"),
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color="darkorange",
             anchor="w",
@@ -273,6 +275,8 @@ class CockpitLayoutBuilderMixin:
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
+        from enums import ACTOR_DISPLAY, get_actor_display
+
         if hasattr(self, "more_actions_combo"):
             self.more_actions_combo.configure(values=[
                 tr("cockpit.copy_email", "📧 Praxis E-Mail kopieren"),
@@ -291,10 +295,35 @@ class CockpitLayoutBuilderMixin:
             self.add_note_btn.configure(text=tr("cockpit.note", "📝 Notiz"))
         if hasattr(self, "save_btn"):
             self.save_btn.configure(text=tr("cockpit.save", "💾 Speichern"))
-        if hasattr(self, "complete_btn"):
-            self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
         if hasattr(self, "archive_btn"):
             self.archive_btn.configure(text=tr("cockpit.archive", "📦 Archivieren"))
+        if hasattr(self, "wv_hdr_label"):
+            self.wv_hdr_label.configure(text=tr("cockpit.followup_at", "🔔 Nachfragen am:"))
+        if hasattr(self, "complete_btn"):
+            if getattr(self, "current_case", None):
+                self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
+            else:
+                self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+        if hasattr(self, "actor_combo"):
+            self.actor_combo.configure(values=list(ACTOR_DISPLAY.values()))
+            if getattr(self, "current_case", None):
+                self.actor_combo.set(get_actor_display(self.current_case.workflow_status.current_actor))
+        if hasattr(self, "case_title_label"):
+            if getattr(self, "current_case", None):
+                self._update_title_label()
+            else:
+                self.case_title_label.configure(text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"))
+        if getattr(self, "current_case", None):
+            vip_str = " ★ VIP" if self.current_case.customer.is_vip else ""
+            if self.current_case.is_internal:
+                self.kunde_label.configure(text=f"🏢 {tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({self.current_case.customer.customer_id}){vip_str}")
+            else:
+                self.kunde_label.configure(text=f"🏥 {tr('cockpit.customer', 'Kunde')}: {self.current_case.customer.practice_name} ({self.current_case.customer.customer_id}){vip_str}")
+            full_addr = getattr(self.current_case.customer, "full_address", "")
+            addr_str = f" | 🏠 {full_addr}" if full_addr else ""
+            self.ansprechpartner_label.configure(text=f"👤 {tr('cockpit.contact_person', 'Ansprechpartner')}: {self.current_case.customer.contact_person}{addr_str}")
+            if hasattr(self, "_update_wiedervorlage_display"):
+                self._update_wiedervorlage_display()
 
         # Aliases for export, print, convert_schema buttons to maintain backward compatibility
         self.export_btn = self.more_actions_combo
@@ -304,12 +333,14 @@ class CockpitLayoutBuilderMixin:
         # Refresh right pane tabs ("Zeitleiste", "Anhänge", "Wiki")
         if hasattr(self, "right_tabview") and hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):
             btns = self.right_tabview._segmented_button._buttons_dict
-            if hasattr(self, "_sidebar_tab_names"):
-                for tab_key, orig_name in self._sidebar_tab_names.items():
-                    if orig_name in btns:
-                        btns[orig_name].configure(text=tr(f"cockpit.tab_{tab_key}", orig_name))
+            tab_defs = {"timeline": "Zeitleiste", "attachments": "Anhänge", "wiki": "Wiki"}
+            for tab_key, init_name in tab_defs.items():
+                if init_name in btns:
+                    btns[init_name].configure(text=tr(f"cockpit.tab_{tab_key}", init_name))
 
         # Refresh child widgets
+        if hasattr(self, "left_frame") and hasattr(self.left_frame, "refresh_ui_labels"):
+            self.left_frame.refresh_ui_labels()
         if hasattr(self, "case_list_widget") and hasattr(self.case_list_widget, "refresh_ui_labels"):
             self.case_list_widget.refresh_ui_labels()
         if hasattr(self, "timeline_widget") and hasattr(self.timeline_widget, "refresh_ui_labels"):
@@ -331,14 +362,23 @@ class CockpitLayoutBuilderMixin:
         t_wiki = tr("cockpit.tab_wiki", "Wiki")
 
         self._sidebar_tab_names = {
-            "timeline": t_title,
-            "attachments": t_attach,
-            "wiki": t_wiki,
+            "timeline": "Zeitleiste",
+            "attachments": "Anhänge",
+            "wiki": "Wiki",
         }
 
-        tab_timeline = self.right_tabview.add(t_title)
-        tab_attachments = self.right_tabview.add(t_attach)
-        tab_wiki = self.right_tabview.add(t_wiki)
+        tab_timeline = self.right_tabview.add("Zeitleiste")
+        tab_attachments = self.right_tabview.add("Anhänge")
+        tab_wiki = self.right_tabview.add("Wiki")
+
+        if hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):
+            btns = self.right_tabview._segmented_button._buttons_dict
+            if "Zeitleiste" in btns:
+                btns["Zeitleiste"].configure(text=t_title)
+            if "Anhänge" in btns:
+                btns["Anhänge"].configure(text=t_attach)
+            if "Wiki" in btns:
+                btns["Wiki"].configure(text=t_wiki)
 
         self.timeline_widget = TimelineWidget(
             tab_timeline,

@@ -154,9 +154,29 @@ class TableView(ctk.CTkFrame):
         self.detail_tabview = ctk.CTkTabview(bottom_frame)
         self.detail_tabview.pack(fill="both", expand=True, padx=5, pady=(0, 5))
 
+        from services.i18n_service import tr
+        t_form = tr("table.tab_form", "📝 Formular & Ausfüllen")
+        t_timeline = tr("table.tab_timeline", "🕒 Zeitleiste")
+        t_attachments = tr("table.tab_attachments", "📎 Anhänge")
+
+        self._detail_tab_names = {
+            "form": "📝 Formular & Ausfüllen",
+            "timeline": "🕒 Zeitleiste",
+            "attachments": "📎 Anhänge",
+        }
+
         tab_form = self.detail_tabview.add("📝 Formular & Ausfüllen")
         tab_timeline = self.detail_tabview.add("🕒 Zeitleiste")
         tab_attachments = self.detail_tabview.add("📎 Anhänge")
+
+        if hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):
+            btns = self.detail_tabview._segmented_button._buttons_dict
+            if "📝 Formular & Ausfüllen" in btns:
+                btns["📝 Formular & Ausfüllen"].configure(text=t_form)
+            if "🕒 Zeitleiste" in btns:
+                btns["🕒 Zeitleiste"].configure(text=t_timeline)
+            if "📎 Anhänge" in btns:
+                btns["📎 Anhänge"].configure(text=t_attachments)
 
         self.form_widget = DynamicFormWidget(tab_form)
         self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
@@ -298,8 +318,9 @@ class TableView(ctk.CTkFrame):
         self.on_case_selected(case)
 
         # Update bottom detail panel
+        from services.i18n_service import tr
         self.detail_title_label.configure(
-            text=f"📋 Falldetails: {case.case_id} - {case.customer.practice_name} ({case.classification.title})"
+            text=tr("table.case_details_header", "📋 Falldetails: {id} - {practice} ({title})", id=case.case_id, practice=case.customer.practice_name, title=case.classification.title)
         )
         self.save_btn.configure(state="normal")
 
@@ -330,3 +351,35 @@ class TableView(ctk.CTkFrame):
     def on_timeline_updated(self, timeline: list[Any] | None = None):
         if self.selected_case:
             self.on_click_save()
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        self.configure_tree_columns()
+        self.render_rows()
+        if self.selected_case:
+            self.detail_title_label.configure(
+                text=tr("table.case_details_header", "📋 Falldetails: {id} - {practice} ({title})", id=self.selected_case.case_id, practice=self.selected_case.customer.practice_name, title=self.selected_case.classification.title)
+            )
+        else:
+            self.detail_title_label.configure(
+                text=tr("table.details_header", "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)")
+            )
+        self.save_btn.configure(text=tr("table.save_btn", "💾 Ändern & Speichern"))
+
+        if hasattr(self, "detail_tabview") and hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):
+            btns = self.detail_tabview._segmented_button._buttons_dict
+            initial_tab_keys = {
+                "form": "📝 Formular & Ausfüllen",
+                "timeline": "🕒 Zeitleiste",
+                "attachments": "📎 Anhänge",
+            }
+            for key, init_name in initial_tab_keys.items():
+                if init_name in btns:
+                    btns[init_name].configure(text=tr(f"table.tab_{key}", init_name))
+
+        if hasattr(self, "form_widget") and hasattr(self.form_widget, "refresh_ui_labels"):
+            self.form_widget.refresh_ui_labels()
+        if hasattr(self, "timeline_widget") and hasattr(self.timeline_widget, "refresh_ui_labels"):
+            self.timeline_widget.refresh_ui_labels()
+        if hasattr(self, "attachment_widget") and hasattr(self.attachment_widget, "refresh_ui_labels"):
+            self.attachment_widget.refresh_ui_labels()

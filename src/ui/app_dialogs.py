@@ -46,11 +46,12 @@ class DialogLaunchersMixin:
                 from models.case import TimelineEntry
                 from utils.datetime_utils import now_iso
                 from enums import Channel
+                from services.i18n_service import tr
                 entry = TimelineEntry(
                     timestamp=now_iso(),
                     author=self.profile.user.name,
                     channel=Channel.INTERNAL_NOTE.value,
-                    note=f"Wiedervorlage gesetzt auf: {dt_iso}. {note_text}",
+                    note=tr("timeline.followup_set_note", "Wiedervorlage gesetzt auf: {date}. {note}", date=dt_iso, note=note_text),
                 )
                 case.timeline.append(entry)
             self.on_case_updated(case)
@@ -61,15 +62,16 @@ class DialogLaunchersMixin:
         FollowupDialog(self, case=case, on_followup_set=on_followup_set)
 
     def on_toggle_complete_for_case(self, case: Case):
+        from services.i18n_service import tr
         new_state = not case.workflow_status.is_completed
         case.workflow_status.is_completed = new_state
         if new_state:
             case.workflow_status.followup_at = ""
-            note_text = "Fall auf erledigt gesetzt."
-            change_text = "STATUS: Erledigt"
+            note_text = tr("timeline.case_completed", "Fall auf erledigt gesetzt.")
+            change_text = tr("timeline.status_completed", "STATUS: Erledigt")
         else:
-            note_text = "Fall wieder geöffnet."
-            change_text = "STATUS: Offen"
+            note_text = tr("timeline.case_reopened", "Fall wieder geöffnet.")
+            change_text = tr("timeline.status_open", "STATUS: Offen")
 
         from models.case import TimelineEntry
         from utils.datetime_utils import now_iso
@@ -90,6 +92,7 @@ class DialogLaunchersMixin:
         from enums import get_actor_display, Channel
         from models.case import TimelineEntry
         from utils.datetime_utils import now_iso
+        from services.i18n_service import tr
 
         def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
             prev_actor_val = case.workflow_status.current_actor
@@ -98,8 +101,8 @@ class DialogLaunchersMixin:
 
             person_str = f" ({person})" if person else ""
             note_str = f" | Details: {note}" if note else ""
-            note_text = f"Zuständigkeit übergeben an: {get_actor_display(new_actor_val)}{person_str} via {channel}{note_str}"
-            change_text = f"ZUSTÄNDIGKEIT: {get_actor_display(prev_actor_val)} -> {get_actor_display(new_actor_val)}"
+            note_text = tr("timeline.handover_note", "Zuständigkeit übergeben an: {actor}{person} via {channel}{note}", actor=get_actor_display(new_actor_val), person=person_str, channel=channel, note=note_str)
+            change_text = tr("timeline.handover_status", "ZUSTÄNDIGKEIT: {prev} -> {curr}", prev=get_actor_display(prev_actor_val), curr=get_actor_display(new_actor_val))
 
             entry = TimelineEntry(
                 timestamp=now_iso(),

@@ -9,8 +9,9 @@ from constants import DIALOG_DIMENSIONS
 class NewSchemaDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_schema_created: Callable[[QuestionSchema], None]):
         super().__init__(parent)
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["new_schema"]
-        self.title("🆕 Neues Formular (Schema) erstellen")
+        self.title(tr("schema_builder.new_schema_title", "🆕 Neues Formular (Schema) erstellen"))
         self.geometry(f"{w}x{h}")
         self.resizable(False, False)
         self.transient(parent)
@@ -21,24 +22,22 @@ class NewSchemaDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(main_frame, text="Neues Formular-Schema definieren", font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+        ctk.CTkLabel(main_frame, text=tr("schema_builder.define_new_schema", "Neues Formular-Schema definieren"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(main_frame, text="Anzeigename (Titel) *:").pack(anchor="w", pady=(2, 0))
-        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Abrechnung & Tarife")
+        ctk.CTkLabel(main_frame, text=tr("schema_builder.display_name_lbl", "Anzeigename (Titel) *:")).pack(anchor="w", pady=(2, 0))
+        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.name_placeholder", "z. B. Abrechnung & Tarife"))
         self.name_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text="Schema-ID (optional):").pack(anchor="w", pady=(2, 0))
-        self.id_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. schema_abrechnung")
+        ctk.CTkLabel(main_frame, text=tr("schema_builder.schema_id_lbl", "Schema-ID (optional):")).pack(anchor="w", pady=(2, 0))
+        self.id_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.id_placeholder", "z. B. schema_abrechnung"))
         self.id_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text="Beschreibung:").pack(anchor="w", pady=(2, 0))
-        self.desc_entry = ctk.CTkEntry(main_frame, placeholder_text="Optionale Beschreibung des Formulars")
+        ctk.CTkLabel(main_frame, text=tr("schema_builder.desc_lbl", "Beschreibung:")).pack(anchor="w", pady=(2, 0))
+        self.desc_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.desc_placeholder", "Optionale Beschreibung des Formulars"))
         self.desc_entry.pack(fill="x", pady=(0, 10))
 
         self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color="red")
         self.err_lbl.pack(anchor="w", pady=2)
-
-        from services.i18n_service import tr
 
         btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_row.pack(fill="x", pady=(10, 0))
@@ -47,9 +46,10 @@ class NewSchemaDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=140).pack(side="right")
 
     def on_save(self):
+        from services.i18n_service import tr
         name = self.name_entry.get().strip()
         if not name:
-            self.err_lbl.configure(text="Bitte Anzeigenamen eingeben.")
+            self.err_lbl.configure(text=tr("schema_builder.enter_display_name", "Bitte Anzeigenamen eingeben."))
             return
 
         schema_id = self.id_entry.get().strip()
@@ -78,8 +78,9 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         on_schemas_updated: Callable[[list[QuestionSchema]], None],
     ):
         super().__init__(parent)
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["schema_builder"]
-        self.title("In-App Formular-Baukasten (Schemata verwalten)")
+        self.title(tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"))
         self.geometry(f"{w}x{h}")
         self.minsize(860, 640)
         from utils.ui_utils import center_window
@@ -97,6 +98,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         self.refresh_fields_list()
 
     def create_widgets(self):
+        from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -104,7 +106,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         top_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(top_frame, text="Formular auswählen:", font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(top_frame, text=tr("schema_builder.select_form_lbl", "Formular auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
         
         schema_names = [s.display_name for s in self.schemas] if self.schemas else ["Kein Formular"]
         self.schema_combo = ctk.CTkOptionMenu(
@@ -172,16 +174,16 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         v2_row = ctk.CTkFrame(add_frame, fg_color="transparent")
         v2_row.pack(fill="x", padx=10, pady=(0, 8))
 
-        ctk.CTkLabel(v2_row, text="↳ Bedingte Logik (If/Else):", font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
+        ctk.CTkLabel(v2_row, text=tr("schema_builder.conditional_logic_lbl", "↳ Bedingte Logik (If/Else):"), font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
 
-        self.new_dep_id_entry = ctk.CTkEntry(v2_row, placeholder_text="Abhängig von Feld-ID", width=140)
+        self.new_dep_id_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_id_placeholder", "Abhängig von Feld-ID"), width=140)
         self.new_dep_id_entry.pack(side="left", padx=(0, 6))
 
-        self.new_dep_val_entry = ctk.CTkEntry(v2_row, placeholder_text="Bei Wert (z. B. Sonstiges)", width=140)
+        self.new_dep_val_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_val_placeholder", "Bei Wert (z. B. Sonstiges)"), width=140)
         self.new_dep_val_entry.pack(side="left", padx=(0, 10))
 
-        ctk.CTkLabel(v2_row, text="↳ Dateitypen:", font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
-        self.new_exts_entry = ctk.CTkEntry(v2_row, placeholder_text=".pdf, .log, .png", width=140)
+        ctk.CTkLabel(v2_row, text=tr("schema_builder.file_types_lbl", "↳ Dateitypen:"), font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
+        self.new_exts_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.file_ext_placeholder", ".pdf, .log, .png"), width=140)
         self.new_exts_entry.pack(side="left")
 
         # Status & Action Buttons
@@ -234,9 +236,10 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             self.refresh_fields_list()
 
     def check_adopt_status(self):
+        from services.i18n_service import tr
         storage_service = getattr(self.master, "storage_service", None)
         if not storage_service or not self.selected_schema:
-            self.adopt_schema_btn.configure(state="disabled", text="📥 Zu Realdaten übernehmen", fg_color="gray40")
+            self.adopt_schema_btn.configure(state="disabled", text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), fg_color="gray40")
             return
 
         saved_schemas = storage_service.load_schemas()
@@ -249,9 +252,9 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
                         break
 
         if is_already_saved:
-            self.adopt_schema_btn.configure(text="✓ In Realdaten enthalten", state="disabled", fg_color="gray40")
+            self.adopt_schema_btn.configure(text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), state="disabled", fg_color="gray40")
         else:
-            self.adopt_schema_btn.configure(text="📥 Zu Realdaten übernehmen", state="normal", fg_color="dodgerblue")
+            self.adopt_schema_btn.configure(text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), state="normal", fg_color="dodgerblue")
 
     def on_adopt_schema(self):
         storage_service = getattr(self.master, "storage_service", None)
@@ -274,6 +277,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         self.refresh_fields_list()
 
     def refresh_fields_list(self):
+        from services.i18n_service import tr
         self.check_adopt_status()
         for widget in self.fields_scroll.winfo_children():
             widget.destroy()
@@ -294,13 +298,13 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             lbl.pack(side="left", padx=10, expand=True, fill="x")
 
             # Actions: Up, Down, Toggle Required, Delete
-            up_btn = ctk.CTkButton(f_frame, text="▲", width=30, command=lambda fid=f.field_id: self.on_move(fid, "up"))
+            up_btn = ctk.CTkButton(f_frame, text=tr("common.arrow_up", "▲"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "up"))
             up_btn.pack(side="left", padx=2)
 
-            down_btn = ctk.CTkButton(f_frame, text="▼", width=30, command=lambda fid=f.field_id: self.on_move(fid, "down"))
+            down_btn = ctk.CTkButton(f_frame, text=tr("common.arrow_down", "▼"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "down"))
             down_btn.pack(side="left", padx=2)
 
-            req_btn = ctk.CTkButton(f_frame, text="Pflicht +/-", width=80, command=lambda fid=f.field_id: self.on_toggle(fid))
+            req_btn = ctk.CTkButton(f_frame, text=tr("schema_builder.toggle_required", "Pflicht +/-"), width=80, command=lambda fid=f.field_id: self.on_toggle(fid))
             req_btn.pack(side="left", padx=2)
 
             del_btn = ctk.CTkButton(f_frame, text="✕", width=30, fg_color="red", hover_color="darkred", command=lambda fid=f.field_id: self.on_delete(fid))

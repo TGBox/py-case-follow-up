@@ -1,0 +1,192 @@
+{
+  "total_findings": 21,
+  "file_summary": {
+    "src/ui/app.py": 1,
+    "src/ui/app_dialogs.py": 0,
+    "src/ui/views/analytics_view.py": 2,
+    "src/ui/views/board_view.py": 1,
+    "src/ui/views/cockpit_layout_builders.py": 1,
+    "src/ui/views/cockpit_view.py": 2,
+    "src/ui/views/table_view.py": 3,
+    "src/ui/widgets/attachment_widget.py": 0,
+    "src/ui/widgets/case_list_widget.py": 2,
+    "src/ui/widgets/ctk_tooltip.py": 0,
+    "src/ui/widgets/date_picker.py": 7,
+    "src/ui/widgets/dynamic_form_field_renderers.py": 0,
+    "src/ui/widgets/dynamic_form_widget.py": 2,
+    "src/ui/widgets/searchable_combobox.py": 0,
+    "src/ui/widgets/timeline_widget.py": 0,
+    "src/ui/widgets/toast_notification.py": 0,
+    "src/ui/widgets/wiki_widget.py": 0
+  },
+  "findings": [
+    {
+      "file": "src/ui/app.py",
+      "line": 687,
+      "component": "asksaveasfilename",
+      "arg": "title",
+      "value": "Komplett-Datensicherung als ZIP speichern",
+      "type": "popup"
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 272,
+      "component": "ToastNotification",
+      "arg": "message",
+      "value": "Statistik-Bericht wurde in die Zwischenablage kopiert.",
+      "type": "toast_kwarg"
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 272,
+      "component": "ToastNotification",
+      "arg": "message",
+      "value": "Statistik-Bericht wurde in die Zwischenablage kopiert.",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 224,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▶",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 156,
+      "component": "CTkLabel",
+      "arg": "text",
+      "value": "🔔 Nachfragen am:",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 334,
+      "component": "ToastNotification",
+      "arg": "message",
+      "value": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
+      "type": "toast_kwarg"
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 334,
+      "component": "ToastNotification",
+      "arg": "message",
+      "value": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 157,
+      "component": "CTkTabview.add",
+      "arg": "name",
+      "value": "📝 Formular & Ausfüllen",
+      "type": "tab_name"
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 158,
+      "component": "CTkTabview.add",
+      "arg": "name",
+      "value": "🕒 Zeitleiste",
+      "type": "tab_name"
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 159,
+      "component": "CTkTabview.add",
+      "arg": "name",
+      "value": "📎 Anhänge",
+      "type": "tab_name"
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 184,
+      "component": "CTkLabel",
+      "arg": "text",
+      "value": "●",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 295,
+      "component": "CTkLabel",
+      "arg": "text",
+      "value": "🔔 Nachfragen am:",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 23,
+      "component": "title",
+      "arg": "title",
+      "value": "📅 Datum auswählen",
+      "type": "window_title"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 83,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "◀",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 94,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▶",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 141,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▲",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 159,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▼",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 186,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▲",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 204,
+      "component": "CTkButton",
+      "arg": "text",
+      "value": "▼",
+      "type": "widget_kwarg"
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 67,
+      "component": "title",
+      "arg": "title",
+      "value": "🧩 Programmbereiche auswählen",
+      "type": "window_title"
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 532,
+      "component": "askopenfilename",
+      "arg": "title",
+      "value": "Datenbank-Backup (.backup) importieren",
+      "type": "popup"
+    }
+  ]
+}

@@ -62,9 +62,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         super().__init__(parent)
         self.available_tags = available_tags
         self.selected_tags = set(selected_tags)
-        self.on_apply = on_apply
-
-        self.title("🧩 Programmbereiche auswählen")
+        from services.i18n_service import tr
+        self.title(tr("dynamic_form.select_tags_dialog_title", "🧩 Programmbereiche auswählen"))
         self.geometry("450x440")
         self.minsize(380, 320)
         from utils.ui_utils import center_window
@@ -398,8 +397,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.update_conditional_visibility()
 
     def refresh_ui_labels(self):
-        if hasattr(self, "schema") and self.schema:
-            self.load_schema(self.schema, self.get_form_data(), self.missing_fields, self.current_case)
+        self.load_schema(getattr(self, "schema", None), self.get_form_data(), getattr(self, "missing_fields", []), getattr(self, "current_case", None))
 
     def render_repeatable_cards(self):
         if not hasattr(self, "repeatable_container"):
@@ -409,7 +407,8 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             w.destroy()
         self.card_field_widgets = []
 
-        group_title = self.schema.repeatable_group_title if self.schema else "Datei / Korrektur-Anforderung"
+        from services.i18n_service import tr
+        group_title = self.schema.repeatable_group_title if self.schema else tr("dynamic_form.repeatable_default_group_title", "Datei / Korrektur-Anforderung")
 
         for idx, req_data in enumerate(self.current_file_requests):
             card_frame = ctk.CTkFrame(
@@ -434,7 +433,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             if len(self.current_file_requests) > 1:
                 ctk.CTkButton(
                     hdr,
-                    text=f"🗑 Anfrage #{idx + 1} entfernen",
+                    text=tr("dynamic_form.remove_card", "🗑 Anfrage #{idx} entfernen", idx=idx + 1),
                     height=24,
                     width=140,
                     fg_color="firebrick",
@@ -459,7 +458,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         ctk.CTkButton(
             btn_row,
-            text=f"➕ Weitere {group_title} anfordern",
+            text=tr("dynamic_form.add_card", "➕ Weitere {title} anfordern", title=group_title),
             fg_color="forestgreen",
             hover_color="darkgreen",
             height=32,
@@ -529,9 +528,13 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
     # --- DB BACKUP IMPORT & MINI ATTACHMENT SECTION ---
     def import_db_backup_file(self, case: Case, bool_var: ctk.BooleanVar):
+        from services.i18n_service import tr
         file_path = filedialog.askopenfilename(
-            title="Datenbank-Backup (.backup) importieren",
-            filetypes=[("Backup-Dateien (*.backup)", "*.backup"), ("Alle Dateien", "*.*")],
+            title=tr("dynamic_form.import_backup_dialog_title", "Datenbank-Backup (.backup) importieren"),
+            filetypes=[
+                (tr("dynamic_form.backup_filetypes", "Backup-Dateien (*.backup)"), "*.backup"),
+                (tr("common.all_files", "Alle Dateien"), "*.*"),
+            ],
         )
         if not file_path:
             return

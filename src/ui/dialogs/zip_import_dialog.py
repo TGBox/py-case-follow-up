@@ -50,19 +50,24 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         header_card = ctk.CTkFrame(main_frame, fg_color=("gray85", "gray20"), corner_radius=8)
         header_card.pack(fill="x", pady=(0, 15))
 
+        from services.i18n_service import tr
+
         title_lbl = ctk.CTkLabel(
             header_card,
-            text=f"📦 Backup-Datei: {self.zip_file_path.name}",
+            text=tr("zip_import.backup_file", "📦 Backup-Datei: {name}", name=self.zip_file_path.name),
             font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w",
         )
         title_lbl.pack(fill="x", padx=12, pady=(10, 2))
 
         mb_size = self.zip_info["total_bytes"] / (1024 * 1024)
-        info_str = (
-            f"Enthält: {self.zip_info['total_files']} Dateien  "
-            f"({self.zip_info['data_files']} Datendateien, {self.zip_info['attachment_files']} Anhänge)  "
-            f"•  Größe: {mb_size:.2f} MB"
+        info_str = tr(
+            "zip_import.info_summary",
+            "Enthält: {total} Dateien  ({data} Datendateien, {att} Anhänge)  •  Größe: {size:.2f} MB",
+            total=self.zip_info['total_files'],
+            data=self.zip_info['data_files'],
+            att=self.zip_info['attachment_files'],
+            size=mb_size,
         )
         sub_lbl = ctk.CTkLabel(
             header_card,
@@ -229,19 +234,22 @@ class ZipImportPathDialog(ctk.CTkToplevel):
             ).pack(side="left")
 
     def browse_root_dir(self):
-        chosen = filedialog.askdirectory(title="Gesamt-Zielverzeichnis wählen", parent=self)
+        from services.i18n_service import tr
+        chosen = filedialog.askdirectory(title=tr("zip_import.browse_root_title", "Gesamt-Zielverzeichnis wählen"), parent=self)
         if chosen:
             self.root_entry.delete(0, "end")
             self.root_entry.insert(0, chosen)
 
     def browse_data_dir(self):
-        chosen = filedialog.askdirectory(title="Zielverzeichnis für Datendateien (data/) wählen", parent=self)
+        from services.i18n_service import tr
+        chosen = filedialog.askdirectory(title=tr("zip_import.browse_data_title", "Zielverzeichnis für Datendateien (data/) wählen"), parent=self)
         if chosen:
             self.data_entry.delete(0, "end")
             self.data_entry.insert(0, chosen)
 
     def browse_att_dir(self):
-        chosen = filedialog.askdirectory(title="Zielverzeichnis für Fall-Anhänge (attachments/) wählen", parent=self)
+        from services.i18n_service import tr
+        chosen = filedialog.askdirectory(title=tr("zip_import.browse_att_title", "Zielverzeichnis für Fall-Anhänge (attachments/) wählen"), parent=self)
         if chosen:
             self.att_entry.delete(0, "end")
             self.att_entry.insert(0, chosen)

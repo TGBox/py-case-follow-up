@@ -1,0 +1,528 @@
+=== analytics ===
+  assignee_title:
+    DE: 👤 Auslastung nach Bearbeitern
+    EN: 👤 Assignee Workload
+    SV: 👤 Arbetsbelastning per handläggare
+  avg_res_time:
+    DE: ⏱ Ø Bearbeitungszeit
+    EN: ⏱ Avg. Handling Time
+    SV: ⏱ Genomsnittlig hanteringstid
+  completed_cases:
+    DE: ✓ Erledigt
+    EN: ✓ Completed
+    SV: ✓ Avslutade
+  copied_title:
+    DE: 📋 Statistik kopiert
+    EN: 📋 Statistics Copied
+    SV: 📋 Statistik kopierad
+  copy_report_btn:
+    DE: 📋 Statistik-Bericht kopieren
+    EN: 📋 Copy Statistics Report
+    SV: 📋 Kopiera statistikrapport
+  critical_red:
+    DE: 🔴 Rot (Kritisch)
+    EN: 🔴 Red (Critical)
+    SV: 🔴 Röd (Kritisk)
+  days_unit:
+    DE: Tage
+    EN: days
+    SV: dagar
+  department_title:
+    DE: 👥 Offene Fälle nach Abteilung / Zuständigkeit
+    EN: 👥 Open Cases by Department / Responsibility
+    SV: 👥 Öppna ärenden per avdelning / ansvar
+  header:
+    DE: Auswertungen & Support-Cockpit Kennzahlen
+    EN: Analytics & Support Cockpit KPIs
+    SV: Analys & Support-Cockpit Nyckeltal
+  hours_unit:
+    DE: Std
+    EN: hrs
+    SV: tim
+  medium_yellow:
+    DE: 🟡 Gelb (Mittel)
+    EN: 🟡 Yellow (Medium)
+    SV: 🟡 Gul (Medel)
+  no_data:
+    DE: Keine Auswertungsdaten verfügbar.
+    EN: No evaluation data available.
+    SV: Inga analysdata tillgängliga.
+  normal_green:
+    DE: 🟢 Grün (Normal)
+    EN: 🟢 Green (Normal)
+    SV: 🟢 Grön (Normal)
+  open_cases:
+    DE: ⏳ Offene Fälle
+    EN: ⏳ Open Cases
+    SV: ⏳ Öppna ärenden
+  overdue_cases:
+    DE: ⚠ Überfällig
+    EN: ⚠ Overdue
+    SV: ⚠ Förfallna
+  report_copied_msg:
+    DE: Statistik-Bericht wurde in die Zwischenablage kopiert.
+    EN: Statistics report copied to clipboard.
+    SV: Statistikrapporten kopierades till urklipp.
+  report_generated_at:
+    DE: Generiert am: {timestamp}
+    EN: Generated at: {timestamp}
+    SV: Genererad: {timestamp}
+  report_title:
+    DE: 📊 Support-Cockpit KPI- & Statistikbericht
+    EN: 📊 Support-Cockpit KPI & Statistics Report
+    SV: 📊 Support-Cockpit KPI- & statistikrapport
+  schema_title:
+    DE: 📄 Verteilung nach Formular / Schema
+    EN: 📄 Distribution by Form / Schema
+    SV: 📄 Fördelning per formulär / schema
+  top_practices_title:
+    DE: 🏆 Top 5 Praxen nach Fallaufkommen
+    EN: 🏆 Top 5 Practices by Case Volume
+    SV: 🏆 Topp 5 mottagningar efter ärendevolym
+  total_cases:
+    DE: 📋 Fälle Gesamt
+    EN: 📋 Total Cases
+    SV: 📋 Totalt antal ärenden
+  urgency_title:
+    DE: 🚨 Dringlichkeits-Aufschlüsselung (Scoring)
+    EN: 🚨 Urgency Breakdown (Scoring)
+    SV: 🚨 Brådskandefördelning (Poäng)
+  vip_rate:
+    DE: ⭐ VIP-Quote
+    EN: ⭐ VIP Rate
+    SV: ⭐ VIP-andel
+=== attachments ===
+  add_file:
+    DE: + Datei hinzufügen...
+    EN: + Add file...
+    SV: + Lägg till fil...
+  no_case:
+    DE: Kein Fall ausgewählt.
+    EN: No case selected.
+    SV: Inget ärende valt.
+  no_files:
+    DE: Keine Dateianhänge im Fallordner.
+    EN: No file attachments in case folder.
+    SV: Inga bifogade filer i ärendemappen.
+  no_preview:
+    DE: Keine Datei zur Vorschau ausgewählt
+    EN: No file selected for preview
+    SV: Ingen fil vald för förhandsgranskning
+  open_explorer:
+    DE: 📁 Explorer öffnen
+    EN: 📁 Open in Explorer
+    SV: 📁 Öppna i Utforskaren
+  tip:
+    DE: 💡 Tipp: Strg+V fügt Screenshot als PNG ein
+    EN: 💡 Tip: Ctrl+V pastes screenshot as PNG
+    SV: 💡 Tips: Ctrl+V klistrar in skärmbild som PNG
+  title:
+    DE: Fall-Dateianhänge
+    EN: Case File Attachments
+    SV: Bifogade ärendefiler
+=== board ===
+  cockpit_btn:
+    DE: 🎯 Cockpit
+    EN: 🎯 Cockpit
+    SV: 🎯 Cockpit
+  col_completed:
+    DE: ✓ Erledigte Fälle
+    EN: ✓ Completed Cases
+    SV: ✓ Avslutade ärenden
+  col_dev:
+    DE: 💻 Entwickler ({count})
+    EN: 💻 Developer ({count})
+    SV: 💻 Utvecklare ({count})
+  col_done:
+    DE: ✓ Erledigt ({count})
+    EN: ✓ Completed ({count})
+    SV: ✓ Klart ({count})
+  col_followup:
+    DE: 🔔 Wiedervorlage ({count})
+    EN: 🔔 Follow-up ({count})
+    SV: 🔔 Uppföljning ({count})
+  col_support:
+    DE: 📥 Support ({count})
+    EN: 📥 Support ({count})
+    SV: 📥 Support ({count})
+  collapse_btn:
+    DE: ◀ Zuklappen
+    EN: ◀ Collapse
+    SV: ◀ Fäll ihop
+  handover:
+    DE: 👤 Übergeben
+    EN: 👤 Hand Over
+    SV: 👤 Överlämna
+  remind:
+    DE: 🔔 Erinnere
+    EN: 🔔 Remind
+    SV: 🔔 Påminn
+  reopen:
+    DE: ✓ Öffnen
+    EN: ✓ Reopen
+    SV: ✓ Öppna
+=== case_list ===
+  completed_badge:
+    DE: ✓ ERLEDIGT
+    EN: ✓ COMPLETED
+    SV: ✓ KLAR
+  followup_at:
+    DE: 🔔 Nachfragen am:
+    EN: 🔔 Follow up on:
+    SV: 🔔 Följ upp den:
+  no_cases:
+    DE: Keine Fälle gefunden.
+    EN: No cases found.
+    SV: Inga ärenden hittades.
+  zero_cases:
+    DE: 0 Fälle
+    EN: 0 Cases
+    SV: 0 ärenden
+=== cockpit ===
+  add_new_note:
+    DE: Neue Notiz hinzufügen:
+    EN: Add new note:
+    SV: Lägg till ny anteckning:
+  add_note_btn:
+    DE: + Notiz Hinzufügen
+    EN: + Add Note
+    SV: + Lägg till anteckning
+  archive:
+    DE: 📦 Archivieren
+    EN: 📦 Archive
+    SV: 📦 Arkivera
+  calendar:
+    DE: 📅 Kalender
+    EN: 📅 Calendar
+    SV: 📅 Kalender
+  complete:
+    DE: ✓ Erledigt
+    EN: ✓ Done
+    SV: ✓ Klar
+  convert_form:
+    DE: 🔄 Formular umwandeln
+    EN: 🔄 Convert Form
+    SV: 🔄 Konvertera formulär
+  copy_email:
+    DE: 📧 Praxis E-Mail kopieren
+    EN: 📧 Copy Practice Email
+    SV: 📧 Kopiera mottagnings-e-post
+  email_ai:
+    DE: ✉ E-Mail & 🤖 KI
+    EN: ✉ Email & 🤖 AI
+    SV: ✉ E-post & 🤖 AI
+  email_copied_title:
+    DE: 📋 E-Mail kopiert
+    EN: 📋 Email Copied
+    SV: 📋 E-post kopierad
+  export_case:
+    DE: 📤 Fall exportieren
+    EN: 📤 Export Case
+    SV: 📤 Exportera ärende
+  filter_all:
+    DE: Alle
+    EN: All
+    SV: Alla
+  filter_deep:
+    DE: 🔍 Tiefensuche
+    EN: 🔍 Deep Search
+    SV: 🔍 Djupsökning
+  filter_followup:
+    DE: 🔔 Wiedervorlage
+    EN: 🔔 Follow-up
+    SV: 🔔 Uppföljning
+  filter_urgent:
+    DE: 🔥 Dringend
+    EN: 🔥 Urgent
+    SV: 🔥 Brådskande
+  followup:
+    DE: 🔔 Wiedervorlage
+    EN: 🔔 Follow-up
+    SV: 🔔 Uppföljning
+  followup_at:
+    DE: 🔔 Nachfragen am:
+    EN: 🔔 Follow up on:
+    SV: 🔔 Följ upp den:
+  more_actions:
+    DE: ⚙ Weitere Aktionen...
+    EN: ⚙ More Actions...
+    SV: ⚙ Fler åtgärder...
+  no_email_msg:
+    DE: Für diese Praxis ist keine E-Mail-Adresse hinterlegt.
+    EN: No email address is registered for this practice.
+    SV: Ingen e-postadress är registrerad för denna mottagning.
+  no_email_title:
+    DE: ⚠ Keine E-Mail-Adresse
+    EN: ⚠ No Email Address
+    SV: ⚠ Ingen e-postadress
+  note:
+    DE: 📝 Notiz
+    EN: 📝 Note
+    SV: 📝 Anteckning
+  print_case:
+    DE: 🖨 Fall-Akte drucken
+    EN: 🖨 Print Case
+    SV: 🖨 Skriv ut ärendeakt
+  save:
+    DE: 💾 Speichern
+    EN: 💾 Save
+    SV: 💾 Spara
+  search_placeholder:
+    DE: 🔍 Suche / Token (z. B. vip:true status:open)...
+    EN: 🔍 Search / Token (e.g. vip:true status:open)...
+    SV: 🔍 Sök / Token (t.ex. vip:true status:open)...
+  select_case_prompt:
+    DE: Bitte einen Fall auswählen
+    EN: Please select a case
+    SV: Vänligen välj ett ärende
+  snippets_btn:
+    DE: 📝 Textbaustein
+    EN: 📝 Text Snippet
+    SV: 📝 Textbyggblock
+  tab_attachments:
+    DE: Anhänge
+    EN: Attachments
+    SV: Bilagor
+  tab_timeline:
+    DE: Zeitleiste
+    EN: Timeline
+    SV: Tidslinje
+  tab_wiki:
+    DE: Wiki / Wissensdatenbank
+    EN: Wiki / Knowledge Base
+    SV: Wiki / Kunskapsbas
+  timeline_title:
+    DE: Verlauf & Timeline Notizen
+    EN: History & Timeline Notes
+    SV: Historik & tidslinjeanteckningar
+=== common ===
+  browse:
+    DE: Durchsuchen...
+    EN: Browse...
+    SV: Bläddra...
+  cancel:
+    DE: Abbrechen
+    EN: Cancel
+    SV: Avbryt
+  close:
+    DE: Schließen
+    EN: Close
+    SV: Stäng
+  delete:
+    DE: 🗑 Löschen
+    EN: 🗑 Delete
+    SV: 🗑 Ta bort
+  edit:
+    DE: ✏ Bearbeiten
+    EN: ✏ Edit
+    SV: ✏ Redigera
+  error:
+    DE: Fehler
+    EN: Error
+    SV: Fel
+  info:
+    DE: Information
+    EN: Information
+    SV: Information
+  ok:
+    DE: OK
+    EN: OK
+    SV: OK
+  open:
+    DE: 📂 Öffnen
+    EN: 📂 Open
+    SV: 📂 Öppna
+  refresh:
+    DE: 🔄 Aktualisieren
+    EN: 🔄 Refresh
+    SV: 🔄 Uppdatera
+  save:
+    DE: Speichern
+    EN: Save
+    SV: Spara
+  search:
+    DE: Suchen...
+    EN: Search...
+    SV: Sök...
+=== date_picker ===
+  dialog_title:
+    DE: 📅 Datum auswählen
+    EN: 📅 Select Date
+    SV: 📅 Välj datum
+  o_clock:
+    DE: Uhr
+    EN: o'clock
+    SV: kl.
+  preset_plus_1day:
+    DE: + 1 Tag
+    EN: + 1 Day
+    SV: + 1 dag
+  preset_plus_1hour:
+    DE: + 1 Std.
+    EN: + 1 hr
+    SV: + 1 tim
+  preset_plus_1week:
+    DE: + 1 Woche
+    EN: + 1 Week
+    SV: + 1 vecka
+  preset_plus_2days:
+    DE: + 2 Tage
+    EN: + 2 Days
+    SV: + 2 dagar
+  preset_plus_2hours:
+    DE: + 2 Std.
+    EN: + 2 hrs
+    SV: + 2 tim
+  preset_plus_3days:
+    DE: + 3 Tage
+    EN: + 3 Days
+    SV: + 3 dagar
+  preset_today_1130:
+    DE: Heute 11:30
+    EN: Today 11:30
+    SV: Idag 11:30
+  preset_today_1330:
+    DE: Heute 13:30
+    EN: Today 13:30
+    SV: Idag 13:30
+  preset_today_1630:
+    DE: Heute 16:30
+    EN: Today 16:30
+    SV: Idag 16:30
+  preset_tomorrow_0800:
+    DE: Morgen 08:00
+    EN: Tomorrow 08:00
+    SV: Imorgon 08:00
+  time_lbl:
+    DE: ⏰ Uhrzeit:
+    EN: ⏰ Time:
+    SV: ⏰ Tid:
+=== dynamic_form ===
+  apply_close:
+    DE: ✓ Übernehmen & Schließen
+    EN: ✓ Apply & Close
+    SV: ✓ Tillämpa & stäng
+  choose_file:
+    DE: 📁 Datei wählen...
+    EN: 📁 Choose file...
+    SV: 📁 Välj fil...
+  files_attached:
+    DE: Abgelegte Dateien im Fallordner
+    EN: Attached files in case folder
+    SV: Bifogade filer i ärendemappen
+  import_backup:
+    DE: 📁 .backup-Datei importieren...
+    EN: 📁 Import .backup file...
+    SV: 📁 Importera .backup-fil...
+  import_backup_dialog_title:
+    DE: Datenbank-Backup (.backup) importieren
+    EN: Import Database Backup (.backup)
+    SV: Importera databassäkerhetskopia (.backup)
+  import_files:
+    DE: + Datei(en) importieren...
+    EN: + Import file(s)...
+    SV: + Importera fil(er)...
+  import_title:
+    DE: Dateien in Fallordner importieren
+    EN: Import files into case folder
+    SV: Importera filer till ärendemapp
+  manage_tags:
+    DE: ⚙ Programmbereiche verwalten
+    EN: ⚙ Manage program modules
+    SV: ⚙ Hantera programmoduler
+  no_files:
+    DE: 📎 Abgelegte Dateien im Fallordner: Keine (0)
+    EN: 📎 Attached files in case folder: None (0)
+    SV: 📎 Bifogade filer i ärendemappen: Inga (0)
+  no_tags:
+    DE: Kein Programmbereich gefunden.
+    EN: No program module found.
+    SV: Ingen programmodul hittades.
+  number_placeholder:
+    DE: Zahl...
+    EN: Number...
+    SV: Nummer...
+  search_tags:
+    DE: 🔍 Programmbereich suchen...
+    EN: 🔍 Search program module...
+    SV: 🔍 Sök programmodul...
+  select_all:
+    DE: Alle auswählen
+    EN: Select all
+    SV: Välj alla
+  select_none:
+    DE: Keine auswählen
+    EN: Select none
+    SV: Välj ingen
+  select_tags:
+    DE: 🧩 Programmbereiche auswählen:
+    EN: 🧩 Select program modules:
+    SV: 🧩 Välj programmoduler:
+  select_tags_dialog_title:
+    DE: 🧩 Programmbereiche auswählen
+    EN: 🧩 Select Program Modules
+    SV: 🧩 Välj programmoduler
+=== table ===
+  details_header:
+    DE: 📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)
+    EN: 📋 Case Details & Form (Select a case from table)
+    SV: 📋 Ärendedetaljer & formulär (Välj ett ärende från tabellen)
+  details_title:
+    DE: 📋 Falldetails: {case_id} - {title}
+    EN: 📋 Case Details: {case_id} - {title}
+    SV: 📋 Ärendedetaljer: {case_id} - {title}
+  save_btn:
+    DE: 💾 Ändern & Speichern
+    EN: 💾 Modify & Save
+    SV: 💾 Ändra & spara
+  tab_attachments:
+    DE: 📎 Anhänge
+    EN: 📎 Attachments
+    SV: 📎 Bilagor
+  tab_form:
+    DE: 📝 Formular & Ausfüllen
+    EN: 📝 Form & Fill-in
+    SV: 📝 Formulär & ifyllning
+  tab_timeline:
+    DE: 🕒 Zeitleiste
+    EN: 🕒 Timeline
+    SV: 🕒 Tidslinje
+=== timeline ===
+  no_notes:
+    DE: Keine Notizen vorhanden.
+    EN: No notes available.
+    SV: Inga anteckningar tillgängliga.
+=== toast ===
+  reminder_title:
+    DE: Erinnerung
+    EN: Reminder
+    SV: Påminnelse
+=== wiki ===
+  articles_found:
+    DE: Wiki-Artikel gefunden
+    EN: Wiki articles found
+    SV: Wiki-artiklar hittades
+  enter_query:
+    DE: Bitte Suchbegriff eingeben.
+    EN: Please enter a search query.
+    SV: Ange ett sökord.
+  header:
+    DE: BookStack Offline Wiki
+    EN: BookStack Offline Wiki
+    SV: BookStack Offline-wiki
+  no_results:
+    DE: Keine treffenden Artikel im Offline-Index.
+    EN: No matching articles in offline index.
+    SV: Inga matchande artiklar i offline-indexet.
+  search_placeholder:
+    DE: 📖 Wiki durchsuchen (z. B. ERR_DB_902)...
+    EN: 📖 Search wiki (e.g. ERR_DB_902)...
+    SV: 📖 Sök i wiki (t.ex. ERR_DB_902)...
+  sync_btn:
+    DE: 🔄 Wiki Sync
+    EN: 🔄 Wiki Sync
+    SV: 🔄 Wiki-synk
+  syncing:
+    DE: ⏳ Synchronisiere Wiki im Hintergrund...
+    EN: ⏳ Syncing wiki in background...
+    SV: ⏳ Synkroniserar wiki i bakgrunden...

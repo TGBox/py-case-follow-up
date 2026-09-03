@@ -250,34 +250,35 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.user_name_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
-        self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z. B. Support, Entwicklung, Technik")
+        self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"))
         self.user_dept_entry.insert(0, self.profile.user.department)
         self.user_dept_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
-        self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z.B. 4012")
+        self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"))
         self.user_ext_entry.insert(0, self.profile.user.extension)
         self.user_ext_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
-        self.user_email_entry = ctk.CTkEntry(self.tab_user, placeholder_text="beispiel@support.de")
+        self.user_email_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"))
         self.user_email_entry.insert(0, self.profile.user.email)
         self.user_email_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
-        self.user_mobile_entry = ctk.CTkEntry(self.tab_user, placeholder_text="0170 / 1234567")
+        self.user_mobile_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"))
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
         self.user_mobile_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_user, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")).pack(anchor="w", pady=(5, 2))
-        self.user_sig_entry = ctk.CTkEntry(self.tab_user, placeholder_text="z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)")
+        self.user_sig_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.signature_placeholder", "z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)"))
         self.user_sig_entry.insert(0, self.profile.user.email_signature)
         self.user_sig_entry.pack(fill="x", pady=(0, 10))
 
     def open_create_profile_dialog(self):
+        from services.i18n_service import tr
         dialog = ctk.CTkInputDialog(
-            text="Geben Sie den Namen des neuen Mitarbeiters ein:",
-            title="Neues Mitarbeiter-Profil anlegen",
+            text=tr("profile.input_new_user_text", "Geben Sie den Namen des neuen Mitarbeiters ein:"),
+            title=tr("profile.input_new_user_title", "Neues Mitarbeiter-Profil anlegen"),
         )
         name_input = dialog.get_input()
         if name_input and name_input.strip():
@@ -493,7 +494,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ws_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
         ws_frame.pack(fill="x", pady=(0, 10))
 
-        self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text="Pfad zum Datenordner...")
+        self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner..."))
         self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
         self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
@@ -539,14 +540,16 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
     def on_browse_workspace(self):
         from tkinter import filedialog
-        chosen = filedialog.askdirectory(title="Datenordner auswählen", initialdir=self.ws_entry.get().strip() or None)
+        from services.i18n_service import tr
+        chosen = filedialog.askdirectory(title=tr("profile.browse_folder_title", "Datenordner auswählen"), initialdir=self.ws_entry.get().strip() or None)
         if chosen:
             self.ws_entry.delete(0, "end")
             self.ws_entry.insert(0, chosen)
 
     def on_browse_file(self, entry_widget: ctk.CTkEntry, file_pattern: str):
         from tkinter import filedialog
-        chosen = filedialog.askopenfilename(title="Datei auswählen", filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
+        from services.i18n_service import tr
+        chosen = filedialog.askopenfilename(title=tr("profile.browse_file_title", "Datei auswählen"), filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
         if chosen:
             entry_widget.delete(0, "end")
             entry_widget.insert(0, chosen)
@@ -562,17 +565,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_title", "BookStack Server Konfiguration"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
 
         ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_url", "BookStack API URL:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_url_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text="https://wiki.meinepraxis.de/api")
+        self.wiki_url_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api"))
         self.wiki_url_entry.insert(0, self.profile.wiki_settings.api_url)
         self.wiki_url_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_id", "API Token ID:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_token_id_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text="Token ID")
+        self.wiki_token_id_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_id_placeholder", "Token ID"))
         self.wiki_token_id_entry.insert(0, self.profile.wiki_settings.token_id)
         self.wiki_token_id_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_secret", "API Token Secret:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_token_secret_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text="Token Secret", show="*")
+        self.wiki_token_secret_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_secret_placeholder", "Token Secret"), show="*")
         self.wiki_token_secret_entry.insert(0, self.profile.wiki_settings.token_secret)
         self.wiki_token_secret_entry.pack(fill="x", pady=(0, 10))
 
@@ -653,11 +656,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.conflict_warn_lbl.pack(fill="x", pady=(5, 5))
 
         # --- Prioritäts-Scoring Section ---
-        ctk.CTkLabel(scroll, text="Prioritäts-Scoring Punkte", font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+        from services.i18n_service import tr
+        ctk.CTkLabel(scroll, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
 
         row4 = ctk.CTkFrame(scroll, fg_color="transparent")
         row4.pack(fill="x", pady=3)
-        ctk.CTkLabel(row4, text="VIP-Bonus (Punkte):").pack(side="left")
+        ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")).pack(side="left")
         self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
         self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
         self.vip_bonus_entry.pack(side="right")
@@ -692,9 +696,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
     def save_settings(self):
         from pathlib import Path
+        from services.i18n_service import tr
         name = self.user_name_entry.get().strip()
         if not name:
-            self.status_lbl.configure(text="⚠ Benutzername darf nicht leer sein!", text_color="red")
+            self.status_lbl.configure(text=tr("profile.username_empty", "⚠ Benutzername darf nicht leer sein!"), text_color="red")
             return
 
         # Update User
@@ -777,7 +782,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             pass
 
         self.storage_service.save_profile(self.profile)
-        self.status_lbl.configure(text="✅ Einstellungen & Pfade gespeichert!", text_color="green")
+        self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color="green")
 
         if self.on_profile_updated:
             self.on_profile_updated()
@@ -869,9 +874,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         from tkinter import filedialog
         from pathlib import Path
         from services.zip_backup_service import ZipBackupService
+        from services.i18n_service import tr
 
         dest_file = filedialog.asksaveasfilename(
-            title="Datensicherung als ZIP speichern",
+            title=tr("profile.save_zip_title", "Datensicherung als ZIP speichern"),
             defaultextension=".zip",
             filetypes=[("ZIP-Archiv", "*.zip")],
             initialfile="SupportCockpit_Backup.zip",
@@ -891,10 +897,11 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         from tkinter import filedialog
         from pathlib import Path
         from services.zip_backup_service import ZipBackupService
+        from services.i18n_service import tr
         from ui.dialogs.zip_import_dialog import ZipImportPathDialog
 
         zip_file = filedialog.askopenfilename(
-            title="Datensicherung (ZIP-Datei) auswählen",
+            title=tr("profile.select_zip_title", "Datensicherung (ZIP-Datei) auswählen"),
             filetypes=[("ZIP-Archiv", "*.zip")],
             parent=self,
         )

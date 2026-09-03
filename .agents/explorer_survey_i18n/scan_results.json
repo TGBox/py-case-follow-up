@@ -1,0 +1,1492 @@
+{
+  "total_files_with_hardcoded": 29,
+  "total_occurrences": 238,
+  "files": {
+    "src/services/seed_case_data.py": [
+      {
+        "line": 214,
+        "type": "title",
+        "call": "Classification",
+        "text": "Alte Abrechnung Q1 gelöst"
+      },
+      {
+        "line": 243,
+        "type": "title",
+        "call": "Classification",
+        "text": "Uralter Fall aus dem Vormonat"
+      },
+      {
+        "line": 272,
+        "type": "title",
+        "call": "Classification",
+        "text": "Frische Nachforderung ohne DB-Dump"
+      },
+      {
+        "line": 303,
+        "type": "title",
+        "call": "Classification",
+        "text": "Kundenwunsch: Schnell-Button für eRezept-Export"
+      },
+      {
+        "line": 342,
+        "type": "title",
+        "call": "Classification",
+        "text": "Kartenleser-Treiber nach Windows-Update getrennt"
+      },
+      {
+        "line": 377,
+        "type": "title",
+        "call": "Classification",
+        "text": "Alte Nachforderung aus Vorquartal (Archiviert)"
+      },
+      {
+        "line": 405,
+        "type": "title",
+        "call": "Classification",
+        "text": "Absturz bei PVS-GKV Abrechnungsexport"
+      }
+    ],
+    "src/services/snippet_service.py": [
+      {
+        "line": 7,
+        "type": "title",
+        "call": "Snippet",
+        "text": "📸 Rückfrage: Screenshots & Uhrzeit anfordern"
+      },
+      {
+        "line": 15,
+        "type": "title",
+        "call": "Snippet",
+        "text": "🛠 Ersthilfe: PVS & Support-Dienst neustarten"
+      },
+      {
+        "line": 22,
+        "type": "title",
+        "call": "Snippet",
+        "text": "🔍 DB-Check: SQL Fehler-Log Abfrage"
+      },
+      {
+        "line": 29,
+        "type": "title",
+        "call": "Snippet",
+        "text": "✅ Fallabschluss & Dankeschön"
+      },
+      {
+        "line": 37,
+        "type": "title",
+        "call": "Snippet",
+        "text": "🩺 Telematikinfrastruktur: Konnektor & SMC-B Prüfung"
+      },
+      {
+        "line": 44,
+        "type": "title",
+        "call": "Snippet",
+        "text": "📑 Abrechnung: Zuzahlungs- & ESOL-Korrektur weitergeleitet"
+      },
+      {
+        "line": 51,
+        "type": "title",
+        "call": "Snippet",
+        "text": "💾 Backup-Anforderung für Fehleranalyse"
+      },
+      {
+        "line": 58,
+        "type": "title",
+        "call": "Snippet",
+        "text": "🔄 Quartalsupdate Hinweis & Vorbereitung"
+      }
+    ],
+    "src/ui/app.py": [
+      {
+        "line": 318,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🔔 0"
+      },
+      {
+        "line": 687,
+        "type": "title",
+        "call": "asksaveasfilename",
+        "text": "Komplett-Datensicherung als ZIP speichern"
+      },
+      {
+        "line": 731,
+        "type": "text",
+        "call": "configure",
+        "text": "🔔 0"
+      }
+    ],
+    "src/ui/dialogs/ai_assistant_dialog.py": [
+      {
+        "line": 125,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Prüfe Status..."
+      },
+      {
+        "line": 190,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🤖 KI verarbeitet Anfrage..."
+      },
+      {
+        "line": 350,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🔄 Zusammenfassung neu generieren"
+      },
+      {
+        "line": 448,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🔄 Lösungssuche erneut ausführen"
+      },
+      {
+        "line": 508,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🔄 Antwort-Entwurf generieren"
+      },
+      {
+        "line": 343,
+        "type": "text",
+        "call": "configure",
+        "text": "⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert."
+      },
+      {
+        "line": 421,
+        "type": "text",
+        "call": "configure",
+        "text": "✓ Zusammenfassung in Zwischenablage kopiert."
+      },
+      {
+        "line": 435,
+        "type": "text",
+        "call": "configure",
+        "text": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert."
+      },
+      {
+        "line": 173,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "Schließen"
+      },
+      {
+        "line": 200,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Bitte einen Moment gedulden — Modell generiert Antwort"
+      },
+      {
+        "line": 361,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "📋 In Zwischenablage kopieren"
+      },
+      {
+        "line": 371,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "📌 In Fall-Zeitleiste einfügen"
+      },
+      {
+        "line": 442,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:"
+      },
+      {
+        "line": 520,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "✉ In E-Mail-Entwurf öffnen"
+      }
+    ],
+    "src/ui/dialogs/calendar_export_dialog.py": [
+      {
+        "line": 138,
+        "type": "title",
+        "call": "asksaveasfilename",
+        "text": "iCalendar-Datei speichern"
+      },
+      {
+        "line": 75,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Kalender-Beschreibung / Notiz:"
+      }
+    ],
+    "src/ui/dialogs/case_print_dialog.py": [
+      {
+        "line": 275,
+        "type": "title",
+        "call": "asksaveasfilename",
+        "text": "Fallbericht speichern"
+      },
+      {
+        "line": 48,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:"
+      },
+      {
+        "line": 54,
+        "type": "text",
+        "call": "CTkCheckBox",
+        "text": "Praxis & Kundendaten"
+      },
+      {
+        "line": 55,
+        "type": "text",
+        "call": "CTkCheckBox",
+        "text": "Formularfelder"
+      },
+      {
+        "line": 56,
+        "type": "text",
+        "call": "CTkCheckBox",
+        "text": "Bilder & Anhänge am Ende"
+      },
+      {
+        "line": 58,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"
+      },
+      {
+        "line": 98,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🌐 HTML-Bericht"
+      },
+      {
+        "line": 107,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "💾 Speichern..."
+      },
+      {
+        "line": 64,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Keine Notizen in der Zeitleiste."
+      }
+    ],
+    "src/ui/dialogs/cobra_import_dialog.py": [
+      {
+        "line": 58,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Datei auswählen (*.csv, *.txt, *.json)..."
+      },
+      {
+        "line": 78,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Bestehende Praxen aktualisieren (Update)"
+      },
+      {
+        "line": 78,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Bestehende überspringen (Skip)"
+      },
+      {
+        "line": 78,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Alle als neu anlegen"
+      },
+      {
+        "line": 86,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Bitte wählen Sie eine Export-Datei aus."
+      },
+      {
+        "line": 111,
+        "type": "title",
+        "call": "askopenfilename",
+        "text": "Cobra CRM Export-Datei auswählen"
+      },
+      {
+        "line": 46,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🐍 Cobra CRM Praxen-Import Assistent"
+      },
+      {
+        "line": 47,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."
+      },
+      {
+        "line": 53,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "1. Cobra Export-Datei auswählen:"
+      },
+      {
+        "line": 61,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "📁 Durchsuchen..."
+      },
+      {
+        "line": 70,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "2. Cobra Spaltenzuordnung (Feld-Mapper):"
+      },
+      {
+        "line": 76,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "3. Konfliktbehandlung für bestehende Praxen:"
+      },
+      {
+        "line": 125,
+        "type": "text",
+        "call": "configure",
+        "text": "⚠ Keine Datensätze in der Datei gefunden."
+      }
+    ],
+    "src/ui/dialogs/colleague_management_dialog.py": [
+      {
+        "line": 100,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. mmueller"
+      },
+      {
+        "line": 104,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Max Müller"
+      },
+      {
+        "line": 113,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. 4012"
+      },
+      {
+        "line": 117,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. m.mueller@praxis.de"
+      },
+      {
+        "line": 121,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. 0170 1234567"
+      },
+      {
+        "line": 125,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Zuständig für PVS-Schnittstellen..."
+      },
+      {
+        "line": 130,
+        "type": "text",
+        "call": "CTkCheckBox",
+        "text": "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)"
+      },
+      {
+        "line": 135,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)..."
+      },
+      {
+        "line": 233,
+        "type": "text",
+        "call": "configure",
+        "text": "➕ Neuen Mitarbeiter anlegen"
+      },
+      {
+        "line": 184,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Keine Einträge gefunden."
+      }
+    ],
+    "src/ui/dialogs/customer_form_builders.py": [
+      {
+        "line": 70,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Name (A-Z)"
+      },
+      {
+        "line": 70,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Praxisnummer / ID"
+      },
+      {
+        "line": 70,
+        "type": "values_item",
+        "call": "CTkOptionMenu",
+        "text": "Zeit seit letztem Kontakt"
+      },
+      {
+        "line": 80,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "↑ Aufst."
+      },
+      {
+        "line": 128,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "CUST-..."
+      },
+      {
+        "line": 138,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Hausarztpraxis Dr. Med. Weber"
+      },
+      {
+        "line": 144,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Ehem. Praxis Dr. Alt"
+      },
+      {
+        "line": 154,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Frau / Herr / Dr."
+      },
+      {
+        "line": 160,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Vorname..."
+      },
+      {
+        "line": 166,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Nachname..."
+      },
+      {
+        "line": 176,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Hauptstr. 10"
+      },
+      {
+        "line": 182,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "12345"
+      },
+      {
+        "line": 188,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Ort..."
+      },
+      {
+        "line": 203,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "0711-..."
+      },
+      {
+        "line": 209,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Durchwahl..."
+      },
+      {
+        "line": 215,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Privat..."
+      },
+      {
+        "line": 224,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Zweitnr...."
+      },
+      {
+        "line": 230,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Drittnr...."
+      },
+      {
+        "line": 236,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "0171-..."
+      },
+      {
+        "line": 242,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Mobil privat..."
+      },
+      {
+        "line": 252,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "zweit-email@praxis.de"
+      },
+      {
+        "line": 258,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "dritt-email@praxis.de"
+      },
+      {
+        "line": 274,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "https://praxis-beispiel.de"
+      },
+      {
+        "line": 277,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🔗 Öffnen"
+      },
+      {
+        "line": 291,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "104"
+      },
+      {
+        "line": 305,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "DSC..."
+      },
+      {
+        "line": 311,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "DSCNEU..."
+      },
+      {
+        "line": 326,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Erreichbarkeit, Wünsche..."
+      },
+      {
+        "line": 331,
+        "type": "text",
+        "call": "CTkCheckBox",
+        "text": "⭐ VIP-Kunde (erhöht den Dringlichkeits-Score um +30)"
+      },
+      {
+        "line": 357,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "+ Kontakt hinzufügen"
+      },
+      {
+        "line": 143,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Praxisname (Alt):"
+      },
+      {
+        "line": 153,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Anrede:"
+      },
+      {
+        "line": 159,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Vorname:"
+      },
+      {
+        "line": 165,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Nachname:"
+      },
+      {
+        "line": 175,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🏠 Straße & Hausnr.:"
+      },
+      {
+        "line": 181,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "PLZ:"
+      },
+      {
+        "line": 187,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Ort:"
+      },
+      {
+        "line": 195,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "📞 Telefonnummern (Cobra Export)"
+      },
+      {
+        "line": 202,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon Hauptnr.:"
+      },
+      {
+        "line": 208,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon direkt:"
+      },
+      {
+        "line": 214,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon privat:"
+      },
+      {
+        "line": 223,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon 2:"
+      },
+      {
+        "line": 229,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon 3:"
+      },
+      {
+        "line": 235,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Mobil:"
+      },
+      {
+        "line": 241,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Mobil privat:"
+      },
+      {
+        "line": 251,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "✉ E-Mail 2:"
+      },
+      {
+        "line": 257,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "✉ E-Mail 3:"
+      },
+      {
+        "line": 269,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🌐 Webseite:"
+      },
+      {
+        "line": 290,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🖥 VM-Nr.:"
+      },
+      {
+        "line": 297,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🔢 Instanz-Nr.:"
+      },
+      {
+        "line": 304,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🏷 DSC:"
+      },
+      {
+        "line": 310,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🏷 DSCNEU:"
+      },
+      {
+        "line": 318,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "👥 Weitere Ansprechpartner (1 Name pro Zeile):"
+      },
+      {
+        "line": 325,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "📝 Allgemeine Notizen:"
+      },
+      {
+        "line": 337,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "⚡ Praxisspezifische KI-Regeln (haben VORRANG vor Basis-Regeln):"
+      },
+      {
+        "line": 342,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "1 Regel pro Zeile (z. B. 'Duzen erwünscht (Herr Schmidt)', 'Betreff mit [SCHMIDT] beginnen')"
+      },
+      {
+        "line": 356,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "👥 Ansprechpartner & Kontakte"
+      }
+    ],
+    "src/ui/dialogs/customer_management_dialog.py": [
+      {
+        "line": 79,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🗑 Entfernen"
+      },
+      {
+        "line": 97,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Dr. Hans Weber"
+      },
+      {
+        "line": 105,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Praxisinhaber, Abrechnung..."
+      },
+      {
+        "line": 117,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "weber@praxis.de"
+      },
+      {
+        "line": 125,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "030 / 1234567"
+      },
+      {
+        "line": 134,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Erreichbar Mo-Do Vormittag"
+      },
+      {
+        "line": 46,
+        "type": "text",
+        "call": "configure",
+        "text": "⚠ Keine Webseite eingetragen!"
+      },
+      {
+        "line": 96,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Name *:"
+      },
+      {
+        "line": 104,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Rolle / Funktion:"
+      },
+      {
+        "line": 116,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "E-Mail:"
+      },
+      {
+        "line": 124,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Telefon:"
+      },
+      {
+        "line": 133,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Notiz:"
+      },
+      {
+        "line": 216,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Keine Praxen gefunden."
+      }
+    ],
+    "src/ui/dialogs/email_calendar_dialog.py": [
+      {
+        "line": 72,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "praxis@beispiel.de..."
+      },
+      {
+        "line": 79,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Betreff eingeben..."
+      },
+      {
+        "line": 206,
+        "type": "title",
+        "call": "asksaveasfilename",
+        "text": "Kalenderdatei (.ics) speichern"
+      },
+      {
+        "line": 71,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Empfänger (E-Mail):"
+      },
+      {
+        "line": 78,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Betreff:"
+      },
+      {
+        "line": 88,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "E-Mail Nachrichtentext:"
+      },
+      {
+        "line": 91,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🧩 Textbaustein"
+      }
+    ],
+    "src/ui/dialogs/email_draft_dialog.py": [
+      {
+        "line": 149,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Prüfe KI-Status..."
+      },
+      {
+        "line": 182,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "praxis@beispiel.de oder Name / Praxis eingeben..."
+      },
+      {
+        "line": 192,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "📇 Praxiskartei ▾"
+      },
+      {
+        "line": 217,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):"
+      },
+      {
+        "line": 246,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Betreff eingeben..."
+      },
+      {
+        "line": 258,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🧩 Textbaustein"
+      },
+      {
+        "line": 400,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Keine passenden Praxiskontakte gefunden."
+      }
+    ],
+    "src/ui/dialogs/email_import_dialog.py": [
+      {
+        "line": 210,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "➕ Als neuen Fall anlegen"
+      },
+      {
+        "line": 219,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "🗑 Ignorieren"
+      }
+    ],
+    "src/ui/dialogs/followup_dialog.py": [
+      {
+        "line": 22,
+        "type": "title",
+        "call": "title",
+        "text": "🔔 Wiedervorlage & Nachfrage-Erinnerung"
+      },
+      {
+        "line": 115,
+        "type": "placeholder_text",
+        "call": "DatePickerWidget",
+        "text": "TT.MM.JJJJ 09:00"
+      },
+      {
+        "line": 131,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Beim Entwickler nach dem Stand fragen..."
+      }
+    ],
+    "src/ui/dialogs/followup_flyout_dialog.py": [
+      {
+        "line": 84,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "+ 1 Std."
+      },
+      {
+        "line": 85,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "+ 2 Std."
+      },
+      {
+        "line": 86,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "Heute 16:30"
+      },
+      {
+        "line": 94,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "Morgen 08:00"
+      },
+      {
+        "line": 95,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "+ 1 Tag"
+      },
+      {
+        "line": 96,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "+ 1 Woche"
+      }
+    ],
+    "src/ui/dialogs/new_case_dialog.py": [
+      {
+        "line": 32,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Praxis Dr. Weber"
+      },
+      {
+        "line": 36,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. Dr. Hans Weber"
+      },
+      {
+        "line": 40,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "030 / 123456"
+      },
+      {
+        "line": 173,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Zuzahlungsdatei lässt sich nicht erzeugen"
+      },
+      {
+        "line": 179,
+        "type": "placeholder_text",
+        "call": "DatePickerWidget",
+        "text": "z. B. 25.08.2026 09:30"
+      },
+      {
+        "line": 208,
+        "type": "placeholder_text",
+        "call": "DatePickerWidget",
+        "text": "z. B. 23.08.2026 16:00"
+      }
+    ],
+    "src/ui/dialogs/profile_settings_ai_tab.py": [
+      {
+        "line": 126,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "AIzaSy..."
+      },
+      {
+        "line": 481,
+        "type": "text",
+        "call": "configure",
+        "text": "🔍 Prüfe Key..."
+      },
+      {
+        "line": 682,
+        "type": "text",
+        "call": "configure",
+        "text": "⏳ Erstelle 'pvs-support' Modell aus Modelfile..."
+      },
+      {
+        "line": 478,
+        "type": "text",
+        "call": "configure",
+        "text": "⚠ Bitte API Key eingeben"
+      }
+    ],
+    "src/ui/dialogs/profile_settings_dialog.py": [
+      {
+        "line": 253,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Support, Entwicklung, Technik"
+      },
+      {
+        "line": 258,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z.B. 4012"
+      },
+      {
+        "line": 263,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "beispiel@support.de"
+      },
+      {
+        "line": 268,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "0170 / 1234567"
+      },
+      {
+        "line": 273,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)"
+      },
+      {
+        "line": 278,
+        "type": "text",
+        "call": "CTkInputDialog",
+        "text": "Geben Sie den Namen des neuen Mitarbeiters ein:"
+      },
+      {
+        "line": 278,
+        "type": "title",
+        "call": "CTkInputDialog",
+        "text": "Neues Mitarbeiter-Profil anlegen"
+      },
+      {
+        "line": 496,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Pfad zum Datenordner..."
+      },
+      {
+        "line": 542,
+        "type": "title",
+        "call": "askdirectory",
+        "text": "Datenordner auswählen"
+      },
+      {
+        "line": 549,
+        "type": "title",
+        "call": "askopenfilename",
+        "text": "Datei auswählen"
+      },
+      {
+        "line": 565,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "https://wiki.meinepraxis.de/api"
+      },
+      {
+        "line": 570,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Token ID"
+      },
+      {
+        "line": 575,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Token Secret"
+      },
+      {
+        "line": 780,
+        "type": "text",
+        "call": "configure",
+        "text": "✅ Einstellungen & Pfade gespeichert!"
+      },
+      {
+        "line": 873,
+        "type": "title",
+        "call": "asksaveasfilename",
+        "text": "Datensicherung als ZIP speichern"
+      },
+      {
+        "line": 896,
+        "type": "title",
+        "call": "askopenfilename",
+        "text": "Datensicherung (ZIP-Datei) auswählen"
+      },
+      {
+        "line": 697,
+        "type": "text",
+        "call": "configure",
+        "text": "⚠ Benutzername darf nicht leer sein!"
+      },
+      {
+        "line": 656,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Prioritäts-Scoring Punkte"
+      },
+      {
+        "line": 660,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "VIP-Bonus (Punkte):"
+      }
+    ],
+    "src/ui/dialogs/schema_builder_dialog.py": [
+      {
+        "line": 13,
+        "type": "title",
+        "call": "title",
+        "text": "🆕 Neues Formular (Schema) erstellen"
+      },
+      {
+        "line": 27,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Abrechnung & Tarife"
+      },
+      {
+        "line": 31,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. schema_abrechnung"
+      },
+      {
+        "line": 35,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Optionale Beschreibung des Formulars"
+      },
+      {
+        "line": 82,
+        "type": "title",
+        "call": "title",
+        "text": "In-App Formular-Baukasten (Schemata verwalten)"
+      },
+      {
+        "line": 177,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Abhängig von Feld-ID"
+      },
+      {
+        "line": 180,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Bei Wert (z. B. Sonstiges)"
+      },
+      {
+        "line": 184,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": ".pdf, .log, .png"
+      },
+      {
+        "line": 52,
+        "type": "text",
+        "call": "configure",
+        "text": "Bitte Anzeigenamen eingeben."
+      },
+      {
+        "line": 239,
+        "type": "text",
+        "call": "configure",
+        "text": "📥 Zu Realdaten übernehmen"
+      },
+      {
+        "line": 252,
+        "type": "text",
+        "call": "configure",
+        "text": "✓ In Realdaten enthalten"
+      },
+      {
+        "line": 254,
+        "type": "text",
+        "call": "configure",
+        "text": "📥 Zu Realdaten übernehmen"
+      },
+      {
+        "line": 303,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "Pflicht +/-"
+      },
+      {
+        "line": 24,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Neues Formular-Schema definieren"
+      },
+      {
+        "line": 26,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Anzeigename (Titel) *:"
+      },
+      {
+        "line": 30,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Schema-ID (optional):"
+      },
+      {
+        "line": 34,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Beschreibung:"
+      },
+      {
+        "line": 107,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Formular auswählen:"
+      },
+      {
+        "line": 175,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "↳ Bedingte Logik (If/Else):"
+      },
+      {
+        "line": 183,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "↳ Dateitypen:"
+      }
+    ],
+    "src/ui/dialogs/snippet_management_dialog.py": [
+      {
+        "line": 70,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. 📸 Rückfrage: Screenshots"
+      },
+      {
+        "line": 74,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. Rückfrage, Anleitung, SQL"
+      },
+      {
+        "line": 82,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. fehler, sql, anleitung"
+      },
+      {
+        "line": 89,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. <Control-Alt-1>"
+      }
+    ],
+    "src/ui/dialogs/snippet_picker_dialog.py": [
+      {
+        "line": 23,
+        "type": "title",
+        "call": "title",
+        "text": "🧩 Textbaustein auswählen & einfügen"
+      }
+    ],
+    "src/ui/dialogs/template_manager_dialog.py": [
+      {
+        "line": 58,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. gitlab_dev_ticket"
+      },
+      {
+        "line": 69,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "z. B. GitLab / Dev-Ticket"
+      },
+      {
+        "line": 79,
+        "type": "placeholder_text",
+        "call": "CTkEntry",
+        "text": "Kurze Beschreibung des Formats..."
+      },
+      {
+        "line": 216,
+        "type": "title",
+        "call": "title",
+        "text": "📄 Export-Vorlagen verwalten"
+      },
+      {
+        "line": 57,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Vorlage-ID *:"
+      },
+      {
+        "line": 68,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Anzeigename *:"
+      },
+      {
+        "line": 78,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Beschreibung:"
+      },
+      {
+        "line": 87,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Ziel-Aktion / Typ:"
+      },
+      {
+        "line": 94,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Zugeordnete Formular-Schemas:"
+      },
+      {
+        "line": 105,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Erforderliche Pflichtfelder vor Export:"
+      },
+      {
+        "line": 125,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "Jinja2 Template Text (Markdown / Text):"
+      },
+      {
+        "line": 296,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "✓ In Realdaten enthalten"
+      },
+      {
+        "line": 298,
+        "type": "text",
+        "call": "CTkButton",
+        "text": "📥 Zu Realdaten übernehmen"
+      }
+    ],
+    "src/ui/dialogs/zip_import_dialog.py": [
+      {
+        "line": 232,
+        "type": "title",
+        "call": "askdirectory",
+        "text": "Gesamt-Zielverzeichnis wählen"
+      },
+      {
+        "line": 238,
+        "type": "title",
+        "call": "askdirectory",
+        "text": "Zielverzeichnis für Datendateien (data/) wählen"
+      },
+      {
+        "line": 244,
+        "type": "title",
+        "call": "askdirectory",
+        "text": "Zielverzeichnis für Fall-Anhänge (attachments/) wählen"
+      }
+    ],
+    "src/ui/views/analytics_view.py": [
+      {
+        "line": 272,
+        "type": "message",
+        "call": "ToastNotification",
+        "text": "Statistik-Bericht wurde in die Zwischenablage kopiert."
+      }
+    ],
+    "src/ui/views/cockpit_layout_builders.py": [
+      {
+        "line": 156,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🔔 Nachfragen am:"
+      }
+    ],
+    "src/ui/views/cockpit_view.py": [
+      {
+        "line": 334,
+        "type": "message",
+        "call": "ToastNotification",
+        "text": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt."
+      }
+    ],
+    "src/ui/widgets/case_list_widget.py": [
+      {
+        "line": 295,
+        "type": "text",
+        "call": "CTkLabel",
+        "text": "🔔 Nachfragen am:"
+      }
+    ],
+    "src/ui/widgets/date_picker.py": [
+      {
+        "line": 23,
+        "type": "title",
+        "call": "title",
+        "text": "📅 Datum auswählen"
+      }
+    ],
+    "src/ui/widgets/dynamic_form_widget.py": [
+      {
+        "line": 67,
+        "type": "title",
+        "call": "title",
+        "text": "🧩 Programmbereiche auswählen"
+      },
+      {
+        "line": 532,
+        "type": "title",
+        "call": "askopenfilename",
+        "text": "Datenbank-Backup (.backup) importieren"
+      }
+    ]
+  }
+}

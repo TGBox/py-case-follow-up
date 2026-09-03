@@ -19,7 +19,8 @@ class FollowupDialog(ctk.CTkToplevel):
         self.case = case
         self.on_followup_set = on_followup_set
 
-        self.title("🔔 Wiedervorlage & Nachfrage-Erinnerung")
+        from services.i18n_service import tr
+        self.title(tr("dialog_titles.followup", "🔔 Wiedervorlage & Nachfrage-Erinnerung"))
         self.geometry("500x385")
         self.minsize(460, 350)
         center_window(self, 500, 385)
@@ -30,20 +31,19 @@ class FollowupDialog(ctk.CTkToplevel):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
         # Header
         top_bar = ctk.CTkFrame(self, height=40, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(8, 4))
 
         ctk.CTkLabel(
             top_bar,
-            text=f"🔔 Wiedervorlage einplanen: {self.case.case_id}",
+            text=tr("followup.header", "🔔 Wiedervorlage einplanen: {case_id}", case_id=self.case.case_id),
             font=ctk.CTkFont(size=14, weight="bold")
         ).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self)
         main_frame.pack(fill="both", expand=True, padx=12, pady=(0, 10))
-
-        from services.i18n_service import tr
 
         ctk.CTkLabel(
             main_frame,
@@ -60,10 +60,10 @@ class FollowupDialog(ctk.CTkToplevel):
             preset_grid.grid_columnconfigure(col, weight=1, uniform="fw_presets")
 
         presets_row1 = [
-            ("+ 1 Std.", lambda: self.set_preset_hours(1)),
-            ("+ 2 Std.", lambda: self.set_preset_hours(2)),
-            ("Heute 16:30", self.set_preset_today_1630),
-            ("Morgen 08:00", self.set_preset_tomorrow_8am),
+            (tr("followup.preset_1h", "+ 1 Std."), lambda: self.set_preset_hours(1)),
+            (tr("followup.preset_2h", "+ 2 Std."), lambda: self.set_preset_hours(2)),
+            (tr("followup.preset_today_1630", "Heute 16:30"), self.set_preset_today_1630),
+            (tr("followup.preset_tomorrow_8am", "Morgen 08:00"), self.set_preset_tomorrow_8am),
         ]
         for col_idx, (text, cmd) in enumerate(presets_row1):
             btn = ctk.CTkButton(
@@ -79,10 +79,10 @@ class FollowupDialog(ctk.CTkToplevel):
             btn.grid(row=0, column=col_idx, padx=2, pady=2, sticky="ew")
 
         presets_row2 = [
-            ("+ 1 Tag", lambda: self.set_preset_days(1)),
-            ("+ 2 Tage", lambda: self.set_preset_days(2)),
-            ("+ 3 Tage", lambda: self.set_preset_days(3)),
-            ("+ 1 Woche", lambda: self.set_preset_days(7)),
+            (tr("followup.preset_1d", "+ 1 Tag"), lambda: self.set_preset_days(1)),
+            (tr("followup.preset_2d", "+ 2 Tage"), lambda: self.set_preset_days(2)),
+            (tr("followup.preset_3d", "+ 3 Tage"), lambda: self.set_preset_days(3)),
+            (tr("followup.preset_1w", "+ 1 Woche"), lambda: self.set_preset_days(7)),
         ]
         for col_idx, (text, cmd) in enumerate(presets_row2):
             btn = ctk.CTkButton(
@@ -114,7 +114,7 @@ class FollowupDialog(ctk.CTkToplevel):
 
         self.date_picker = DatePickerWidget(
             main_frame,
-            placeholder_text="TT.MM.JJJJ 09:00",
+            placeholder_text=tr("date_picker.placeholder_datetime", "TT.MM.JJJJ 09:00"),
             include_time=True,
             initial_value=init_date,
             width=260,
@@ -128,7 +128,7 @@ class FollowupDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
         ).pack(fill="x", padx=12, pady=(4, 2))
-        self.note_entry = ctk.CTkEntry(main_frame, placeholder_text="z. B. Beim Entwickler nach dem Stand fragen...")
+        self.note_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("followup.note_placeholder", "z. B. Beim Entwickler nach dem Stand fragen..."))
         if self.case.workflow_status.followup_note:
             self.note_entry.insert(0, self.case.workflow_status.followup_note)
         self.note_entry.pack(fill="x", padx=12, pady=(0, 8))

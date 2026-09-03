@@ -25,10 +25,11 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.on_save = on_save
 
         is_new = template is None
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["edit_template"]
-        self.title("✏ Vorlage bearbeiten" if not is_new else "➕ Neue Export-Vorlage")
+        self.title(tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"))
         self.geometry(f"{w}x{h}")
-        self.minsize(800, 640)
+        self.minsize(700, 600)
         from utils.ui_utils import center_window
         center_window(self, w, h)
 
@@ -38,14 +39,16 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.schema_vars: dict[str, ctk.BooleanVar] = {}
         self.field_vars: dict[str, ctk.BooleanVar] = {}
 
-        self.create_widgets(is_new)
+        self.create_widgets(is_new=template is None)
 
-    def create_widgets(self, is_new: bool):
-        top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
-        top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
+    def create_widgets(self, is_new: bool = False):
+        from services.i18n_service import tr
+        main_frame = ctk.CTkFrame(self, fg_color="transparent")
+        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
-        title_txt = "➕ Neue Export-Vorlage erstellen" if is_new else f"✏ Vorlage bearbeiten: {self.template.display_name if self.template else ''}"
-        ctk.CTkLabel(top_bar, text=title_txt, font=ctk.CTkFont(size=15, weight="bold")).pack(side="left", padx=10)
+        # Header
+        hdr_text = tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if not is_new else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen")
+        ctk.CTkLabel(main_frame, text=hdr_text, font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
 
         scroll_frame = ctk.CTkScrollableFrame(self)
         scroll_frame.pack(fill="both", expand=True, padx=15, pady=5)
@@ -54,8 +57,8 @@ class EditTemplateDialog(ctk.CTkToplevel):
         row1 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row1.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row1, text="Vorlage-ID *:", width=130, anchor="w").pack(side="left")
-        self.id_entry = ctk.CTkEntry(row1, placeholder_text="z. B. gitlab_dev_ticket")
+        ctk.CTkLabel(row1, text=tr("template_mgmt.id_lbl", "Vorlage-ID *:"), width=130, anchor="w").pack(side="left")
+        self.id_entry = ctk.CTkEntry(row1, placeholder_text=tr("template_mgmt.id_placeholder", "z. B. gitlab_dev_ticket"))
         if self.template:
             self.id_entry.insert(0, self.template.template_id)
             if not is_new:
@@ -65,8 +68,8 @@ class EditTemplateDialog(ctk.CTkToplevel):
         row2 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row2.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row2, text="Anzeigename *:", width=130, anchor="w").pack(side="left")
-        self.name_entry = ctk.CTkEntry(row2, placeholder_text="z. B. GitLab / Dev-Ticket")
+        ctk.CTkLabel(row2, text=tr("template_mgmt.name_lbl", "Anzeigename *:"), width=130, anchor="w").pack(side="left")
+        self.name_entry = ctk.CTkEntry(row2, placeholder_text=tr("template_mgmt.name_placeholder", "z. B. GitLab / Dev-Ticket"))
         if self.template:
             self.name_entry.insert(0, self.template.display_name)
         self.name_entry.pack(side="left", fill="x", expand=True)
@@ -75,8 +78,8 @@ class EditTemplateDialog(ctk.CTkToplevel):
         row3 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row3.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row3, text="Beschreibung:", width=130, anchor="w").pack(side="left")
-        self.desc_entry = ctk.CTkEntry(row3, placeholder_text="Kurze Beschreibung des Formats...")
+        ctk.CTkLabel(row3, text=tr("template_mgmt.desc_lbl", "Beschreibung:"), width=130, anchor="w").pack(side="left")
+        self.desc_entry = ctk.CTkEntry(row3, placeholder_text=tr("template_mgmt.desc_placeholder", "Kurze Beschreibung des Formats..."))
         if self.template:
             self.desc_entry.insert(0, self.template.description)
         self.desc_entry.pack(side="left", fill="x", expand=True)
@@ -84,14 +87,14 @@ class EditTemplateDialog(ctk.CTkToplevel):
         row4 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row4.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row4, text="Ziel-Aktion / Typ:", width=130, anchor="w").pack(side="left")
+        ctk.CTkLabel(row4, text=tr("template_mgmt.target_type_lbl", "Ziel-Aktion / Typ:"), width=130, anchor="w").pack(side="left")
         self.type_combo = ctk.CTkOptionMenu(row4, values=[TargetType.CLIPBOARD_TEXT.value, TargetType.FILE_EXPORT.value])
         if self.template:
             self.type_combo.set(self.template.target_type)
         self.type_combo.pack(side="left")
 
         # Applicable Schemas Checkboxes
-        ctk.CTkLabel(scroll_frame, text="Zugeordnete Formular-Schemas:", font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(10, 2))
+        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.applicable_schemas_lbl", "Zugeordnete Formular-Schemas:"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(10, 2))
         schemas_frame = ctk.CTkFrame(scroll_frame, fg_color=("gray90", "gray20"))
         schemas_frame.pack(fill="x", pady=(0, 10), padx=2)
 
@@ -102,7 +105,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
             cb.pack(anchor="w", padx=8, pady=4)
 
         # Required Fields Checkboxes
-        ctk.CTkLabel(scroll_frame, text="Erforderliche Pflichtfelder vor Export:", font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.req_fields_lbl", "Erforderliche Pflichtfelder vor Export:"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
         fields_frame = ctk.CTkFrame(scroll_frame, fg_color=("gray90", "gray20"))
         fields_frame.pack(fill="x", pady=(0, 10), padx=2)
 
@@ -122,7 +125,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
             cb.pack(anchor="w", padx=8, pady=4)
 
         # Jinja2 Template Markup Editor
-        ctk.CTkLabel(scroll_frame, text="Jinja2 Template Text (Markdown / Text):", font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.jinja_lbl", "Jinja2 Template Text (Markdown / Text):"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
         self.template_textbox = ctk.CTkTextbox(scroll_frame, height=160, font=ctk.CTkFont(family="Consolas", size=12))
         self.template_textbox.pack(fill="x", pady=(0, 10))
         if self.template:
@@ -213,7 +216,8 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         self.on_templates_updated = on_templates_updated
 
         w, h = DIALOG_DIMENSIONS["template_mgmt"]
-        self.title("📄 Export-Vorlagen verwalten")
+        from services.i18n_service import tr
+        self.title(tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"))
         self.geometry(f"{w}x{h}")
         self.minsize(880, 640)
         from utils.ui_utils import center_window
@@ -293,9 +297,9 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             )
 
             if is_already_saved:
-                btn_adopt = ctk.CTkButton(top_row, text="✓ In Realdaten enthalten", width=170, state="disabled", fg_color="gray40")
+                btn_adopt = ctk.CTkButton(top_row, text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), width=170, state="disabled", fg_color="gray40")
             else:
-                btn_adopt = ctk.CTkButton(top_row, text="📥 Zu Realdaten übernehmen", width=180, fg_color="dodgerblue", command=lambda t=tmpl: self.on_adopt_template(t))
+                btn_adopt = ctk.CTkButton(top_row, text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), width=180, fg_color="dodgerblue", command=lambda t=tmpl: self.on_adopt_template(t))
             btn_adopt.pack(side="right", padx=4)
 
             desc_txt = tmpl.description or "Keine Beschreibung"

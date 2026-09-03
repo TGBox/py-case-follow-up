@@ -1,0 +1,5034 @@
+{
+  "total_tr_calls": 477,
+  "missing_keys_count": 241,
+  "missing_keys": [
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 58,
+      "key": "colleague_mgmt.new_colleague_btn",
+      "default": "+ Neuen Mitarbeiter anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 75,
+      "key": "colleague_mgmt.search_placeholder",
+      "default": "🔍 Name, Kürzel, Abteilung...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 89,
+      "key": "colleague_mgmt.details_header",
+      "default": "Mitarbeiterdetails",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 147,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 52,
+      "key": "colleague_mgmt.header",
+      "default": "👥 Mitarbeiter- & Kollegeneinträge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 99,
+      "key": "colleague_mgmt.username",
+      "default": "Kürzel / Username *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 103,
+      "key": "colleague_mgmt.name",
+      "default": "Name / Anzeigename *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 107,
+      "key": "colleague_mgmt.department",
+      "default": "Abteilung / Department:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 112,
+      "key": "colleague_mgmt.phone",
+      "default": "Durchwahl / Telefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 116,
+      "key": "colleague_mgmt.email",
+      "default": "E-Mail-Adresse:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 120,
+      "key": "colleague_mgmt.mobile",
+      "default": "Mobiltelefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 124,
+      "key": "colleague_mgmt.notes",
+      "default": "Aufgabengebiet / Notizen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 128,
+      "key": "convert_schema.select_valid",
+      "default": "Bitte ein gültiges Ziel-Formular auswählen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 132,
+      "key": "convert_schema.already_used",
+      "default": "Der Fall verwendet bereits dieses Formular-Schema.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 50,
+      "key": "convert_schema.header",
+      "default": "🔄 Formular-Schema umwandeln",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 77,
+      "key": "convert_schema.select_target",
+      "default": "Neues Ziel-Formular auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 41,
+      "key": "customer_mgmt.new_practice_btn",
+      "default": "+ Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 46,
+      "key": "customer_mgmt.cobra_import_btn",
+      "default": "🐍 Cobra CRM Import...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 62,
+      "key": "customer_mgmt.search_placeholder",
+      "default": "🔍 Praxis / ID suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 105,
+      "key": "customer_mgmt.save_practice_btn",
+      "default": "💾 Praxis Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 123,
+      "key": "customer_mgmt.details_title",
+      "default": "Praxis-Details",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 39,
+      "key": "customer_mgmt.header",
+      "default": "🏥 Registrierte Praxen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 127,
+      "key": "customer_mgmt.cust_id_lbl",
+      "default": "Kunden-ID (z.B. CUST-1001):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 137,
+      "key": "customer_mgmt.practice_name_lbl",
+      "default": "Praxisname *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 367,
+      "key": "customer_mgmt.new_practice_hdr",
+      "default": "🆕 Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 487,
+      "key": "customer_mgmt.saved_msg",
+      "default": "✅ Praxis gespeichert!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 413,
+      "key": "customer_mgmt.missing_id_name",
+      "default": "⚠ ID und Praxisname erforderlich!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 191,
+      "key": "email_calendar.client_opened",
+      "default": "✓ Mail-Client wurde mit dem Entwurf aufgerufen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 198,
+      "key": "email_calendar.text_copied",
+      "default": "✓ E-Mail Text wurde in die Zwischenablage kopiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 495,
+      "key": "email_draft.snippet_inserted",
+      "default": "✓ Textbaustein eingefügt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 595,
+      "key": "email_draft.ai_generating",
+      "default": "🤖 KI generiert E-Mail-Entwurf...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 514,
+      "key": "email_draft.mailto_opened",
+      "default": "✓ Standard-Mail-Programm aufgerufen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 539,
+      "key": "email_draft.outlook_opened",
+      "default": "✓ E-Mail erfolgreich in Outlook geöffnet.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 579,
+      "key": "email_draft.copied_to_clipboard",
+      "default": "✓ E-Mail in Zwischenablage kopiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 666,
+      "key": "email_draft.case_required_for_ai",
+      "default": "⚠ KI-Entwurf benötigt einen aktiven Fall.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 175,
+      "key": "email_draft.recipient_lbl",
+      "default": "Empfänger (E-Mail):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 227,
+      "key": "email_draft.close_btn",
+      "default": "✕ Schließen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 245,
+      "key": "email_draft.subject_lbl",
+      "default": "Betreff:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 255,
+      "key": "email_draft.body_lbl",
+      "default": "E-Mail Nachrichtentext:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 565,
+      "key": "email_draft.eml_handed_over",
+      "default": "✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 605,
+      "key": "email_draft.ai_please_wait",
+      "default": "Bitte einen Moment gedulden — Modell generiert Antwort",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 71,
+      "key": "email_import.info_msg",
+      "default": "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 103,
+      "key": "email_import.fetching",
+      "default": "⏳ Rufe Posteingang ab...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 60,
+      "key": "email_import.refresh_btn",
+      "default": "🔄 Posteingang aktualisieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 118,
+      "key": "email_import.no_emails",
+      "default": "Keine neuen E-Mails im Posteingang gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 78,
+      "key": "export_dialog.manage_templates_btn",
+      "default": "🛠 Vorlagen verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 93,
+      "key": "export_dialog.force_export_chk",
+      "default": "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 115,
+      "key": "export_dialog.save_file_btn",
+      "default": "In Datei speichern...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 118,
+      "key": "export_dialog.copy_btn",
+      "default": "In Zwischenablage kopieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 129,
+      "key": "export.no_template",
+      "default": "Keine Vorlage ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 187,
+      "key": "export.ready",
+      "default": "✅ Vorlage bereit zum Export.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 192,
+      "key": "export.incomplete",
+      "default": "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 211,
+      "key": "export.copied",
+      "default": "📋 Erfolgreich in Zwischenablage kopiert!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 56,
+      "key": "export_dialog.export_for",
+      "default": "Export für Fall",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 63,
+      "key": "export_dialog.select_template",
+      "default": "Vorlage auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 68,
+      "key": "export_dialog.no_template",
+      "default": "Keine Vorlage",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 100,
+      "key": "export_dialog.preview_header",
+      "default": "Vorschau des exportierten Textes:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 149,
+      "key": "export.missing_fields_hdr",
+      "default": "⚠ Fehlende Pflichtfelder direkt ergänzen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 50,
+      "key": "followup.presets_lbl",
+      "default": "⚡ Schnellauswahl / Presets:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 103,
+      "key": "followup.date_lbl",
+      "default": "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 127,
+      "key": "followup.note_lbl",
+      "default": "📝 Notiz / Nachfrage-Grund (Optional):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 142,
+      "key": "followup.save_btn",
+      "default": "💾 Wiedervorlage Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 67,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 54,
+      "key": "followup.no_due_cases",
+      "default": "Keine fälligen Wiedervorlagen aktuell vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 87,
+      "key": "handover_dialog.no_colleagues",
+      "default": "- Keine Mitarbeiter in Liste -",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 94,
+      "key": "handover_dialog.person_placeholder",
+      "default": "Empfänger-Name...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 104,
+      "key": "handover_dialog.note_placeholder",
+      "default": "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 87,
+      "key": "handover_dialog.select_colleague",
+      "default": "- Aus Mitarbeiterliste wählen -",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 69,
+      "key": "handover_dialog.new_actor",
+      "default": "Neue verantwortliche Stelle *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 76,
+      "key": "handover_dialog.channel",
+      "default": "Art der Weitergabe / Kanal *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 82,
+      "key": "handover_dialog.recipient",
+      "default": "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 102,
+      "key": "handover_dialog.note",
+      "default": "Notiz / Details zur Übergabe (optional):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 121,
+      "key": "handover_dialog.confirm_btn",
+      "default": "🤝 Übergabe bestätigen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 56,
+      "key": "handover_dialog.header",
+      "default": "Zuständigkeit für",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 56,
+      "key": "handover_dialog.header_suffix",
+      "default": "übergeben",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 63,
+      "key": "handover_dialog.curr_actor",
+      "default": "Aktuelle Zuständigkeit:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 63,
+      "key": "handover_dialog.customer",
+      "default": "Kunde:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 631,
+      "key": "help_dialog.no_topics",
+      "default": "Keine Themen gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 127,
+      "key": "new_case_dialog.create_btn",
+      "default": "Fall anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 141,
+      "key": "new_case_dialog.header",
+      "default": "Neuen Support-Fall erfassen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 148,
+      "key": "new_case_dialog.is_internal",
+      "default": "🏢 Interner Vorgang (ohne Kundenelement)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 166,
+      "key": "new_case_dialog.add_practice_btn",
+      "default": "+ Neue Praxis",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 275,
+      "key": "new_case.add_tag",
+      "default": "+ Tag",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 293,
+      "key": "new_case.tag_input_prompt",
+      "default": "Geben Sie den Namen des neuen Tags ein:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 293,
+      "key": "new_case.tag_input_title",
+      "default": "Neuen Tag hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 59,
+      "key": "quick_customer.err_name",
+      "default": "Bitte Praxisnamen eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 348,
+      "key": "new_case.title_required",
+      "default": "Bitte einen Titel für den Fall eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 370,
+      "key": "new_case.future_date",
+      "default": "Das Erstellungsdatum darf nicht in der Zukunft liegen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 29,
+      "key": "quick_customer.header",
+      "default": "Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 31,
+      "key": "quick_customer.practice_name",
+      "default": "Praxisname *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 35,
+      "key": "quick_customer.contact_person",
+      "default": "Ansprechpartner:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 39,
+      "key": "quick_customer.phone",
+      "default": "Telefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 44,
+      "key": "quick_customer.is_vip",
+      "default": "⭐ VIP-Praxis",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 156,
+      "key": "new_case_dialog.customer",
+      "default": "Kunde / Praxis:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 172,
+      "key": "new_case_dialog.title_label",
+      "default": "Titel / Kurzbeschreibung:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 177,
+      "key": "new_case_dialog.created_at",
+      "default": "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 189,
+      "key": "new_case_dialog.schema",
+      "default": "Formular-Schema:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 198,
+      "key": "new_case_dialog.tags",
+      "default": "Tags / Stichworte zuweisen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 206,
+      "key": "new_case_dialog.deadline",
+      "default": "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 215,
+      "key": "new_case_dialog.initial_note",
+      "default": "Initiale Notiz / Eingangskanal:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 357,
+      "key": "new_case.invalid_date",
+      "default": "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 361,
+      "key": "new_case.invalid_date",
+      "default": "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 60,
+      "key": "p2p.reload_compare",
+      "default": "Neu Laden / Vergleichen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 78,
+      "key": "p2p.import_selected",
+      "default": "Ausgewählte Fälle übernehmen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 88,
+      "key": "p2p.no_colleague_selected",
+      "default": "Kein Kollege ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 159,
+      "key": "p2p.select_at_least_one",
+      "default": "Bitte mindestens einen Fall zur Übernahme auswählen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 48,
+      "key": "p2p.select_colleague",
+      "default": "Kollege auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 52,
+      "key": "p2p.no_colleagues_cfg",
+      "default": "Keine Kollegen konfiguriert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 110,
+      "key": "p2p.no_diff_cases",
+      "default": "Keine abweichenden Fälle vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 107,
+      "key": "profile.provider_gemini",
+      "default": "GOOGLE GEMINI (Cloud)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 107,
+      "key": "profile.provider_ollama",
+      "default": "OLLAMA (Lokal)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 113,
+      "key": "profile.anonymize_toggle",
+      "default": "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 180,
+      "key": "profile.gemini_modelfile_rules",
+      "default": "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 197,
+      "key": "profile.checking_ollama",
+      "default": "🔍 Prüfe Ollama-Status...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 204,
+      "key": "profile.scan_ollama_btn",
+      "default": "🔄 Status & Modelle scannen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 104,
+      "key": "profile.provider_ollama",
+      "default": "OLLAMA (Lokal)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 104,
+      "key": "profile.provider_gemini",
+      "default": "GOOGLE GEMINI (Cloud)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 91,
+      "key": "profile.ai_header",
+      "default": "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 99,
+      "key": "profile.ai_provider_label",
+      "default": "KI-Anbieter wählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 125,
+      "key": "profile.gemini_key_lbl",
+      "default": "🔑 Google Gemini API Key:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 156,
+      "key": "profile.gemini_select_model",
+      "default": "Gemini Modell wählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 481,
+      "key": "profile.widths_reset_msg",
+      "default": "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 120,
+      "key": "schema_builder.new_form",
+      "default": "+ Neues Formular",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 125,
+      "key": "schema_builder.adopt_schema",
+      "default": "📥 Zu Realdaten übernehmen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 132,
+      "key": "schema_builder.default_schemas",
+      "default": "🔄 Standard-Formulare",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 135,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 155,
+      "key": "schema_builder.field_id_ph",
+      "default": "Feld-ID (z. B. reason_detail)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 158,
+      "key": "schema_builder.label_ph",
+      "default": "Beschriftung (Label)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 165,
+      "key": "schema_builder.required_chk",
+      "default": "Pflicht",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 168,
+      "key": "schema_builder.add_btn",
+      "default": "+ Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 141,
+      "key": "schema_builder.fields_header",
+      "default": "Enthaltene Formularfelder:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 150,
+      "key": "schema_builder.add_field_header",
+      "default": "Neues Feld hinzufügen (V2 mit bedingter Logik):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 120,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 213,
+      "key": "snippet_mgmt.new_snippet_status",
+      "default": "Neuer Textbaustein (wird beim Speichern angelegt)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 226,
+      "key": "snippet_mgmt.title_required",
+      "default": "⚠ Bitte einen Titel eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 229,
+      "key": "snippet_mgmt.content_required",
+      "default": "⚠ Der Inhalt darf nicht leer sein.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 41,
+      "key": "snippet_mgmt.header",
+      "default": "📝 Textbaustein-Bibliothek verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 45,
+      "key": "snippet_mgmt.new_snippet",
+      "default": "+ Neuer Textbaustein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 69,
+      "key": "snippet_mgmt.title_lbl",
+      "default": "Titel:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 73,
+      "key": "snippet_mgmt.cat_lbl",
+      "default": "Kategorie:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 77,
+      "key": "snippet_mgmt.content_lbl",
+      "default": "Inhalt / Baustein-Text:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 81,
+      "key": "snippet_mgmt.tags_lbl",
+      "default": "Tags (kommagetrennt):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 154,
+      "key": "snippet_mgmt.no_snippets",
+      "default": "Keine Textbausteine vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 47,
+      "key": "snippet_picker.search",
+      "default": "🔍 Textbaustein suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 77,
+      "key": "snippet_picker.preview",
+      "default": "Vorschau des Textbausteins:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 114,
+      "key": "snippet_picker.no_snippets",
+      "default": "Keine Textbausteine gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 69,
+      "key": "tag_mgmt.tab_tags",
+      "default": "🏷 Allgemeine Tags",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 70,
+      "key": "tag_mgmt.tab_modules",
+      "default": "🧩 Programmbereiche",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 77,
+      "key": "tag_mgmt.search_tags_placeholder",
+      "default": "🔍 Tags durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 84,
+      "key": "tag_mgmt.new_tag_placeholder",
+      "default": "Neuen Tag erstellen (z. B. Schnittstelle)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 87,
+      "key": "tag_mgmt.add_tag_btn",
+      "default": "+ Tag Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 99,
+      "key": "tag_mgmt.search_modules_placeholder",
+      "default": "🔍 Programmbereiche durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 106,
+      "key": "tag_mgmt.new_module_placeholder",
+      "default": "Neuen Programmbereich erstellen (z. B. Rezeptdruck)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 109,
+      "key": "tag_mgmt.add_module_btn",
+      "default": "+ Bereich Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 174,
+      "key": "tag_mgmt.tag_added",
+      "default": "✅ Tag erfolgreich hinzugefügt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 227,
+      "key": "tag_mgmt.module_added",
+      "default": "✅ Programmbereich erfolgreich hinzugefügt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 164,
+      "key": "tag_mgmt.tag_empty",
+      "default": "⚠ Tag Name darf nicht leer sein!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 168,
+      "key": "tag_mgmt.tag_exists",
+      "default": "⚠ Tag existiert bereits!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 217,
+      "key": "tag_mgmt.module_empty",
+      "default": "⚠ Programmbereich darf nicht leer sein!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 221,
+      "key": "tag_mgmt.module_exists",
+      "default": "⚠ Programmbereich existiert bereits!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 50,
+      "key": "tag_mgmt.header",
+      "default": "🏷 System-Tags & Programmbereiche",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 154,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 208,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 146,
+      "key": "tag_mgmt.no_tags",
+      "default": "Keine Tags gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 200,
+      "key": "tag_mgmt.no_modules",
+      "default": "Keine Programmbereiche gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 235,
+      "key": "template_mgmt.new_template",
+      "default": "+ Neue Vorlage",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 238,
+      "key": "template_mgmt.load_defaults",
+      "default": "🔄 Standard-Vorlagen laden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 284,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 287,
+      "key": "common.edit",
+      "default": "✏ Bearbeiten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 233,
+      "key": "template_mgmt.header",
+      "default": "📄 Export-Vorlagen-Verwaltung",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 268,
+      "key": "template_mgmt.no_templates",
+      "default": "Keine Vorlagen vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 90,
+      "key": "zip_import.root_folder_btn",
+      "default": "📁 Gesamt-Zielordner wählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 99,
+      "key": "zip_import.custom_paths_btn",
+      "default": "⚙ Einzelne Pfade anpassen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 116,
+      "key": "zip_import.warning_overwrite",
+      "default": "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 81,
+      "key": "zip_import.select_mode",
+      "default": "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 141,
+      "key": "zip_import.unpack_btn",
+      "default": "📥 Daten entpacken & importieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 169,
+      "key": "zip_import.main_target_dir",
+      "default": "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 183,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 192,
+      "key": "zip_import.data_loc",
+      "default": "1. Speicherort für Datendateien & Profile (data/):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 205,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 213,
+      "key": "zip_import.att_loc",
+      "default": "2. Speicherort für Fall-Anhänge (attachments/):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 226,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 272,
+      "key": "analytics.copied_title",
+      "default": "📋 Statistik kopiert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 114,
+      "key": "board.cockpit_btn",
+      "default": "🎯 Cockpit",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 263,
+      "key": "board.collapse_btn",
+      "default": "◀ Zuklappen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 533,
+      "key": "cockpit.followup_at",
+      "default": "🔔 Nachfragen am:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 328,
+      "key": "cockpit.email_copied_title",
+      "default": "📋 E-Mail kopiert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 336,
+      "key": "cockpit.no_email_title",
+      "default": "⚠ Keine E-Mail-Adresse",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 137,
+      "key": "table.details_header",
+      "default": "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 145,
+      "key": "table.save_btn",
+      "default": "💾 Ändern & Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 29,
+      "key": "attachments.title",
+      "default": "Fall-Dateianhänge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 32,
+      "key": "attachments.open_explorer",
+      "default": "📁 Explorer öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 43,
+      "key": "attachments.no_preview",
+      "default": "Keine Datei zur Vorschau ausgewählt",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 50,
+      "key": "attachments.add_file",
+      "default": "+ Datei hinzufügen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 53,
+      "key": "attachments.tip",
+      "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 59,
+      "key": "attachments.title",
+      "default": "Fall-Dateianhänge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 61,
+      "key": "attachments.open_explorer",
+      "default": "📁 Explorer öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 63,
+      "key": "attachments.no_preview",
+      "default": "Keine Datei zur Vorschau ausgewählt",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 65,
+      "key": "attachments.add_file",
+      "default": "+ Datei hinzufügen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 67,
+      "key": "attachments.tip",
+      "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 108,
+      "key": "common.open",
+      "default": "📂 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 79,
+      "key": "attachments.no_case",
+      "default": "Kein Fall ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 84,
+      "key": "attachments.no_files",
+      "default": "Keine Dateianhänge im Fallordner.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 64,
+      "key": "case_list.zero_cases",
+      "default": "0 Fälle",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 195,
+      "key": "case_list.completed_badge",
+      "default": "✓ ERLEDIGT",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 155,
+      "key": "case_list.no_cases",
+      "default": "Keine Fälle gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 126,
+      "key": "date_picker.time_lbl",
+      "default": "⏰ Uhrzeit:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 213,
+      "key": "date_picker.o_clock",
+      "default": "Uhr",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 295,
+      "key": "dynamic_form.number_placeholder",
+      "default": "Zahl...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 237,
+      "key": "dynamic_form.import_backup",
+      "default": "📁 .backup-Datei importieren...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 284,
+      "key": "dynamic_form.choose_file",
+      "default": "📁 Datei wählen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 66,
+      "key": "dynamic_form.manage_tags",
+      "default": "⚙ Programmbereiche verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 91,
+      "key": "dynamic_form.search_tags",
+      "default": "🔍 Programmbereich suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 561,
+      "key": "dynamic_form.no_files",
+      "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 582,
+      "key": "dynamic_form.import_title",
+      "default": "Dateien in Fallordner importieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 607,
+      "key": "dynamic_form.no_files",
+      "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 85,
+      "key": "dynamic_form.select_tags",
+      "default": "🧩 Programmbereiche auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 98,
+      "key": "dynamic_form.select_all",
+      "default": "Alle auswählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 99,
+      "key": "dynamic_form.select_none",
+      "default": "Keine auswählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 111,
+      "key": "dynamic_form.apply_close",
+      "default": "✓ Übernehmen & Schließen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 568,
+      "key": "dynamic_form.import_files",
+      "default": "+ Datei(en) importieren...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 611,
+      "key": "dynamic_form.files_attached",
+      "default": "Abgelegte Dateien im Fallordner",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 123,
+      "key": "dynamic_form.no_tags",
+      "default": "Kein Programmbereich gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 360,
+      "key": "form.no_fields",
+      "default": "Keine Formularfelder definiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 629,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/searchable_combobox.py",
+      "line": 112,
+      "key": "searchable_combo.placeholder",
+      "default": "🔍 Buchstaben eintippen zum Suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/searchable_combobox.py",
+      "line": 172,
+      "key": "searchable_combo.no_results",
+      "default": "Keine Praxen gefunden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 99,
+      "key": "timeline.no_notes",
+      "default": "Keine Notizen vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 16,
+      "key": "toast.reminder_title",
+      "default": "Erinnerung",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 26,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 110,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 19,
+      "key": "wiki.header",
+      "default": "BookStack Offline Wiki",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 22,
+      "key": "wiki.sync_btn",
+      "default": "🔄 Wiki Sync",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 29,
+      "key": "wiki.search_placeholder",
+      "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 95,
+      "key": "wiki.syncing",
+      "default": "⏳ Synchronisiere Wiki im Hintergrund...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 44,
+      "key": "wiki.header",
+      "default": "BookStack Offline Wiki",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 46,
+      "key": "wiki.sync_btn",
+      "default": "🔄 Wiki Sync",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 48,
+      "key": "wiki.search_placeholder",
+      "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 61,
+      "key": "wiki.enter_query",
+      "default": "Bitte Suchbegriff eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 65,
+      "key": "wiki.articles_found",
+      "default": "Wiki-Artikel gefunden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 68,
+      "key": "wiki.no_results",
+      "default": "Keine treffenden Artikel im Offline-Index.",
+      "exists_in_de_json": false
+    }
+  ],
+  "all_tr_calls": [
+    {
+      "file": "src/constants.py",
+      "line": 118,
+      "key": "menu.opt_practices",
+      "default": "🏥 Praxen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 119,
+      "key": "menu.opt_cobra",
+      "default": "🐍 Cobra CRM Import",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 120,
+      "key": "menu.opt_colleagues",
+      "default": "👥 Mitarbeiter",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 121,
+      "key": "menu.opt_modules",
+      "default": "🧩 Programmbereiche",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 127,
+      "key": "menu.opt_forms",
+      "default": "🛠 Formulare",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 128,
+      "key": "menu.opt_templates",
+      "default": "📄 Vorlagen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 129,
+      "key": "menu.opt_snippets",
+      "default": "📝 Textbausteine",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 130,
+      "key": "menu.opt_tags",
+      "default": "🏷 Tags",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 136,
+      "key": "menu.opt_email_import",
+      "default": "📥 E-Mail Import",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 137,
+      "key": "menu.opt_export",
+      "default": "📤 Export (Strg+E)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 138,
+      "key": "menu.opt_zip",
+      "default": "📦 ZIP-Backup",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 139,
+      "key": "menu.opt_p2p",
+      "default": "🔄 P2P-Sync",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 140,
+      "key": "menu.opt_help",
+      "default": "📖 Hilfe (F1)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/constants.py",
+      "line": 477,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/constants.py",
+      "line": 482,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/constants.py",
+      "line": 487,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/constants.py",
+      "line": 65,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/constants.py",
+      "line": 73,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/services/seed_case_data.py",
+      "line": 33,
+      "key": "demo_cases.c1_title",
+      "default": "Zuzahlungsnachforderungsdatei fehlerhaft erzeugt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/services/seed_case_data.py",
+      "line": 88,
+      "key": "demo_cases.c2_title",
+      "default": "Absturz beim Drucken von BMA-Rezepten",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/services/seed_case_data.py",
+      "line": 125,
+      "key": "demo_cases.c3_title",
+      "default": "KV-Abrechnungstext korrigieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/services/seed_case_data.py",
+      "line": 156,
+      "key": "demo_cases.c4_title",
+      "default": "Prüfung Nachforderung 2026-Q1",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/services/seed_case_data.py",
+      "line": 187,
+      "key": "demo_cases.c5_title",
+      "default": "GUI-Schriftgröße im Laborfenster zu klein",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 288,
+      "key": "menu.master_data",
+      "default": "⚙ Stammdaten",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 298,
+      "key": "menu.templates",
+      "default": "📄 Vorlagen & Formulare",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 308,
+      "key": "menu.data_exchange",
+      "default": "🔄 Datenaustausch",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 351,
+      "key": "menu.master_data",
+      "default": "⚙ Stammdaten",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 365,
+      "key": "menu.templates",
+      "default": "📄 Vorlagen & Formulare",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 377,
+      "key": "menu.data_exchange",
+      "default": "🔄 Datenaustausch",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 129,
+      "key": "splash.title",
+      "default": "🩺 Support-Cockpit",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 131,
+      "key": "splash.loading",
+      "default": "⏳ Anwendungsdaten und Layouts werden geladen...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 272,
+      "key": "menu.new_case",
+      "default": "+ Neuer Fall (Strg+N)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 312,
+      "key": "menu.quit",
+      "default": "❌ Beenden",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 315,
+      "key": "menu.theme",
+      "default": "🌗 Theme",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 330,
+      "key": "menu.demo_on",
+      "default": "🧪 Beispieldaten: AN",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 258,
+      "key": "menu.title",
+      "default": " 🩺 Support-Cockpit ",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 261,
+      "key": "menu.layout",
+      "default": "Layout:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 513,
+      "key": "menu.demo_on",
+      "default": "🧪 Beispieldaten: AN",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/app.py",
+      "line": 515,
+      "key": "menu.demo_off",
+      "default": "🧪 Beispieldaten: AUS",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/calendar_export_dialog.py",
+      "line": 100,
+      "key": "calendar_export.open_ics",
+      "default": "📅 Direkt im Kalender öffnen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/calendar_export_dialog.py",
+      "line": 109,
+      "key": "calendar_export.save_ics",
+      "default": "💾 Als .ics Datei speichern...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/calendar_export_dialog.py",
+      "line": 118,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/case_print_dialog.py",
+      "line": 82,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/case_print_dialog.py",
+      "line": 91,
+      "key": "ui_buttons.print_pdf",
+      "default": "🖨 PDF-Bericht drucken",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/cobra_import_dialog.py",
+      "line": 100,
+      "key": "cobra_import.import_btn",
+      "default": "🐍 Praxen importieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/cobra_import_dialog.py",
+      "line": 108,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 58,
+      "key": "colleague_mgmt.new_colleague_btn",
+      "default": "+ Neuen Mitarbeiter anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 75,
+      "key": "colleague_mgmt.search_placeholder",
+      "default": "🔍 Name, Kürzel, Abteilung...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 89,
+      "key": "colleague_mgmt.details_header",
+      "default": "Mitarbeiterdetails",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 147,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 158,
+      "key": "cockpit.save",
+      "default": "💾 Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 52,
+      "key": "colleague_mgmt.header",
+      "default": "👥 Mitarbeiter- & Kollegeneinträge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 99,
+      "key": "colleague_mgmt.username",
+      "default": "Kürzel / Username *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 103,
+      "key": "colleague_mgmt.name",
+      "default": "Name / Anzeigename *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 107,
+      "key": "colleague_mgmt.department",
+      "default": "Abteilung / Department:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 112,
+      "key": "colleague_mgmt.phone",
+      "default": "Durchwahl / Telefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 116,
+      "key": "colleague_mgmt.email",
+      "default": "E-Mail-Adresse:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 120,
+      "key": "colleague_mgmt.mobile",
+      "default": "Mobiltelefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/colleague_management_dialog.py",
+      "line": 124,
+      "key": "colleague_mgmt.notes",
+      "default": "Aufgabengebiet / Notizen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 128,
+      "key": "convert_schema.select_valid",
+      "default": "Bitte ein gültiges Ziel-Formular auswählen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 132,
+      "key": "convert_schema.already_used",
+      "default": "Der Fall verwendet bereits dieses Formular-Schema.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 50,
+      "key": "convert_schema.header",
+      "default": "🔄 Formular-Schema umwandeln",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 77,
+      "key": "convert_schema.select_target",
+      "default": "Neues Ziel-Formular auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 111,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/convert_schema_dialog.py",
+      "line": 116,
+      "key": "convert_schema.convert_btn",
+      "default": "Formular umwandeln",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 41,
+      "key": "customer_mgmt.new_practice_btn",
+      "default": "+ Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 46,
+      "key": "customer_mgmt.cobra_import_btn",
+      "default": "🐍 Cobra CRM Import...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 62,
+      "key": "customer_mgmt.search_placeholder",
+      "default": "🔍 Praxis / ID suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 105,
+      "key": "customer_mgmt.save_practice_btn",
+      "default": "💾 Praxis Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 123,
+      "key": "customer_mgmt.details_title",
+      "default": "Praxis-Details",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 39,
+      "key": "customer_mgmt.header",
+      "default": "🏥 Registrierte Praxen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 127,
+      "key": "customer_mgmt.cust_id_lbl",
+      "default": "Kunden-ID (z.B. CUST-1001):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_form_builders.py",
+      "line": 137,
+      "key": "customer_mgmt.practice_name_lbl",
+      "default": "Praxisname *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 367,
+      "key": "customer_mgmt.new_practice_hdr",
+      "default": "🆕 Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 487,
+      "key": "customer_mgmt.saved_msg",
+      "default": "✅ Praxis gespeichert!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/customer_management_dialog.py",
+      "line": 413,
+      "key": "customer_mgmt.missing_id_name",
+      "default": "⚠ ID und Praxisname erforderlich!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 191,
+      "key": "email_calendar.client_opened",
+      "default": "✓ Mail-Client wurde mit dem Entwurf aufgerufen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 198,
+      "key": "email_calendar.text_copied",
+      "default": "✓ E-Mail Text wurde in die Zwischenablage kopiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 121,
+      "key": "email_calendar.open_mailto",
+      "default": "✉ Im Mail-Client öffnen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 130,
+      "key": "ui_buttons.copy_clipboard",
+      "default": "📋 Text in Zwischenablage kopieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 143,
+      "key": "email_calendar.open_ics",
+      "default": "📅 .ics Kalenderdatei öffnen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 152,
+      "key": "email_calendar.save_ics",
+      "default": "💾 .ics Datei speichern...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_calendar_dialog.py",
+      "line": 161,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 495,
+      "key": "email_draft.snippet_inserted",
+      "default": "✓ Textbaustein eingefügt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 595,
+      "key": "email_draft.ai_generating",
+      "default": "🤖 KI generiert E-Mail-Entwurf...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 514,
+      "key": "email_draft.mailto_opened",
+      "default": "✓ Standard-Mail-Programm aufgerufen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 539,
+      "key": "email_draft.outlook_opened",
+      "default": "✓ E-Mail erfolgreich in Outlook geöffnet.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 579,
+      "key": "email_draft.copied_to_clipboard",
+      "default": "✓ E-Mail in Zwischenablage kopiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 666,
+      "key": "email_draft.case_required_for_ai",
+      "default": "⚠ KI-Entwurf benötigt einen aktiven Fall.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 175,
+      "key": "email_draft.recipient_lbl",
+      "default": "Empfänger (E-Mail):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 227,
+      "key": "email_draft.close_btn",
+      "default": "✕ Schließen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 245,
+      "key": "email_draft.subject_lbl",
+      "default": "Betreff:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 255,
+      "key": "email_draft.body_lbl",
+      "default": "E-Mail Nachrichtentext:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 333,
+      "key": "email_draft.open_mailto",
+      "default": "✉ In Standard-Mail-App öffnen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 342,
+      "key": "email_draft.transfer_outlook",
+      "default": "📬 In Outlook übertragen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 351,
+      "key": "ui_buttons.copy_clipboard",
+      "default": "📋 In Zwischenablage kopieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 360,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 565,
+      "key": "email_draft.eml_handed_over",
+      "default": "✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_draft_dialog.py",
+      "line": 605,
+      "key": "email_draft.ai_please_wait",
+      "default": "Bitte einen Moment gedulden — Modell generiert Antwort",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 71,
+      "key": "email_import.info_msg",
+      "default": "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 103,
+      "key": "email_import.fetching",
+      "default": "⏳ Rufe Posteingang ab...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 60,
+      "key": "email_import.refresh_btn",
+      "default": "🔄 Posteingang aktualisieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 93,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/email_import_dialog.py",
+      "line": 118,
+      "key": "email_import.no_emails",
+      "default": "Keine neuen E-Mails im Posteingang gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 78,
+      "key": "export_dialog.manage_templates_btn",
+      "default": "🛠 Vorlagen verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 93,
+      "key": "export_dialog.force_export_chk",
+      "default": "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 112,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 115,
+      "key": "export_dialog.save_file_btn",
+      "default": "In Datei speichern...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 118,
+      "key": "export_dialog.copy_btn",
+      "default": "In Zwischenablage kopieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 129,
+      "key": "export.no_template",
+      "default": "Keine Vorlage ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 187,
+      "key": "export.ready",
+      "default": "✅ Vorlage bereit zum Export.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 192,
+      "key": "export.incomplete",
+      "default": "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 211,
+      "key": "export.copied",
+      "default": "📋 Erfolgreich in Zwischenablage kopiert!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 56,
+      "key": "export_dialog.export_for",
+      "default": "Export für Fall",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 63,
+      "key": "export_dialog.select_template",
+      "default": "Vorlage auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 68,
+      "key": "export_dialog.no_template",
+      "default": "Keine Vorlage",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 100,
+      "key": "export_dialog.preview_header",
+      "default": "Vorschau des exportierten Textes:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/export_dialog.py",
+      "line": 149,
+      "key": "export.missing_fields_hdr",
+      "default": "⚠ Fehlende Pflichtfelder direkt ergänzen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 50,
+      "key": "followup.presets_lbl",
+      "default": "⚡ Schnellauswahl / Presets:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 103,
+      "key": "followup.date_lbl",
+      "default": "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 127,
+      "key": "followup.note_lbl",
+      "default": "📝 Notiz / Nachfrage-Grund (Optional):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 142,
+      "key": "followup.save_btn",
+      "default": "💾 Wiedervorlage Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 163,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/followup_dialog.py",
+      "line": 154,
+      "key": "ui_buttons.clear",
+      "default": "❌ Entfernen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 98,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 67,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 54,
+      "key": "followup.no_due_cases",
+      "default": "Keine fälligen Wiedervorlagen aktuell vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/followup_flyout_dialog.py",
+      "line": 88,
+      "key": "cockpit.complete",
+      "default": "✓ Erledigt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 87,
+      "key": "handover_dialog.no_colleagues",
+      "default": "- Keine Mitarbeiter in Liste -",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 94,
+      "key": "handover_dialog.person_placeholder",
+      "default": "Empfänger-Name...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 104,
+      "key": "handover_dialog.note_placeholder",
+      "default": "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 87,
+      "key": "handover_dialog.select_colleague",
+      "default": "- Aus Mitarbeiterliste wählen -",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 69,
+      "key": "handover_dialog.new_actor",
+      "default": "Neue verantwortliche Stelle *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 76,
+      "key": "handover_dialog.channel",
+      "default": "Art der Weitergabe / Kanal *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 82,
+      "key": "handover_dialog.recipient",
+      "default": "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 102,
+      "key": "handover_dialog.note",
+      "default": "Notiz / Details zur Übergabe (optional):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 116,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 121,
+      "key": "handover_dialog.confirm_btn",
+      "default": "🤝 Übergabe bestätigen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 56,
+      "key": "handover_dialog.header",
+      "default": "Zuständigkeit für",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 56,
+      "key": "handover_dialog.header_suffix",
+      "default": "übergeben",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 63,
+      "key": "handover_dialog.curr_actor",
+      "default": "Aktuelle Zuständigkeit:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/handover_dialog.py",
+      "line": 63,
+      "key": "handover_dialog.customer",
+      "default": "Kunde:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 556,
+      "key": "dialog_titles.help",
+      "default": "📖 Handbuch & Anwendungsdokumentation",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 595,
+      "key": "help_dialog.search_placeholder",
+      "default": "🔍 Themen & Stichworte suchen...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 580,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 581,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 582,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 593,
+      "key": "help_dialog.header",
+      "default": "📖 Handbuch & Hilfe",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 607,
+      "key": "help_dialog.nav_title",
+      "default": "Themenübersicht",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/help_dialog.py",
+      "line": 631,
+      "key": "help_dialog.no_topics",
+      "default": "Keine Themen gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 18,
+      "key": "dialog_titles.quick_customer",
+      "default": "🏥 Neue Praxis schnell anlegen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 94,
+      "key": "dialog_titles.new_case",
+      "default": "Neuen Support-Fall anlegen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 124,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 127,
+      "key": "new_case_dialog.create_btn",
+      "default": "Fall anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 141,
+      "key": "new_case_dialog.header",
+      "default": "Neuen Support-Fall erfassen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 148,
+      "key": "new_case_dialog.is_internal",
+      "default": "🏢 Interner Vorgang (ohne Kundenelement)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 166,
+      "key": "new_case_dialog.add_practice_btn",
+      "default": "+ Neue Praxis",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 275,
+      "key": "new_case.add_tag",
+      "default": "+ Tag",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 293,
+      "key": "new_case.tag_input_prompt",
+      "default": "Geben Sie den Namen des neuen Tags ein:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 293,
+      "key": "new_case.tag_input_title",
+      "default": "Neuen Tag hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 59,
+      "key": "quick_customer.err_name",
+      "default": "Bitte Praxisnamen eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 348,
+      "key": "new_case.title_required",
+      "default": "Bitte einen Titel für den Fall eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 370,
+      "key": "new_case.future_date",
+      "default": "Das Erstellungsdatum darf nicht in der Zukunft liegen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 29,
+      "key": "quick_customer.header",
+      "default": "Neue Praxis anlegen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 31,
+      "key": "quick_customer.practice_name",
+      "default": "Praxisname *:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 35,
+      "key": "quick_customer.contact_person",
+      "default": "Ansprechpartner:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 39,
+      "key": "quick_customer.phone",
+      "default": "Telefon:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 44,
+      "key": "quick_customer.is_vip",
+      "default": "⭐ VIP-Praxis",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 52,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 53,
+      "key": "ui_buttons.create",
+      "default": "Erstellen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 156,
+      "key": "new_case_dialog.customer",
+      "default": "Kunde / Praxis:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 172,
+      "key": "new_case_dialog.title_label",
+      "default": "Titel / Kurzbeschreibung:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 177,
+      "key": "new_case_dialog.created_at",
+      "default": "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 189,
+      "key": "new_case_dialog.schema",
+      "default": "Formular-Schema:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 198,
+      "key": "new_case_dialog.tags",
+      "default": "Tags / Stichworte zuweisen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 206,
+      "key": "new_case_dialog.deadline",
+      "default": "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 215,
+      "key": "new_case_dialog.initial_note",
+      "default": "Initiale Notiz / Eingangskanal:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 357,
+      "key": "new_case.invalid_date",
+      "default": "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/new_case_dialog.py",
+      "line": 361,
+      "key": "new_case.invalid_date",
+      "default": "Ungültiges Erstellungsdatum-Format (z. B. TT.MM.JJJJ HH:MM).",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 60,
+      "key": "p2p.reload_compare",
+      "default": "Neu Laden / Vergleichen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 75,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 78,
+      "key": "p2p.import_selected",
+      "default": "Ausgewählte Fälle übernehmen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 88,
+      "key": "p2p.no_colleague_selected",
+      "default": "Kein Kollege ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 159,
+      "key": "p2p.select_at_least_one",
+      "default": "Bitte mindestens einen Fall zur Übernahme auswählen.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 48,
+      "key": "p2p.select_colleague",
+      "default": "Kollege auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 52,
+      "key": "p2p.no_colleagues_cfg",
+      "default": "Keine Kollegen konfiguriert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/p2p_diff_dialog.py",
+      "line": 110,
+      "key": "p2p.no_diff_cases",
+      "default": "Keine abweichenden Fälle vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 107,
+      "key": "profile.provider_gemini",
+      "default": "GOOGLE GEMINI (Cloud)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 107,
+      "key": "profile.provider_ollama",
+      "default": "OLLAMA (Lokal)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 113,
+      "key": "profile.anonymize_toggle",
+      "default": "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 180,
+      "key": "profile.gemini_modelfile_rules",
+      "default": "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 197,
+      "key": "profile.checking_ollama",
+      "default": "🔍 Prüfe Ollama-Status...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 204,
+      "key": "profile.scan_ollama_btn",
+      "default": "🔄 Status & Modelle scannen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 104,
+      "key": "profile.provider_ollama",
+      "default": "OLLAMA (Lokal)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 104,
+      "key": "profile.provider_gemini",
+      "default": "GOOGLE GEMINI (Cloud)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 91,
+      "key": "profile.ai_header",
+      "default": "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 99,
+      "key": "profile.ai_provider_label",
+      "default": "KI-Anbieter wählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 125,
+      "key": "profile.gemini_key_lbl",
+      "default": "🔑 Google Gemini API Key:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_ai_tab.py",
+      "line": 156,
+      "key": "profile.gemini_select_model",
+      "default": "Gemini Modell wählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 798,
+      "key": "profile.backup_desc",
+      "default": "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für den Wechsel auf einen anderen Arbeitsplatz genutzt werden.",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 148,
+      "key": "profile.title",
+      "default": null,
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 342,
+      "key": "dialog_titles.profile_settings",
+      "default": "⚙ Profil & Anwendungseinstellungen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 166,
+      "key": "profile.header",
+      "default": "⚙ Profil & Anwendungseinstellungen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 207,
+      "key": "profile.save_btn",
+      "default": "💾 Einstellungen Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 216,
+      "key": "profile.user_tab_header",
+      "default": "Mitarbeiter-Profil verwalten & wechseln",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 222,
+      "key": "profile.active_profile",
+      "default": "Aktives Profil:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 237,
+      "key": "profile.btn_new_profile",
+      "default": "➕ Neues Profil anlegen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 244,
+      "key": "profile.user_info_header",
+      "default": "Benutzerinformationen (Aktives Profil)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 248,
+      "key": "profile.name_placeholder",
+      "default": "Ihr Name",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 386,
+      "key": "profile.appearance_layout",
+      "default": "Erscheinungsbild & Layout",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 389,
+      "key": "profile.language",
+      "default": "Sprache / Language:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 400,
+      "key": "profile.theme",
+      "default": "Farb-Thema (Theme):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 406,
+      "key": "profile.default_layout",
+      "default": "Standard-Layout beim Start:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 417,
+      "key": "profile.demo_data_toggle",
+      "default": "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 427,
+      "key": "profile.os_popup_toggle",
+      "default": "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 435,
+      "key": "profile.popup_position",
+      "default": "Position zusätzlicher Fenster & Benachrichtigungen:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 442,
+      "key": "profile.popup_target_app",
+      "default": "App-Bildschirm (aktuell/zuletzt)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 442,
+      "key": "profile.popup_target_primary",
+      "default": "Hauptbildschirm",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 446,
+      "key": "profile.saved_widths",
+      "default": "Gespeicherte Spaltenbreiten (Profile-Level)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 462,
+      "key": "profile.reset_widths_btn",
+      "default": "🔄 Alle Spaltenbreiten auf Standard zurücksetzen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 481,
+      "key": "profile.widths_reset_msg",
+      "default": "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 500,
+      "key": "profile.browse_folder",
+      "default": "📁 Ordner wählen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 510,
+      "key": "profile.default_in_data",
+      "default": "Standard im Datenordner",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 520,
+      "key": "profile.default_in_data",
+      "default": "Standard im Datenordner",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 530,
+      "key": "profile.default_in_data",
+      "default": "Standard im Datenordner",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 537,
+      "key": "profile.reset_paths_btn",
+      "default": "🔄 Einzelpfade auf Standard zurücksetzen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 834,
+      "key": "profile.backup_exp_btn",
+      "default": "📦 Komplett-Backup als ZIP exportieren...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 861,
+      "key": "profile.backup_imp_btn",
+      "default": "📥 Datensicherung aus ZIP importieren...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 344,
+      "key": "profile.header",
+      "default": "⚙ Profil & Anwendungseinstellungen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 346,
+      "key": "profile.save_btn",
+      "default": "💾 Einstellungen Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 357,
+      "key": "profile.appearance_layout",
+      "default": "Erscheinungsbild & Layout",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 359,
+      "key": "profile.language",
+      "default": "Sprache / Language:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 361,
+      "key": "profile.theme",
+      "default": "Farb-Thema (Theme):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 363,
+      "key": "profile.default_layout",
+      "default": "Standard-Layout beim Start:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 365,
+      "key": "profile.demo_data_toggle",
+      "default": "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 367,
+      "key": "profile.os_popup_toggle",
+      "default": "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 369,
+      "key": "profile.popup_position",
+      "default": "Position zusätzlicher Fenster & Benachrichtigungen:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 371,
+      "key": "profile.saved_widths",
+      "default": "Gespeicherte Spaltenbreiten (Profile-Level)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 373,
+      "key": "profile.reset_widths_btn",
+      "default": "Alle Spaltenbreiten auf Standard zurücksetzen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 375,
+      "key": "profile.user_tab_header",
+      "default": "Mitarbeiter-Profil verwalten & wechseln",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 377,
+      "key": "profile.active_profile",
+      "default": "Aktives Profil:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 379,
+      "key": "profile.btn_new_profile",
+      "default": "➕ Neues Profil anlegen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 381,
+      "key": "profile.user_info_header",
+      "default": "Benutzerinformationen (Aktives Profil)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 439,
+      "key": "profile.popup_target_app",
+      "default": "App-Bildschirm (aktuell/zuletzt)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 439,
+      "key": "profile.popup_target_primary",
+      "default": "Hauptbildschirm",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 247,
+      "key": "profile.display_name",
+      "default": "Name / Anzeigename *:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 252,
+      "key": "profile.dept",
+      "default": "Abteilung / Department *:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 257,
+      "key": "profile.ext",
+      "default": "Durchwahl / Extension:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 262,
+      "key": "profile.email",
+      "default": "E-Mail-Adresse:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 267,
+      "key": "profile.mobile",
+      "default": "Mobiltelefon:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 272,
+      "key": "profile.signature",
+      "default": "E-Mail Signatur (für E-Mail-Entwürfe):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 489,
+      "key": "profile.paths_title",
+      "default": "Speicherort & Dateipfade (EXE / Externe Daten)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 492,
+      "key": "profile.workspace_label",
+      "default": "Arbeitsbereich / Datenordner-Pfad:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 504,
+      "key": "profile.custom_overrides",
+      "default": "Benutzerdefinierte Einzeldateipfade (Optional):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 509,
+      "key": "profile.cases_file",
+      "default": "Fälle (cases.json):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 514,
+      "key": "profile.file_browse",
+      "default": "Datei...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 519,
+      "key": "profile.cust_file",
+      "default": "Kunden (customers.json):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 524,
+      "key": "profile.file_browse",
+      "default": "Datei...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 529,
+      "key": "profile.wiki_file",
+      "default": "Wiki DB (sqlite):",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 534,
+      "key": "profile.file_browse",
+      "default": "Datei...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 562,
+      "key": "profile.wiki_title",
+      "default": "BookStack Server Konfiguration",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 564,
+      "key": "profile.wiki_url",
+      "default": "BookStack API URL:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 569,
+      "key": "profile.wiki_token_id",
+      "default": "API Token ID:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 574,
+      "key": "profile.wiki_token_secret",
+      "default": "API Token Secret:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 579,
+      "key": "profile.wiki_sync_mode",
+      "default": "Synchronisations-Modus:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 585,
+      "key": "profile.wiki_sync_startup",
+      "default": "Wiki-Inhalte beim Anwendungsstart synchronisieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 794,
+      "key": "profile.backup_title",
+      "default": "📦 Komplett-Datensicherung & ZIP-Archivierung",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 820,
+      "key": "profile.backup_exp_title",
+      "default": "1. Komplett-Datensatz als ZIP exportieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 826,
+      "key": "profile.backup_exp_desc",
+      "default": "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 847,
+      "key": "profile.backup_imp_title",
+      "default": "2. Datensicherung aus ZIP-Datei importieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/profile_settings_dialog.py",
+      "line": 853,
+      "key": "profile.backup_imp_desc",
+      "default": "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 120,
+      "key": "schema_builder.new_form",
+      "default": "+ Neues Formular",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 125,
+      "key": "schema_builder.adopt_schema",
+      "default": "📥 Zu Realdaten übernehmen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 132,
+      "key": "schema_builder.default_schemas",
+      "default": "🔄 Standard-Formulare",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 135,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 155,
+      "key": "schema_builder.field_id_ph",
+      "default": "Feld-ID (z. B. reason_detail)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 158,
+      "key": "schema_builder.label_ph",
+      "default": "Beschriftung (Label)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 165,
+      "key": "schema_builder.required_chk",
+      "default": "Pflicht",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 168,
+      "key": "schema_builder.add_btn",
+      "default": "+ Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 191,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 194,
+      "key": "cockpit.save",
+      "default": "Änderungen Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 46,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 47,
+      "key": "ui_buttons.create",
+      "default": "Erstellen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 141,
+      "key": "schema_builder.fields_header",
+      "default": "Enthaltene Formularfelder:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/schema_builder_dialog.py",
+      "line": 150,
+      "key": "schema_builder.add_field_header",
+      "default": "Neues Feld hinzufügen (V2 mit bedingter Logik):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 111,
+      "key": "cockpit.save",
+      "default": "💾 Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 120,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 213,
+      "key": "snippet_mgmt.new_snippet_status",
+      "default": "Neuer Textbaustein (wird beim Speichern angelegt)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 226,
+      "key": "snippet_mgmt.title_required",
+      "default": "⚠ Bitte einen Titel eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 229,
+      "key": "snippet_mgmt.content_required",
+      "default": "⚠ Der Inhalt darf nicht leer sein.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 41,
+      "key": "snippet_mgmt.header",
+      "default": "📝 Textbaustein-Bibliothek verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 45,
+      "key": "snippet_mgmt.new_snippet",
+      "default": "+ Neuer Textbaustein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 69,
+      "key": "snippet_mgmt.title_lbl",
+      "default": "Titel:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 73,
+      "key": "snippet_mgmt.cat_lbl",
+      "default": "Kategorie:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 77,
+      "key": "snippet_mgmt.content_lbl",
+      "default": "Inhalt / Baustein-Text:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 81,
+      "key": "snippet_mgmt.tags_lbl",
+      "default": "Tags (kommagetrennt):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 133,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/snippet_management_dialog.py",
+      "line": 154,
+      "key": "snippet_mgmt.no_snippets",
+      "default": "Keine Textbausteine vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 47,
+      "key": "snippet_picker.search",
+      "default": "🔍 Textbaustein suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 88,
+      "key": "snippet_picker.insert_btn",
+      "default": "🧩 Ausgewählten Baustein einfügen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 77,
+      "key": "snippet_picker.preview",
+      "default": "Vorschau des Textbausteins:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 98,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/snippet_picker_dialog.py",
+      "line": 114,
+      "key": "snippet_picker.no_snippets",
+      "default": "Keine Textbausteine gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 69,
+      "key": "tag_mgmt.tab_tags",
+      "default": "🏷 Allgemeine Tags",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 70,
+      "key": "tag_mgmt.tab_modules",
+      "default": "🧩 Programmbereiche",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 62,
+      "key": "common.close",
+      "default": "Schließen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 77,
+      "key": "tag_mgmt.search_tags_placeholder",
+      "default": "🔍 Tags durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 84,
+      "key": "tag_mgmt.new_tag_placeholder",
+      "default": "Neuen Tag erstellen (z. B. Schnittstelle)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 87,
+      "key": "tag_mgmt.add_tag_btn",
+      "default": "+ Tag Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 99,
+      "key": "tag_mgmt.search_modules_placeholder",
+      "default": "🔍 Programmbereiche durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 106,
+      "key": "tag_mgmt.new_module_placeholder",
+      "default": "Neuen Programmbereich erstellen (z. B. Rezeptdruck)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 109,
+      "key": "tag_mgmt.add_module_btn",
+      "default": "+ Bereich Hinzufügen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 174,
+      "key": "tag_mgmt.tag_added",
+      "default": "✅ Tag erfolgreich hinzugefügt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 227,
+      "key": "tag_mgmt.module_added",
+      "default": "✅ Programmbereich erfolgreich hinzugefügt!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 164,
+      "key": "tag_mgmt.tag_empty",
+      "default": "⚠ Tag Name darf nicht leer sein!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 168,
+      "key": "tag_mgmt.tag_exists",
+      "default": "⚠ Tag existiert bereits!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 217,
+      "key": "tag_mgmt.module_empty",
+      "default": "⚠ Programmbereich darf nicht leer sein!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 221,
+      "key": "tag_mgmt.module_exists",
+      "default": "⚠ Programmbereich existiert bereits!",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 50,
+      "key": "tag_mgmt.header",
+      "default": "🏷 System-Tags & Programmbereiche",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 154,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 208,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 146,
+      "key": "tag_mgmt.no_tags",
+      "default": "Keine Tags gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/tag_management_dialog.py",
+      "line": 200,
+      "key": "tag_mgmt.no_modules",
+      "default": "Keine Programmbereiche gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 134,
+      "key": "template_editor.preview_btn",
+      "default": "👁 Live-Vorschau rendern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 235,
+      "key": "template_mgmt.new_template",
+      "default": "+ Neue Vorlage",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 238,
+      "key": "template_mgmt.load_defaults",
+      "default": "🔄 Standard-Vorlagen laden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 284,
+      "key": "common.delete",
+      "default": "🗑 Löschen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 287,
+      "key": "common.edit",
+      "default": "✏ Bearbeiten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 145,
+      "key": "ui_buttons.save_template",
+      "default": "💾 Vorlage Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 146,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 233,
+      "key": "template_mgmt.header",
+      "default": "📄 Export-Vorlagen-Verwaltung",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/template_manager_dialog.py",
+      "line": 268,
+      "key": "template_mgmt.no_templates",
+      "default": "Keine Vorlagen vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 90,
+      "key": "zip_import.root_folder_btn",
+      "default": "📁 Gesamt-Zielordner wählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 99,
+      "key": "zip_import.custom_paths_btn",
+      "default": "⚙ Einzelne Pfade anpassen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 116,
+      "key": "zip_import.warning_overwrite",
+      "default": "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 81,
+      "key": "zip_import.select_mode",
+      "default": "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 132,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 141,
+      "key": "zip_import.unpack_btn",
+      "default": "📥 Daten entpacken & importieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 169,
+      "key": "zip_import.main_target_dir",
+      "default": "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 183,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 192,
+      "key": "zip_import.data_loc",
+      "default": "1. Speicherort für Datendateien & Profile (data/):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 205,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 213,
+      "key": "zip_import.att_loc",
+      "default": "2. Speicherort für Fall-Anhänge (attachments/):",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/dialogs/zip_import_dialog.py",
+      "line": 226,
+      "key": "common.browse",
+      "default": "Durchsuchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 107,
+      "key": "analytics.total_cases",
+      "default": "📋 Fälle Gesamt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 108,
+      "key": "analytics.open_cases",
+      "default": "⏳ Offene Fälle",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 109,
+      "key": "analytics.completed_cases",
+      "default": "✓ Erledigt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 110,
+      "key": "analytics.overdue_cases",
+      "default": "⚠ Überfällig",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 111,
+      "key": "analytics.avg_res_time",
+      "default": "⏱ Ø Bearbeitung",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 112,
+      "key": "analytics.vip_rate",
+      "default": "⭐ VIP-Quote",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 272,
+      "key": "analytics.copied_title",
+      "default": "📋 Statistik kopiert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 33,
+      "key": "analytics.header",
+      "default": "Auswertungen & Support Cockpit KPIs",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 39,
+      "key": "analytics.copy_report_btn",
+      "default": "📋 Statistik-Bericht kopieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 131,
+      "key": "analytics.urgency_title",
+      "default": "🚨 Dringlichkeits-Verteilung (Scoring)",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 149,
+      "key": "analytics.schema_title",
+      "default": "📄 Verteilung nach Formular / Schema",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 168,
+      "key": "analytics.top_practices_title",
+      "default": "🏆 Top 5 Praxen nach Fallaufkommen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 186,
+      "key": "analytics.assignee_title",
+      "default": "👤 Bearbeiter-Auslastung",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 205,
+      "key": "analytics.department_title",
+      "default": "👥 Offene Fälle nach Abteilung / Zuständigkeit",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/analytics_view.py",
+      "line": 57,
+      "key": "analytics.no_data",
+      "default": "Keine Auswertungsdaten verfügbar.",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 144,
+      "key": "cockpit.complete",
+      "default": "✓ Erledigt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 144,
+      "key": "board.reopen",
+      "default": "✓ Öffnen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 204,
+      "key": "board.col_support",
+      "default": "📥 Support / In Bearbeitung",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 205,
+      "key": "board.col_dev",
+      "default": "💻 Entwickler / Dev-Team",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 206,
+      "key": "board.col_followup",
+      "default": "🔔 Wiedervorlage / Warten",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 207,
+      "key": "board.col_completed",
+      "default": "✓ Erledigte Fälle",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 114,
+      "key": "board.cockpit_btn",
+      "default": "🎯 Cockpit",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 127,
+      "key": "board.handover",
+      "default": "👤 Übergeben",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 136,
+      "key": "board.remind",
+      "default": "🔔 Erinnere",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/board_view.py",
+      "line": 263,
+      "key": "board.collapse_btn",
+      "default": "◀ Zuklappen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 329,
+      "key": "cockpit.tab_timeline",
+      "default": "Zeitleiste",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 330,
+      "key": "cockpit.tab_attachments",
+      "default": "Anhänge",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 331,
+      "key": "cockpit.tab_wiki",
+      "default": "Wiki",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 266,
+      "key": "cockpit.more_actions",
+      "default": "⚙ Weitere Aktionen...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 131,
+      "key": "cockpit.select_case_prompt",
+      "default": "Bitte einen Fall auswählen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 215,
+      "key": "cockpit.archive",
+      "default": "📦 Archivieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 218,
+      "key": "cockpit.complete",
+      "default": "✓ Erledigt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 234,
+      "key": "cockpit.email_ai",
+      "default": "✉ E-Mail & 🤖 KI",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 237,
+      "key": "cockpit.calendar",
+      "default": "📅 Kalender",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 240,
+      "key": "cockpit.followup",
+      "default": "🔔 Wiedervorlage",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 243,
+      "key": "cockpit.note",
+      "default": "📝 Notiz",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 250,
+      "key": "cockpit.save",
+      "default": "💾 Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 283,
+      "key": "cockpit.more_actions",
+      "default": "⚙ Weitere Aktionen...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 256,
+      "key": "cockpit.copy_email",
+      "default": "📧 Praxis E-Mail kopieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 257,
+      "key": "cockpit.export_case",
+      "default": "📤 Fall exportieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 258,
+      "key": "cockpit.print_case",
+      "default": "🖨 Fall-Akte drucken",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 259,
+      "key": "cockpit.convert_form",
+      "default": "🔄 Formular umwandeln",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 285,
+      "key": "cockpit.email_ai",
+      "default": "✉ E-Mail & 🤖 KI",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 287,
+      "key": "cockpit.calendar",
+      "default": "📅 Kalender",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 289,
+      "key": "cockpit.followup",
+      "default": "🔔 Wiedervorlage",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 291,
+      "key": "cockpit.note",
+      "default": "📝 Notiz",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 293,
+      "key": "cockpit.save",
+      "default": "💾 Speichern",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 295,
+      "key": "cockpit.complete",
+      "default": "✓ Erledigt",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 297,
+      "key": "cockpit.archive",
+      "default": "📦 Archivieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 278,
+      "key": "cockpit.copy_email",
+      "default": "📧 Praxis E-Mail kopieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 279,
+      "key": "cockpit.export_case",
+      "default": "📤 Fall exportieren",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 280,
+      "key": "cockpit.print_case",
+      "default": "🖨 Fall-Akte drucken",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 281,
+      "key": "cockpit.convert_form",
+      "default": "🔄 Formular umwandeln",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_layout_builders.py",
+      "line": 310,
+      "key": "<f-string dynamic>",
+      "default": null,
+      "exists_in_de_json": null
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 308,
+      "key": "cockpit.more_actions",
+      "default": "⚙ Weitere Aktionen...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 533,
+      "key": "cockpit.followup_at",
+      "default": "🔔 Nachfragen am:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 328,
+      "key": "cockpit.email_copied_title",
+      "default": "📋 E-Mail kopiert",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/cockpit_view.py",
+      "line": 336,
+      "key": "cockpit.no_email_title",
+      "default": "⚠ Keine E-Mail-Adresse",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 137,
+      "key": "table.details_header",
+      "default": "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/views/table_view.py",
+      "line": 145,
+      "key": "table.save_btn",
+      "default": "💾 Ändern & Speichern",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 29,
+      "key": "attachments.title",
+      "default": "Fall-Dateianhänge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 32,
+      "key": "attachments.open_explorer",
+      "default": "📁 Explorer öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 43,
+      "key": "attachments.no_preview",
+      "default": "Keine Datei zur Vorschau ausgewählt",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 50,
+      "key": "attachments.add_file",
+      "default": "+ Datei hinzufügen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 53,
+      "key": "attachments.tip",
+      "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 59,
+      "key": "attachments.title",
+      "default": "Fall-Dateianhänge",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 61,
+      "key": "attachments.open_explorer",
+      "default": "📁 Explorer öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 63,
+      "key": "attachments.no_preview",
+      "default": "Keine Datei zur Vorschau ausgewählt",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 65,
+      "key": "attachments.add_file",
+      "default": "+ Datei hinzufügen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 67,
+      "key": "attachments.tip",
+      "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 108,
+      "key": "common.open",
+      "default": "📂 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 79,
+      "key": "attachments.no_case",
+      "default": "Kein Fall ausgewählt.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/attachment_widget.py",
+      "line": 84,
+      "key": "attachments.no_files",
+      "default": "Keine Dateianhänge im Fallordner.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 37,
+      "key": "cockpit.search_placeholder",
+      "default": "🔍 Suche / Token (z. B. vip:true status:open)...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 46,
+      "key": "cockpit.filter_all",
+      "default": "Alle",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 48,
+      "key": "cockpit.filter_urgent",
+      "default": "🔥 Dringend",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 50,
+      "key": "cockpit.filter_followup",
+      "default": "🔔 Wiedervorlage",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 55,
+      "key": "cockpit.filter_deep",
+      "default": "🔍 Tiefensuche",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 64,
+      "key": "case_list.zero_cases",
+      "default": "0 Fälle",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 80,
+      "key": "cockpit.search_placeholder",
+      "default": "🔍 Suche / Token (z. B. vip:true status:open)...",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 82,
+      "key": "cockpit.filter_all",
+      "default": "Alle",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 84,
+      "key": "cockpit.filter_urgent",
+      "default": "🔥 Dringend",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 86,
+      "key": "cockpit.filter_followup",
+      "default": "🔔 Wiedervorlage",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 88,
+      "key": "cockpit.filter_deep",
+      "default": "🔍 Tiefensuche",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 195,
+      "key": "case_list.completed_badge",
+      "default": "✓ ERLEDIGT",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/case_list_widget.py",
+      "line": 155,
+      "key": "case_list.no_cases",
+      "default": "Keine Fälle gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 252,
+      "key": "common.cancel",
+      "default": "Abbrechen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 259,
+      "key": "ui_buttons.apply",
+      "default": "✓ Übernehmen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 456,
+      "key": "cockpit.calendar",
+      "default": "📅 Kalender",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 126,
+      "key": "date_picker.time_lbl",
+      "default": "⏰ Uhrzeit:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/date_picker.py",
+      "line": 213,
+      "key": "date_picker.o_clock",
+      "default": "Uhr",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 191,
+      "key": "cockpit.calendar",
+      "default": "📅 Kalender",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 295,
+      "key": "dynamic_form.number_placeholder",
+      "default": "Zahl...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 237,
+      "key": "dynamic_form.import_backup",
+      "default": "📁 .backup-Datei importieren...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 284,
+      "key": "dynamic_form.choose_file",
+      "default": "📁 Datei wählen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+      "line": 66,
+      "key": "dynamic_form.manage_tags",
+      "default": "⚙ Programmbereiche verwalten",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 91,
+      "key": "dynamic_form.search_tags",
+      "default": "🔍 Programmbereich suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 561,
+      "key": "dynamic_form.no_files",
+      "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 582,
+      "key": "dynamic_form.import_title",
+      "default": "Dateien in Fallordner importieren",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 607,
+      "key": "dynamic_form.no_files",
+      "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 85,
+      "key": "dynamic_form.select_tags",
+      "default": "🧩 Programmbereiche auswählen:",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 98,
+      "key": "dynamic_form.select_all",
+      "default": "Alle auswählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 99,
+      "key": "dynamic_form.select_none",
+      "default": "Keine auswählen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 111,
+      "key": "dynamic_form.apply_close",
+      "default": "✓ Übernehmen & Schließen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 568,
+      "key": "dynamic_form.import_files",
+      "default": "+ Datei(en) importieren...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 611,
+      "key": "dynamic_form.files_attached",
+      "default": "Abgelegte Dateien im Fallordner",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 123,
+      "key": "dynamic_form.no_tags",
+      "default": "Kein Programmbereich gefunden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 360,
+      "key": "form.no_fields",
+      "default": "Keine Formularfelder definiert.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/dynamic_form_widget.py",
+      "line": 629,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/searchable_combobox.py",
+      "line": 112,
+      "key": "searchable_combo.placeholder",
+      "default": "🔍 Buchstaben eintippen zum Suchen...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/searchable_combobox.py",
+      "line": 172,
+      "key": "searchable_combo.no_results",
+      "default": "Keine Praxen gefunden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 28,
+      "key": "cockpit.timeline_title",
+      "default": "Verlauf & Timeline Notizen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 44,
+      "key": "cockpit.add_new_note",
+      "default": "Neue Notiz hinzufügen:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 49,
+      "key": "cockpit.snippets_btn",
+      "default": "📝 Textbaustein",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 67,
+      "key": "cockpit.add_note_btn",
+      "default": "+ Notiz Hinzufügen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 73,
+      "key": "cockpit.timeline_title",
+      "default": "Verlauf & Timeline Notizen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 75,
+      "key": "cockpit.add_new_note",
+      "default": "Neue Notiz hinzufügen:",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 77,
+      "key": "cockpit.snippets_btn",
+      "default": "📝 Textbaustein",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 79,
+      "key": "cockpit.add_note_btn",
+      "default": "+ Notiz Hinzufügen",
+      "exists_in_de_json": true
+    },
+    {
+      "file": "src/ui/widgets/timeline_widget.py",
+      "line": 99,
+      "key": "timeline.no_notes",
+      "default": "Keine Notizen vorhanden.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 16,
+      "key": "toast.reminder_title",
+      "default": "Erinnerung",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 26,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/toast_notification.py",
+      "line": 110,
+      "key": "common.open",
+      "default": "👁 Öffnen",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 19,
+      "key": "wiki.header",
+      "default": "BookStack Offline Wiki",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 22,
+      "key": "wiki.sync_btn",
+      "default": "🔄 Wiki Sync",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 29,
+      "key": "wiki.search_placeholder",
+      "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 95,
+      "key": "wiki.syncing",
+      "default": "⏳ Synchronisiere Wiki im Hintergrund...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 44,
+      "key": "wiki.header",
+      "default": "BookStack Offline Wiki",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 46,
+      "key": "wiki.sync_btn",
+      "default": "🔄 Wiki Sync",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 48,
+      "key": "wiki.search_placeholder",
+      "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)...",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 61,
+      "key": "wiki.enter_query",
+      "default": "Bitte Suchbegriff eingeben.",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 65,
+      "key": "wiki.articles_found",
+      "default": "Wiki-Artikel gefunden",
+      "exists_in_de_json": false
+    },
+    {
+      "file": "src/ui/widgets/wiki_widget.py",
+      "line": 68,
+      "key": "wiki.no_results",
+      "default": "Keine treffenden Artikel im Offline-Index.",
+      "exists_in_de_json": false
+    }
+  ]
+}

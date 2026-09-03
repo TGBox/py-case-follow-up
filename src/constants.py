@@ -9,8 +9,12 @@ APP_WINDOW_TITLE = "Support-Cockpit & Ticket Management"
 APP_MIN_WIDTH = 900
 APP_MIN_HEIGHT = 650
 
+from typing import Any
+from services.i18n_service import LocalizedDict
+
+
 # --- Enum Display Names & Labels ---
-DISPLAY_CHANNEL_NAMES = {
+DISPLAY_CHANNEL_NAMES = LocalizedDict("channels", {
     "PHONE_INBOUND": "Telefon (Eingang)",
     "PHONE_OUTBOUND": "Telefon (Ausgang)",
     "EMAIL_IN": "E-Mail (Eingang)",
@@ -20,9 +24,9 @@ DISPLAY_CHANNEL_NAMES = {
     "GITLAB_TICKET_CLOSED": "GitLab-Ticket geschlossen",
     "INTERNAL_NOTE": "Interne Notiz",
     "OTHER": "Sonstiges"
-}
+})
 
-DISPLAY_ACTOR_NAMES = {
+DISPLAY_ACTOR_NAMES = LocalizedDict("actors", {
     "SUPPORT": "Support / Hotline",
     "HOTLINE": "Hotline",
     "DEVELOPMENT": "Entwicklung",
@@ -33,46 +37,30 @@ DISPLAY_ACTOR_NAMES = {
     "DATA_DEVELOPMENT": "Data-AL Entwicklung",
     "DATA_TECH": "Data-AL Technik",
     "DATA_CUSTOMER": "Data-AL Kunde",
-}
+})
 
-DISPLAY_LAYOUT_NAMES = {
+DISPLAY_LAYOUT_NAMES = LocalizedDict("layouts", {
     "COCKPIT": "Cockpit (Hauptansicht)",
     "BOARD": "Kanban-Board (Zuständigkeiten)",
     "TABLE": "Tabelle & Details (Sortier-Matrix)",
     "ANALYTICS": "Auswertungen & Kennzahlen",
-}
+})
 
-DISPLAY_BOARD_COLUMN_NAMES = {
+DISPLAY_BOARD_COLUMN_NAMES = LocalizedDict("board_columns", {
     "NEW": "Neu",
     "ACTION_REQUIRED": "Aktion erforderlich",
     "WAITING": "Warten auf zuständige Stelle",
     "IN_PROGRESS": "In Bearbeitung",
     "DONE": "Erledigt",
-}
-
-from typing import Any
+})
 
 
-class LocalizedDict(dict):
-    def __init__(self, prefix: str, initial_dict: dict[str, str]):
-        super().__init__(initial_dict)
-        self._prefix = prefix
+class LocalizedHotkeyDict(LocalizedDict):
+    """LocalizedDict that supports iterating as (key, value) pairs for backward compatibility."""
 
-    def __getitem__(self, key: str) -> str:
-        default = super().get(key, key)
-        try:
-            from services.i18n_service import tr
-            return tr(f"{self._prefix}.{key}", default=default)
-        except Exception:
-            return default
+    def __iter__(self):
+        return iter([(k, self[k]) for k in self.keys()])
 
-    def get(self, key: str, default: Any = None) -> Any:
-        try:
-            from services.i18n_service import tr
-            fallback = super().get(key, default)
-            return tr(f"{self._prefix}.{key}", default=fallback if fallback is not None else key)
-        except Exception:
-            return super().get(key, default)
 
 
 # --- Dialog Titles & Window Headers ---
@@ -188,7 +176,7 @@ STATUS_MESSAGES = LocalizedDict("status_messages", {
 })
 
 # --- Validation Error Messages ---
-VALIDATION_MESSAGES = {
+VALIDATION_MESSAGES = LocalizedDict("validation_messages", {
     "snippet_id_required": "Snippet ID is required.",
     "snippet_title_required": "Snippet title is required.",
     "snippet_content_required": "Snippet content cannot be empty.",
@@ -207,7 +195,8 @@ VALIDATION_MESSAGES = {
     "label_required": "Label is required.",
     "schema_id_caps_required": "Schema ID is required.",
     "display_name_required": "Display name is required.",
-}
+})
+
 
 # --- Default Layout Dimensions & Column Widths ---
 DEFAULT_COLUMN_WIDTHS = {
@@ -568,21 +557,28 @@ DEFAULT_SHORTCUTS = {
     "toggle_theme": "<Control-t>",
 }
 
-HOTKEY_ACTION_LABELS = [
-    ("new_case", "Neuer Fall:"),
-    ("save_case", "Fall speichern:"),
-    ("archive_case", "Fall archivieren:"),
-    ("export_dialog", "Export Dialog:"),
-    ("open_settings", "Einstellungen öffnen:"),
-    ("snippet_picker", "Snippet-Picker öffnen:"),
-    ("wiki_search", "Wiki-Suche fokussieren:"),
-    ("search_customer", "Kundensuche fokussieren:"),
-    ("view_cockpit", "Cockpit-Ansicht:"),
-    ("view_board", "Board-Ansicht:"),
-    ("view_table", "Tabelle-Ansicht:"),
-    ("view_analytics", "Auswertungs-Ansicht:"),
-    ("toggle_theme", "Theme umschalten:"),
-]
+HOTKEY_ACTION_LABELS = LocalizedHotkeyDict("hotkey_actions", {
+    "new_case": "Neuer Fall:",
+    "save_case": "Fall speichern:",
+    "archive_case": "Fall archivieren:",
+    "export_dialog": "Export Dialog:",
+    "open_settings": "Einstellungen öffnen:",
+    "snippet_picker": "Snippet-Picker öffnen:",
+    "wiki_search": "Wiki-Suche fokussieren:",
+    "search_customer": "Kundensuche fokussieren:",
+    "view_cockpit": "Cockpit-Ansicht:",
+    "view_board": "Board-Ansicht:",
+    "view_table": "Tabelle-Ansicht:",
+    "view_analytics": "Auswertungs-Ansicht:",
+    "toggle_theme": "Theme umschalten:",
+})
+
+HOTKEY_ACTION_LABELS_MAP = HOTKEY_ACTION_LABELS
+
+
+def get_localized_hotkey_action_labels() -> list[tuple[str, str]]:
+    return list(HOTKEY_ACTION_LABELS.items())
+
 
 HOTKEY_RECORDER_TITLE = "⌨ Hotkey aufnehmen"
 HOTKEY_RECORDER_HEADER = "⌨ Tastenkombination drücken"

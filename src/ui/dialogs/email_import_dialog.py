@@ -157,7 +157,7 @@ class EmailImportDialog(ctk.CTkToplevel):
             # Subject line
             ctk.CTkLabel(
                 card,
-                text=f"Betreff: {subj}",
+                text=tr("email_import.subject_prefix", "Betreff: {subj}", subj=subj),
                 font=ctk.CTkFont(size=12, weight="bold"),
                 text_color=("gray20", "gray90"),
                 anchor="w",
@@ -168,10 +168,15 @@ class EmailImportDialog(ctk.CTkToplevel):
             match_row.pack(fill="x", padx=10, pady=(2, 4))
 
             if matched_case:
-                badge_txt = f"🎯 Automatisch zugeordnet: Fall [{matched_case.case_id}] — {matched_case.customer.practice_name}"
+                badge_txt = tr(
+                    "email_import.auto_matched",
+                    "🎯 Automatisch zugeordnet: Fall [{case_id}] — {practice_name}",
+                    case_id=matched_case.case_id,
+                    practice_name=matched_case.customer.practice_name,
+                )
                 badge_clr = "forestgreen"
             else:
-                badge_txt = "💡 Kein bestehender Fall zugeordnet (Neuer Fall empfohlen)"
+                badge_txt = tr("email_import.no_match", "💡 Kein bestehender Fall zugeordnet (Neuer Fall empfohlen)")
                 badge_clr = ("gray50", "gray60")
 
             ctk.CTkLabel(
@@ -200,7 +205,7 @@ class EmailImportDialog(ctk.CTkToplevel):
             if matched_case:
                 ctk.CTkButton(
                     act_row,
-                    text=f"📌 An Fall [{matched_case.case_id}] anhängen",
+                    text=tr("email_import.append_btn", "📌 An Fall [{case_id}] anhängen", case_id=matched_case.case_id),
                     fg_color="darkgreen",
                     hover_color="forestgreen",
                     height=28,
@@ -209,7 +214,7 @@ class EmailImportDialog(ctk.CTkToplevel):
 
             ctk.CTkButton(
                 act_row,
-                text="➕ Als neuen Fall anlegen",
+                text=tr("email_import.create_new_case", "➕ Als neuen Fall anlegen"),
                 fg_color="dodgerblue",
                 hover_color="deepskyblue",
                 height=28,
@@ -218,7 +223,7 @@ class EmailImportDialog(ctk.CTkToplevel):
 
             ctk.CTkButton(
                 act_row,
-                text="🗑 Ignorieren",
+                text=tr("email_import.ignore", "🗑 Ignorieren"),
                 fg_color=("gray75", "gray35"),
                 hover_color=("gray65", "gray45"),
                 width=80,

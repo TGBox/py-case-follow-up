@@ -88,36 +88,39 @@ class SeedService:
         ]
 
     def create_seed_schemas(self) -> list[QuestionSchema]:
+        from services.i18n_service import tr
+        from constants import DEFAULT_INTERNAL_TASK_CATEGORIES
+
         return [
             QuestionSchema(
                 schema_id="schema_quick",
-                display_name="⚡ Schnellerfassung / Allgemeiner Vorgang",
-                description="Für die rasche Erfassung von Anfragen und Problemen ohne detaillierte Vorab-Spezifizierung.",
+                display_name=tr("schemas.quick.display_name", "⚡ Schnellerfassung / Allgemeiner Vorgang"),
+                description=tr("schemas.quick.description", "Für die rasche Erfassung von Anfragen und Problemen ohne detaillierte Vorab-Spezifizierung."),
                 default_suggested_exports=["mail_kunden_rueckmeldung"],
                 fields=[
-                    SchemaField(field_id="module_name", label="Betroffenes Modul / Programmbereich (optional)", field_type=FieldType.TEXT, required=False, placeholder="z. B. Abrechnung, Terminkalender, Schnittstelle...", order=1),
-                    SchemaField(field_id="short_description", label="Kurzbeschreibung / Stichwort (optional)", field_type=FieldType.TEXT, required=False, placeholder="z. B. Rückfrage zu Rezeptimport", order=2),
-                    SchemaField(field_id="unformatted_description", label="Unformatierte Informationen / Beschreibung", field_type=FieldType.TEXT, required=False, placeholder="Hier alle ungefilterten Informationen, Mails oder Stichpunkte eingeben...", order=3),
+                    SchemaField(field_id="module_name", label=tr("schemas.quick.module_name_label", "Betroffenes Modul / Programmbereich (optional)"), field_type=FieldType.TEXT, required=False, placeholder=tr("schemas.quick.module_name_ph", "z. B. Abrechnung, Terminkalender, Schnittstelle..."), order=1),
+                    SchemaField(field_id="short_description", label=tr("schemas.quick.short_desc_label", "Kurzbeschreibung / Stichwort (optional)"), field_type=FieldType.TEXT, required=False, placeholder=tr("schemas.quick.short_desc_ph", "z. B. Rückfrage zu Rezeptimport"), order=2),
+                    SchemaField(field_id="unformatted_description", label=tr("schemas.quick.unformatted_desc_label", "Unformatierte Informationen / Beschreibung"), field_type=FieldType.TEXT, required=False, placeholder=tr("schemas.quick.unformatted_desc_ph", "Hier alle ungefilterten Informationen, Mails oder Stichpunkte eingeben..."), order=3),
                 ],
             ),
             QuestionSchema(
                 schema_id="schema_internal_task",
-                display_name="🏢 Interne Aufgabe / Notiz",
-                description="Für interne Aufgaben, Systemwartung, Prozessverbesserungen oder Notizen ohne Kundenbezug.",
+                display_name=tr("schemas.internal_task.display_name", "🏢 Interne Aufgabe / Notiz"),
+                description=tr("schemas.internal_task.description", "Für interne Aufgaben, Systemwartung, Prozessverbesserungen oder Notizen ohne Kundenbezug."),
                 default_suggested_exports=[],
                 fields=[
-                    SchemaField(field_id="internal_category", label="Kategorie der Aufgabe", field_type=FieldType.DROPDOWN, options=["Systemwartung", "Dokumentation", "Entwicklungsaufgabe", "Prozessverbesserung", "Sonstiges"], required=True, order=1),
-                    SchemaField(field_id="affected_systems", label="Betroffene Systeme / Server / Komponenten", field_type=FieldType.TEXT, required=False, placeholder="z. B. Server-02, P2P-Sync, Wiki-Cache...", order=2),
-                    SchemaField(field_id="description", label="Ausführliche Aufgabenbeschreibung & Details", field_type=FieldType.TEXT, required=True, placeholder="Schritt-für-Schritt Aufgabenbeschreibung...", order=3),
+                    SchemaField(field_id="internal_category", label=tr("schemas.internal_task.category_label", "Kategorie der Aufgabe"), field_type=FieldType.DROPDOWN, options=[tr(f"internal_task_categories.{c}", default=c) for c in DEFAULT_INTERNAL_TASK_CATEGORIES], required=True, order=1),
+                    SchemaField(field_id="affected_systems", label=tr("schemas.internal_task.systems_label", "Betroffene Systeme / Server / Komponenten"), field_type=FieldType.TEXT, required=False, placeholder=tr("schemas.internal_task.systems_ph", "z. B. Server-02, P2P-Sync, Wiki-Cache..."), order=2),
+                    SchemaField(field_id="description", label=tr("schemas.internal_task.desc_label", "Ausführliche Aufgabenbeschreibung & Details"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.internal_task.desc_ph", "Schritt-für-Schritt Aufgabenbeschreibung..."), order=3),
                 ],
             ),
             QuestionSchema(
                 schema_id="schema_zuzahlungsnachforderung",
-                display_name="Zuzahlungsnachforderung & Abrechnungskorrektur",
-                description="Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV.",
+                display_name=tr("schemas.zuzahlung.display_name", "Zuzahlungsnachforderung & Abrechnungskorrektur"),
+                description=tr("schemas.zuzahlung.description", "Für Nachforderungen und Korrekturen gegenüber Abrechnungszentrum, Krankenkasse oder KV."),
                 default_suggested_exports=["mail_dev_zuzahlung_abrechnung", "mail_kunden_rueckmeldung"],
                 is_repeatable_group=True,
-                repeatable_group_title="Datei / Korrektur-Anforderung",
+                repeatable_group_title=tr("schemas.zuzahlung.repeatable_title", "Datei / Korrektur-Anforderung"),
                 repeatable_field_ids=[
                     "action_type",
                     "esol_filename",
@@ -129,52 +132,54 @@ class SeedService:
                     "action_reason_detail",
                 ],
                 fields=[
-                    SchemaField(field_id="action_type", label="Geforderte Aktion", field_type=FieldType.DROPDOWN, options=["Zuzahlungsnachforderung", "Abrechnungskorrektur"], required=True, order=1),
-                    SchemaField(field_id="invoice_number", label="Betroffene Rechnungsnummer", field_type=FieldType.TEXT, required=True, placeholder="z. B. RE-2026-0815", order=2),
-                    SchemaField(field_id="invoice_date", label="Rechnungsdatum", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=3),
-                    SchemaField(field_id="prescription_info", label="Betroffene Verordnung", field_type=FieldType.TEXT, required=True, placeholder="z. B. VO-987654", order=4),
-                    SchemaField(field_id="prescription_date", label="Datum der Verordnung", field_type=FieldType.TEXT, required=True, placeholder="YYYY-MM-DD", order=5),
-                    SchemaField(field_id="patient_names", label="Namen der betroffenen Patienten", field_type=FieldType.TEXT, required=True, placeholder="z. B. Max Mustermann", order=6),
-                    SchemaField(field_id="esol_filename", label="Name der originalen ESOL-Datei", field_type=FieldType.TEXT, required=True, placeholder="z. B. ESOL_20260801.dat", order=7),
-                    SchemaField(field_id="action_reason_detail", label="Genaue Begründung & Details", field_type=FieldType.TEXT, required=True, placeholder="Ausführliche Beschreibung...", order=8),
-                    SchemaField(field_id="has_forwarded_email_or_screenshot", label="Weitergeleitete Mail/Screenshot im Fallordner?", field_type=FieldType.BOOLEAN, required=True, order=9),
+                    SchemaField(field_id="action_type", label=tr("schemas.zuzahlung.action_type_label", "Geforderte Aktion"), field_type=FieldType.DROPDOWN, options=[tr("schemas.zuzahlung.opt_nachforderung", "Zuzahlungsnachforderung"), tr("schemas.zuzahlung.opt_korrektur", "Abrechnungskorrektur")], required=True, order=1),
+                    SchemaField(field_id="invoice_number", label=tr("schemas.zuzahlung.invoice_num_label", "Betroffene Rechnungsnummer"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.invoice_num_ph", "z. B. RE-2026-0815"), order=2),
+                    SchemaField(field_id="invoice_date", label=tr("schemas.zuzahlung.invoice_date_label", "Rechnungsdatum"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.date_ph", "YYYY-MM-DD"), order=3),
+                    SchemaField(field_id="prescription_info", label=tr("schemas.zuzahlung.prescription_info_label", "Betroffene Verordnung"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.prescription_info_ph", "z. B. VO-987654"), order=4),
+                    SchemaField(field_id="prescription_date", label=tr("schemas.zuzahlung.prescription_date_label", "Datum der Verordnung"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.date_ph", "YYYY-MM-DD"), order=5),
+                    SchemaField(field_id="patient_names", label=tr("schemas.zuzahlung.patient_names_label", "Namen der betroffenen Patienten"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.patient_names_ph", "z. B. Max Mustermann"), order=6),
+                    SchemaField(field_id="esol_filename", label=tr("schemas.zuzahlung.esol_filename_label", "Name der originalen ESOL-Datei"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.esol_filename_ph", "z. B. ESOL_20260801.dat"), order=7),
+                    SchemaField(field_id="action_reason_detail", label=tr("schemas.zuzahlung.reason_label", "Genaue Begründung & Details"), field_type=FieldType.TEXT, required=True, placeholder=tr("schemas.zuzahlung.reason_ph", "Ausführliche Beschreibung..."), order=8),
+                    SchemaField(field_id="has_forwarded_email_or_screenshot", label=tr("schemas.zuzahlung.forwarded_label", "Weitergeleitete Mail/Screenshot im Fallordner?"), field_type=FieldType.BOOLEAN, required=True, order=9),
                 ],
             ),
             QuestionSchema(
                 schema_id="schema_feature_request",
-                display_name="Kundenwunsch / Feature-Request",
-                description="Zur Erfassung neuer Funktionswünsche von Praxen für die Entwicklungsabteilung.",
+                display_name=tr("schemas.feature_request.display_name", "Kundenwunsch / Feature-Request"),
+                description=tr("schemas.feature_request.description", "Zur Erfassung neuer Funktionswünsche von Praxen für die Entwicklungsabteilung."),
                 default_suggested_exports=["gitlab_dev_kundenwunsch", "mail_kunden_rueckmeldung"],
                 fields=[
-                    SchemaField(field_id="module_name", label="Betroffenes Modul / Programmbereich", field_type=FieldType.TEXT, required=True, order=1),
-                    SchemaField(field_id="feature_description", label="Beschreibung des Kundenwunsches", field_type=FieldType.TEXT, required=True, order=2),
-                    SchemaField(field_id="practice_benefit", label="Gewünschter Nutzen / Ziel für die Praxis", field_type=FieldType.TEXT, required=True, order=3),
-                    SchemaField(field_id="has_mockup_or_screenshot", label="Screenshot/Skizze im Fallordner?", field_type=FieldType.BOOLEAN, required=False, order=4),
+                    SchemaField(field_id="module_name", label=tr("schemas.feature_request.module_label", "Betroffenes Modul / Programmbereich"), field_type=FieldType.TEXT, required=True, order=1),
+                    SchemaField(field_id="feature_description", label=tr("schemas.feature_request.desc_label", "Beschreibung des Kundenwunsches"), field_type=FieldType.TEXT, required=True, order=2),
+                    SchemaField(field_id="practice_benefit", label=tr("schemas.feature_request.benefit_label", "Gewünschter Nutzen / Ziel für die Praxis"), field_type=FieldType.TEXT, required=True, order=3),
+                    SchemaField(field_id="has_mockup_or_screenshot", label=tr("schemas.feature_request.mockup_label", "Screenshot/Skizze im Fallordner?"), field_type=FieldType.BOOLEAN, required=False, order=4),
                 ],
             ),
             QuestionSchema(
                 schema_id="schema_bug_report",
-                display_name="Programmfehler / Bug-Report",
-                description="Zur Weiterleitung ungeklärter Software-Fehler an die Entwicklungsabteilung.",
+                display_name=tr("schemas.bug_report.display_name", "Programmfehler / Bug-Report"),
+                description=tr("schemas.bug_report.description", "Zur Weiterleitung ungeklärter Software-Fehler an die Entwicklungsabteilung."),
                 default_suggested_exports=["gitlab_dev_bug", "mail_kunden_rueckmeldung"],
                 fields=[
-                    SchemaField(field_id="module_name", label="Betroffenes Modul", field_type=FieldType.TEXT, required=True, order=1),
-                    SchemaField(field_id="error_message", label="Fehlermeldung / Code", field_type=FieldType.TEXT, required=True, order=2),
-                    SchemaField(field_id="reproduction_steps", label="Schritte zur Reproduktion", field_type=FieldType.TEXT, required=True, order=3),
-                    SchemaField(field_id="stack_trace", label="Stack-Trace / Logauszug", field_type=FieldType.TEXT, required=False, order=4),
-                    SchemaField(field_id="database_dump_provided", label="Datenbank-Backup im Fallordner abgelegt?", field_type=FieldType.BOOLEAN, required=True, order=5),
+                    SchemaField(field_id="module_name", label=tr("schemas.bug_report.module_label", "Betroffenes Modul"), field_type=FieldType.TEXT, required=True, order=1),
+                    SchemaField(field_id="error_message", label=tr("schemas.bug_report.error_msg_label", "Fehlermeldung / Code"), field_type=FieldType.TEXT, required=True, order=2),
+                    SchemaField(field_id="reproduction_steps", label=tr("schemas.bug_report.repro_steps_label", "Schritte zur Reproduktion"), field_type=FieldType.TEXT, required=True, order=3),
+                    SchemaField(field_id="stack_trace", label=tr("schemas.bug_report.stack_trace_label", "Stack-Trace / Logauszug"), field_type=FieldType.TEXT, required=False, order=4),
+                    SchemaField(field_id="database_dump_provided", label=tr("schemas.bug_report.db_dump_label", "Datenbank-Backup im Fallordner abgelegt?"), field_type=FieldType.BOOLEAN, required=True, order=5),
                 ],
             ),
         ]
 
     def create_seed_templates(self) -> list[ExportTemplate]:
+        from services.i18n_service import tr
+
         return [
             ExportTemplate(
                 template_id="mail_dev_zuzahlung_abrechnung",
-                display_name="E-Mail an Entwickler: Zuzahlung & Abrechnungskorrektur",
+                display_name=tr("export_templates.mail_dev_zuzahlung_abrechnung_name", "E-Mail an Entwickler: Zuzahlung & Abrechnungskorrektur"),
                 target_type=TargetType.CLIPBOARD_TEXT,
                 applicable_cases=["schema_zuzahlungsnachforderung"],
-                description="Erzeugt eine vollständige E-Mail an das Entwicklerteam zur Nachberechnung oder Abrechnungskorrektur mit allen Pflichtdaten.",
+                description=tr("export_templates.mail_dev_zuzahlung_abrechnung_desc", "Erzeugt eine vollständige E-Mail an das Entwicklerteam zur Nachberechnung oder Abrechnungskorrektur mit allen Pflichtdaten."),
                 required_schema_fields=[
                     "action_type",
                     "invoice_number",
@@ -218,10 +223,10 @@ class SeedService:
             ),
             ExportTemplate(
                 template_id="gitlab_dev_kundenwunsch",
-                display_name="GitLab / Dev-Ticket: Kundenwunsch",
+                display_name=tr("export_templates.gitlab_dev_kundenwunsch_name", "GitLab / Dev-Ticket: Kundenwunsch"),
                 target_type=TargetType.CLIPBOARD_TEXT,
                 applicable_cases=["schema_feature_request"],
-                description="Formatiertes Markdown-Ticket für neue Funktionswünsche an die Entwicklungsabteilung.",
+                description=tr("export_templates.gitlab_dev_kundenwunsch_desc", "Formatiertes Markdown-Ticket für neue Funktionswünsche an die Entwicklungsabteilung."),
                 required_schema_fields=["module_name", "feature_description", "practice_benefit"],
                 template_string=(
                     "### Feature-Request: {{ classification.title }}\n"
@@ -239,10 +244,10 @@ class SeedService:
             ),
             ExportTemplate(
                 template_id="gitlab_dev_bug",
-                display_name="GitLab / Dev-Ticket: Programmierfehler (Bug)",
+                display_name=tr("export_templates.gitlab_dev_bug_name", "GitLab / Dev-Ticket: Programmierfehler (Bug)"),
                 target_type=TargetType.CLIPBOARD_TEXT,
                 applicable_cases=["schema_bug_report"],
-                description="Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
+                description=tr("export_templates.gitlab_dev_bug_desc", "Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme."),
                 required_schema_fields=["module_name", "error_message", "reproduction_steps", "database_dump_provided"],
                 template_string=(
                     "### Bug-Report: {{ classification.title }}\n"
@@ -263,10 +268,10 @@ class SeedService:
             ),
             ExportTemplate(
                 template_id="mail_kunden_rueckmeldung",
-                display_name="E-Mail an Praxis: Lösungs-Zusammenfassung",
+                display_name=tr("export_templates.mail_kunden_rueckmeldung_name", "E-Mail an Praxis: Lösungs-Zusammenfassung"),
                 target_type=TargetType.CLIPBOARD_TEXT,
                 applicable_cases=["schema_zuzahlungsnachforderung", "schema_feature_request", "schema_bug_report"],
-                description="Kunden-E-Mail mit Zusammenfassung der Lösung und Kontaktdaten.",
+                description=tr("export_templates.mail_kunden_rueckmeldung_desc", "Kunden-E-Mail mit Zusammenfassung der Lösung und Kontaktdaten."),
                 required_schema_fields=[],
                 template_string=(
                     "Sehr geehrte/r {{ customer.contact_person if customer.contact_person else 'Damen und Herren' }},\n\n"
@@ -280,6 +285,7 @@ class SeedService:
                 ),
             ),
         ]
+
 
     def create_seed_cases(self) -> list[Case]:
         scoring_service = ScoringService()

@@ -30,8 +30,9 @@ class HandoverDialog(ctk.CTkToplevel):
 
         self.on_handover_confirmed = on_handover_confirmed
 
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["handover"]
-        self.title(f"{DIALOG_TITLES['handover']} (Fall {case.case_id})")
+        self.title(tr("handover_dialog.window_title", "{base_title} (Fall {case_id})", base_title=DIALOG_TITLES["handover"], case_id=case.case_id))
         self.geometry(f"{w}x{h}")
         self.minsize(520, 460)
         from utils.ui_utils import center_window
@@ -125,6 +126,7 @@ class HandoverDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     def on_colleague_selected(self, selected_text: str):
+        from services.i18n_service import tr
         self.absence_warn_lbl.configure(text="")
         if selected_text and not selected_text.startswith("-"):
             name_part = selected_text.split(" (")[0]
@@ -136,7 +138,7 @@ class HandoverDialog(ctk.CTkToplevel):
                 if c.name == name_part:
                     if c.is_absent:
                         reason = f" ({c.absence_reason})" if c.absence_reason else ""
-                        self.absence_warn_lbl.configure(text=f"⚠ ACHTUNG: {c.name} ist aktuell abwesend{reason}!", text_color="darkorange")
+                        self.absence_warn_lbl.configure(text=tr("handover_dialog.absence_warning", "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!", name=c.name, reason=reason), text_color="darkorange")
                     break
 
             col = next((c for c in self.colleagues if c.name == name_part), None)

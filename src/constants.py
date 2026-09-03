@@ -54,6 +54,25 @@ DISPLAY_BOARD_COLUMN_NAMES = LocalizedDict("board_columns", {
     "DONE": "Erledigt",
 })
 
+# Anzeige-Werte fuer den Farb-Thema-Dropdown (Profil-Einstellungen). Intern bleibt
+# stets "Dark"/"Light"/"System" gespeichert bzw. an ctk.set_appearance_mode()
+# uebergeben - nur das Dropdown-Label wird uebersetzt (siehe get_theme_display()/
+# get_theme_val_from_display() in enums.py).
+DISPLAY_THEME_NAMES = LocalizedDict("theme_modes", {
+    "Dark": "Dunkel",
+    "Light": "Hell",
+    "System": "Systemstandard",
+})
+
+# Anzeige-Werte fuer den Sortier-Kriterium-Dropdown der Praxisverwaltung. Intern
+# wird mit den sprachunabhaengigen Codes "name"/"id"/"contact" verglichen (siehe
+# get_sort_criterion_display()/get_sort_criterion_val_from_display() in enums.py).
+DISPLAY_SORT_CRITERION_NAMES = LocalizedDict("sort_criteria", {
+    "name": "Name (A-Z)",
+    "id": "Praxisnummer / ID",
+    "contact": "Zeit seit letztem Kontakt",
+})
+
 
 class LocalizedHotkeyDict(LocalizedDict):
     """LocalizedDict that supports iterating as (key, value) pairs for backward compatibility."""

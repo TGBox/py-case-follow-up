@@ -32,10 +32,11 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.grab_set()
 
         self.create_widgets()
+        from services.i18n_service import tr
         if initial_tab == "modules":
-            self.tabview.set("🧩 Programmbereiche")
+            self.tabview.set(tr("tag_mgmt.tab_modules", "🧩 Programmbereiche"))
         else:
-            self.tabview.set("🏷 Allgemeine Tags")
+            self.tabview.set(tr("tag_mgmt.tab_tags", "🏷 Allgemeine Tags"))
 
         self.render_tags_list()
         self.render_modules_list()
@@ -126,8 +127,9 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.after(200, _do_reset)
 
     def _on_tab_changed(self):
+        from services.i18n_service import tr
         curr = self.tabview.get()
-        if "Programmbereiche" in curr:
+        if curr == tr("tag_mgmt.tab_modules", "🧩 Programmbereiche"):
             self._reset_scroll_to_top(self.modules_scroll)
         else:
             self._reset_scroll_to_top(self.tags_scroll)
@@ -178,10 +180,11 @@ class TagManagementDialog(ctk.CTkToplevel):
             self.on_tags_updated()
 
     def on_delete_tag(self, tag_name: str):
+        from services.i18n_service import tr
         if tag_name in self.profile.available_tags:
             self.profile.available_tags.remove(tag_name)
             self.storage_service.save_profile(self.profile)
-            self.status_lbl.configure(text=f"✅ Tag '{tag_name}' gelöscht.", text_color="green")
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_deleted", "✅ Tag '{name}' gelöscht.", name=tag_name), text_color="green")
             self.render_tags_list()
             if self.on_tags_updated:
                 self.on_tags_updated()
@@ -231,10 +234,11 @@ class TagManagementDialog(ctk.CTkToplevel):
             self.on_tags_updated()
 
     def on_delete_module(self, mod_name: str):
+        from services.i18n_service import tr
         if mod_name in self.profile.available_module_tags:
             self.profile.available_module_tags.remove(mod_name)
             self.storage_service.save_profile(self.profile)
-            self.status_lbl.configure(text=f"✅ Programmbereich '{mod_name}' gelöscht.", text_color="green")
+            self.status_lbl.configure(text=tr("tag_mgmt.module_deleted", "✅ Programmbereich '{name}' gelöscht.", name=mod_name), text_color="green")
             self.render_modules_list()
             if self.on_tags_updated:
                 self.on_tags_updated()

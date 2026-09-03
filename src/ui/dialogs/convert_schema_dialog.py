@@ -60,14 +60,14 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             info_inner,
-            text=f"Fall-ID: {self.case.case_id} — {self.case.classification.title}",
+            text=tr("convert_schema.case_info", "Fall-ID: {case_id} — {title}", case_id=self.case.case_id, title=self.case.classification.title),
             font=ctk.CTkFont(size=12, weight="bold"),
             anchor="w",
         ).pack(fill="x")
 
         ctk.CTkLabel(
             info_inner,
-            text=f"Aktuelles Formular: {curr_schema_name}",
+            text=tr("convert_schema.current_form", "Aktuelles Formular: {schema_name}", schema_name=curr_schema_name),
             text_color="gray",
             anchor="w",
         ).pack(fill="x", pady=(2, 0))

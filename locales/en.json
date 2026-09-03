@@ -39,7 +39,10 @@
     "status_online": "Ready",
     "status_processing": "Processing...",
     "summary_copied": "✓ Summary copied to clipboard.",
-    "summary_saved_timeline": "✓ AI summary saved as timeline entry."
+    "summary_saved_timeline": "✓ AI summary saved as timeline entry.",
+    "toast_ai_disabled": "AI disabled globally & models unloaded",
+    "toast_ai_enabled": "AI enabled globally",
+    "toast_ai_status_title": "AI Status"
   },
   "analytics": {
     "assignee_title": "👤 Assignee Workload",
@@ -164,7 +167,11 @@
     "header": "📅 Create Calendar Entry (.ics) - Case {case_id}",
     "save_dialog_title": "Save iCalendar File",
     "sub_header": "Practice: {practice} | Callback Deadline: {deadline}",
-    "subject_line": "📋 Subject: [{case_id}] {title}"
+    "subject_line": "📋 Subject: [{case_id}] {title}",
+    "error_generic": "Error: {error}",
+    "error_save": "Error while saving: {error}",
+    "ics_opened": "✓ Calendar file opened: {filename}",
+    "ics_saved": "✓ Calendar file saved: {filename}"
   },
   "case_list": {
     "actor_format": "{title} | Assigned: {actor}",
@@ -398,7 +405,9 @@
     "convert_btn": "Convert Form",
     "header": "🔄 Convert Form Schema",
     "select_target": "Select new target form:",
-    "select_valid": "Please select a valid target form."
+    "select_valid": "Please select a valid target form.",
+    "case_info": "Case ID: {case_id} — {title}",
+    "current_form": "Current form: {schema_name}"
   },
   "customer_form": {
     "btn_add_contact": "+ Add Contact",
@@ -557,7 +566,9 @@
     "website_opened": "🌐 Website opened: {url}",
     "website_placeholder": "https://practice-example.com",
     "zip_lbl": "Postal Code:",
-    "zip_placeholder": "12345"
+    "zip_placeholder": "12345",
+    "edit_practice": "Edit practice: {name}",
+    "id_suffix": "(ID: {id})"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -754,7 +765,10 @@
     "sub_header": "Practice: {practice} | Callback Deadline: {deadline}",
     "subject_lbl": "Subject:",
     "subject_placeholder": "Enter subject...",
-    "to_placeholder": "practice@example.com..."
+    "to_placeholder": "practice@example.com...",
+    "ics_opened": "✓ Calendar entry (.ics) opened: {name}",
+    "ics_saved": "✓ .ics calendar file saved as: {name}",
+    "window_title": "{base_title} - Case {case_id}"
   },
   "email_draft": {
     "ai_generating": "🤖 AI is generating email draft...",
@@ -783,7 +797,33 @@
     "snippet_btn": "🧩 Snippet",
     "subject_placeholder": "Enter subject...",
     "suggestions_title": "🔍 Contacts from practice file (click to apply):",
-    "to_placeholder": "practice@example.com or enter name / practice..."
+    "to_placeholder": "practice@example.com or enter name / practice...",
+    "ai_draft_generated": "✓ AI draft generated ({model}).",
+    "ai_generating_wait": "🤖 AI is generating email draft... Please wait",
+    "ai_generation_failed": "⚠ AI generation failed: {error}",
+    "ai_status_gemini_active": "🟢 Gemini active ({model} | Anonymized)",
+    "ai_status_gemini_invalid": "🔴 Gemini API key invalid / offline",
+    "ai_status_ollama_active": "🟢 Ollama active ({model})",
+    "ai_status_rule_based": "⚡ Rule-based mode (AI offline/no key)",
+    "all_contacts_hint": "All contacts from the practice directory:",
+    "clipboard_format": "To: {to}\nSubject: {subject}\n\n{body}",
+    "default_sender": "Your Support Team",
+    "default_signoff": "Kind regards",
+    "error_copy": "Copy failed: {error}",
+    "error_open": "Error while opening: {error}",
+    "error_outlook_transfer": "Error transferring to Outlook: {error}",
+    "generic_practice": "🏥 Practice",
+    "header_title_case": "✉ Compose email (Case {case_id})",
+    "header_title_new": "✉ Compose email (Free draft)",
+    "no_email": "(no email)",
+    "practice_id_line": "Practice: {practice} ({id})",
+    "recipient_set": "✓ Recipient set: {name} <{email}>",
+    "search_hint": "Results for '{query}':",
+    "sub_header_case": "Practice: {practice} | Callback deadline: {deadline}",
+    "sub_header_free": "Free draft | Choose a recipient from the practice directory or enter one freely",
+    "suggestions_count": "🔍 {hint} ({count})",
+    "window_title_case": "{base_title} - Case {case_id}",
+    "window_title_new": "{base_title} (New draft)"
   },
   "email_import": {
     "btn_create_new_case": "➕ Create as new case",
@@ -797,14 +837,20 @@
     "create_new_case": "➕ Create as New Case",
     "ignore": "🗑 Ignore",
     "no_match": "💡 No existing case matched (New case recommended)",
-    "subject_prefix": "Subject: {subj}"
+    "subject_prefix": "Subject: {subj}",
+    "appended": "✓ Email successfully appended to case [{case_id}].",
+    "created_new_case": "✓ New case [{case_id}] created from email.",
+    "loaded_count": "✓ {count} emails loaded from inbox.",
+    "no_subject": "No subject"
   },
   "export": {
     "copied": "📋 Successfully copied to clipboard!",
     "incomplete": "⚠ Incomplete! Please fill in fields or enable force export.",
     "missing_fields_hdr": "⚠ Fill missing required fields directly:",
     "no_template": "No template selected.",
-    "ready": "✅ Template ready for export."
+    "ready": "✅ Template ready for export.",
+    "file_saved": "💾 File saved: {name}",
+    "missing_required_fields": "[MISSING REQUIRED FIELDS: {fields}]"
   },
   "export_dialog": {
     "copy_btn": "Copy to clipboard",
@@ -814,7 +860,8 @@
     "no_template": "No template",
     "preview_header": "Preview of exported text:",
     "save_file_btn": "Save to file...",
-    "select_template": "Select template:"
+    "select_template": "Select template:",
+    "window_title": "{base_title} — {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Developer ticket for software bugs, crashes, and interface issues.",
@@ -876,7 +923,9 @@
     "note_placeholder": "e.g. Ticket #104 created in GitLab, callback requested...",
     "person_placeholder": "Recipient name...",
     "recipient": "Recipient / Person name (select from colleague list or enter):",
-    "select_colleague": "- Select from colleague list -"
+    "select_colleague": "- Select from colleague list -",
+    "absence_warning": "⚠ ATTENTION: {name} is currently absent{reason}!",
+    "window_title": "{base_title} (Case {case_id})"
   },
   "help_content": {
     "advanced_search_filters": {
@@ -1120,7 +1169,14 @@
     "no_diff_cases": "No differing cases found.",
     "reload_compare": "Reload / Compare",
     "select_at_least_one": "Please select at least one case to adopt.",
-    "select_colleague": "Select colleague:"
+    "select_colleague": "Select colleague:",
+    "cases_loaded": "✅ {count} cases loaded from {name}.",
+    "import_success": "✅ {count} cases successfully imported into local working data!",
+    "none_placeholder": "None",
+    "status_identical": "[IDENTICAL]",
+    "status_local_newer": "[LOCAL NEWER]",
+    "status_new": "[NEW]",
+    "status_remote_newer": "[COLLEAGUE NEWER]"
   },
   "profile": {
     "active_profile": "Active Profile:",
@@ -1242,7 +1298,22 @@
     "wiki_token_id_placeholder": "Token ID",
     "wiki_token_secret_placeholder": "Token Secret",
     "wiki_url_placeholder": "https://wiki.mypractice.com/api",
-    "workspace_placeholder": "Path to data folder..."
+    "workspace_placeholder": "Path to data folder...",
+    "created_and_activated": "Profile '{name}' created and activated!",
+    "gemini_key_error": "❌ {msg}",
+    "gemini_key_ok": "✅ {msg}",
+    "model_loading": "⏳ Loading model '{model}' into memory...",
+    "model_set_active": "Active model set to '{model}'.",
+    "model_unloading": "⏳ Unloading model '{model}' from memory...",
+    "ollama_server_title": "Ollama Server",
+    "ollama_start_error": "❌ {msg}",
+    "ollama_start_ok": "✅ {msg}",
+    "ollama_starting": "Ollama server is starting...",
+    "ollama_stop_result": "⚡ {msg}",
+    "ollama_stopped": "Ollama server has been stopped.",
+    "pvs_model_error": "⚠ {msg}",
+    "pvs_model_ok": "✅ {msg}",
+    "switched_to": "Switched to profile '{name}'."
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -1425,7 +1496,9 @@
     "category_placeholder": "e.g. Inquiry, Guide, SQL",
     "shortcut_placeholder": "e.g. <Control-Alt-1>",
     "tags_placeholder": "e.g. error, sql, guide",
-    "title_placeholder": "e.g. 📸 Inquiry: Screenshots"
+    "title_placeholder": "e.g. 📸 Inquiry: Screenshots",
+    "category_line": "Category: {category}",
+    "selected_status": "Selected: {id}"
   },
   "snippet_picker": {
     "all_categories": "All",
@@ -1514,7 +1587,9 @@
     "tab_tags": "🏷 General Tags",
     "tag_added": "✅ Tag added successfully!",
     "tag_empty": "⚠ Tag name cannot be empty!",
-    "tag_exists": "⚠ Tag already exists!"
+    "tag_exists": "⚠ Tag already exists!",
+    "module_deleted": "✅ Program module '{name}' deleted.",
+    "tag_deleted": "✅ Tag '{name}' deleted."
   },
   "template_editor": {
     "preview_btn": "👁 Render Live Preview"
@@ -1672,6 +1747,11 @@
     "summary_saved_timeline": "✓ AI summary saved as timeline entry.",
     "tab_response": "✉ Response Draft",
     "tab_solutions": "💡 Proposed Solutions",
-    "tab_summary": "📋 Summary"
+    "tab_summary": "📋 Summary",
+    "custom_instruction_suffix": " + ⚡ Custom instruction",
+    "error_generation": "⚠ Error during AI generation: {error}",
+    "reply_generated": "✓ Email reply draft generated{info}.",
+    "rules_info": " ({base_count} base rules, {practice_count} practice rules{ci_info})",
+    "summary_generated": "✓ Summary generated successfully{info}."
   }
 }

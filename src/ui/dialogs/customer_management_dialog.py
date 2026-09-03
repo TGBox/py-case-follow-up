@@ -74,9 +74,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         # Card header
         header = ctk.CTkFrame(card, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(6, 2))
-        ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
+        header_lbl = ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60")
+        header_lbl.pack(side="left")
 
-        row_dict: dict[str, Any] = {"frame": card}
+        row_dict: dict[str, Any] = {"frame": card, "header_lbl": header_lbl}
 
         remove_btn = ctk.CTkButton(
             header,
@@ -155,12 +156,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
             self.contact_rows.remove(row_dict)
 
         # Update contact headers
+        from services.i18n_service import tr
         for idx, r in enumerate(self.contact_rows, 1):
-            for child in r["frame"].winfo_children():
-                if isinstance(child, ctk.CTkFrame):
-                    for sub in child.winfo_children():
-                        if isinstance(sub, ctk.CTkLabel) and sub.cget("text").startswith("Kontakt #"):
-                            sub.configure(text=f"Kontakt #{idx}")
+            if r.get("header_lbl"):
+                r["header_lbl"].configure(text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=idx))
 
     def load_customers(self):
         self.customers = self.customer_service.get_all_customers()
@@ -199,12 +198,14 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
         return latest_ts
 
     def on_sort_changed(self):
-        criterion = self.sort_criterion_combo.get() if hasattr(self, "sort_criterion_combo") else "Name (A-Z)"
+        from enums import get_sort_criterion_val_from_display
+        display = self.sort_criterion_combo.get() if hasattr(self, "sort_criterion_combo") else None
+        criterion = get_sort_criterion_val_from_display(display) if display else "name"
         reverse = not getattr(self, "sort_asc_var", True)
 
-        if "ID" in criterion or "nummer" in criterion:
+        if criterion == "id":
             self.filtered_customers.sort(key=lambda c: c.customer_id.lower(), reverse=reverse)
-        elif "Kontakt" in criterion:
+        elif criterion == "contact":
             self.filtered_customers.sort(key=self._get_customer_last_contact_ts, reverse=reverse)
         else:
             self.filtered_customers.sort(key=lambda c: c.practice_name.lower(), reverse=reverse)
@@ -258,7 +259,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
 
             sub_lbl = ctk.CTkLabel(
                 txt_box,
-                text=f"(ID: {c.customer_id})",
+                text=tr("customer_mgmt.id_suffix", "(ID: {id})", id=c.customer_id),
                 font=ctk.CTkFont(size=11),
                 anchor="w",
                 justify="left",
@@ -273,7 +274,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
             return
 
         self.selected_customer = c
-        self.form_title_lbl.configure(text=f"Praxis bearbeiten: {c.practice_name}")
+        from services.i18n_service import tr
+        self.form_title_lbl.configure(text=tr("customer_mgmt.edit_practice", "Praxis bearbeiten: {name}", name=c.practice_name))
 
         self.cust_id_entry.configure(state="normal")
         self.cust_id_entry.delete(0, "end")

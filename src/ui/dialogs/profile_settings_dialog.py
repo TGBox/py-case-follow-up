@@ -3,7 +3,7 @@ import customtkinter as ctk
 from typing import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
-from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
+from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
 from ui.dialogs.profile_settings_ai_tab import AiSettingsTabMixin
 from constants import (
     DIALOG_DIMENSIONS,
@@ -293,7 +293,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.profile_combo.configure(values=profiles_list)
             self.profile_combo.set(new_name)
             self.reload_user_fields()
-            self.status_lbl.configure(text=f"Profil '{new_name}' angelegt und aktiviert!")
+            from services.i18n_service import tr
+            self.status_lbl.configure(text=tr("profile.created_and_activated", "Profil '{name}' angelegt und aktiviert!", name=new_name))
             if self.on_profile_updated:
                 self.on_profile_updated()
 
@@ -301,7 +302,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.profile = self.storage_service.load_profile_by_name(selected_name)
         self.storage_service.save_profile(self.profile)
         self.reload_user_fields()
-        self.status_lbl.configure(text=f"Profil auf '{selected_name}' gewechselt.")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("profile.switched_to", "Profil auf '{name}' gewechselt.", name=selected_name))
         if self.on_profile_updated:
             self.on_profile_updated()
 
@@ -325,11 +327,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.user_sig_entry.delete(0, "end")
             self.user_sig_entry.insert(0, self.profile.user.email_signature)
 
-        self.theme_combo.set(self.profile.ui_settings.theme)
+        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         if hasattr(self, "popup_target_combo"):
+            from services.i18n_service import tr
             curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-            self.popup_target_combo.set("App-Bildschirm (aktuell/zuletzt)" if curr_target == "APP_SCREEN" else "Hauptbildschirm")
+            self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
 
     def on_language_selected(self, selected_display_name: str):
         from services.i18n_service import LANGUAGE_DISPLAY_TO_CODE, get_i18n
@@ -400,8 +403,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         self.theme_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.theme", "Farb-Thema (Theme):"))
         self.theme_lbl.pack(anchor="w", pady=(5, 2))
-        self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=["Dark", "Light", "System"])
-        self.theme_combo.set(self.profile.ui_settings.theme)
+        self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=[get_theme_display(v) for v in ("Dark", "Light", "System")])
+        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         self.theme_combo.pack(fill="x", pady=(0, 15))
 
         self.default_layout_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
@@ -717,7 +720,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.profile.ui_settings.language = lang_code
             get_i18n().current_language = lang_code
 
-        self.profile.ui_settings.theme = self.theme_combo.get()
+        self.profile.ui_settings.theme = get_theme_val_from_display(self.theme_combo.get())
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
         if hasattr(self, "demo_switch"):
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
@@ -889,7 +892,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         res = ZipBackupService.export_backup_zip(self.storage_service, Path(dest_file))
         mb_size = res["total_bytes"] / (1024 * 1024)
         self.status_lbl.configure(
-            text=f"✅ ZIP-Backup erfolgreich erstellt: {res['file_count']} Dateien ({mb_size:.2f} MB)",
+            text=tr(
+                "profile.zip_backup_success",
+                "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
+                file_count=res["file_count"],
+                mb_size=mb_size,
+            ),
             text_color="green",
         )
 
@@ -922,7 +930,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.storage_service.config.save_user_config()
 
             self.status_lbl.configure(
-                text=f"✅ Import abgeschlossen! {res['extracted_data_files']} Datendateien & {res['extracted_attachment_files']} Anhänge entpackt.",
+                text=tr(
+                    "profile.zip_import_success",
+                    "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
+                    data_files=res["extracted_data_files"],
+                    attachment_files=res["extracted_attachment_files"],
+                ),
                 text_color="green",
             )
             if self.on_profile_updated:

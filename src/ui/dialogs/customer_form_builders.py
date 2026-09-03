@@ -53,6 +53,7 @@ class CustomerFormBuilderMixin:
 
     def _build_customer_list_panel(self, body_frame: ctk.CTkFrame):
         from services.i18n_service import tr
+        from enums import get_sort_criterion_display
 
         # Left list
         left_frame = ctk.CTkFrame(body_frame, width=300)
@@ -69,7 +70,7 @@ class CustomerFormBuilderMixin:
 
         self.sort_criterion_combo = ctk.CTkOptionMenu(
             sort_bar,
-            values=["Name (A-Z)", "Praxisnummer / ID", "Zeit seit letztem Kontakt"],
+            values=[get_sort_criterion_display(c) for c in ("name", "id", "contact")],
             width=170,
             command=lambda v: self.on_sort_changed(),
             font=ctk.CTkFont(size=11),

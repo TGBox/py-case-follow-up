@@ -2,7 +2,7 @@ import logging
 import sys
 import threading
 import ctypes
-from typing import Any, Callable
+from typing import Any, Callable, cast
 import customtkinter as ctk
 from pathlib import Path
 
@@ -703,36 +703,55 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             mb_size = res["total_bytes"] / (1024 * 1024)
             print(f"✅ ZIP-Backup exportiert: {res['file_count']} Dateien ({mb_size:.2f} MB)")
 
+    def get_all_active_cases_for_reminder(self) -> list[Case]:
+        all_cases: list[Case]
+        get_filtered = getattr(self, "get_filtered_cases", None)
+        if callable(get_filtered):
+            res = get_filtered()
+            all_cases = cast(list[Case], res) if isinstance(res, list) else []
+        else:
+            user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
+            has_user_cases = len(user_cases) > 0
+
+            show_demo = None
+            prof = getattr(self, "profile", None)
+            if prof and hasattr(prof, "ui_settings"):
+                show_demo = getattr(prof.ui_settings, "show_demo_data", None)
+
+            if show_demo is None:
+                show_demo = not has_user_cases
+
+            all_cases = self.cases if show_demo else user_cases
+        return [c for c in all_cases if not c.workflow_status.is_completed]
+
+
     def check_due_followups(self):
-        from utils.datetime_utils import parse_german_date, parse_iso, get_local_now
+        from utils.datetime_utils import parse_followup_datetime, get_local_now
         now = get_local_now()
         due_cases = []
 
-        for c in self.get_filtered_cases():
-            if c.workflow_status.followup_at and not c.workflow_status.is_completed:
-                try:
-                    f_str = c.workflow_status.followup_at
-                    if "." in f_str:
-                        iso_str = parse_german_date(f_str)
-                        dt = parse_iso(iso_str)
-                    else:
-                        dt = parse_iso(f_str)
-                    if dt <= now:
-                        due_cases.append(c)
-                except Exception:
-                    pass
+        for c in self.get_all_active_cases_for_reminder():
+            if c.workflow_status.followup_at:
+                dt = parse_followup_datetime(c.workflow_status.followup_at)
+                if dt and dt <= now:
+                    due_cases.append(c)
 
         due_count = len(due_cases)
         if due_count > 0:
             self.bell_btn.configure(text=f"🔔 {due_count}", fg_color="darkred")
-            if not getattr(self, "_last_notified_due_count", 0) or due_count > self._last_notified_due_count:
+            last_count = getattr(self, "_last_notified_due_count", None)
+            if last_count is None or due_count > last_count:
                 top_case = due_cases[0]
-                ToastNotification(
-                    self,
-                    title=tr("app.followup_due_toast_title", "🔔 Wiedervorlage fällig ({count})", count=due_count),
-                    message=f"[{top_case.case_id}] {top_case.classification.title}",
-                    on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
-                )
+                if self.__dict__.get("tk") is not None:
+                    try:
+                        ToastNotification(
+                            self,
+                            title=tr("app.followup_due_toast_title", "🔔 Wiedervorlage fällig ({count})", count=due_count),
+                            message=f"[{top_case.case_id}] {top_case.classification.title}",
+                            on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
+                        )
+                    except Exception as e:
+                        logger.warning(f"Could not display toast notification: {e}")
             self._last_notified_due_count = due_count
         else:
             self.bell_btn.configure(text="🔔 0", fg_color="gray30")
@@ -752,23 +771,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog
-        from utils.datetime_utils import parse_german_date, parse_iso, get_local_now
+        from utils.datetime_utils import parse_followup_datetime, get_local_now
         now = get_local_now()
         due_cases = []
 
-        for c in self.get_filtered_cases():
-            if c.workflow_status.followup_at and not c.workflow_status.is_completed:
-                try:
-                    f_str = c.workflow_status.followup_at
-                    if "." in f_str:
-                        iso_str = parse_german_date(f_str)
-                        dt = parse_iso(iso_str)
-                    else:
-                        dt = parse_iso(f_str)
-                    if dt <= now:
-                        due_cases.append(c)
-                except Exception:
-                    pass
+        for c in self.get_all_active_cases_for_reminder():
+            if c.workflow_status.followup_at:
+                dt = parse_followup_datetime(c.workflow_status.followup_at)
+                if dt and dt <= now:
+                    due_cases.append(c)
 
         def on_refresh():
             self.storage_service.save_cases(self.cases)

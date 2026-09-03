@@ -39,7 +39,10 @@
     "status_online": "Bereit",
     "status_processing": "Verarbeite...",
     "summary_copied": "✓ Zusammenfassung in Zwischenablage kopiert.",
-    "summary_saved_timeline": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert."
+    "summary_saved_timeline": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.",
+    "toast_ai_disabled": "KI global deaktiviert & Modelle entladen",
+    "toast_ai_enabled": "KI global aktiviert",
+    "toast_ai_status_title": "KI-Status"
   },
   "analytics": {
     "assignee_title": "👤 Auslastung nach Bearbeitern",
@@ -164,7 +167,11 @@
     "header": "📅 Kalendereintrag erstellen (.ics) - Fall {case_id}",
     "save_dialog_title": "iCalendar-Datei speichern",
     "sub_header": "Praxis: {practice} | Rückruf-Deadline: {deadline}",
-    "subject_line": "📋 Betreff: [{case_id}] {title}"
+    "subject_line": "📋 Betreff: [{case_id}] {title}",
+    "error_generic": "Fehler: {error}",
+    "error_save": "Fehler beim Speichern: {error}",
+    "ics_opened": "✓ Kalenderdatei geöffnet: {filename}",
+    "ics_saved": "✓ Kalenderdatei gespeichert: {filename}"
   },
   "case_list": {
     "actor_format": "{title} | Zuständig: {actor}",
@@ -398,7 +405,9 @@
     "convert_btn": "Formular umwandeln",
     "header": "🔄 Formular-Schema umwandeln",
     "select_target": "Neues Ziel-Formular auswählen:",
-    "select_valid": "Bitte ein gültiges Ziel-Formular auswählen."
+    "select_valid": "Bitte ein gültiges Ziel-Formular auswählen.",
+    "case_info": "Fall-ID: {case_id} — {title}",
+    "current_form": "Aktuelles Formular: {schema_name}"
   },
   "customer_form": {
     "btn_add_contact": "+ Kontakt hinzufügen",
@@ -557,7 +566,9 @@
     "website_opened": "🌐 Webseite geöffnet: {url}",
     "website_placeholder": "https://praxis-beispiel.de",
     "zip_lbl": "PLZ:",
-    "zip_placeholder": "12345"
+    "zip_placeholder": "12345",
+    "edit_practice": "Praxis bearbeiten: {name}",
+    "id_suffix": "(ID: {id})"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -754,7 +765,10 @@
     "sub_header": "Praxis: {practice} | Rückruf-Deadline: {deadline}",
     "subject_lbl": "Betreff:",
     "subject_placeholder": "Betreff eingeben...",
-    "to_placeholder": "praxis@beispiel.de..."
+    "to_placeholder": "praxis@beispiel.de...",
+    "ics_opened": "✓ Kalendereintrag (.ics) geöffnet: {name}",
+    "ics_saved": "✓ .ics Kalenderdatei gespeichert unter: {name}",
+    "window_title": "{base_title} - Fall {case_id}"
   },
   "email_draft": {
     "ai_generating": "🤖 KI generiert E-Mail-Entwurf...",
@@ -783,7 +797,33 @@
     "snippet_btn": "🧩 Textbaustein",
     "subject_placeholder": "Betreff eingeben...",
     "suggestions_title": "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):",
-    "to_placeholder": "praxis@beispiel.de oder Name / Praxis eingeben..."
+    "to_placeholder": "praxis@beispiel.de oder Name / Praxis eingeben...",
+    "ai_draft_generated": "✓ KI-Entwurf generiert ({model}).",
+    "ai_generating_wait": "🤖 KI generiert E-Mail-Entwurf... Bitte warten",
+    "ai_generation_failed": "⚠ KI-Generierung fehlgeschlagen: {error}",
+    "ai_status_gemini_active": "🟢 Gemini aktiv ({model} | Anonymisiert)",
+    "ai_status_gemini_invalid": "🔴 Gemini API Key ungültig / offline",
+    "ai_status_ollama_active": "🟢 Ollama aktiv ({model})",
+    "ai_status_rule_based": "⚡ Regelbasierter Modus (KI Offline/Ohne Key)",
+    "all_contacts_hint": "Alle Kontakte aus der Praxiskartei:",
+    "clipboard_format": "An: {to}\nBetreff: {subject}\n\n{body}",
+    "default_sender": "Ihr Support-Team",
+    "default_signoff": "Mit freundlichen Grüßen",
+    "error_copy": "Kopieren fehlgeschlagen: {error}",
+    "error_open": "Fehler beim Öffnen: {error}",
+    "error_outlook_transfer": "Fehler bei Outlook-Übergabe: {error}",
+    "generic_practice": "🏥 Praxis",
+    "header_title_case": "✉ E-Mail verfassen (Fall {case_id})",
+    "header_title_new": "✉ E-Mail verfassen (Freier Entwurf)",
+    "no_email": "(keine E-Mail)",
+    "practice_id_line": "Praxis: {practice} ({id})",
+    "recipient_set": "✓ Empfänger gesetzt: {name} <{email}>",
+    "search_hint": "Treffer für '{query}':",
+    "sub_header_case": "Praxis: {practice} | Rückruf-Deadline: {deadline}",
+    "sub_header_free": "Freier Entwurf | Empfänger aus Praxiskartei wählen oder frei eingeben",
+    "suggestions_count": "🔍 {hint} ({count})",
+    "window_title_case": "{base_title} - Fall {case_id}",
+    "window_title_new": "{base_title} (Neuer Entwurf)"
   },
   "email_import": {
     "btn_create_new_case": "➕ Als neuen Fall anlegen",
@@ -797,14 +837,20 @@
     "create_new_case": "➕ Als neuen Fall anlegen",
     "ignore": "🗑 Ignorieren",
     "no_match": "💡 Kein bestehender Fall zugeordnet (Neuer Fall empfohlen)",
-    "subject_prefix": "Betreff: {subj}"
+    "subject_prefix": "Betreff: {subj}",
+    "appended": "✓ E-Mail erfolgreich an Fall [{case_id}] angehängt.",
+    "created_new_case": "✓ Neuer Fall [{case_id}] aus E-Mail erstellt.",
+    "loaded_count": "✓ {count} E-Mails aus Posteingang geladen.",
+    "no_subject": "Ohne Betreff"
   },
   "export": {
     "copied": "📋 Erfolgreich in Zwischenablage kopiert!",
     "incomplete": "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren.",
     "missing_fields_hdr": "⚠ Fehlende Pflichtfelder direkt ergänzen:",
     "no_template": "Keine Vorlage ausgewählt.",
-    "ready": "✅ Vorlage bereit zum Export."
+    "ready": "✅ Vorlage bereit zum Export.",
+    "file_saved": "💾 Datei gespeichert: {name}",
+    "missing_required_fields": "[FEHLENDE PFLICHTFELDER: {fields}]"
   },
   "export_dialog": {
     "copy_btn": "In Zwischenablage kopieren",
@@ -814,7 +860,8 @@
     "no_template": "Keine Vorlage",
     "preview_header": "Vorschau des exportierten Textes:",
     "save_file_btn": "In Datei speichern...",
-    "select_template": "Vorlage auswählen:"
+    "select_template": "Vorlage auswählen:",
+    "window_title": "{base_title} — {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
@@ -876,7 +923,9 @@
     "note_placeholder": "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten...",
     "person_placeholder": "Empfänger-Name...",
     "recipient": "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):",
-    "select_colleague": "- Aus Mitarbeiterliste wählen -"
+    "select_colleague": "- Aus Mitarbeiterliste wählen -",
+    "absence_warning": "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!",
+    "window_title": "{base_title} (Fall {case_id})"
   },
   "help_content": {
     "advanced_search_filters": {
@@ -1120,7 +1169,14 @@
     "no_diff_cases": "Keine abweichenden Fälle vorhanden.",
     "reload_compare": "Neu Laden / Vergleichen",
     "select_at_least_one": "Bitte mindestens einen Fall zur Übernahme auswählen.",
-    "select_colleague": "Kollege auswählen:"
+    "select_colleague": "Kollege auswählen:",
+    "cases_loaded": "✅ {count} Fälle von {name} geladen.",
+    "import_success": "✅ {count} Fälle erfolgreich in lokale Arbeitsdaten übernommen!",
+    "none_placeholder": "Keine",
+    "status_identical": "[IDENTISCH]",
+    "status_local_newer": "[LOKAL NEUER]",
+    "status_new": "[NEU]",
+    "status_remote_newer": "[KOLLEGE NEUER]"
   },
   "profile": {
     "active_profile": "Aktives Profil:",
@@ -1242,7 +1298,22 @@
     "wiki_token_id_placeholder": "Token ID",
     "wiki_token_secret_placeholder": "Token Secret",
     "wiki_url_placeholder": "https://wiki.meinepraxis.de/api",
-    "workspace_placeholder": "Pfad zum Datenordner..."
+    "workspace_placeholder": "Pfad zum Datenordner...",
+    "created_and_activated": "Profil '{name}' angelegt und aktiviert!",
+    "gemini_key_error": "❌ {msg}",
+    "gemini_key_ok": "✅ {msg}",
+    "model_loading": "⏳ Lade Modell '{model}' in den Speicher...",
+    "model_set_active": "Aktives Modell auf '{model}' gesetzt.",
+    "model_unloading": "⏳ Entlade Modell '{model}' aus dem Speicher...",
+    "ollama_server_title": "Ollama Server",
+    "ollama_start_error": "❌ {msg}",
+    "ollama_start_ok": "✅ {msg}",
+    "ollama_starting": "Ollama Server wird gestartet...",
+    "ollama_stop_result": "⚡ {msg}",
+    "ollama_stopped": "Ollama Server wurde beendet.",
+    "pvs_model_error": "⚠ {msg}",
+    "pvs_model_ok": "✅ {msg}",
+    "switched_to": "Profil auf '{name}' gewechselt."
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -1425,7 +1496,9 @@
     "category_placeholder": "z. B. Rückfrage, Anleitung, SQL",
     "shortcut_placeholder": "z. B. <Control-Alt-1>",
     "tags_placeholder": "z. B. fehler, sql, anleitung",
-    "title_placeholder": "z. B. 📸 Rückfrage: Screenshots"
+    "title_placeholder": "z. B. 📸 Rückfrage: Screenshots",
+    "category_line": "Kategorie: {category}",
+    "selected_status": "Ausgewählt: {id}"
   },
   "snippet_picker": {
     "all_categories": "Alle",
@@ -1514,7 +1587,9 @@
     "tab_tags": "🏷 Allgemeine Tags",
     "tag_added": "✅ Tag erfolgreich hinzugefügt!",
     "tag_empty": "⚠ Tag Name darf nicht leer sein!",
-    "tag_exists": "⚠ Tag existiert bereits!"
+    "tag_exists": "⚠ Tag existiert bereits!",
+    "module_deleted": "✅ Programmbereich '{name}' gelöscht.",
+    "tag_deleted": "✅ Tag '{name}' gelöscht."
   },
   "template_editor": {
     "preview_btn": "👁 Live-Vorschau rendern"
@@ -1672,6 +1747,11 @@
     "summary_saved_timeline": "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.",
     "tab_response": "✉ Antwort-Entwurf",
     "tab_solutions": "💡 Lösungsvorschläge",
-    "tab_summary": "📋 Zusammenfassung"
+    "tab_summary": "📋 Zusammenfassung",
+    "custom_instruction_suffix": " + ⚡ Sonderanweisung",
+    "error_generation": "⚠ Fehler bei KI-Generierung: {error}",
+    "reply_generated": "✓ E-Mail-Antwort-Entwurf generiert{info}.",
+    "rules_info": " ({base_count} Basis-Regeln, {practice_count} Praxis-Regeln{ci_info})",
+    "summary_generated": "✓ Zusammenfassung erfolgreich generiert{info}."
   }
 }

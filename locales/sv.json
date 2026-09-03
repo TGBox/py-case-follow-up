@@ -39,7 +39,10 @@
     "status_online": "Redo",
     "status_processing": "Bearbetar...",
     "summary_copied": "✓ Sammanfattning kopierad till urklipp.",
-    "summary_saved_timeline": "✓ AI-sammanfattning sparad som tidslinjepost."
+    "summary_saved_timeline": "✓ AI-sammanfattning sparad som tidslinjepost.",
+    "toast_ai_disabled": "AI globalt inaktiverad & modeller avlastade",
+    "toast_ai_enabled": "AI globalt aktiverad",
+    "toast_ai_status_title": "AI-status"
   },
   "analytics": {
     "assignee_title": "👤 Arbetsbelastning per handläggare",
@@ -164,7 +167,11 @@
     "header": "📅 Skapa kalenderpost (.ics) - Ärende {case_id}",
     "save_dialog_title": "Spara iCalendar-fil",
     "sub_header": "Mottagning: {practice} | Återuppringningsfrist: {deadline}",
-    "subject_line": "📋 Ämne: [{case_id}] {title}"
+    "subject_line": "📋 Ämne: [{case_id}] {title}",
+    "error_generic": "Fel: {error}",
+    "error_save": "Fel vid sparande: {error}",
+    "ics_opened": "✓ Kalenderfil öppnad: {filename}",
+    "ics_saved": "✓ Kalenderfil sparad: {filename}"
   },
   "case_list": {
     "actor_format": "{title} | Ansvarig: {actor}",
@@ -398,7 +405,9 @@
     "convert_btn": "Konvertera formulär",
     "header": "🔄 Konvertera formulärschema",
     "select_target": "Välj nytt målformulär:",
-    "select_valid": "Välj ett giltigt målformulär."
+    "select_valid": "Välj ett giltigt målformulär.",
+    "case_info": "Ärende-ID: {case_id} — {title}",
+    "current_form": "Aktuellt formulär: {schema_name}"
   },
   "customer_form": {
     "btn_add_contact": "+ Lägg till kontakt",
@@ -557,7 +566,9 @@
     "website_opened": "🌐 Webbplats öppnad: {url}",
     "website_placeholder": "https://mottagning-exempel.se",
     "zip_lbl": "Postnr:",
-    "zip_placeholder": "12345"
+    "zip_placeholder": "12345",
+    "edit_practice": "Redigera mottagning: {name}",
+    "id_suffix": "(ID: {id})"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -754,7 +765,10 @@
     "sub_header": "Mottagning: {practice} | Återuppringningsfrist: {deadline}",
     "subject_lbl": "Ämne:",
     "subject_placeholder": "Ange ämne...",
-    "to_placeholder": "mottagning@exempel.se..."
+    "to_placeholder": "mottagning@exempel.se...",
+    "ics_opened": "✓ Kalenderpost (.ics) öppnad: {name}",
+    "ics_saved": "✓ .ics-kalenderfil sparad som: {name}",
+    "window_title": "{base_title} - Ärende {case_id}"
   },
   "email_draft": {
     "ai_generating": "🤖 AI genererar e-postutkast...",
@@ -783,7 +797,33 @@
     "snippet_btn": "🧩 Textblock",
     "subject_placeholder": "Ange ämne...",
     "suggestions_title": "🔍 Kontakter från mottagningsregister (klicka för att använda):",
-    "to_placeholder": "mottagning@exempel.se eller ange namn / mottagning..."
+    "to_placeholder": "mottagning@exempel.se eller ange namn / mottagning...",
+    "ai_draft_generated": "✓ AI-utkast genererat ({model}).",
+    "ai_generating_wait": "🤖 AI genererar e-postutkast... Vänta",
+    "ai_generation_failed": "⚠ AI-generering misslyckades: {error}",
+    "ai_status_gemini_active": "🟢 Gemini aktiv ({model} | Anonymiserad)",
+    "ai_status_gemini_invalid": "🔴 Gemini API-nyckel ogiltig / offline",
+    "ai_status_ollama_active": "🟢 Ollama aktiv ({model})",
+    "ai_status_rule_based": "⚡ Regelbaserat läge (AI offline/ingen nyckel)",
+    "all_contacts_hint": "Alla kontakter från mottagningsregistret:",
+    "clipboard_format": "Till: {to}\nÄmne: {subject}\n\n{body}",
+    "default_sender": "Ditt supportteam",
+    "default_signoff": "Med vänliga hälsningar",
+    "error_copy": "Kopiering misslyckades: {error}",
+    "error_open": "Fel vid öppning: {error}",
+    "error_outlook_transfer": "Fel vid överföring till Outlook: {error}",
+    "generic_practice": "🏥 Mottagning",
+    "header_title_case": "✉ Skriv e-post (Ärende {case_id})",
+    "header_title_new": "✉ Skriv e-post (Fritt utkast)",
+    "no_email": "(ingen e-post)",
+    "practice_id_line": "Mottagning: {practice} ({id})",
+    "recipient_set": "✓ Mottagare inställd: {name} <{email}>",
+    "search_hint": "Träffar för '{query}':",
+    "sub_header_case": "Mottagning: {practice} | Återuppringning senast: {deadline}",
+    "sub_header_free": "Fritt utkast | Välj mottagare från mottagningsregistret eller ange fritt",
+    "suggestions_count": "🔍 {hint} ({count})",
+    "window_title_case": "{base_title} - Ärende {case_id}",
+    "window_title_new": "{base_title} (Nytt utkast)"
   },
   "email_import": {
     "btn_create_new_case": "➕ Skapa som nytt ärende",
@@ -797,14 +837,20 @@
     "create_new_case": "➕ Skapa som nytt ärende",
     "ignore": "🗑 Ignorera",
     "no_match": "💡 Inget befintligt ärende matchades (Nytt ärende rekommenderas)",
-    "subject_prefix": "Ämne: {subj}"
+    "subject_prefix": "Ämne: {subj}",
+    "appended": "✓ E-post har bifogats till ärende [{case_id}].",
+    "created_new_case": "✓ Nytt ärende [{case_id}] skapat från e-post.",
+    "loaded_count": "✓ {count} e-postmeddelanden laddade från inkorgen.",
+    "no_subject": "Inget ämne"
   },
   "export": {
     "copied": "📋 Kopierades till urklipp!",
     "incomplete": "⚠ Ofullständig! Fyll i fält eller aktivera tvingad export.",
     "missing_fields_hdr": "⚠ Fyll i obligatoriska fält direkt:",
     "no_template": "Ingen mall vald.",
-    "ready": "✅ Mall redo för export."
+    "ready": "✅ Mall redo för export.",
+    "file_saved": "💾 Fil sparad: {name}",
+    "missing_required_fields": "[SAKNADE OBLIGATORISKA FÄLT: {fields}]"
   },
   "export_dialog": {
     "copy_btn": "Kopiera till urklipp",
@@ -814,7 +860,8 @@
     "no_template": "Ingen mall",
     "preview_header": "Förhandsgranskning av exporterad text:",
     "save_file_btn": "Spara till fil...",
-    "select_template": "Välj mall:"
+    "select_template": "Välj mall:",
+    "window_title": "{base_title} — {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Utvecklarärende för programfel, krascher och gränssnittsproblem.",
@@ -876,7 +923,9 @@
     "note_placeholder": "t.ex. Ärende #104 skapat i GitLab, återuppringning begärd...",
     "person_placeholder": "Mottagarnamn...",
     "recipient": "Mottagare / Personens namn (välj från kollegelistan eller ange):",
-    "select_colleague": "- Välj från kollegelistan -"
+    "select_colleague": "- Välj från kollegelistan -",
+    "absence_warning": "⚠ OBS: {name} är för närvarande frånvarande{reason}!",
+    "window_title": "{base_title} (Ärende {case_id})"
   },
   "help_content": {
     "advanced_search_filters": {
@@ -1120,7 +1169,14 @@
     "no_diff_cases": "Inga avvikande ärenden hittades.",
     "reload_compare": "Ladda om / Jämför",
     "select_at_least_one": "Välj minst ett ärende att importera.",
-    "select_colleague": "Välj kollega:"
+    "select_colleague": "Välj kollega:",
+    "cases_loaded": "✅ {count} ärenden laddade från {name}.",
+    "import_success": "✅ {count} ärenden har importerats till lokal arbetsdata!",
+    "none_placeholder": "Ingen",
+    "status_identical": "[IDENTISK]",
+    "status_local_newer": "[LOKAL NYARE]",
+    "status_new": "[NY]",
+    "status_remote_newer": "[KOLLEGA NYARE]"
   },
   "profile": {
     "active_profile": "Aktiv profil:",
@@ -1242,7 +1298,22 @@
     "wiki_token_id_placeholder": "Token-ID",
     "wiki_token_secret_placeholder": "Tokenhemlighet",
     "wiki_url_placeholder": "https://wiki.minmottagning.se/api",
-    "workspace_placeholder": "Sökväg till datamapp..."
+    "workspace_placeholder": "Sökväg till datamapp...",
+    "created_and_activated": "Profilen '{name}' har skapats och aktiverats!",
+    "gemini_key_error": "❌ {msg}",
+    "gemini_key_ok": "✅ {msg}",
+    "model_loading": "⏳ Laddar modellen '{model}' i minnet...",
+    "model_set_active": "Aktiv modell inställd på '{model}'.",
+    "model_unloading": "⏳ Avlastar modellen '{model}' från minnet...",
+    "ollama_server_title": "Ollama-server",
+    "ollama_start_error": "❌ {msg}",
+    "ollama_start_ok": "✅ {msg}",
+    "ollama_starting": "Ollama-servern startar...",
+    "ollama_stop_result": "⚡ {msg}",
+    "ollama_stopped": "Ollama-servern har stoppats.",
+    "pvs_model_error": "⚠ {msg}",
+    "pvs_model_ok": "✅ {msg}",
+    "switched_to": "Bytte till profilen '{name}'."
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -1425,7 +1496,9 @@
     "category_placeholder": "t.ex. Fråga, Guide, SQL",
     "shortcut_placeholder": "t.ex. <Control-Alt-1>",
     "tags_placeholder": "t.ex. fel, sql, guide",
-    "title_placeholder": "t.ex. 📸 Fråga: Skärmdumpar"
+    "title_placeholder": "t.ex. 📸 Fråga: Skärmdumpar",
+    "category_line": "Kategori: {category}",
+    "selected_status": "Vald: {id}"
   },
   "snippet_picker": {
     "all_categories": "Alla",
@@ -1514,7 +1587,9 @@
     "tab_tags": "🏷 Allmänna taggar",
     "tag_added": "✅ Taggen har lagts till!",
     "tag_empty": "⚠ Taggnamnet får inte vara tomt!",
-    "tag_exists": "⚠ Taggen finns redan!"
+    "tag_exists": "⚠ Taggen finns redan!",
+    "module_deleted": "✅ Programmodulen '{name}' har tagits bort.",
+    "tag_deleted": "✅ Taggen '{name}' har tagits bort."
   },
   "template_editor": {
     "preview_btn": "👁 Rendera förhandsgranskning"
@@ -1672,6 +1747,11 @@
     "summary_saved_timeline": "✓ AI-sammanfattning sparad som tidslinjepost.",
     "tab_response": "✉ Svarsutkast",
     "tab_solutions": "💡 Lösningsförslag",
-    "tab_summary": "📋 Sammanfattning"
+    "tab_summary": "📋 Sammanfattning",
+    "custom_instruction_suffix": " + ⚡ Specialinstruktion",
+    "error_generation": "⚠ Fel vid AI-generering: {error}",
+    "reply_generated": "✓ Utkast till e-postsvar genererat{info}.",
+    "rules_info": " ({base_count} grundregler, {practice_count} mottagningsregler{ci_info})",
+    "summary_generated": "✓ Sammanfattning genererad{info}."
   }
 }

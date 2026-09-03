@@ -174,7 +174,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
                 lbl_sc.pack(side="right")
                 lbl_sc.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
-            cat_lbl = ctk.CTkLabel(card, text=f"Kategorie: {snip.category}", font=ctk.CTkFont(size=10), text_color="gray70", anchor="w")
+            cat_lbl = ctk.CTkLabel(card, text=tr("snippet_mgmt.category_line", "Kategorie: {category}", category=snip.category), font=ctk.CTkFont(size=10), text_color="gray70", anchor="w")
             cat_lbl.pack(fill="x", padx=6, pady=(0, 4))
             cat_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
@@ -196,8 +196,9 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         if snip.shortcut:
             self.shortcut_entry.insert(0, snip.shortcut)
 
+        from services.i18n_service import tr
         self.delete_btn.configure(state="normal")
-        self.status_lbl.configure(text=f"Ausgewählt: {snip.snippet_id}", text_color="dodgerblue")
+        self.status_lbl.configure(text=tr("snippet_mgmt.selected_status", "Ausgewählt: {id}", id=snip.snippet_id), text_color="dodgerblue")
         self.refresh_list()
 
     def on_click_new(self):

@@ -142,15 +142,16 @@ class CalendarExportDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     def on_open_ics(self):
+        from services.i18n_service import tr
         try:
             ics_content = self.service.generate_ics_content(self.case)
             temp_dir = Path(tempfile.gettempdir())
             temp_file = temp_dir / f"Termin_Fall_{self.case.case_id}.ics"
             temp_file.write_text(ics_content, encoding="utf-8")
             os.startfile(str(temp_file))
-            self.status_lbl.configure(text=f"✓ Kalenderdatei geöffnet: {temp_file.name}")
+            self.status_lbl.configure(text=tr("calendar_export.ics_opened", "✓ Kalenderdatei geöffnet: {filename}", filename=temp_file.name))
         except Exception as e:
-            self.status_lbl.configure(text=f"Fehler: {e}", text_color="red")
+            self.status_lbl.configure(text=tr("calendar_export.error_generic", "Fehler: {error}", error=e), text_color="red")
 
     def on_save_ics(self):
         from services.i18n_service import tr
@@ -167,6 +168,6 @@ class CalendarExportDialog(ctk.CTkToplevel):
         try:
             ics_content = self.service.generate_ics_content(self.case)
             Path(file_path).write_text(ics_content, encoding="utf-8")
-            self.status_lbl.configure(text=f"✓ Kalenderdatei gespeichert: {Path(file_path).name}")
+            self.status_lbl.configure(text=tr("calendar_export.ics_saved", "✓ Kalenderdatei gespeichert: {filename}", filename=Path(file_path).name))
         except Exception as e:
-            self.status_lbl.configure(text=f"Fehler beim Speichern: {e}", text_color="red")
+            self.status_lbl.configure(text=tr("calendar_export.error_save", "Fehler beim Speichern: {error}", error=e), text_color="red")

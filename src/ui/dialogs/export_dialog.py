@@ -20,8 +20,9 @@ class ExportDialog(ctk.CTkToplevel):
         on_case_updated: Callable[[Case], None],
     ):
         super().__init__(parent)
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["export"]
-        self.title(f"{DIALOG_TITLES['export']} — {case.case_id}")
+        self.title(tr("export_dialog.window_title", "{base_title} — {case_id}", base_title=DIALOG_TITLES["export"], case_id=case.case_id))
         self.geometry(f"{w}x{h}")
         self.minsize(740, 660)
         from utils.ui_utils import center_window
@@ -187,7 +188,7 @@ class ExportDialog(ctk.CTkToplevel):
             self.status_label.configure(text=tr("export.ready", "✅ Vorlage bereit zum Export."), text_color="green")
         else:
             missing_names = [self.schema.fields[i].label if self.schema else m for m in missing for i, f in enumerate(self.schema.fields) if f.field_id == m] if self.schema else missing
-            self.preview_textbox.insert("1.0", f"[FEHLENDE PFLICHTFELDER: {', '.join(missing)}]")
+            self.preview_textbox.insert("1.0", tr("export.missing_required_fields", "[FEHLENDE PFLICHTFELDER: {fields}]", fields=", ".join(missing)))
             self.status_label.configure(
                 text=tr("export.incomplete", "⚠ Unvollständig! Bitte Felder ergänzen oder Force-Export aktivieren."), text_color="red"
             )
@@ -211,6 +212,7 @@ class ExportDialog(ctk.CTkToplevel):
             self.status_label.configure(text=tr("export.copied", "📋 Erfolgreich in Zwischenablage kopiert!"), text_color="green")
 
     def on_save_file(self):
+        from services.i18n_service import tr
         self.apply_inplace_values_to_case()
         text = self.preview_textbox.get("1.0", "end-1c")
         if not text:
@@ -224,7 +226,7 @@ class ExportDialog(ctk.CTkToplevel):
         if file_path:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
-            self.status_label.configure(text=f"💾 Datei gespeichert: {Path(file_path).name}", text_color="green")
+            self.status_label.configure(text=tr("export.file_saved", "💾 Datei gespeichert: {name}", name=Path(file_path).name), text_color="green")
 
     def on_open_template_manager(self):
         from ui.dialogs.template_manager_dialog import TemplateManagerDialog
@@ -240,9 +242,10 @@ class ExportDialog(ctk.CTkToplevel):
             )
 
     def on_templates_updated(self, updated_templates: list[ExportTemplate]):
+        from services.i18n_service import tr
         self.templates = updated_templates
         tpl_names = [t.display_name for t in self.templates]
-        self.tpl_combo.configure(values=tpl_names if tpl_names else ["Keine Vorlage"])
+        self.tpl_combo.configure(values=tpl_names if tpl_names else [tr("export_dialog.no_template", "Keine Vorlage")])
         if self.templates:
             self.active_template = self.templates[0]
             self.tpl_combo.set(self.active_template.display_name)

@@ -18,8 +18,9 @@ class CasePrintDialog(ctk.CTkToplevel):
         self.case = case
         self.attachment_service = attachment_service
 
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["print_report"]
-        self.title(f"🖨 Fall-Akte Druck- & HTML Export: {case.case_id}")
+        self.title(tr("case_print.dialog_title", "🖨 Fall-Akte Druck- & HTML Export: {case_id}", case_id=case.case_id))
         self.geometry(f"{w}x{h}")
         self.minsize(620, 500)
 

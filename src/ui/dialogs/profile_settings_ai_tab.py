@@ -487,7 +487,7 @@ class AiSettingsTabMixin:
             ok, msg = svc.check_gemini_status(api_key=key, model=model)
             if self.winfo_exists():
                 self.after(0, lambda: self.gemini_status_lbl.configure(
-                    text=f"✅ {msg}" if ok else f"❌ {msg}",
+                    text=tr("profile.gemini_key_ok", "✅ {msg}", msg=msg) if ok else tr("profile.gemini_key_error", "❌ {msg}", msg=msg),
                     text_color=COLOR_TEXT_GREEN if ok else COLOR_TEXT_RED
                 ))
 
@@ -573,9 +573,11 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_start_ollama_server(self):
+        from services.i18n_service import tr
         self.ollama_action_lbl.configure(text=AI_STATUS_STARTING, text_color="orange")
         def worker():
             from services.ai_service import AiService
+            from services.i18n_service import tr
             url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
             svc = AiService(ollama_url=url)
             ok, msg = svc.start_ollama_server()
@@ -584,11 +586,11 @@ class AiSettingsTabMixin:
                     if not self.winfo_exists():
                         return
                     if ok:
-                        self.ollama_action_lbl.configure(text=f"✅ {msg}", text_color="green")
+                        self.ollama_action_lbl.configure(text=tr("profile.ollama_start_ok", "✅ {msg}", msg=msg), text_color="green")
                         from ui.widgets.toast_notification import ToastNotification
-                        ToastNotification(self, "Ollama Server", "Ollama Server wird gestartet...")
+                        ToastNotification(self, tr("profile.ollama_server_title", "Ollama Server"), tr("profile.ollama_starting", "Ollama Server wird gestartet..."))
                     else:
-                        self.ollama_action_lbl.configure(text=f"❌ {msg}", text_color="red")
+                        self.ollama_action_lbl.configure(text=tr("profile.ollama_start_error", "❌ {msg}", msg=msg), text_color="red")
                     self.after(1500, self.scan_ollama_status)
                 except Exception:
                     pass
@@ -600,9 +602,11 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_stop_ollama_server(self):
+        from services.i18n_service import tr
         self.ollama_action_lbl.configure(text=AI_STATUS_STOPPING, text_color="orange")
         def worker():
             from services.ai_service import AiService
+            from services.i18n_service import tr
             url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
             svc = AiService(ollama_url=url)
             ok, msg = svc.stop_ollama_server()
@@ -610,9 +614,9 @@ class AiSettingsTabMixin:
                 try:
                     if not self.winfo_exists():
                         return
-                    self.ollama_action_lbl.configure(text=f"⚡ {msg}", text_color="gray")
+                    self.ollama_action_lbl.configure(text=tr("profile.ollama_stop_result", "⚡ {msg}", msg=msg), text_color="gray")
                     from ui.widgets.toast_notification import ToastNotification
-                    ToastNotification(self, "Ollama Server", "Ollama Server wurde beendet.")
+                    ToastNotification(self, tr("profile.ollama_server_title", "Ollama Server"), tr("profile.ollama_stopped", "Ollama Server wurde beendet."))
                     self.scan_ollama_status()
                 except Exception:
                     pass
@@ -624,6 +628,7 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_toggle_global_ai(self):
+        from services.i18n_service import tr
         enabled = bool(self.ai_enable_chk.get())
         self.profile.ai_settings.enable_ai = enabled
 
@@ -648,7 +653,8 @@ class AiSettingsTabMixin:
                             text_color="gray",
                         )
                         from ui.widgets.toast_notification import ToastNotification
-                        ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
+                        from services.i18n_service import tr
+                        ToastNotification(self, tr("ai_constants.toast_ai_status_title", "KI-Status"), tr("ai_constants.toast_ai_disabled", "KI global deaktiviert & Modelle entladen"))
                         self.scan_ollama_status()
                     except Exception:
                         pass
@@ -666,15 +672,16 @@ class AiSettingsTabMixin:
                 text_color="green",
             )
             from ui.widgets.toast_notification import ToastNotification
-            ToastNotification(self, "KI-Status", "KI global aktiviert")
+            ToastNotification(self, tr("ai_constants.toast_ai_status_title", "KI-Status"), tr("ai_constants.toast_ai_enabled", "KI global aktiviert"))
             self.scan_ollama_status()
 
     def on_select_ai_model(self, selected_model: str):
+        from services.i18n_service import tr
         if hasattr(self, "ai_model_entry"):
             self.ai_model_entry.delete(0, "end")
             self.ai_model_entry.insert(0, selected_model)
         self.profile.ai_settings.model_name = selected_model
-        self.ollama_action_lbl.configure(text=f"Aktives Modell auf '{selected_model}' gesetzt.", text_color="dodgerblue")
+        self.ollama_action_lbl.configure(text=tr("profile.model_set_active", "Aktives Modell auf '{model}' gesetzt.", model=selected_model), text_color="dodgerblue")
 
     def on_create_pvs_model(self):
         from services.ai_service import AiService
@@ -685,14 +692,15 @@ class AiSettingsTabMixin:
         self.update_idletasks()
 
         def worker():
+            from services.i18n_service import tr
             ok, msg = svc.create_pvs_support_model()
             def done():
                 if ok:
-                    self.ollama_action_lbl.configure(text=f"✅ {msg}", text_color="green")
+                    self.ollama_action_lbl.configure(text=tr("profile.pvs_model_ok", "✅ {msg}", msg=msg), text_color="green")
                     self.profile.ai_settings.model_name = "pvs-support"
                     self.scan_ollama_status()
                 else:
-                    self.ollama_action_lbl.configure(text=f"⚠ {msg}", text_color="red")
+                    self.ollama_action_lbl.configure(text=tr("profile.pvs_model_error", "⚠ {msg}", msg=msg), text_color="red")
             self.after(0, done)
 
         import threading
@@ -700,17 +708,19 @@ class AiSettingsTabMixin:
 
     def on_preload_model(self):
         from services.ai_service import AiService
+        from services.i18n_service import tr
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
-        self.ollama_action_lbl.configure(text=f"⏳ Lade Modell '{model}' in den Speicher...", text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.model_loading", "⏳ Lade Modell '{model}' in den Speicher...", model=model), text_color="orange")
         self.update_idletasks()
 
         def worker():
             ok, msg = svc.preload_model(model)
             def done():
                 color = "green" if ok else "red"
-                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                icon = "✅" if ok else "⚠"
+                self.ollama_action_lbl.configure(text=f"{icon} {msg}", text_color=color)
                 self.scan_ollama_status()
             self.after(0, done)
 
@@ -719,17 +729,19 @@ class AiSettingsTabMixin:
 
     def on_unload_model(self):
         from services.ai_service import AiService
+        from services.i18n_service import tr
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
-        self.ollama_action_lbl.configure(text=f"⏳ Entlade Modell '{model}' aus dem Speicher...", text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.model_unloading", "⏳ Entlade Modell '{model}' aus dem Speicher...", model=model), text_color="orange")
         self.update_idletasks()
 
         def worker():
             ok, msg = svc.unload_model(model)
             def done():
                 color = "green" if ok else "red"
-                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                icon = "✅" if ok else "⚠"
+                self.ollama_action_lbl.configure(text=f"{icon} {msg}", text_color=color)
                 self.scan_ollama_status()
             self.after(0, done)
 

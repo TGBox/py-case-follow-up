@@ -99,7 +99,11 @@ class EmailDraftDialog(ctk.CTkToplevel):
                         "search_key": f"{c_person} {em} {p_name} {c_id}".lower(),
                     })
 
-        dialog_title = f"{DIALOG_TITLES['email_draft']} - Fall {case.case_id}" if case else f"{DIALOG_TITLES['email_draft']} (Neuer Entwurf)"
+        from services.i18n_service import tr
+        if case:
+            dialog_title = tr("email_draft.window_title_case", "{base_title} - Fall {case_id}", base_title=DIALOG_TITLES["email_draft"], case_id=case.case_id)
+        else:
+            dialog_title = tr("email_draft.window_title_new", "{base_title} (Neuer Entwurf)", base_title=DIALOG_TITLES["email_draft"])
         self.title(dialog_title)
         w, h = DIALOG_DIMENSIONS["email_draft"]
         self.geometry(f"{w}x{h}")
@@ -130,14 +134,16 @@ class EmailDraftDialog(ctk.CTkToplevel):
         hdr_top_row = ctk.CTkFrame(hdr_frame, fg_color="transparent")
         hdr_top_row.pack(fill="x")
 
+        from services.i18n_service import tr
+
         if self.case:
-            title_text = f"✉ E-Mail verfassen (Fall {self.case.case_id})"
-            practice_name = self.case.customer.practice_name if self.case.customer else "Unbekannte Praxis"
-            deadline_str = self.case.formatted_deadline or "Keine Deadline gesetzt"
-            sub_text = f"Praxis: {practice_name} | Rückruf-Deadline: {deadline_str}"
+            title_text = tr("email_draft.header_title_case", "✉ E-Mail verfassen (Fall {case_id})", case_id=self.case.case_id)
+            practice_name = self.case.customer.practice_name if self.case.customer else tr("common.unknown_practice", "Unbekannte Praxis")
+            deadline_str = self.case.formatted_deadline or tr("common.no_deadline_set", "Keine Deadline gesetzt")
+            sub_text = tr("email_draft.sub_header_case", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str)
         else:
-            title_text = "✉ E-Mail verfassen (Freier Entwurf)"
-            sub_text = "Freier Entwurf | Empfänger aus Praxiskartei wählen oder frei eingeben"
+            title_text = tr("email_draft.header_title_new", "✉ E-Mail verfassen (Freier Entwurf)")
+            sub_text = tr("email_draft.sub_header_free", "Freier Entwurf | Empfänger aus Praxiskartei wählen oder frei eingeben")
 
         ctk.CTkLabel(
             hdr_top_row,
@@ -377,9 +383,10 @@ class EmailDraftDialog(ctk.CTkToplevel):
             self.hide_suggestions()
             return
 
+        from services.i18n_service import tr
         matches = [c for c in self.all_contacts if query in c["search_key"]]
         if matches:
-            self.show_suggestions(matches, query_hint=f"Treffer für '{query}':")
+            self.show_suggestions(matches, query_hint=tr("email_draft.search_hint", "Treffer für '{query}':", query=query))
         else:
             self.hide_suggestions()
 
@@ -387,14 +394,16 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if self.suggestions_frame_visible:
             self.hide_suggestions()
         else:
-            self.show_suggestions(self.all_contacts, query_hint="Alle Kontakte aus der Praxiskartei:")
+            from services.i18n_service import tr
+            self.show_suggestions(self.all_contacts, query_hint=tr("email_draft.all_contacts_hint", "Alle Kontakte aus der Praxiskartei:"))
 
     def show_suggestions(self, contacts: list[dict[str, str]], query_hint: str = ""):
+        from services.i18n_service import tr
         for w in self.suggestions_scroll.winfo_children():
             w.destroy()
 
         if query_hint:
-            self.suggestions_title.configure(text=f"🔍 {query_hint} ({len(contacts)})")
+            self.suggestions_title.configure(text=tr("email_draft.suggestions_count", "🔍 {hint} ({count})", hint=query_hint, count=len(contacts)))
 
         if not contacts:
             ctk.CTkLabel(
@@ -413,10 +422,10 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 practice = item.get("practice", "")
                 cust_id = item.get("cust_id", "")
 
-                contact_disp = f"👤 {contact_name}" if contact_name else "🏥 Praxis"
-                email_disp = f"<{email}>" if email else "(keine E-Mail)"
+                contact_disp = f"👤 {contact_name}" if contact_name else tr("email_draft.generic_practice", "🏥 Praxis")
+                email_disp = f"<{email}>" if email else tr("email_draft.no_email", "(keine E-Mail)")
                 top_text = f"{contact_disp} {email_disp}"
-                sub_text = f"Praxis: {practice} ({cust_id})"
+                sub_text = tr("email_draft.practice_id_line", "Praxis: {practice} ({id})", practice=practice, id=cust_id)
 
                 top_lbl = ctk.CTkLabel(
                     card,
@@ -460,15 +469,19 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.update_salutation_in_body(name, practice)
 
         self.hide_suggestions()
+        from services.i18n_service import tr
         display_name = name or practice
-        self.status_lbl.configure(text=f"✓ Empfänger gesetzt: {display_name} <{email}>")
+        self.status_lbl.configure(text=tr("email_draft.recipient_set", "✓ Empfänger gesetzt: {name} <{email}>", name=display_name, email=email))
 
     def update_salutation_in_body(self, contact_name: str, practice_name: str):
+        from services.i18n_service import tr
         new_salutation = format_german_salutation(contact_name, practice_name)
         curr_body = self.body_textbox.get("1.0", "end-1c")
 
         if not curr_body.strip():
-            self.body_textbox.insert("1.0", f"{new_salutation}\n\n\n\nMit freundlichen Grüßen\n{self.user_name or 'Ihr Support-Team'}")
+            signoff = tr("email_draft.default_signoff", "Mit freundlichen Grüßen")
+            sender = self.user_name or tr("email_draft.default_sender", "Ihr Support-Team")
+            self.body_textbox.insert("1.0", f"{new_salutation}\n\n\n\n{signoff}\n{sender}")
             return
 
         lines = curr_body.split("\n")
@@ -513,7 +526,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
             webbrowser.open(mailto_url)
             self.status_lbl.configure(text=tr("email_draft.mailto_opened", "✓ Standard-Mail-Programm aufgerufen."))
         except Exception as e:
-            self.status_lbl.configure(text=f"Fehler beim Öffnen: {e}")
+            self.status_lbl.configure(text=tr("email_draft.error_open", "Fehler beim Öffnen: {error}", error=e))
 
     def on_transfer_to_outlook(self):
         """Transfers the drafted email directly into Microsoft Outlook."""
@@ -564,7 +577,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
                     webbrowser.open(f"file:///{eml_path.resolve()}")
                 self.status_lbl.configure(text=tr("email_draft.eml_handed_over", "✓ E-Mail-Entwurf an E-Mail-Client übergeben (.eml)."))
             except Exception as e:
-                self.status_lbl.configure(text=f"Fehler bei Outlook-Übergabe: {e}")
+                self.status_lbl.configure(text=tr("email_draft.error_outlook_transfer", "Fehler bei Outlook-Übergabe: {error}", error=e))
 
     def on_copy_text(self):
         from services.i18n_service import tr
@@ -572,13 +585,13 @@ class EmailDraftDialog(ctk.CTkToplevel):
         subject = self.subject_entry.get().strip()
         body = self.body_textbox.get("1.0", "end-1c")
 
-        formatted = f"An: {to}\nBetreff: {subject}\n\n{body}"
+        formatted = tr("email_draft.clipboard_format", "An: {to}\nBetreff: {subject}\n\n{body}", to=to, subject=subject, body=body)
         try:
             self.clipboard_clear()
             self.clipboard_append(formatted)
             self.status_lbl.configure(text=tr("email_draft.copied_to_clipboard", "✓ E-Mail in Zwischenablage kopiert."))
         except Exception as e:
-            self.status_lbl.configure(text=f"Kopieren fehlgeschlagen: {e}")
+            self.status_lbl.configure(text=tr("email_draft.error_copy", "Kopieren fehlgeschlagen: {error}", error=e))
 
     # --- AI / KI Integration ---
 
@@ -607,7 +620,10 @@ class EmailDraftDialog(ctk.CTkToplevel):
             text_color=("gray40", "gray70"),
         ).pack(pady=(0, 15))
 
-    def _show_overlay(self, message: str = "🤖 KI generiert E-Mail-Entwurf..."):
+    def _show_overlay(self, message: str | None = None):
+        from services.i18n_service import tr
+        if message is None:
+            message = tr("email_draft.ai_generating", "🤖 KI generiert E-Mail-Entwurf...")
         self._overlay_msg_lbl.configure(text=message)
         self._overlay_frame.place(relx=0, rely=0, relwidth=1, relheight=1)
         self._overlay_progress.start()
@@ -623,23 +639,24 @@ class EmailDraftDialog(ctk.CTkToplevel):
     def _update_ollama_status_async(self):
         """Checks AI provider status in a background thread and updates the status badge."""
         def thread_target():
+            from services.i18n_service import tr
             is_online = False
-            badge_text = "⚡ Regelbasierter Modus (KI Offline/Ohne Key)"
+            badge_text = tr("email_draft.ai_status_rule_based", "⚡ Regelbasierter Modus (KI Offline/Ohne Key)")
             badge_color = "dodgerblue"
 
             try:
                 if self.ai_service.provider == "GEMINI":
                     is_online, msg = self.ai_service.check_gemini_status()
                     if is_online:
-                        badge_text = f"🟢 Gemini aktiv ({self.ai_service.gemini_model} | Anonymisiert)"
+                        badge_text = tr("email_draft.ai_status_gemini_active", "🟢 Gemini aktiv ({model} | Anonymisiert)", model=self.ai_service.gemini_model)
                         badge_color = "forestgreen"
                     else:
-                        badge_text = "🔴 Gemini API Key ungültig / offline"
+                        badge_text = tr("email_draft.ai_status_gemini_invalid", "🔴 Gemini API Key ungültig / offline")
                         badge_color = "firebrick"
                 else:
                     is_online, models = self.ai_service.check_ollama_status()
                     if is_online:
-                        badge_text = f"🟢 Ollama aktiv ({self.ai_service.model_name})"
+                        badge_text = tr("email_draft.ai_status_ollama_active", "🟢 Ollama aktiv ({model})", model=self.ai_service.model_name)
                         badge_color = "forestgreen"
             except Exception:
                 pass
@@ -666,7 +683,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
             self.status_lbl.configure(text=tr("email_draft.case_required_for_ai", "⚠ KI-Entwurf benötigt einen aktiven Fall."), text_color="darkorange")
             return
 
-        self._show_overlay("🤖 KI generiert E-Mail-Entwurf... Bitte warten")
+        self._show_overlay(tr("email_draft.ai_generating_wait", "🤖 KI generiert E-Mail-Entwurf... Bitte warten"))
 
         def worker():
             user_name = self.profile.user.name if (self.profile and hasattr(self.profile, 'user')) else self.user_name or "Ihr Support-Team"
@@ -685,13 +702,14 @@ class EmailDraftDialog(ctk.CTkToplevel):
             if not self.winfo_exists():
                 return
             self._hide_overlay()
+            from services.i18n_service import tr
             if isinstance(result_holder[0], Exception):
-                self.status_lbl.configure(text=f"⚠ KI-Generierung fehlgeschlagen: {result_holder[0]}", text_color="red")
+                self.status_lbl.configure(text=tr("email_draft.ai_generation_failed", "⚠ KI-Generierung fehlgeschlagen: {error}", error=result_holder[0]), text_color="red")
             else:
                 draft_text = result_holder[0]
                 self.body_textbox.delete("1.0", "end")
                 self.body_textbox.insert("1.0", draft_text)
-                self.status_lbl.configure(text=f"✓ KI-Entwurf generiert ({self.ai_service.active_model_name}).", text_color="dodgerblue")
+                self.status_lbl.configure(text=tr("email_draft.ai_draft_generated", "✓ KI-Entwurf generiert ({model}).", model=self.ai_service.active_model_name), text_color="dodgerblue")
 
         result_holder: list[Any] = [None]
 

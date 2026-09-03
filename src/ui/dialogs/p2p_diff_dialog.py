@@ -96,7 +96,7 @@ class P2PDiffDialog(ctk.CTkToplevel):
 
         self.diff_items = self.p2p_service.compute_diff(remote_cases)
         self.status_label.configure(
-            text=f"✅ {len(remote_cases)} Fälle von {self.active_colleague.name} geladen.", text_color="green"
+            text=tr("p2p.cases_loaded", "✅ {count} Fälle von {name} geladen.", count=len(remote_cases), name=self.active_colleague.name), text_color="green"
         )
         self.render_diff_list(self.diff_items)
 
@@ -123,16 +123,16 @@ class P2PDiffDialog(ctk.CTkToplevel):
             # Status Badge Color
             if item.status == "NEW":
                 badge_color = "dodgerblue"
-                status_text = "[NEU]"
+                status_text = tr("p2p.status_new", "[NEU]")
             elif item.status == "REMOTE_NEWER":
                 badge_color = "orange"
-                status_text = "[KOLLEGE NEUER]"
+                status_text = tr("p2p.status_remote_newer", "[KOLLEGE NEUER]")
             elif item.status == "LOCAL_NEWER":
                 badge_color = "gray"
-                status_text = "[LOKAL NEUER]"
+                status_text = tr("p2p.status_local_newer", "[LOKAL NEUER]")
             else:
                 badge_color = "gray30"
-                status_text = "[IDENTISCH]"
+                status_text = tr("p2p.status_identical", "[IDENTISCH]")
 
             badge = ctk.CTkLabel(row, text=status_text, text_color=badge_color, font=ctk.CTkFont(weight="bold"), width=130, anchor="w")
             badge.pack(side="left", padx=5)
@@ -145,7 +145,12 @@ class P2PDiffDialog(ctk.CTkToplevel):
             lbl.pack(side="left", expand=True, fill="x", padx=5)
 
             # Timestamps
-            ts_str = f"Fremd: {item.remote_updated_at} | Lokal: {item.local_updated_at or 'Keine'}"
+            ts_str = tr(
+                "p2p.timestamps_line",
+                "Fremd: {remote} | Lokal: {local}",
+                remote=item.remote_updated_at,
+                local=item.local_updated_at or tr("p2p.none_placeholder", "Keine"),
+            )
             ctk.CTkLabel(row, text=ts_str, text_color="gray70", font=ctk.CTkFont(size=11)).pack(side="right", padx=10)
 
     def on_import_selected(self):
@@ -160,6 +165,6 @@ class P2PDiffDialog(ctk.CTkToplevel):
             return
 
         count = self.p2p_service.import_selected_cases(selected_cases)
-        self.status_label.configure(text=f"✅ {count} Fälle erfolgreich in lokale Arbeitsdaten übernommen!", text_color="green")
+        self.status_label.configure(text=tr("p2p.import_success", "✅ {count} Fälle erfolgreich in lokale Arbeitsdaten übernommen!", count=count), text_color="green")
         self.on_sync_completed()
         self.load_and_compare()

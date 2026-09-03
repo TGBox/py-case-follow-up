@@ -61,12 +61,16 @@ from constants import (
     DISPLAY_ACTOR_NAMES,
     DISPLAY_LAYOUT_NAMES,
     DISPLAY_BOARD_COLUMN_NAMES,
+    DISPLAY_THEME_NAMES,
+    DISPLAY_SORT_CRITERION_NAMES,
 )
 
 CHANNEL_DISPLAY = DISPLAY_CHANNEL_NAMES
 ACTOR_DISPLAY = DISPLAY_ACTOR_NAMES
 LAYOUT_DISPLAY = DISPLAY_LAYOUT_NAMES
 BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
+THEME_DISPLAY = DISPLAY_THEME_NAMES
+SORT_CRITERION_DISPLAY = DISPLAY_SORT_CRITERION_NAMES
 
 
 def get_channel_display(val: str) -> str:
@@ -108,6 +112,33 @@ def get_board_column_display(val: str) -> str:
     return BOARD_COLUMN_DISPLAY.get(val, val)
 
 
+def get_theme_display(val: str) -> str:
+    """Translates the internal theme mode ("Dark"/"Light"/"System", as passed to
+    ctk.set_appearance_mode() and stored in profile.ui_settings.theme) into the
+    label shown in the theme dropdown. The stored/internal value never changes."""
+    from services.i18n_service import tr
+    key_map = {
+        "Dark": "theme_modes.dark",
+        "Light": "theme_modes.light",
+        "System": "theme_modes.system",
+    }
+    default = THEME_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
+
+
+def get_sort_criterion_display(val: str) -> str:
+    """Translates the internal sort-criterion code ("name"/"id"/"contact") into the
+    label shown in the Praxisverwaltung sort dropdown."""
+    from services.i18n_service import tr
+    key_map = {
+        "name": "sort_criteria.name",
+        "id": "sort_criteria.id",
+        "contact": "sort_criteria.contact",
+    }
+    default = SORT_CRITERION_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
+
+
 def get_actor_val_from_display(display: str) -> str:
     for k in ACTOR_DISPLAY:
         if get_actor_display(k) == display or ACTOR_DISPLAY[k] == display:
@@ -125,5 +156,19 @@ def get_channel_val_from_display(display: str) -> str:
 def get_layout_val_from_display(display: str) -> str:
     for k in LAYOUT_DISPLAY:
         if get_layout_display(k) == display or LAYOUT_DISPLAY[k] == display:
+            return k
+    return display
+
+
+def get_theme_val_from_display(display: str) -> str:
+    for k in THEME_DISPLAY:
+        if get_theme_display(k) == display or THEME_DISPLAY[k] == display:
+            return k
+    return display
+
+
+def get_sort_criterion_val_from_display(display: str) -> str:
+    for k in SORT_CRITERION_DISPLAY:
+        if get_sort_criterion_display(k) == display or SORT_CRITERION_DISPLAY[k] == display:
             return k
     return display

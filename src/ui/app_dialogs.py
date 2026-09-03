@@ -9,7 +9,7 @@ und alle hier aufgerufenen self.-Attribute (self.storage_service, self.cases,
 self.cockpit_view, usw.) unveraendert funktionieren. Reines Verschieben von
 Code, keine Verhaltensaenderung.
 """
-from typing import Any
+from typing import TYPE_CHECKING, Any, Callable
 import customtkinter as ctk
 from models.case import Case
 from models.customer import Customer
@@ -36,6 +36,35 @@ class DialogLaunchersMixin:
     mit SupportCockpitApp (bzw. einer Klasse mit denselben self.storage_service /
     self.cases / self.cockpit_view / ... Attributen) nutzbar.
     """
+
+    if TYPE_CHECKING:
+        active_view: Any
+        cockpit_view: Any
+        board_view: Any
+        table_view: Any
+        analytics_view: Any
+        active_case: Any
+        cases: list[Any]
+        schemas: list[Any]
+        profile: Any
+        user_btn: Any
+        scoring_service: Any
+        storage_service: Any
+        customer_service: Any
+        export_service: Any
+        p2p_service: Any
+        calendar_email_service: Any
+        snippet_service: Any
+        deep_search_service: Any
+        search_query: str
+        refresh_views: Callable[..., Any]
+        bring_to_foreground: Callable[[], None]
+        switch_to_cockpit_view_for_case: Callable[[Any], None]
+        on_language_changed: Callable[[str], None]
+        load_all_data: Callable[[], None]
+        on_case_updated: Callable[[Any], None]
+        on_customers_updated: Callable[[], None]
+        on_tags_updated: Callable[[], None]
 
     def open_followup_dialog_for_case(self, case: Case):
         from ui.dialogs.followup_dialog import FollowupDialog
@@ -179,13 +208,17 @@ class DialogLaunchersMixin:
         )
 
     def on_profile_updated(self):
+        from services.i18n_service import get_i18n
         self.load_all_data()
         self.profile = self.storage_service.load_profile()
-        self.user_btn.configure(text=f"👤 {self.profile.user.name}")
+        if hasattr(self, "user_btn") and self.user_btn and self.user_btn.winfo_exists():
+            self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         self.cockpit_view.author_name = self.profile.user.name
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
-        self.refresh_views()
+        lang_code = getattr(self.profile.ui_settings, "language", "de")
+        get_i18n().current_language = lang_code
+        self.on_language_changed(lang_code)
 
     def open_tag_management_dialog(self, initial_tab: str = "tags"):
         TagManagementDialog(

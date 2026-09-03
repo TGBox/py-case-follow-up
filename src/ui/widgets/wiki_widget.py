@@ -48,6 +48,8 @@ class WikiWidget(ctk.CTkFrame):
             self.search_entry.configure(placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
         if hasattr(self, "search_entry") and self.search_entry.get().strip():
             self.on_search()
+        elif hasattr(self, "status_label"):
+            self.status_label.configure(text=tr("wiki.enter_query", "Bitte Suchbegriff eingeben."))
 
     def focus_search(self):
         self.search_entry.focus_set()

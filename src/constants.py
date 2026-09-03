@@ -242,7 +242,7 @@ DIALOG_DIMENSIONS = {
     "profile_settings": (960, 780),
     "template_mgmt": (980, 720),
     "edit_template": (880, 740),
-    "schema_builder": (940, 720),
+    "schema_builder": (1040, 720),
     "new_schema": (440, 320),
     "convert_schema": (520, 400),
     "followup_flyout": (680, 560),

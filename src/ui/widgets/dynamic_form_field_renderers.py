@@ -79,15 +79,17 @@ class FieldRendererMixin:
 
         mod_selected_holder = {"selected": selected_mods}
 
+        from services.i18n_service import tr
+
         def format_mod_btn_text(sel_list: list[str]) -> str:
             if not sel_list:
-                return "🧩 Keinen Programmbereich ausgewählt ▾"
+                return tr("dynamic_form.no_mod_selected", "🧩 Keinen Programmbereich ausgewählt ▾")
             elif len(sel_list) == 1:
                 return f"🧩 {sel_list[0]} ▾"
             elif len(sel_list) <= 2:
                 return f"🧩 {', '.join(sel_list)} ▾"
             else:
-                return f"🧩 {sel_list[0]}, {sel_list[1]} (+{len(sel_list)-2} weitere) ▾"
+                return f"🧩 {sel_list[0]}, {sel_list[1]} ({tr('dynamic_form.more_mods_suffix', '+{count} weitere', count=len(sel_list)-2)}) ▾"
 
         btn_text = format_mod_btn_text(selected_mods)
         picker_btn = ctk.CTkButton(
@@ -179,7 +181,8 @@ class FieldRendererMixin:
         entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
         entry_row.pack(fill="x")
 
-        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or "TT.MM.JJJJ", **entry_kwargs)
+        from services.i18n_service import tr
+        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or tr("common.date_placeholder", "TT.MM.JJJJ"), **entry_kwargs)
         if val:
             entry.insert(0, str(val))
         entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
@@ -228,6 +231,7 @@ class FieldRendererMixin:
         )
         chk.pack(side="left", anchor="w")
 
+
         is_db_backup_field = "database_dump" in fid_lower or "backup" in fid_lower or "datenbank" in flabel_lower
 
         if is_db_backup_field and case:
@@ -248,12 +252,12 @@ class FieldRendererMixin:
             self.render_mini_attachment_section(row_frame, case)
 
     def _render_file_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
+        from services.i18n_service import tr
         file_row = ctk.CTkFrame(row_frame, fg_color="transparent")
         file_row.pack(fill="x")
-
         file_entry = ctk.CTkEntry(
             file_row,
-            placeholder_text=f.placeholder or "Keine Datei ausgewählt...",
+            placeholder_text=f.placeholder or tr("dynamic_form.no_file_selected", "Keine Datei ausgewählt..."),
             **entry_kwargs,
         )
         if val:
@@ -262,8 +266,8 @@ class FieldRendererMixin:
 
         def open_file_picker(e=file_entry, f_item=f):
             exts = f_item.allowed_extensions
-            ftypes = [("Dateien", " ".join(f"*{x}" for x in exts))] if exts else [("Alle Dateien", "*.*")]
-            chosen = filedialog.askopenfilename(title=f"Datei auswählen für '{f_item.label}'", filetypes=ftypes)
+            ftypes = [(tr("common.files", "Dateien"), " ".join(f"*{x}" for x in exts))] if exts else [(tr("common.all_files", "Alle Dateien"), "*.*")]
+            chosen = filedialog.askopenfilename(title=tr("dynamic_form.select_file_for", "Datei auswählen für '{label}'", label=f_item.label), filetypes=ftypes)
             if chosen:
                 e.delete(0, "end")
                 e.insert(0, chosen)
@@ -278,40 +282,36 @@ class FieldRendererMixin:
                     except Exception:
                         pass
 
-        from services.i18n_service import tr
         ctk.CTkButton(
             file_row,
             text=tr("dynamic_form.choose_file", "📁 Datei wählen..."),
-            width=120,
-            fg_color="dodgerblue",
-            hover_color="deepskyblue",
+            width=110,
+            fg_color="gray30",
+            hover_color="gray40",
             command=open_file_picker,
         ).pack(side="right")
 
-        target_widget_dict[f.field_id] = (f.field_type, file_entry)
+        target_widget_dict[f.field_id] = ("file", file_entry)
 
     def _render_number_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(row_frame, placeholder_text=tr("dynamic_form.number_placeholder", "Zahl..."), **entry_kwargs)
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.number_placeholder", "Zahl..."), **entry_kwargs)
         if val is not None:
             entry.insert(0, str(val))
         entry.pack(fill="x")
         target_widget_dict[f.field_id] = (f.field_type, entry)
 
-    def _render_textbox_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
-        saved_height = 90
-        if self.profile and self.profile.ui_settings:
-            saved_height = self.profile.ui_settings.custom_textbox_heights.get(f.field_id, self.profile.ui_settings.textbox_height)
+    def _render_textbox_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any] | None = None):
+        from ui.widgets.dynamic_form_widget import TextboxResizeHandle
+        custom_height = 90
+        if self.profile and self.profile.textbox_heights and f.field_id in self.profile.textbox_heights:
+            custom_height = self.profile.textbox_heights[f.field_id]
 
-        textbox = ctk.CTkTextbox(row_frame, height=saved_height, **entry_kwargs)
+        textbox = ctk.CTkTextbox(row_frame, height=custom_height, **(entry_kwargs or {}))
         if val:
             textbox.insert("1.0", str(val))
-        textbox.pack(fill="x", expand=True)
+        textbox.pack(fill="x", pady=(0, 2))
 
-        from utils.ui_utils import enable_textbox_cursor_autoscroll
-        enable_textbox_cursor_autoscroll(textbox)
-
-        from ui.widgets.dynamic_form_widget import TextboxResizeHandle
         handle = TextboxResizeHandle(
             row_frame,
             target_textbox=textbox,
@@ -324,7 +324,8 @@ class FieldRendererMixin:
         target_widget_dict[f.field_id] = ("textbox", textbox)
 
     def _render_text_entry_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
-        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or "Text...", **entry_kwargs)
+        from services.i18n_service import tr
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.text_placeholder", "Text..."), **entry_kwargs)
         if val:
             entry.insert(0, str(val))
         entry.pack(fill="x")

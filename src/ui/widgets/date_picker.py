@@ -20,15 +20,19 @@ class CalendarDialog(ctk.CTkToplevel):
         self.on_date_selected = on_date_selected
         self.include_time = include_time
 
-        self.title("📅 Datum auswählen")
+        from services.i18n_service import tr
+        self.title(tr("date_picker.dialog_title", "📅 Datum auswählen"))
         win_w = 390
         win_h = 440 if include_time else 350
         self.geometry(f"{win_w}x{win_h}")
         self.resizable(False, False)
         center_window(self, win_w, win_h)
 
-        self.transient(parent)
-        self.grab_set()
+        try:
+            self.transient(parent)
+            self.grab_set()
+        except Exception:
+            pass
 
         # Parse initial date or default to now
         now = get_local_now()
@@ -46,11 +50,13 @@ class CalendarDialog(ctk.CTkToplevel):
         self.current_year = self.selected_dt.year
         self.current_month = self.selected_dt.month
         self.selected_day = self.selected_dt.day
+        self.current_day = self.selected_dt.day
+        self.current_hour = self.selected_dt.hour
+        # Round minutes to nearest 5 min step
+        self.current_minute = (round(self.selected_dt.minute / 5.0) * 5) % 60
 
-        # Clamp initial hour between 7 and 20
-        clamped_hour = max(7, min(20, self.selected_dt.hour))
-        self.hour_var = ctk.StringVar(value=f"{clamped_hour:02d}")
-        self.minute_var = ctk.StringVar(value=f"{self.selected_dt.minute:02d}")
+        self.hour_var = ctk.StringVar(value=f"{max(7, min(20, self.current_hour)):02d}")
+        self.minute_var = ctk.StringVar(value=f"{self.current_minute:02d}")
 
         self.create_widgets()
 
@@ -73,6 +79,7 @@ class CalendarDialog(ctk.CTkToplevel):
         self.minute_var.set(f"{new_val:02d}")
 
     def create_widgets(self):
+        from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=12, pady=10)
 
@@ -81,7 +88,7 @@ class CalendarDialog(ctk.CTkToplevel):
         nav_frame.pack(fill="x", pady=(0, 6))
 
         btn_prev = ctk.CTkButton(
-            nav_frame, text="◀", width=32, height=26, corner_radius=6,
+            nav_frame, text=tr("date_picker.btn_prev", "◀"), width=32, height=26, corner_radius=6,
             command=self.prev_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         btn_prev.pack(side="left")
@@ -92,7 +99,7 @@ class CalendarDialog(ctk.CTkToplevel):
         self.month_label.pack(side="left", expand=True)
 
         btn_next = ctk.CTkButton(
-            nav_frame, text="▶", width=32, height=26, corner_radius=6,
+            nav_frame, text=tr("date_picker.btn_next", "▶"), width=32, height=26, corner_radius=6,
             command=self.next_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
         )
         btn_next.pack(side="right")
@@ -100,14 +107,22 @@ class CalendarDialog(ctk.CTkToplevel):
         # Weekdays Header (Mo - So)
         weekdays_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         weekdays_frame.pack(fill="x", pady=(0, 2))
-        weekdays = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
-        for day in weekdays:
+        weekdays = [
+            (tr("date_picker.weekday_mo", "Mo"), False),
+            (tr("date_picker.weekday_tu", "Di"), False),
+            (tr("date_picker.weekday_we", "Mi"), False),
+            (tr("date_picker.weekday_th", "Do"), False),
+            (tr("date_picker.weekday_fr", "Fr"), False),
+            (tr("date_picker.weekday_sa", "Sa"), True),
+            (tr("date_picker.weekday_su", "So"), True),
+        ]
+        for day_text, is_weekend in weekdays:
             lbl = ctk.CTkLabel(
                 weekdays_frame,
-                text=day,
+                text=day_text,
                 width=48,
                 font=ctk.CTkFont(size=11, weight="bold"),
-                text_color="gray" if day in ("Sa", "So") else None,
+                text_color="gray" if is_weekend else None,
             )
             lbl.pack(side="left", padx=1)
 
@@ -139,7 +154,7 @@ class CalendarDialog(ctk.CTkToplevel):
             hour_block.pack(side="left", padx=2, pady=3)
 
             btn_h_up = ctk.CTkButton(
-                hour_block, text="▲", width=52, height=13,
+                hour_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
                 corner_radius=4, command=lambda: self.step_hour(1)
@@ -157,7 +172,7 @@ class CalendarDialog(ctk.CTkToplevel):
             self.hour_menu.pack(padx=2, pady=1)
 
             btn_h_down = ctk.CTkButton(
-                hour_block, text="▼", width=52, height=13,
+                hour_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
                 corner_radius=4, command=lambda: self.step_hour(-1)
@@ -184,7 +199,7 @@ class CalendarDialog(ctk.CTkToplevel):
             min_block.pack(side="left", padx=2, pady=3)
 
             btn_m_up = ctk.CTkButton(
-                min_block, text="▲", width=52, height=13,
+                min_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
                 corner_radius=4, command=lambda: self.step_minute(5)
@@ -202,7 +217,7 @@ class CalendarDialog(ctk.CTkToplevel):
             self.min_menu.pack(padx=2, pady=1)
 
             btn_m_down = ctk.CTkButton(
-                min_block, text="▼", width=52, height=13,
+                min_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
                 corner_radius=4, command=lambda: self.step_minute(-5)
@@ -222,12 +237,12 @@ class CalendarDialog(ctk.CTkToplevel):
                 presets_grid.grid_columnconfigure(col, weight=1, uniform="cal_presets")
 
             cal_presets = [
-                ("Heute 11:30", self.set_today_before_lunch, 0, 0),
-                ("Heute 13:30", self.set_today_after_lunch, 0, 1),
-                ("Heute 16:30", self.set_today_1630, 0, 2),
-                ("Morgen 08:00", self.set_tomorrow_8am, 1, 0),
-                ("+ 1 Tag", lambda: self.add_days(1), 1, 1),
-                ("+ 1 Woche", lambda: self.add_days(7), 1, 2),
+                (tr("date_picker.preset_today_1130", "Heute 11:30"), self.set_today_before_lunch, 0, 0),
+                (tr("date_picker.preset_today_1330", "Heute 13:30"), self.set_today_after_lunch, 0, 1),
+                (tr("date_picker.preset_today_1630", "Heute 16:30"), self.set_today_1630, 0, 2),
+                (tr("date_picker.preset_tomorrow_0800", "Morgen 08:00"), self.set_tomorrow_8am, 1, 0),
+                (tr("date_picker.preset_plus_1day", "+ 1 Tag"), lambda: self.add_days(1), 1, 1),
+                (tr("date_picker.preset_plus_1week", "+ 1 Woche"), lambda: self.add_days(7), 1, 2),
             ]
             for text, cmd, r, c in cal_presets:
                 btn = ctk.CTkButton(
@@ -246,8 +261,6 @@ class CalendarDialog(ctk.CTkToplevel):
         action_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         action_frame.pack(fill="x", side="bottom", pady=(2, 0))
 
-        from services.i18n_service import tr
-
         btn_cancel = ctk.CTkButton(
             action_frame, text=tr("common.cancel", "Abbrechen"), fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"), command=self.destroy,
@@ -264,12 +277,24 @@ class CalendarDialog(ctk.CTkToplevel):
         self.render_calendar()
 
     def render_calendar(self):
+        from services.i18n_service import tr
         for widget in self.days_frame.winfo_children():
             widget.destroy()
 
         month_names = [
-            "", "Januar", "Februar", "März", "April", "Mai", "Juni",
-            "Juli", "August", "September", "Oktober", "November", "Dezember"
+            "",
+            tr("datetime.month_1", "Januar"),
+            tr("datetime.month_2", "Februar"),
+            tr("datetime.month_3", "März"),
+            tr("datetime.month_4", "April"),
+            tr("datetime.month_5", "Mai"),
+            tr("datetime.month_6", "Juni"),
+            tr("datetime.month_7", "Juli"),
+            tr("datetime.month_8", "August"),
+            tr("datetime.month_9", "September"),
+            tr("datetime.month_10", "Oktober"),
+            tr("datetime.month_11", "November"),
+            tr("datetime.month_12", "Dezember"),
         ]
         self.month_label.configure(text=f"{month_names[self.current_month]} {self.current_year}")
 
@@ -431,7 +456,7 @@ class DatePickerWidget(ctk.CTkFrame):
     def __init__(
         self,
         parent,
-        placeholder_text: str = "DD.MM.YYYY HH:MM",
+        placeholder_text: str | None = None,
         include_time: bool = True,
         initial_value: str = "",
         width: int = 240,
@@ -439,8 +464,13 @@ class DatePickerWidget(ctk.CTkFrame):
     ):
         super().__init__(parent, fg_color="transparent", **kwargs)
         self.include_time = include_time
+        from services.i18n_service import tr
 
-        self.entry = ctk.CTkEntry(self, placeholder_text=placeholder_text, width=width)
+        ph = placeholder_text if placeholder_text is not None else (
+            tr("date_picker.placeholder_datetime", "DD.MM.YYYY HH:MM") if include_time else tr("date_picker.placeholder_date", "DD.MM.YYYY")
+        )
+
+        self.entry = ctk.CTkEntry(self, placeholder_text=ph, width=width)
         self.entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         if initial_value:
@@ -449,8 +479,6 @@ class DatePickerWidget(ctk.CTkFrame):
             else:
                 formatted = format_german_datetime(initial_value) if include_time else format_german_date(initial_value)
                 self.entry.insert(0, formatted)
-
-        from services.i18n_service import tr
 
         self.cal_btn = ctk.CTkButton(
             self, text=tr("cockpit.calendar", "📅 Kalender"), width=95, command=self.open_calendar, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
@@ -476,3 +504,11 @@ class DatePickerWidget(ctk.CTkFrame):
     def get_iso(self) -> str:
         val = self.get()
         return parse_german_date(val) if val else ""
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        if hasattr(self, "cal_btn"):
+            self.cal_btn.configure(text=tr("cockpit.calendar", "📅 Kalender"))
+        if hasattr(self, "entry") and not self.get():
+            ph = tr("date_picker.placeholder_datetime", "DD.MM.YYYY HH:MM") if self.include_time else tr("date_picker.placeholder_date", "DD.MM.YYYY")
+            self.entry.configure(placeholder_text=ph)

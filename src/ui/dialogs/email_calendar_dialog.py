@@ -46,17 +46,19 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 10))
 
+        from services.i18n_service import tr
+
         ctk.CTkLabel(
             hdr_frame,
-            text=f"✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {self.case.case_id})",
+            text=tr("email_calendar.header", "✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {case_id})", case_id=self.case.case_id),
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(anchor="w")
 
-        practice_name = self.case.customer.practice_name if self.case.customer else "Unbekannte Praxis"
-        deadline_str = self.case.formatted_deadline or "Keine Deadline gesetzt"
+        practice_name = self.case.customer.practice_name if self.case.customer else tr("common.unknown_practice", "Unbekannte Praxis")
+        deadline_str = self.case.formatted_deadline or tr("common.no_deadline_set", "Keine Deadline gesetzt")
         ctk.CTkLabel(
             hdr_frame,
-            text=f"Praxis: {practice_name} | Rückruf-Deadline: {deadline_str}",
+            text=tr("email_calendar.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str),
             font=ctk.CTkFont(size=11),
             text_color="gray",
         ).pack(anchor="w")
@@ -68,15 +70,15 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         enable_auto_hiding_scrollbar(content_scroll)
 
         # Recipient Email
-        ctk.CTkLabel(content_scroll, text="Empfänger (E-Mail):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
-        self.to_entry = ctk.CTkEntry(content_scroll, placeholder_text="praxis@beispiel.de...")
+        ctk.CTkLabel(content_scroll, text=tr("email_calendar.recipient_lbl", "Empfänger (E-Mail):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
+        self.to_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.to_placeholder", "praxis@beispiel.de..."))
         if self.draft_data.get("to"):
             self.to_entry.insert(0, self.draft_data["to"])
         self.to_entry.pack(fill="x", pady=(0, 8))
 
         # Subject
-        ctk.CTkLabel(content_scroll, text="Betreff:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
-        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text="Betreff eingeben...")
+        ctk.CTkLabel(content_scroll, text=tr("email_calendar.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
+        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.subject_placeholder", "Betreff eingeben..."))
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
         self.subject_entry.pack(fill="x", pady=(0, 8))
@@ -85,12 +87,12 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         body_hdr_row.pack(fill="x", pady=(2, 1))
 
-        ctk.CTkLabel(body_hdr_row, text="E-Mail Nachrichtentext:", font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+        ctk.CTkLabel(body_hdr_row, text=tr("email_calendar.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
 
         if self.snippet_service:
             ctk.CTkButton(
                 body_hdr_row,
-                text="🧩 Textbaustein",
+                text=tr("email_calendar.snippet_btn", "🧩 Textbaustein"),
                 width=110,
                 fg_color="gray30",
                 hover_color="darkmagenta",
@@ -203,8 +205,9 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.status_lbl.configure(text=f"✓ Kalendereintrag (.ics) geöffnet: {ics_path.name}", text_color="lightgreen")
 
     def on_save_ics(self):
+        from services.i18n_service import tr
         file_path = filedialog.asksaveasfilename(
-            title="Kalenderdatei (.ics) speichern",
+            title=tr("email_calendar.save_ics_title", "Kalenderdatei (.ics) speichern"),
             initialfile=f"Rueckruf_{self.case.case_id}.ics",
             filetypes=[("iCalendar-Dateien (*.ics)", "*.ics"), ("Alle Dateien", "*.*")],
         )

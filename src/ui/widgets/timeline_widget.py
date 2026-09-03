@@ -77,6 +77,10 @@ class TimelineWidget(ctk.CTkFrame):
             self.snip_btn.configure(text=tr("cockpit.snippets_btn", "📝 Textbaustein"))
         if hasattr(self, "add_btn"):
             self.add_btn.configure(text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"))
+        if hasattr(self, "channel_combo"):
+            curr_val = get_channel_val_from_display(self.channel_combo.get())
+            self.channel_combo.configure(values=[get_channel_display(c) for c in CHANNEL_DISPLAY])
+            self.channel_combo.set(get_channel_display(curr_val))
         self.load_timeline(self.timeline_entries)
 
     def on_click_snippet(self):
@@ -116,7 +120,8 @@ class TimelineWidget(ctk.CTkFrame):
             note_lbl.pack(fill="x", padx=10, pady=(0, 6))
 
             if entry.status_change:
-                sc_lbl = ctk.CTkLabel(card, text=f"Status: {entry.status_change}", font=ctk.CTkFont(size=10), text_color="dodgerblue")
+                from services.i18n_service import tr
+                sc_lbl = ctk.CTkLabel(card, text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change), font=ctk.CTkFont(size=10), text_color="dodgerblue")
                 sc_lbl.pack(anchor="w", padx=10, pady=(0, 4))
 
         from utils.ui_utils import bind_mouse_wheel_to_canvas

@@ -96,6 +96,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.generate_summary()
 
     def create_widgets(self):
+        from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=12)
 
@@ -105,7 +106,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             hdr_frame,
-            text=f"🤖 KI-Assistent für Fall [{self.case.case_id}]",
+            text=tr("ai_assistant.header", "🤖 KI-Assistent für Fall [{case_id}]", case_id=self.case.case_id),
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left")
 
@@ -124,7 +125,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         self.status_badge = ctk.CTkLabel(
             hdr_frame,
-            text="Prüfe Status...",
+            text=tr("ai_assistant.checking_status", "Prüfe Status..."),
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color=COLOR_TEXT_GRAY,
         )
@@ -153,9 +154,9 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self.tabview = ctk.CTkTabview(main_frame)
         self.tabview.pack(fill="both", expand=True, pady=(0, 8))
 
-        self.tab_summary = self.tabview.add("📋 Zusammenfassung")
-        self.tab_solutions = self.tabview.add("💡 Lösungsvorschläge")
-        self.tab_response = self.tabview.add("✉ Antwort-Entwurf")
+        self.tab_summary = self.tabview.add(tr("ai_assistant.tab_summary", "📋 Zusammenfassung"))
+        self.tab_solutions = self.tabview.add(tr("ai_assistant.tab_solutions", "💡 Lösungsvorschläge"))
+        self.tab_response = self.tabview.add(tr("ai_assistant.tab_response", "✉ Antwort-Entwurf"))
 
         self.setup_summary_tab()
         self.setup_solutions_tab()
@@ -172,7 +173,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             footer,
-            text="Schließen",
+            text=tr("common.close", "Schließen"),
             width=100,
             height=30,
             fg_color=COLOR_MUTED_GRAY,
@@ -182,6 +183,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
     def create_loading_overlay(self):
         """Creates a smooth, semi-transparent loading spinner overlay frame."""
+        from services.i18n_service import tr
         self.overlay_frame = ctk.CTkFrame(self, fg_color=("gray95", "gray15"))
 
         card = ctk.CTkFrame(self.overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=140)
@@ -189,7 +191,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         self.overlay_msg_lbl = ctk.CTkLabel(
             card,
-            text="🤖 KI verarbeitet Anfrage...",
+            text=tr("ai_assistant.loading_overlay_msg", "🤖 KI verarbeitet Anfrage..."),
             font=ctk.CTkFont(size=14, weight="bold"),
         )
         self.overlay_msg_lbl.pack(pady=(20, 10))
@@ -199,7 +201,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             card,
-            text="Bitte einen Moment gedulden — Modell generiert Antwort",
+            text=tr("ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort"),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
         ).pack(pady=(0, 15))
@@ -340,16 +342,17 @@ class AiAssistantDialog(ctk.CTkToplevel):
             self.btn_gen_draft.configure(state=state)
 
         if not is_enabled:
-            self.status_lbl.configure(text="⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert.", text_color="orange")
+            from services.i18n_service import tr
+            self.status_lbl.configure(text=tr("ai_assistant.disabled_warning", "⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert."), text_color="orange")
 
     # --- TAB 1: SUMMARY ---
     def setup_summary_tab(self):
         btn_bar = ctk.CTkFrame(self.tab_summary, fg_color="transparent")
-        btn_bar.pack(fill="x", pady=(4, 6))
+        from services.i18n_service import tr
 
         self.btn_gen_summary = ctk.CTkButton(
             btn_bar,
-            text="🔄 Zusammenfassung neu generieren",
+            text=tr("ai_assistant.regen_summary", "🔄 Zusammenfassung neu generieren"),
             width=210,
             height=28,
             fg_color=("gray75", "gray30"),
@@ -360,7 +363,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_bar,
-            text="📋 In Zwischenablage kopieren",
+            text=tr("ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren"),
             width=190,
             height=28,
             fg_color="dodgerblue",
@@ -370,7 +373,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_bar,
-            text="📌 In Fall-Zeitleiste einfügen",
+            text=tr("ai_assistant.append_timeline", "📌 In Fall-Zeitleiste einfügen"),
             width=190,
             height=28,
             fg_color="forestgreen",
@@ -414,13 +417,15 @@ class AiAssistantDialog(ctk.CTkToplevel):
         self._run_async(worker, on_success, "🤖 KI generiert Zusammenfassung... Bitte warten")
 
     def copy_summary(self):
+        from services.i18n_service import tr
         txt = self.summary_textbox.get("1.0", "end-1c").strip()
         if txt:
             self.clipboard_clear()
             self.clipboard_append(txt)
-            self.status_lbl.configure(text="✓ Zusammenfassung in Zwischenablage kopiert.", text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.summary_copied", "✓ Zusammenfassung in Zwischenablage kopiert."), text_color="dodgerblue")
 
     def append_summary_to_timeline(self):
+        from services.i18n_service import tr
         txt = self.summary_textbox.get("1.0", "end-1c").strip()
         if txt and self.on_case_updated:
             author_name = self.profile.user.name if self.profile else "KI-Assistent"
@@ -432,22 +437,23 @@ class AiAssistantDialog(ctk.CTkToplevel):
             )
             self.case.timeline.append(entry)
             self.on_case_updated(self.case)
-            self.status_lbl.configure(text="✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert.", text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.summary_saved_timeline", "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert."), text_color="dodgerblue")
 
     # --- TAB 2: SOLUTIONS ---
     def setup_solutions_tab(self):
+        from services.i18n_service import tr
         hdr_bar = ctk.CTkFrame(self.tab_solutions, fg_color="transparent")
         hdr_bar.pack(fill="x", pady=(4, 6))
 
         ctk.CTkLabel(
             hdr_bar,
-            text="💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:",
+            text=tr("ai_assistant.solutions_header", "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:"),
             font=ctk.CTkFont(size=12, weight="bold"),
         ).pack(side="left")
 
         self.btn_gen_solutions = ctk.CTkButton(
             hdr_bar,
-            text="🔄 Lösungssuche erneut ausführen",
+            text=tr("ai_assistant.regen_solutions", "🔄 Lösungssuche erneut ausführen"),
             width=210,
             height=28,
             fg_color=("gray75", "gray30"),
@@ -465,6 +471,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
             return self.ai_service.suggest_solutions(self.case, self.wiki_articles)
 
         def on_success(solutions: list[dict]):
+            from services.i18n_service import tr
             for w in self.solutions_scroll.winfo_children():
                 w.destroy()
 
@@ -477,14 +484,14 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(
                     top_r,
-                    text=sol.get("title", "Lösung"),
+                    text=sol.get("title", tr("ai_assistant.default_solution_title", "Lösung")),
                     font=ctk.CTkFont(size=12, weight="bold"),
                     anchor="w",
                 ).pack(side="left")
 
                 ctk.CTkLabel(
                     top_r,
-                    text=f"Relevanz: {sol.get('confidence', '80%')} ({sol.get('source', '')})",
+                    text=tr("ai_assistant.relevance_info", "Relevanz: {conf} ({source})", conf=sol.get('confidence', '80%'), source=sol.get('source', '')),
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color="dodgerblue",
                 ).pack(side="right")
@@ -502,12 +509,13 @@ class AiAssistantDialog(ctk.CTkToplevel):
 
     # --- TAB 3: RESPONSE DRAFT ---
     def setup_response_tab(self):
+        from services.i18n_service import tr
         hdr_bar = ctk.CTkFrame(self.tab_response, fg_color="transparent")
         hdr_bar.pack(fill="x", pady=(4, 6))
 
         self.btn_gen_draft = ctk.CTkButton(
             hdr_bar,
-            text="🔄 Antwort-Entwurf generieren",
+            text=tr("ai_assistant.regen_draft", "🔄 Antwort-Entwurf generieren"),
             width=210,
             height=28,
             fg_color=("gray75", "gray30"),
@@ -519,7 +527,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
         if self.on_open_email_draft:
             ctk.CTkButton(
                 hdr_bar,
-                text="✉ In E-Mail-Entwurf öffnen",
+                text=tr("ai_assistant.open_email_draft", "✉ In E-Mail-Entwurf öffnen"),
                 width=190,
                 height=28,
                 fg_color="royalblue",

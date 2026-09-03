@@ -108,5 +108,9 @@ class PiiAnonymizer:
         # Sort placeholders by length descending to avoid partial replacements
         for placeholder, original in sorted(mapping.items(), key=lambda x: len(x[0]), reverse=True):
             restored = restored.replace(placeholder, original)
+            if placeholder.startswith("[") and placeholder.endswith("]"):
+                bare_ph = placeholder[1:-1]
+                restored = restored.replace(f"**{bare_ph}**", original)
+                restored = restored.replace(bare_ph, original)
 
         return restored

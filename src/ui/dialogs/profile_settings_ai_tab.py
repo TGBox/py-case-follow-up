@@ -125,7 +125,7 @@ class AiSettingsTabMixin:
         ctk.CTkLabel(gemini_top_row, text=tr("profile.gemini_key_lbl", "🔑 Google Gemini API Key:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
         self.gemini_key_entry = ctk.CTkEntry(
             gemini_top_row,
-            placeholder_text="AIzaSy...",
+            placeholder_text=tr("profile.gemini_key_placeholder", "AIzaSy..."),
             show="*",
             width=280,
         )
@@ -472,13 +472,14 @@ class AiSettingsTabMixin:
             self.btn_toggle_key_show.configure(text="👁")
 
     def on_test_gemini_key(self):
+        from services.i18n_service import tr
         key = self.gemini_key_entry.get().strip()
         model = self.gemini_model_combo.get()
         if not key:
-            self.gemini_status_lbl.configure(text="⚠ Bitte API Key eingeben", text_color=COLOR_TEXT_RED)
+            self.gemini_status_lbl.configure(text=tr("profile.enter_api_key", "⚠ Bitte API Key eingeben"), text_color=COLOR_TEXT_RED)
             return
 
-        self.gemini_status_lbl.configure(text="🔍 Prüfe Key...", text_color=COLOR_MUTED_LABEL)
+        self.gemini_status_lbl.configure(text=tr("profile.checking_key", "🔍 Prüfe Key..."), text_color=COLOR_MUTED_LABEL)
 
         def worker():
             from services.ai_service import AiService
@@ -677,9 +678,10 @@ class AiSettingsTabMixin:
 
     def on_create_pvs_model(self):
         from services.ai_service import AiService
+        from services.i18n_service import tr
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         svc = AiService(ollama_url=url)
-        self.ollama_action_lbl.configure(text="⏳ Erstelle 'pvs-support' Modell aus Modelfile...", text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.creating_pvs_model", "⏳ Erstelle 'pvs-support' Modell aus Modelfile..."), text_color="orange")
         self.update_idletasks()
 
         def worker():

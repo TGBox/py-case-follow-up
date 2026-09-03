@@ -213,7 +213,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_abrechnungskorrektur",
-                title="Alte Abrechnung Q1 gelöst",
+                title=tr("demo_cases.c6_title", "Alte Abrechnung Q1 gelöst"),
                 deadline_callback="",
             ),
             workflow_status=WorkflowStatus(
@@ -242,7 +242,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_bug_report",
-                title="Uralter Fall aus dem Vormonat",
+                title=tr("demo_cases.c7_title", "Uralter Fall aus dem Vormonat"),
                 deadline_callback="",
             ),
             workflow_status=WorkflowStatus(
@@ -271,7 +271,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_zuzahlungsnachforderung",
-                title="Frische Nachforderung ohne DB-Dump",
+                title=tr("demo_cases.c8_title", "Frische Nachforderung ohne DB-Dump"),
                 deadline_callback="2026-08-23T18:00:00",
                 tags=["Abrechnung", "Nachforderung"],
             ),
@@ -302,7 +302,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_feature_request",
-                title="Kundenwunsch: Schnell-Button für eRezept-Export",
+                title=tr("demo_cases.c9_title", "Kundenwunsch: Schnell-Button für eRezept-Export"),
                 tags=["Kundenwunsch", "eRezept", "VIP"],
             ),
             workflow_status=WorkflowStatus(
@@ -341,7 +341,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_bug_report",
-                title="Kartenleser-Treiber nach Windows-Update getrennt",
+                title=tr("demo_cases.c10_title", "Kartenleser-Treiber nach Windows-Update getrennt"),
                 tags=["Hardware", "Treiber"],
             ),
             workflow_status=WorkflowStatus(
@@ -376,7 +376,7 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_zuzahlungsnachforderung",
-                title="Alte Nachforderung aus Vorquartal (Archiviert)",
+                title=tr("demo_cases.c11_title", "Alte Nachforderung aus Vorquartal (Archiviert)"),
                 tags=["Archiv"],
             ),
             workflow_status=WorkflowStatus(
@@ -404,10 +404,11 @@ def build_seed_cases() -> list[Case]:
             ),
             classification=Classification(
                 schema_id="schema_bug_report",
-                title="Absturz bei PVS-GKV Abrechnungsexport",
+                title=tr("demo_cases.c12_title", "Absturz bei PVS-GKV Abrechnungsexport"),
                 deadline_callback="2026-08-23T17:30:00",  # Overdue
                 tags=["Dringend", "VIP", "Absturz"],
             ),
+
             workflow_status=WorkflowStatus(
                 is_completed=False,
                 is_archived=False,

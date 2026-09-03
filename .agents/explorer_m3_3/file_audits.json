@@ -1,0 +1,3933 @@
+{
+  "src/ui/app.py": {
+    "file": "src/ui/app.py",
+    "widgets_created": [
+      {
+        "line": 117,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 121,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 124,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 129,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "text_color": "dodgerblue"
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 250,
+        "component": "CTkFrame",
+        "kwargs": {
+          "height": 48,
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 262,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "values": "<Call>",
+          "width": 120
+        }
+      },
+      {
+        "line": 272,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 150,
+          "fg_color": "forestgreen"
+        }
+      },
+      {
+        "line": 282,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "values": "<Call>",
+          "width": 150
+        }
+      },
+      {
+        "line": 292,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "values": "<Call>",
+          "width": 165
+        }
+      },
+      {
+        "line": 302,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "values": "<Call>",
+          "width": 145
+        }
+      },
+      {
+        "line": 312,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 90,
+          "fg_color": "#8B0000",
+          "hover_color": "#B22222"
+        }
+      },
+      {
+        "line": 315,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 80
+        }
+      },
+      {
+        "line": 318,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "🔔 0",
+          "width": 65,
+          "fg_color": "gray30",
+          "hover_color": "darkred"
+        }
+      },
+      {
+        "line": 328,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 135,
+          "fg_color": "darkblue"
+        }
+      },
+      {
+        "line": 337,
+        "component": "CTkButton",
+        "kwargs": {
+          "font": "<Call>",
+          "width": 130,
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 642,
+        "component": "ToastNotification",
+        "kwargs": {}
+      },
+      {
+        "line": 129,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 26,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14
+        }
+      },
+      {
+        "line": 258,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 261,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 340,
+        "component": "CTkFont",
+        "kwargs": {
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 723,
+        "component": "ToastNotification",
+        "kwargs": {}
+      },
+      {
+        "line": 258,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 288,
+        "key": "menu.master_data",
+        "default": "⚙ Stammdaten"
+      },
+      {
+        "line": 298,
+        "key": "menu.templates",
+        "default": "📄 Vorlagen & Formulare"
+      },
+      {
+        "line": 308,
+        "key": "menu.data_exchange",
+        "default": "🔄 Datenaustausch"
+      },
+      {
+        "line": 351,
+        "key": "menu.master_data",
+        "default": "⚙ Stammdaten"
+      },
+      {
+        "line": 365,
+        "key": "menu.templates",
+        "default": "📄 Vorlagen & Formulare"
+      },
+      {
+        "line": 377,
+        "key": "menu.data_exchange",
+        "default": "🔄 Datenaustausch"
+      },
+      {
+        "line": 129,
+        "key": "splash.title",
+        "default": "🩺 Support-Cockpit"
+      },
+      {
+        "line": 131,
+        "key": "splash.loading",
+        "default": "⏳ Anwendungsdaten und Layouts werden geladen..."
+      },
+      {
+        "line": 272,
+        "key": "menu.new_case",
+        "default": "+ Neuer Fall (Strg+N)"
+      },
+      {
+        "line": 312,
+        "key": "menu.quit",
+        "default": "❌ Beenden"
+      },
+      {
+        "line": 315,
+        "key": "menu.theme",
+        "default": "🌗 Theme"
+      },
+      {
+        "line": 330,
+        "key": "menu.demo_on",
+        "default": "🧪 Beispieldaten: AN"
+      },
+      {
+        "line": 258,
+        "key": "menu.title",
+        "default": " 🩺 Support-Cockpit "
+      },
+      {
+        "line": 261,
+        "key": "menu.layout",
+        "default": "Layout:"
+      },
+      {
+        "line": 513,
+        "key": "menu.demo_on",
+        "default": "🧪 Beispieldaten: AN"
+      },
+      {
+        "line": 515,
+        "key": "menu.demo_off",
+        "default": "🧪 Beispieldaten: AUS"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/app_dialogs.py": {
+    "file": "src/ui/app_dialogs.py",
+    "widgets_created": [],
+    "string_constants": [],
+    "tr_calls": [],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/views/analytics_view.py": {
+    "file": "src/ui/views/analytics_view.py",
+    "widgets_created": [
+      {
+        "line": 28,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 47,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 104,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 115,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 120,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 123,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 128,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 138,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 146,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 165,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 183,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 202,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 216,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8,
+          "width": 130
+        }
+      },
+      {
+        "line": 272,
+        "component": "ToastNotification",
+        "kwargs": {
+          "title": "<Call>",
+          "message": "Statistik-Bericht wurde in die Zwischenablage kopiert."
+        }
+      },
+      {
+        "line": 31,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 37,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 190,
+          "fg_color": "gray30",
+          "hover_color": "gray40"
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 141,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "red"
+        }
+      },
+      {
+        "line": 142,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "gold"
+        }
+      },
+      {
+        "line": 143,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "limegreen"
+        }
+      },
+      {
+        "line": 149,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 168,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 186,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 205,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 219,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 220,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 57,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 161,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 180,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 199,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 213,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 34,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 18,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 141,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 142,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 143,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 149,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 168,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 186,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 205,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 219,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 220,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 18,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 161,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 180,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 199,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 213,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 107,
+        "key": "analytics.total_cases",
+        "default": "📋 Fälle Gesamt"
+      },
+      {
+        "line": 108,
+        "key": "analytics.open_cases",
+        "default": "⏳ Offene Fälle"
+      },
+      {
+        "line": 109,
+        "key": "analytics.completed_cases",
+        "default": "✓ Erledigt"
+      },
+      {
+        "line": 110,
+        "key": "analytics.overdue_cases",
+        "default": "⚠ Überfällig"
+      },
+      {
+        "line": 111,
+        "key": "analytics.avg_res_time",
+        "default": "⏱ Ø Bearbeitung"
+      },
+      {
+        "line": 112,
+        "key": "analytics.vip_rate",
+        "default": "⭐ VIP-Quote"
+      },
+      {
+        "line": 272,
+        "key": "analytics.copied_title",
+        "default": "📋 Statistik kopiert"
+      },
+      {
+        "line": 33,
+        "key": "analytics.header",
+        "default": "Auswertungen & Support Cockpit KPIs"
+      },
+      {
+        "line": 39,
+        "key": "analytics.copy_report_btn",
+        "default": "📋 Statistik-Bericht kopieren"
+      },
+      {
+        "line": 131,
+        "key": "analytics.urgency_title",
+        "default": "🚨 Dringlichkeits-Verteilung (Scoring)"
+      },
+      {
+        "line": 149,
+        "key": "analytics.schema_title",
+        "default": "📄 Verteilung nach Formular / Schema"
+      },
+      {
+        "line": 168,
+        "key": "analytics.top_practices_title",
+        "default": "🏆 Top 5 Praxen nach Fallaufkommen"
+      },
+      {
+        "line": 186,
+        "key": "analytics.assignee_title",
+        "default": "👤 Bearbeiter-Auslastung"
+      },
+      {
+        "line": 205,
+        "key": "analytics.department_title",
+        "default": "👥 Offene Fälle nach Abteilung / Zuständigkeit"
+      },
+      {
+        "line": 57,
+        "key": "analytics.no_data",
+        "default": "Keine Auswertungsdaten verfügbar."
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/views/board_view.py": {
+    "file": "src/ui/views/board_view.py",
+    "widgets_created": [
+      {
+        "line": 33,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 36,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 44,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "white",
+          "corner_radius": 4,
+          "width": 65,
+          "height": 20
+        }
+      },
+      {
+        "line": 59,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w",
+          "justify": "left",
+          "wraplength": 260
+        }
+      },
+      {
+        "line": 71,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w",
+          "wraplength": 260,
+          "justify": "left"
+        }
+      },
+      {
+        "line": 82,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 107,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 37,
+        "component": "CTkFont",
+        "kwargs": {
+          "weight": "bold",
+          "size": 13
+        }
+      },
+      {
+        "line": 47,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 62,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 74,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 86,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w",
+          "justify": "left"
+        }
+      },
+      {
+        "line": 112,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 70,
+          "height": 24,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 125,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 80,
+          "height": 24,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 134,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 75,
+          "height": 24,
+          "font": "<Call>",
+          "fg_color": "darkblue"
+        }
+      },
+      {
+        "line": 146,
+        "component": "CTkButton",
+        "kwargs": {
+          "width": 70,
+          "height": 24,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 219,
+        "component": "CTkFrame",
+        "kwargs": {
+          "width": 42
+        }
+      },
+      {
+        "line": 224,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▶",
+          "width": 28,
+          "height": 28
+        }
+      },
+      {
+        "line": 235,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 245,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 248,
+        "component": "CTkFrame",
+        "kwargs": {
+          "height": 36,
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 251,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 261,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 80,
+          "height": 24,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 273,
+        "component": "CTkScrollableFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 97,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "e",
+          "justify": "right"
+        }
+      },
+      {
+        "line": 89,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 118,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 140,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 152,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 238,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 254,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 266,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 100,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 144,
+        "key": "cockpit.complete",
+        "default": "✓ Erledigt"
+      },
+      {
+        "line": 144,
+        "key": "board.reopen",
+        "default": "✓ Öffnen"
+      },
+      {
+        "line": 204,
+        "key": "board.col_support",
+        "default": "📥 Support / In Bearbeitung"
+      },
+      {
+        "line": 205,
+        "key": "board.col_dev",
+        "default": "💻 Entwickler / Dev-Team"
+      },
+      {
+        "line": 206,
+        "key": "board.col_followup",
+        "default": "🔔 Wiedervorlage / Warten"
+      },
+      {
+        "line": 207,
+        "key": "board.col_completed",
+        "default": "✓ Erledigte Fälle"
+      },
+      {
+        "line": 114,
+        "key": "board.cockpit_btn",
+        "default": "🎯 Cockpit"
+      },
+      {
+        "line": 127,
+        "key": "board.handover",
+        "default": "👤 Übergeben"
+      },
+      {
+        "line": 136,
+        "key": "board.remind",
+        "default": "🔔 Erinnere"
+      },
+      {
+        "line": 263,
+        "key": "board.collapse_btn",
+        "default": "◀ Zuklappen"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/views/cockpit_layout_builders.py": {
+    "file": "src/ui/views/cockpit_layout_builders.py",
+    "widgets_created": [
+      {
+        "line": 101,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 104,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 124,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 129,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "anchor": "w",
+          "justify": "left"
+        }
+      },
+      {
+        "line": 140,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 145,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 148,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "anchor": "w",
+          "height": 0
+        }
+      },
+      {
+        "line": 151,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "anchor": "w",
+          "height": 0
+        }
+      },
+      {
+        "line": 154,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 156,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "🔔 Nachfragen am:",
+          "font": "<Call>",
+          "text_color": "darkorange",
+          "anchor": "w",
+          "justify": "left",
+          "height": 0
+        }
+      },
+      {
+        "line": 165,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "text_color": "darkorange",
+          "anchor": "w",
+          "justify": "left",
+          "height": 0
+        }
+      },
+      {
+        "line": 174,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "text_color": "darkorange",
+          "anchor": "w",
+          "justify": "left",
+          "height": 0
+        }
+      },
+      {
+        "line": 183,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "text_color": "darkorange",
+          "anchor": "w",
+          "justify": "left",
+          "height": 0
+        }
+      },
+      {
+        "line": 198,
+        "component": "CTkTooltip",
+        "kwargs": {
+          "delay_ms": 250
+        }
+      },
+      {
+        "line": 209,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 215,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "fg_color": "darkred"
+        }
+      },
+      {
+        "line": 218,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 90,
+          "fg_color": "green"
+        }
+      },
+      {
+        "line": 221,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "values": "<Call>",
+          "width": 130
+        }
+      },
+      {
+        "line": 226,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 229,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 234,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 130,
+          "state": "disabled",
+          "fg_color": "#6366f1",
+          "hover_color": "#4f46e5"
+        }
+      },
+      {
+        "line": 237,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "state": "disabled",
+          "fg_color": "forestgreen",
+          "hover_color": "darkgreen"
+        }
+      },
+      {
+        "line": 240,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 115,
+          "fg_color": "darkblue"
+        }
+      },
+      {
+        "line": 243,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 80
+        }
+      },
+      {
+        "line": 247,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 250,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "state": "disabled"
+        }
+      },
+      {
+        "line": 253,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "width": 165
+        }
+      },
+      {
+        "line": 327,
+        "component": "CTkTabview",
+        "kwargs": {}
+      },
+      {
+        "line": 204,
+        "component": "CTkTooltip",
+        "kwargs": {
+          "delay_ms": 250
+        }
+      },
+      {
+        "line": 132,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 15,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 148,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 151,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 159,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 168,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 177,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 186,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 329,
+        "key": "cockpit.tab_timeline",
+        "default": "Zeitleiste"
+      },
+      {
+        "line": 330,
+        "key": "cockpit.tab_attachments",
+        "default": "Anhänge"
+      },
+      {
+        "line": 331,
+        "key": "cockpit.tab_wiki",
+        "default": "Wiki"
+      },
+      {
+        "line": 266,
+        "key": "cockpit.more_actions",
+        "default": "⚙ Weitere Aktionen..."
+      },
+      {
+        "line": 131,
+        "key": "cockpit.select_case_prompt",
+        "default": "Bitte einen Fall auswählen"
+      },
+      {
+        "line": 215,
+        "key": "cockpit.archive",
+        "default": "📦 Archivieren"
+      },
+      {
+        "line": 218,
+        "key": "cockpit.complete",
+        "default": "✓ Erledigt"
+      },
+      {
+        "line": 234,
+        "key": "cockpit.email_ai",
+        "default": "✉ E-Mail & 🤖 KI"
+      },
+      {
+        "line": 237,
+        "key": "cockpit.calendar",
+        "default": "📅 Kalender"
+      },
+      {
+        "line": 240,
+        "key": "cockpit.followup",
+        "default": "🔔 Wiedervorlage"
+      },
+      {
+        "line": 243,
+        "key": "cockpit.note",
+        "default": "📝 Notiz"
+      },
+      {
+        "line": 250,
+        "key": "cockpit.save",
+        "default": "💾 Speichern"
+      },
+      {
+        "line": 283,
+        "key": "cockpit.more_actions",
+        "default": "⚙ Weitere Aktionen..."
+      },
+      {
+        "line": 256,
+        "key": "cockpit.copy_email",
+        "default": "📧 Praxis E-Mail kopieren"
+      },
+      {
+        "line": 257,
+        "key": "cockpit.export_case",
+        "default": "📤 Fall exportieren"
+      },
+      {
+        "line": 258,
+        "key": "cockpit.print_case",
+        "default": "🖨 Fall-Akte drucken"
+      },
+      {
+        "line": 259,
+        "key": "cockpit.convert_form",
+        "default": "🔄 Formular umwandeln"
+      },
+      {
+        "line": 285,
+        "key": "cockpit.email_ai",
+        "default": "✉ E-Mail & 🤖 KI"
+      },
+      {
+        "line": 287,
+        "key": "cockpit.calendar",
+        "default": "📅 Kalender"
+      },
+      {
+        "line": 289,
+        "key": "cockpit.followup",
+        "default": "🔔 Wiedervorlage"
+      },
+      {
+        "line": 291,
+        "key": "cockpit.note",
+        "default": "📝 Notiz"
+      },
+      {
+        "line": 293,
+        "key": "cockpit.save",
+        "default": "💾 Speichern"
+      },
+      {
+        "line": 295,
+        "key": "cockpit.complete",
+        "default": "✓ Erledigt"
+      },
+      {
+        "line": 297,
+        "key": "cockpit.archive",
+        "default": "📦 Archivieren"
+      },
+      {
+        "line": 278,
+        "key": "cockpit.copy_email",
+        "default": "📧 Praxis E-Mail kopieren"
+      },
+      {
+        "line": 279,
+        "key": "cockpit.export_case",
+        "default": "📤 Fall exportieren"
+      },
+      {
+        "line": 280,
+        "key": "cockpit.print_case",
+        "default": "🖨 Fall-Akte drucken"
+      },
+      {
+        "line": 281,
+        "key": "cockpit.convert_form",
+        "default": "🔄 Formular umwandeln"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/views/cockpit_view.py": {
+    "file": "src/ui/views/cockpit_view.py",
+    "widgets_created": [
+      {
+        "line": 326,
+        "component": "ToastNotification",
+        "kwargs": {
+          "title": "<Call>"
+        }
+      },
+      {
+        "line": 334,
+        "component": "ToastNotification",
+        "kwargs": {
+          "title": "<Call>",
+          "message": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt."
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 308,
+        "key": "cockpit.more_actions",
+        "default": "⚙ Weitere Aktionen..."
+      },
+      {
+        "line": 533,
+        "key": "cockpit.followup_at",
+        "default": "🔔 Nachfragen am:"
+      },
+      {
+        "line": 328,
+        "key": "cockpit.email_copied_title",
+        "default": "📋 E-Mail kopiert"
+      },
+      {
+        "line": 336,
+        "key": "cockpit.no_email_title",
+        "default": "⚠ Keine E-Mail-Adresse"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/views/table_view.py": {
+    "file": "src/ui/views/table_view.py",
+    "widgets_created": [
+      {
+        "line": 90,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 126,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 130,
+        "component": "CTkFrame",
+        "kwargs": {
+          "height": 38,
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 135,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 143,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "fg_color": "forestgreen",
+          "width": 150,
+          "state": "disabled"
+        }
+      },
+      {
+        "line": 154,
+        "component": "CTkTabview",
+        "kwargs": {}
+      },
+      {
+        "line": 138,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 137,
+        "key": "table.details_header",
+        "default": "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"
+      },
+      {
+        "line": 145,
+        "key": "table.save_btn",
+        "default": "💾 Ändern & Speichern"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/attachment_widget.py": {
+    "file": "src/ui/widgets/attachment_widget.py",
+    "widgets_created": [
+      {
+        "line": 26,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 29,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 32,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 120
+        }
+      },
+      {
+        "line": 36,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent",
+          "height": 130
+        }
+      },
+      {
+        "line": 40,
+        "component": "CTkFrame",
+        "kwargs": {
+          "height": 120
+        }
+      },
+      {
+        "line": 43,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 47,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 50,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 150
+        }
+      },
+      {
+        "line": 53,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 88,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 95,
+        "component": "CTkButton",
+        "kwargs": {
+          "anchor": "w",
+          "font": "<Call>",
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 106,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 65,
+          "fg_color": "gray30",
+          "hover_color": "gray40"
+        }
+      },
+      {
+        "line": 116,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "🗑",
+          "width": 30,
+          "fg_color": "darkred",
+          "hover_color": "firebrick"
+        }
+      },
+      {
+        "line": 29,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 43,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 53,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 136,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 79,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 84,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 99,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 144,
+        "component": "CTkTextbox",
+        "kwargs": {
+          "height": 90
+        }
+      },
+      {
+        "line": 136,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 151,
+        "component": "CTkLabel",
+        "kwargs": {}
+      },
+      {
+        "line": 139,
+        "component": "CTkLabel",
+        "kwargs": {}
+      },
+      {
+        "line": 149,
+        "component": "CTkLabel",
+        "kwargs": {}
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 29,
+        "key": "attachments.title",
+        "default": "Fall-Dateianhänge"
+      },
+      {
+        "line": 32,
+        "key": "attachments.open_explorer",
+        "default": "📁 Explorer öffnen"
+      },
+      {
+        "line": 43,
+        "key": "attachments.no_preview",
+        "default": "Keine Datei zur Vorschau ausgewählt"
+      },
+      {
+        "line": 50,
+        "key": "attachments.add_file",
+        "default": "+ Datei hinzufügen..."
+      },
+      {
+        "line": 53,
+        "key": "attachments.tip",
+        "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein"
+      },
+      {
+        "line": 59,
+        "key": "attachments.title",
+        "default": "Fall-Dateianhänge"
+      },
+      {
+        "line": 61,
+        "key": "attachments.open_explorer",
+        "default": "📁 Explorer öffnen"
+      },
+      {
+        "line": 63,
+        "key": "attachments.no_preview",
+        "default": "Keine Datei zur Vorschau ausgewählt"
+      },
+      {
+        "line": 65,
+        "key": "attachments.add_file",
+        "default": "+ Datei hinzufügen..."
+      },
+      {
+        "line": 67,
+        "key": "attachments.tip",
+        "default": "💡 Tipp: Strg+V fügt Screenshot als PNG ein"
+      },
+      {
+        "line": 108,
+        "key": "common.open",
+        "default": "📂 Öffnen"
+      },
+      {
+        "line": 79,
+        "key": "attachments.no_case",
+        "default": "Kein Fall ausgewählt."
+      },
+      {
+        "line": 84,
+        "key": "attachments.no_files",
+        "default": "Keine Dateianhänge im Fallordner."
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/case_list_widget.py": {
+    "file": "src/ui/widgets/case_list_widget.py",
+    "widgets_created": [
+      {
+        "line": 33,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 36,
+        "component": "CTkEntry",
+        "kwargs": {
+          "placeholder_text": "<Call>"
+        }
+      },
+      {
+        "line": 43,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 46,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 45
+        }
+      },
+      {
+        "line": 48,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 80
+        }
+      },
+      {
+        "line": 50,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 105
+        }
+      },
+      {
+        "line": 53,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 100,
+          "fg_color": "gray30",
+          "hover_color": "darkmagenta"
+        }
+      },
+      {
+        "line": 64,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 68,
+        "component": "CTkScrollableFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 166,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6,
+          "cursor": "hand2"
+        }
+      },
+      {
+        "line": 173,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 177,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 184,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "●",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 188,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 218,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 235,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 395,
+        "component": "CTkTooltip",
+        "kwargs": {
+          "delay_ms": 400
+        }
+      },
+      {
+        "line": 64,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 193,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "text_color": "white",
+          "fg_color": "forestgreen",
+          "corner_radius": 4,
+          "padx": 6,
+          "pady": 1
+        }
+      },
+      {
+        "line": 291,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 295,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "🔔 Nachfragen am:",
+          "height": 0,
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "darkorange"
+        }
+      },
+      {
+        "line": 309,
+        "component": "CTkLabel",
+        "kwargs": {
+          "height": 0,
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "darkorange"
+        }
+      },
+      {
+        "line": 323,
+        "component": "CTkLabel",
+        "kwargs": {
+          "height": 0,
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "darkorange"
+        }
+      },
+      {
+        "line": 354,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 155,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 177,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 184,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 16
+        }
+      },
+      {
+        "line": 188,
+        "component": "CTkFont",
+        "kwargs": {
+          "weight": "bold",
+          "size": 13
+        }
+      },
+      {
+        "line": 224,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 241,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 257,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "plum"
+        }
+      },
+      {
+        "line": 273,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "orchid"
+        }
+      },
+      {
+        "line": 338,
+        "component": "CTkLabel",
+        "kwargs": {
+          "height": 0,
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "text_color": "darkorange"
+        }
+      },
+      {
+        "line": 196,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 302,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 316,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 330,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 360,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 263,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 279,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 345,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 37,
+        "key": "cockpit.search_placeholder",
+        "default": "🔍 Suche / Token (z. B. vip:true status:open)..."
+      },
+      {
+        "line": 46,
+        "key": "cockpit.filter_all",
+        "default": "Alle"
+      },
+      {
+        "line": 48,
+        "key": "cockpit.filter_urgent",
+        "default": "🔥 Dringend"
+      },
+      {
+        "line": 50,
+        "key": "cockpit.filter_followup",
+        "default": "🔔 Wiedervorlage"
+      },
+      {
+        "line": 55,
+        "key": "cockpit.filter_deep",
+        "default": "🔍 Tiefensuche"
+      },
+      {
+        "line": 64,
+        "key": "case_list.zero_cases",
+        "default": "0 Fälle"
+      },
+      {
+        "line": 80,
+        "key": "cockpit.search_placeholder",
+        "default": "🔍 Suche / Token (z. B. vip:true status:open)..."
+      },
+      {
+        "line": 82,
+        "key": "cockpit.filter_all",
+        "default": "Alle"
+      },
+      {
+        "line": 84,
+        "key": "cockpit.filter_urgent",
+        "default": "🔥 Dringend"
+      },
+      {
+        "line": 86,
+        "key": "cockpit.filter_followup",
+        "default": "🔔 Wiedervorlage"
+      },
+      {
+        "line": 88,
+        "key": "cockpit.filter_deep",
+        "default": "🔍 Tiefensuche"
+      },
+      {
+        "line": 195,
+        "key": "case_list.completed_badge",
+        "default": "✓ ERLEDIGT"
+      },
+      {
+        "line": 155,
+        "key": "case_list.no_cases",
+        "default": "Keine Fälle gefunden."
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/ctk_tooltip.py": {
+    "file": "src/ui/widgets/ctk_tooltip.py",
+    "widgets_created": [
+      {
+        "line": 109,
+        "component": "CTkToplevel",
+        "kwargs": {}
+      },
+      {
+        "line": 122,
+        "component": "CTkFrame",
+        "kwargs": {
+          "border_width": 1,
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 131,
+        "component": "CTkLabel",
+        "kwargs": {
+          "justify": "left",
+          "anchor": "w",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 136,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/date_picker.py": {
+    "file": "src/ui/widgets/date_picker.py",
+    "widgets_created": [
+      {
+        "line": 76,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 80,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 83,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "◀",
+          "width": 32,
+          "height": 26,
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 89,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 94,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▶",
+          "width": 32,
+          "height": 26,
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 101,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 115,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 246,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 251,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 90,
+          "height": 28
+        }
+      },
+      {
+        "line": 258,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "fg_color": "forestgreen",
+          "width": 120,
+          "height": 28
+        }
+      },
+      {
+        "line": 443,
+        "component": "CTkEntry",
+        "kwargs": {}
+      },
+      {
+        "line": 455,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95
+        }
+      },
+      {
+        "line": 105,
+        "component": "CTkLabel",
+        "kwargs": {
+          "width": 48,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 120,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 135,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6,
+          "border_width": 1
+        }
+      },
+      {
+        "line": 141,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▲",
+          "width": 52,
+          "height": 13,
+          "font": "<Call>",
+          "fg_color": "transparent",
+          "corner_radius": 4
+        }
+      },
+      {
+        "line": 149,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "width": 54,
+          "height": 22,
+          "font": "<Call>",
+          "dropdown_font": "<Call>",
+          "corner_radius": 3
+        }
+      },
+      {
+        "line": 159,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▼",
+          "width": 52,
+          "height": 13,
+          "font": "<Call>",
+          "fg_color": "transparent",
+          "corner_radius": 4
+        }
+      },
+      {
+        "line": 180,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6,
+          "border_width": 1
+        }
+      },
+      {
+        "line": 186,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▲",
+          "width": 52,
+          "height": 13,
+          "font": "<Call>",
+          "fg_color": "transparent",
+          "corner_radius": 4
+        }
+      },
+      {
+        "line": 194,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "width": 54,
+          "height": 22,
+          "font": "<Call>",
+          "dropdown_font": "<Call>",
+          "corner_radius": 3
+        }
+      },
+      {
+        "line": 204,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "▼",
+          "width": 52,
+          "height": 13,
+          "font": "<Call>",
+          "fg_color": "transparent",
+          "corner_radius": 4
+        }
+      },
+      {
+        "line": 218,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 280,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 90,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 233,
+        "component": "CTkButton",
+        "kwargs": {
+          "height": 25,
+          "corner_radius": 12,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 109,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 125,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 143,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 8,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 151,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 152,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 161,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 8,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 168,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": ":",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 188,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 8,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 196,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 197,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 206,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 8,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 212,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 285,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "width": 48
+        }
+      },
+      {
+        "line": 302,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 48,
+          "height": 26
+        }
+      },
+      {
+        "line": 238,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 126,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 169,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 16,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 213,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 252,
+        "key": "common.cancel",
+        "default": "Abbrechen"
+      },
+      {
+        "line": 259,
+        "key": "ui_buttons.apply",
+        "default": "✓ Übernehmen"
+      },
+      {
+        "line": 456,
+        "key": "cockpit.calendar",
+        "default": "📅 Kalender"
+      },
+      {
+        "line": 126,
+        "key": "date_picker.time_lbl",
+        "default": "⏰ Uhrzeit:"
+      },
+      {
+        "line": 213,
+        "key": "date_picker.o_clock",
+        "default": "Uhr"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/dynamic_form_field_renderers.py": {
+    "file": "src/ui/widgets/dynamic_form_field_renderers.py",
+    "widgets_created": [
+      {
+        "line": 77,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 93,
+        "component": "CTkButton",
+        "kwargs": {
+          "height": 32,
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 126,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 129,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 179,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 182,
+        "component": "CTkEntry",
+        "kwargs": {}
+      },
+      {
+        "line": 189,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "fg_color": "gray30",
+          "hover_color": "gray40"
+        }
+      },
+      {
+        "line": 203,
+        "component": "CTkOptionMenu",
+        "kwargs": {}
+      },
+      {
+        "line": 219,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 222,
+        "component": "CTkCheckBox",
+        "kwargs": {}
+      },
+      {
+        "line": 251,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 254,
+        "component": "CTkEntry",
+        "kwargs": {}
+      },
+      {
+        "line": 295,
+        "component": "CTkEntry",
+        "kwargs": {
+          "placeholder_text": "<Call>"
+        }
+      },
+      {
+        "line": 306,
+        "component": "CTkTextbox",
+        "kwargs": {}
+      },
+      {
+        "line": 327,
+        "component": "CTkEntry",
+        "kwargs": {}
+      },
+      {
+        "line": 164,
+        "component": "CTkButton",
+        "kwargs": {
+          "height": 26,
+          "hover_color": "deepskyblue"
+        }
+      },
+      {
+        "line": 235,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 190,
+          "fg_color": "darkblue",
+          "hover_color": "blue"
+        }
+      },
+      {
+        "line": 282,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 120,
+          "fg_color": "dodgerblue",
+          "hover_color": "deepskyblue"
+        }
+      },
+      {
+        "line": 64,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 140,
+          "height": 22
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 191,
+        "key": "cockpit.calendar",
+        "default": "📅 Kalender"
+      },
+      {
+        "line": 295,
+        "key": "dynamic_form.number_placeholder",
+        "default": "Zahl..."
+      },
+      {
+        "line": 237,
+        "key": "dynamic_form.import_backup",
+        "default": "📁 .backup-Datei importieren..."
+      },
+      {
+        "line": 284,
+        "key": "dynamic_form.choose_file",
+        "default": "📁 Datei wählen..."
+      },
+      {
+        "line": 66,
+        "key": "dynamic_form.manage_tags",
+        "default": "⚙ Programmbereiche verwalten"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/dynamic_form_widget.py": {
+    "file": "src/ui/widgets/dynamic_form_widget.py",
+    "widgets_created": [
+      {
+        "line": 82,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 88,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 91,
+        "component": "CTkEntry",
+        "kwargs": {
+          "placeholder_text": "<Call>"
+        }
+      },
+      {
+        "line": 95,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 102,
+        "component": "CTkScrollableFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 108,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 183,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 270,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 277,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 280,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 457,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 551,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 554,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 559,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 576,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "height": 90,
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 387,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 415,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 8,
+          "border_width": 1
+        }
+      },
+      {
+        "line": 424,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 446,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 618,
+        "component": "CTkFrame",
+        "kwargs": {
+          "height": 24
+        }
+      },
+      {
+        "line": 85,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 98,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 110,
+          "height": 24,
+          "fg_color": "gray30"
+        }
+      },
+      {
+        "line": 99,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 110,
+          "height": 24,
+          "fg_color": "gray30"
+        }
+      },
+      {
+        "line": 111,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "fg_color": "forestgreen"
+        }
+      },
+      {
+        "line": 135,
+        "component": "CTkCheckBox",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 284,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 460,
+        "component": "CTkButton",
+        "kwargs": {
+          "fg_color": "forestgreen",
+          "hover_color": "darkgreen",
+          "height": 32,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 562,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 566,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "height": 24,
+          "width": 150,
+          "fg_color": "gray30",
+          "hover_color": "gray40"
+        }
+      },
+      {
+        "line": 123,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "text_color": "gray"
+        }
+      },
+      {
+        "line": 360,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 427,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 625,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 627,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 65,
+          "height": 20,
+          "fg_color": "gray35",
+          "hover_color": "gray45"
+        }
+      },
+      {
+        "line": 85,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 140,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 435,
+        "component": "CTkButton",
+        "kwargs": {
+          "height": 24,
+          "width": 140,
+          "fg_color": "firebrick",
+          "hover_color": "crimson"
+        }
+      },
+      {
+        "line": 466,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 430,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 625,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 91,
+        "key": "dynamic_form.search_tags",
+        "default": "🔍 Programmbereich suchen..."
+      },
+      {
+        "line": 561,
+        "key": "dynamic_form.no_files",
+        "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)"
+      },
+      {
+        "line": 582,
+        "key": "dynamic_form.import_title",
+        "default": "Dateien in Fallordner importieren"
+      },
+      {
+        "line": 607,
+        "key": "dynamic_form.no_files",
+        "default": "📎 Abgelegte Dateien im Fallordner: Keine (0)"
+      },
+      {
+        "line": 85,
+        "key": "dynamic_form.select_tags",
+        "default": "🧩 Programmbereiche auswählen:"
+      },
+      {
+        "line": 98,
+        "key": "dynamic_form.select_all",
+        "default": "Alle auswählen"
+      },
+      {
+        "line": 99,
+        "key": "dynamic_form.select_none",
+        "default": "Keine auswählen"
+      },
+      {
+        "line": 111,
+        "key": "dynamic_form.apply_close",
+        "default": "✓ Übernehmen & Schließen"
+      },
+      {
+        "line": 568,
+        "key": "dynamic_form.import_files",
+        "default": "+ Datei(en) importieren..."
+      },
+      {
+        "line": 611,
+        "key": "dynamic_form.files_attached",
+        "default": "Abgelegte Dateien im Fallordner"
+      },
+      {
+        "line": 123,
+        "key": "dynamic_form.no_tags",
+        "default": "Kein Programmbereich gefunden."
+      },
+      {
+        "line": 360,
+        "key": "form.no_fields",
+        "default": "Keine Formularfelder definiert."
+      },
+      {
+        "line": 629,
+        "key": "common.open",
+        "default": "👁 Öffnen"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/searchable_combobox.py": {
+    "file": "src/ui/widgets/searchable_combobox.py",
+    "widgets_created": [
+      {
+        "line": 28,
+        "component": "CTkButton",
+        "kwargs": {
+          "anchor": "w",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 78,
+        "component": "CTkToplevel",
+        "kwargs": {}
+      },
+      {
+        "line": 98,
+        "component": "CTkFrame",
+        "kwargs": {
+          "border_width": 2,
+          "border_color": "dodgerblue",
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 110,
+        "component": "CTkEntry",
+        "kwargs": {
+          "placeholder_text": "<Call>",
+          "height": 30,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 122,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 183,
+        "component": "CTkButton",
+        "kwargs": {
+          "anchor": "w",
+          "height": 28,
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 37,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 114,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 170,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>",
+          "text_color": "gray"
+        }
+      },
+      {
+        "line": 191,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 173,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 112,
+        "key": "searchable_combo.placeholder",
+        "default": "🔍 Buchstaben eintippen zum Suchen..."
+      },
+      {
+        "line": 172,
+        "key": "searchable_combo.no_results",
+        "default": "Keine Praxen gefunden"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/timeline_widget.py": {
+    "file": "src/ui/widgets/timeline_widget.py",
+    "widgets_created": [
+      {
+        "line": 28,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 32,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 38,
+        "component": "CTkFrame",
+        "kwargs": {}
+      },
+      {
+        "line": 41,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 44,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 47,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 110,
+          "fg_color": "gray30",
+          "hover_color": "darkmagenta"
+        }
+      },
+      {
+        "line": 57,
+        "component": "CTkOptionMenu",
+        "kwargs": {
+          "width": 200
+        }
+      },
+      {
+        "line": 61,
+        "component": "CTkTextbox",
+        "kwargs": {
+          "height": 60
+        }
+      },
+      {
+        "line": 67,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 140
+        }
+      },
+      {
+        "line": 103,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6
+        }
+      },
+      {
+        "line": 106,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 115,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "wraplength": 300
+        }
+      },
+      {
+        "line": 28,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 44,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 119,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "dodgerblue"
+        }
+      },
+      {
+        "line": 99,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 110,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 113,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 115,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12
+        }
+      },
+      {
+        "line": 119,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      },
+      {
+        "line": 110,
+        "component": "CTkFont",
+        "kwargs": {
+          "weight": "bold",
+          "size": 11
+        }
+      },
+      {
+        "line": 113,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 10
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 28,
+        "key": "cockpit.timeline_title",
+        "default": "Verlauf & Timeline Notizen"
+      },
+      {
+        "line": 44,
+        "key": "cockpit.add_new_note",
+        "default": "Neue Notiz hinzufügen:"
+      },
+      {
+        "line": 49,
+        "key": "cockpit.snippets_btn",
+        "default": "📝 Textbaustein"
+      },
+      {
+        "line": 67,
+        "key": "cockpit.add_note_btn",
+        "default": "+ Notiz Hinzufügen"
+      },
+      {
+        "line": 73,
+        "key": "cockpit.timeline_title",
+        "default": "Verlauf & Timeline Notizen"
+      },
+      {
+        "line": 75,
+        "key": "cockpit.add_new_note",
+        "default": "Neue Notiz hinzufügen:"
+      },
+      {
+        "line": 77,
+        "key": "cockpit.snippets_btn",
+        "default": "📝 Textbaustein"
+      },
+      {
+        "line": 79,
+        "key": "cockpit.add_note_btn",
+        "default": "+ Notiz Hinzufügen"
+      },
+      {
+        "line": 99,
+        "key": "timeline.no_notes",
+        "default": "Keine Notizen vorhanden."
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/toast_notification.py": {
+    "file": "src/ui/widgets/toast_notification.py",
+    "widgets_created": [
+      {
+        "line": 20,
+        "component": "CTkFrame",
+        "kwargs": {
+          "border_width": 2,
+          "border_color": "dodgerblue",
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 36,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 39,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "dodgerblue",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 42,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 104,
+        "component": "CTkFrame",
+        "kwargs": {
+          "border_width": 2,
+          "border_color": "dodgerblue",
+          "corner_radius": 8
+        }
+      },
+      {
+        "line": 120,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 123,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "text_color": "dodgerblue",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 126,
+        "component": "CTkLabel",
+        "kwargs": {
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 24,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "height": 32,
+          "font": "<Call>",
+          "fg_color": "dodgerblue",
+          "hover_color": "deepskyblue"
+        }
+      },
+      {
+        "line": 108,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 95,
+          "height": 32,
+          "font": "<Call>",
+          "fg_color": "dodgerblue",
+          "hover_color": "deepskyblue"
+        }
+      },
+      {
+        "line": 39,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 42,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 123,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 13,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 126,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 29,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 113,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 12,
+          "weight": "bold"
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 16,
+        "key": "toast.reminder_title",
+        "default": "Erinnerung"
+      },
+      {
+        "line": 26,
+        "key": "common.open",
+        "default": "👁 Öffnen"
+      },
+      {
+        "line": 110,
+        "key": "common.open",
+        "default": "👁 Öffnen"
+      }
+    ],
+    "hardcoded_ui_texts": []
+  },
+  "src/ui/widgets/wiki_widget.py": {
+    "file": "src/ui/widgets/wiki_widget.py",
+    "widgets_created": [
+      {
+        "line": 16,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 19,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "font": "<Call>"
+        }
+      },
+      {
+        "line": 22,
+        "component": "CTkButton",
+        "kwargs": {
+          "text": "<Call>",
+          "width": 100
+        }
+      },
+      {
+        "line": 26,
+        "component": "CTkFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 29,
+        "component": "CTkEntry",
+        "kwargs": {
+          "placeholder_text": "<Call>"
+        }
+      },
+      {
+        "line": 34,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "",
+          "font": "<Call>",
+          "anchor": "w"
+        }
+      },
+      {
+        "line": 38,
+        "component": "CTkScrollableFrame",
+        "kwargs": {
+          "fg_color": "transparent"
+        }
+      },
+      {
+        "line": 72,
+        "component": "CTkFrame",
+        "kwargs": {
+          "corner_radius": 6,
+          "cursor": "hand2"
+        }
+      },
+      {
+        "line": 79,
+        "component": "CTkLabel",
+        "kwargs": {
+          "anchor": "w",
+          "font": "<Call>",
+          "text_color": "dodgerblue"
+        }
+      },
+      {
+        "line": 84,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>",
+          "anchor": "w",
+          "justify": "left",
+          "font": "<Call>",
+          "wraplength": 280
+        }
+      },
+      {
+        "line": 19,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 14,
+          "weight": "bold"
+        }
+      },
+      {
+        "line": 34,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      },
+      {
+        "line": 68,
+        "component": "CTkLabel",
+        "kwargs": {
+          "text": "<Call>"
+        }
+      },
+      {
+        "line": 79,
+        "component": "CTkFont",
+        "kwargs": {
+          "weight": "bold",
+          "size": 12
+        }
+      },
+      {
+        "line": 84,
+        "component": "CTkFont",
+        "kwargs": {
+          "size": 11
+        }
+      }
+    ],
+    "string_constants": [],
+    "tr_calls": [
+      {
+        "line": 19,
+        "key": "wiki.header",
+        "default": "BookStack Offline Wiki"
+      },
+      {
+        "line": 22,
+        "key": "wiki.sync_btn",
+        "default": "🔄 Wiki Sync"
+      },
+      {
+        "line": 29,
+        "key": "wiki.search_placeholder",
+        "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."
+      },
+      {
+        "line": 95,
+        "key": "wiki.syncing",
+        "default": "⏳ Synchronisiere Wiki im Hintergrund..."
+      },
+      {
+        "line": 44,
+        "key": "wiki.header",
+        "default": "BookStack Offline Wiki"
+      },
+      {
+        "line": 46,
+        "key": "wiki.sync_btn",
+        "default": "🔄 Wiki Sync"
+      },
+      {
+        "line": 48,
+        "key": "wiki.search_placeholder",
+        "default": "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."
+      },
+      {
+        "line": 61,
+        "key": "wiki.enter_query",
+        "default": "Bitte Suchbegriff eingeben."
+      },
+      {
+        "line": 65,
+        "key": "wiki.articles_found",
+        "default": "Wiki-Artikel gefunden"
+      },
+      {
+        "line": 68,
+        "key": "wiki.no_results",
+        "default": "Keine treffenden Artikel im Offline-Index."
+      }
+    ],
+    "hardcoded_ui_texts": []
+  }
+}

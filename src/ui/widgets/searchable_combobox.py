@@ -12,16 +12,17 @@ class SearchableCombobox(ctk.CTkFrame):
         command: Callable[[str], None] | None = None,
         width: int = 380,
         height: int = 32,
-        placeholder_text: str = "– Bitte auswählen –",
+        placeholder_text: str | None = None,
         **kwargs: Any
     ):
         super().__init__(master, fg_color="transparent", width=width, height=height, **kwargs)
         self.pack_propagate(False)
 
+        from services.i18n_service import tr
         self._values: list[str] = list(values) if values else []
         self._command = command
         self._selected_value: str = ""
-        self.placeholder_text = placeholder_text
+        self.placeholder_text = placeholder_text if placeholder_text is not None else tr("common.please_select", "– Bitte auswählen –")
         self._popover: ctk.CTkToplevel | None = None
 
         # Display Button
@@ -198,3 +199,9 @@ class SearchableCombobox(ctk.CTkFrame):
         self.close_popover()
         if self._command:
             self._command(val)
+
+    def refresh_ui_labels(self):
+        from services.i18n_service import tr
+        self.placeholder_text = tr("common.please_select", "– Bitte auswählen –")
+        if not self._selected_value:
+            self.btn.configure(text=f"  {self.placeholder_text}  ▼")

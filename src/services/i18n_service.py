@@ -63,6 +63,9 @@ class I18nService:
         if callback in self._listeners:
             self._listeners.remove(callback)
 
+    def clear_listeners(self) -> None:
+        self._listeners.clear()
+
     def _notify_listeners(self) -> None:
         for callback in self._listeners:
             try:
@@ -70,7 +73,7 @@ class I18nService:
             except Exception:
                 pass
 
-    def tr(self, key: str, default: str | None = None, **kwargs: Any) -> str:
+    def tr(self, key: str, default: Any = None, **kwargs: Any) -> Any:
         """Translate a dot-separated key (e.g., 'menu.master_data').
 
         Fallback chain: current_language -> 'de' -> default -> key.
@@ -80,14 +83,17 @@ class I18nService:
             result = self._get_nested_val(self._translations.get("de", {}), key)
 
         if result is None:
-            result = default if default is not None else key
+            if default is not None:
+                result = default
+            else:
+                result = key
 
         if kwargs and isinstance(result, str):
             try:
                 return result.format(**kwargs)
             except Exception:
                 return result
-        return str(result)
+        return str(result) if isinstance(result, str) else result
 
     def _get_nested_val(self, data: dict[str, Any], key: str) -> Any:
         keys = key.split(".")
@@ -102,6 +108,7 @@ class I18nService:
 
 # Global singleton instance
 _i18n_instance: I18nService | None = None
+_SENTINEL = object()
 
 
 def get_i18n() -> I18nService:
@@ -111,5 +118,49 @@ def get_i18n() -> I18nService:
     return _i18n_instance
 
 
-def tr(key: str, default: str | None = None, **kwargs: Any) -> str:
+def tr(key: str, default: Any = None, **kwargs: Any) -> Any:
     return get_i18n().tr(key, default=default, **kwargs)
+
+
+class LocalizedDict(dict):
+    """Dictionary proxy that dynamically translates keys using I18nService."""
+
+    def __init__(self, prefix: str, initial_dict: dict[str, str] | None = None, **kwargs: Any) -> None:
+        if initial_dict:
+            super().__init__(initial_dict, **kwargs)
+        else:
+            super().__init__(**kwargs)
+        self._prefix = prefix
+
+    def __getitem__(self, key: str) -> str:
+        default = super().get(key, str(key))
+        try:
+            res = tr(f"{self._prefix}.{key}", default=_SENTINEL)
+            if res is _SENTINEL and isinstance(key, str):
+                alt_key = key.lower() if key.isupper() else key.upper()
+                res = tr(f"{self._prefix}.{alt_key}", default=_SENTINEL)
+            if res is _SENTINEL:
+                return default
+            return res
+        except Exception:
+            return default
+
+    def get(self, key: str, default: Any = None) -> Any:
+        try:
+            fallback = super().get(key, default)
+            res = tr(f"{self._prefix}.{key}", default=_SENTINEL)
+            if res is _SENTINEL and isinstance(key, str):
+                alt_key = key.lower() if key.isupper() else key.upper()
+                res = tr(f"{self._prefix}.{alt_key}", default=_SENTINEL)
+            if res is _SENTINEL:
+                return fallback
+            return res
+        except Exception:
+            return super().get(key, default)
+
+    def values(self) -> list[str]:
+        return [self[k] for k in self.keys()]
+
+    def items(self) -> list[tuple[str, str]]:
+        return [(k, self[k]) for k in self.keys()]
+

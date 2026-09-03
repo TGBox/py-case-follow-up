@@ -19,8 +19,9 @@ class SnippetPickerDialog(ctk.CTkToplevel):
         self.on_snippet_selected = on_snippet_selected
         self.selected_snippet: Snippet | None = None
 
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["snippet_picker"]
-        self.title("🧩 Textbaustein auswählen & einfügen")
+        self.title(tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"))
         self.geometry(f"{w}x{h}")
         self.minsize(680, 480)
 

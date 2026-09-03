@@ -67,11 +67,11 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         enable_auto_hiding_scrollbar(self.form_box)
 
         ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.title_lbl", "Titel:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.title_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. 📸 Rückfrage: Screenshots")
+        self.title_entry = ctk.CTkEntry(self.form_box, placeholder_text=tr("snippet_mgmt.title_placeholder", "z. B. 📸 Rückfrage: Screenshots"))
         self.title_entry.pack(fill="x", pady=(0, 8))
 
         ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.cat_lbl", "Kategorie:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.category_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. Rückfrage, Anleitung, SQL")
+        self.category_entry = ctk.CTkEntry(self.form_box, placeholder_text=tr("snippet_mgmt.category_placeholder", "z. B. Rückfrage, Anleitung, SQL"))
         self.category_entry.pack(fill="x", pady=(0, 8))
 
         ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.content_lbl", "Inhalt / Baustein-Text:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
@@ -79,14 +79,14 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.content_textbox.pack(fill="x", expand=True, pady=(0, 8))
 
         ctk.CTkLabel(self.form_box, text=tr("snippet_mgmt.tags_lbl", "Tags (kommagetrennt):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text="z. B. fehler, sql, anleitung")
+        self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text=tr("snippet_mgmt.tags_placeholder", "z. B. fehler, sql, anleitung"))
         self.tags_entry.pack(fill="x", pady=(0, 8))
 
         ctk.CTkLabel(self.form_box, text=LABEL_SNIPPET_SHORTCUT_FIELD, font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
         sc_row = ctk.CTkFrame(self.form_box, fg_color="transparent")
         sc_row.pack(fill="x", pady=(0, 12))
 
-        self.shortcut_entry = ctk.CTkEntry(sc_row, placeholder_text="z. B. <Control-Alt-1>")
+        self.shortcut_entry = ctk.CTkEntry(sc_row, placeholder_text=tr("snippet_mgmt.shortcut_placeholder", "z. B. <Control-Alt-1>"))
         self.shortcut_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         rec_btn = ctk.CTkButton(

@@ -29,15 +29,15 @@ class QuickAddCustomerDialog(ctk.CTkToplevel):
         ctk.CTkLabel(main_frame, text=tr("quick_customer.header", "Neue Praxis anlegen"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
 
         ctk.CTkLabel(main_frame, text=tr("quick_customer.practice_name", "Praxisname *:")).pack(anchor="w", pady=(2, 0))
-        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text="z.B. Praxis Dr. Weber")
+        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.practice_name_placeholder", "z.B. Praxis Dr. Weber"))
         self.name_entry.pack(fill="x", pady=(0, 8))
 
         ctk.CTkLabel(main_frame, text=tr("quick_customer.contact_person", "Ansprechpartner:")).pack(anchor="w", pady=(2, 0))
-        self.contact_entry = ctk.CTkEntry(main_frame, placeholder_text="z.B. Dr. Hans Weber")
+        self.contact_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber"))
         self.contact_entry.pack(fill="x", pady=(0, 8))
 
         ctk.CTkLabel(main_frame, text=tr("quick_customer.phone", "Telefon:")).pack(anchor="w", pady=(2, 0))
-        self.phone_entry = ctk.CTkEntry(main_frame, placeholder_text="030 / 123456")
+        self.phone_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.phone_placeholder", "030 / 123456"))
         self.phone_entry.pack(fill="x", pady=(0, 8))
 
         self.vip_var = ctk.BooleanVar(value=False)
@@ -159,7 +159,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         cust_row.pack(fill="x", pady=(0, 6))
 
         from ui.widgets.searchable_combobox import SearchableCombobox
-        initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else ["Keine Kunden"]
+        initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else [tr("new_case_dialog.no_customers", "Keine Kunden")]
         self.customer_combo = SearchableCombobox(cust_row, values=initial_cust_names, width=380)
         self.customer_combo.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
@@ -170,7 +170,7 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         # Case Title
         ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.title_label", "Titel / Kurzbeschreibung:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuzahlungsdatei lässt sich nicht erzeugen")
+        self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("new_case_dialog.title_placeholder", "z. B. Zuzahlungsdatei lässt sich nicht erzeugen"))
         self.title_entry.pack(fill="x", pady=(0, 6))
 
         # Creation Date (defaulting to current time)
@@ -178,7 +178,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         from ui.widgets.date_picker import DatePickerWidget
         self.created_at_picker = DatePickerWidget(
             form_scroll,
-            placeholder_text="z. B. 25.08.2026 09:30",
+            placeholder_text=tr("date_picker.placeholder_datetime_example", "z. B. 25.08.2026 09:30"),
             include_time=True,
             initial_value=format_german_datetime(now_iso()),
             width=380,
@@ -205,7 +205,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         # Callback deadline (optional)
         ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.deadline", "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         from ui.widgets.date_picker import DatePickerWidget
-        self.deadline_picker = DatePickerWidget(form_scroll, placeholder_text="z. B. 23.08.2026 16:00", include_time=True, width=380)
+        self.deadline_picker = DatePickerWidget(form_scroll, placeholder_text=tr("date_picker.placeholder_deadline_example", "z. B. 23.08.2026 16:00"), include_time=True, width=380)
         self.deadline_picker.pack(fill="x", pady=(0, 6))
 
         # Initial Timeline Note & Channel Selection

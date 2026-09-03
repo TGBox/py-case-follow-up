@@ -43,25 +43,27 @@ class CasePrintDialog(ctk.CTkToplevel):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
-        ctk.CTkLabel(main_frame, text=f"🖨 Druckansicht für Fall {self.case.case_id} anpassen", font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+        from services.i18n_service import tr
 
-        ctk.CTkLabel(main_frame, text="Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:").pack(anchor="w", pady=(0, 8))
+        ctk.CTkLabel(main_frame, text=tr("case_print.header", "🖨 Druckansicht für Fall {case_id} anpassen", case_id=self.case.case_id), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+
+        ctk.CTkLabel(main_frame, text=tr("case_print.sub_header", "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:")).pack(anchor="w", pady=(0, 8))
 
         # Main options
         opts_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         opts_frame.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkCheckBox(opts_frame, text="Praxis & Kundendaten", variable=self.include_customer_var).pack(side="left", padx=(0, 12))
-        ctk.CTkCheckBox(opts_frame, text="Formularfelder", variable=self.include_fields_var).pack(side="left", padx=(0, 12))
-        ctk.CTkCheckBox(opts_frame, text="Bilder & Anhänge am Ende", variable=self.include_attachments_var).pack(side="left")
+        ctk.CTkCheckBox(opts_frame, text=tr("case_print.customer_data", "Praxis & Kundendaten"), variable=self.include_customer_var).pack(side="left", padx=(0, 12))
+        ctk.CTkCheckBox(opts_frame, text=tr("case_print.form_fields", "Formularfelder"), variable=self.include_fields_var).pack(side="left", padx=(0, 12))
+        ctk.CTkCheckBox(opts_frame, text=tr("case_print.attachments_end", "Bilder & Anhänge am Ende"), variable=self.include_attachments_var).pack(side="left")
 
-        ctk.CTkLabel(main_frame, text="Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):", font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(8, 4))
+        ctk.CTkLabel(main_frame, text=tr("case_print.timeline_lbl", "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(8, 4))
 
         scroll = ctk.CTkScrollableFrame(main_frame, height=220)
         scroll.pack(fill="both", expand=True, pady=(0, 10))
 
         if not self.case.timeline:
-            ctk.CTkLabel(scroll, text="Keine Notizen in der Zeitleiste.").pack(pady=10)
+            ctk.CTkLabel(scroll, text=tr("case_print.no_timeline_notes", "Keine Notizen in der Zeitleiste.")).pack(pady=10)
         else:
             for idx, entry in enumerate(self.case.timeline):
                 var = ctk.BooleanVar(value=True)
@@ -70,8 +72,6 @@ class CasePrintDialog(ctk.CTkToplevel):
                 formatted_ts = format_german_datetime(entry.timestamp)
                 lbl_text = f"[{formatted_ts}] {entry.author}: {entry.note[:60]}..."
                 ctk.CTkCheckBox(scroll, text=lbl_text, variable=var).pack(anchor="w", pady=3, padx=5)
-
-        from services.i18n_service import tr
 
         # Action bar
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -97,7 +97,7 @@ class CasePrintDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_frame,
-            text="🌐 HTML-Bericht",
+            text=tr("case_print.html_report_btn", "🌐 HTML-Bericht"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
             command=self.generate_and_open_html,
@@ -106,7 +106,7 @@ class CasePrintDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(
             btn_frame,
-            text="💾 Speichern...",
+            text=tr("case_print.save_btn", "💾 Speichern..."),
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_and_save_file,
@@ -271,10 +271,10 @@ window.addEventListener('DOMContentLoaded', function() {
 
     def generate_and_save_file(self):
         """Prompts user to save the static HTML report file."""
-        from tkinter import filedialog
+        from services.i18n_service import tr
         file_path = filedialog.asksaveasfilename(
             parent=self,
-            title="Fallbericht speichern",
+            title=tr("case_print.save_dialog_title", "Fallbericht speichern"),
             defaultextension=".html",
             initialfile=f"Fallbericht_{self.case.case_id}.html",
             filetypes=[("HTML-Bericht (für PDF-Druck)", "*.html"), ("Alle Dateien", "*.*")],

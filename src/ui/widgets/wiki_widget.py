@@ -46,6 +46,8 @@ class WikiWidget(ctk.CTkFrame):
             self.sync_btn.configure(text=tr("wiki.sync_btn", "🔄 Wiki Sync"))
         if hasattr(self, "search_entry"):
             self.search_entry.configure(placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
+        if hasattr(self, "search_entry") and self.search_entry.get().strip():
+            self.on_search()
 
     def focus_search(self):
         self.search_entry.focus_set()
@@ -62,7 +64,7 @@ class WikiWidget(ctk.CTkFrame):
             return
 
         results = self.wiki_service.search(query)
-        self.status_label.configure(text=f"{len(results)} {tr('wiki.articles_found', 'Wiki-Artikel gefunden')}")
+        self.status_label.configure(text=tr("wiki.articles_found_count", "{count} Wiki-Artikel gefunden", count=len(results)))
 
         if not results:
             ctk.CTkLabel(self.scroll_frame, text=tr("wiki.no_results", "Keine treffenden Artikel im Offline-Index.")).pack(pady=10)

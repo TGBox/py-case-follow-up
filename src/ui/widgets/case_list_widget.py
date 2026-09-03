@@ -128,7 +128,8 @@ class CaseListWidget(ctk.CTkFrame):
         new_sigs = [sig(c) for c in new_cases]
 
         self.cases = new_cases
-        self.count_label.configure(text=f"{len(self.cases)} Support-Fälle")
+        from services.i18n_service import tr
+        self.count_label.configure(text=tr("case_list.count_cases", "{count} Support-Fälle", count=len(self.cases)))
 
         if old_sigs == new_sigs and hasattr(self, "_card_widgets") and self._card_widgets and len(self._card_widgets) == len(new_cases):
             for case in self.cases:
@@ -174,14 +175,14 @@ class CaseListWidget(ctk.CTkFrame):
             top_row.pack(fill="x", padx=(8, 10), pady=(6, 2))
             top_row.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            score_lbl = ctk.CTkLabel(top_row, text=f"Pkt.: {case.classification.calculated_score:.0f}", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+            score_lbl = ctk.CTkLabel(top_row, text=tr("case_list.score_pts", "Pkt.: {score}", score=f"{case.classification.calculated_score:.0f}"), font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             score_lbl.pack(side="right", padx=(0, 6))
             score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             # Urgency Dot Indicator
             urg = case.classification.urgency_level
             dot_color = "red" if urg == UrgencyLevel.RED else ("gold" if urg == UrgencyLevel.YELLOW else "limegreen")
-            dot = ctk.CTkLabel(top_row, text="●", text_color=dot_color, font=ctk.CTkFont(size=16))
+            dot = ctk.CTkLabel(top_row, text=tr("common.dot", "●"), text_color=dot_color, font=ctk.CTkFont(size=16))
             dot.pack(side="left", padx=(0, 5))
             dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
@@ -205,7 +206,7 @@ class CaseListWidget(ctk.CTkFrame):
 
             # Practice Name / Internal Badge
             if case.is_internal:
-                practice_str = "🏢 INTERNE AUFGABE / VORGANG"
+                practice_str = tr("case_list.internal_task", "🏢 INTERNE AUFGABE / VORGANG")
                 prac_color = "dodgerblue"
             else:
                 practice_str = case.customer.practice_name
@@ -229,7 +230,7 @@ class CaseListWidget(ctk.CTkFrame):
             self.wrap_labels.append(prac_lbl)
 
             # Title & Actor
-            sub_str = f"{case.classification.title} | Zuständig: {get_actor_display(case.workflow_status.current_actor)}"
+            sub_str = f"{case.classification.title} | {tr('case_list.assigned_to', 'Zuständig:')} {get_actor_display(case.workflow_status.current_actor)}"
             disp_sub = sub_str if len(sub_str) <= 80 else sub_str[:77] + "..."
 
             sub_lbl = ctk.CTkLabel(
@@ -253,7 +254,7 @@ class CaseListWidget(ctk.CTkFrame):
 
                 if att_m:
                     m0 = att_m[0]
-                    att_text = f"📄 {m0['file_name']} (Z. {m0['line_number']}): \"{m0['snippet'][:35]}...\""
+                    att_text = f"📄 {m0['file_name']} ({tr('case_list.line_abbr', 'Z.')} {m0['line_number']}): \"{m0['snippet'][:35]}...\""
                     att_lbl = ctk.CTkLabel(
                         card,
                         text=att_text,
@@ -269,7 +270,7 @@ class CaseListWidget(ctk.CTkFrame):
 
                 if wiki_m:
                     w0 = wiki_m[0]
-                    wiki_text = f"📚 Wiki: {w0['title']}"
+                    wiki_text = f"📖 {w0['title']} (Score: {w0['score']:.0f}): \"{w0['snippet'][:35]}...\""
                     wiki_lbl = ctk.CTkLabel(
                         card,
                         text=wiki_text,
@@ -294,7 +295,7 @@ class CaseListWidget(ctk.CTkFrame):
 
                 lbl_h = ctk.CTkLabel(
                     fw_frame,
-                    text="🔔 Nachfragen am:",
+                    text=tr("case_list.followup_at", "🔔 Nachfragen am:"),
                     height=0,
                     anchor="w",
                     justify="left",
@@ -367,28 +368,29 @@ class CaseListWidget(ctk.CTkFrame):
             # CTkTooltip hover overlay for full untruncated details
             from ui.widgets.ctk_tooltip import CTkTooltip
             def build_tooltip(c: Case = case) -> str:
+                from services.i18n_service import tr
                 lines = [
-                    f"📌 Fall: {c.case_id} (Priorität: {c.classification.calculated_score:.0f} Pkt.)",
+                    tr("case_list.tooltip_case_header", "📌 Fall: {id} (Priorität: {score} Pkt.)", id=c.case_id, score=f"{c.classification.calculated_score:.0f}"),
                 ]
                 if c.is_internal:
-                    lines.append(f"🏢 Kunde: INTERNE AUFGABE ({c.customer.customer_id})")
+                    lines.append(tr("case_list.tooltip_customer_internal", "🏢 Kunde: INTERNE AUFGABE ({id})", id=c.customer.customer_id))
                 else:
                     vip_t = " ★ VIP" if c.customer.is_vip else ""
-                    lines.append(f"🏥 Kunde: {c.customer.practice_name} ({c.customer.customer_id}){vip_t}")
-                    lines.append(f"👤 Ansprechpartner: {c.customer.contact_person}")
+                    lines.append(tr("case_list.tooltip_customer_practice", "🏥 Kunde: {name} ({id}){vip}", name=c.customer.practice_name, id=c.customer.customer_id, vip=vip_t))
+                    lines.append(tr("case_list.tooltip_contact", "👤 Ansprechpartner: {contact}", contact=c.customer.contact_person))
 
-                lines.append(f"📋 Thema: {c.classification.title}")
-                lines.append(f"👤 Zuständig: {get_actor_display(c.workflow_status.current_actor)}")
+                lines.append(tr("case_list.tooltip_topic", "📋 Thema: {title}", title=c.classification.title))
+                lines.append(tr("case_list.tooltip_assigned", "👤 Zuständig: {actor}", actor=get_actor_display(c.workflow_status.current_actor)))
 
                 if c.workflow_status.followup_at:
                     from utils.datetime_utils import format_german_date_with_relative, format_german_time
                     fw_d = format_german_date_with_relative(c.workflow_status.followup_at)
                     fw_tm = format_german_time(c.workflow_status.followup_at, with_uhr=True)
                     note_t = f" ({c.workflow_status.followup_note})" if c.workflow_status.followup_note else ""
-                    lines.append(f"🔔 Wiedervorlage: {fw_d} um {fw_tm}{note_t}")
+                    lines.append(tr("case_list.tooltip_followup", "🔔 Wiedervorlage: {date} um {time}{note}", date=fw_d, time=fw_tm, note=note_t))
 
                 if c.classification.tags:
-                    lines.append(f"🏷 Tags: {', '.join(c.classification.tags)}")
+                    lines.append(tr("case_list.tooltip_tags", "🏷 Tags: {tags}", tags=', '.join(c.classification.tags)))
 
                 return "\n".join(lines)
 

@@ -97,11 +97,11 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         # Fields
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.username", "Kürzel / Username *:")).pack(anchor="w", pady=(4, 2))
-        self.username_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. mmueller")
+        self.username_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.username_placeholder", "z. B. mmueller"))
         self.username_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.name", "Name / Anzeigename *:")).pack(anchor="w", pady=(4, 2))
-        self.name_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Max Müller")
+        self.name_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.name_placeholder", "z. B. Max Müller"))
         self.name_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.department", "Abteilung / Department:")).pack(anchor="w", pady=(4, 2))
@@ -110,29 +110,29 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.dept_combo.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.phone", "Durchwahl / Telefon:")).pack(anchor="w", pady=(4, 2))
-        self.ext_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. 4012")
+        self.ext_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.phone_placeholder", "z. B. 4012"))
         self.ext_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(4, 2))
-        self.email_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. m.mueller@praxis.de")
+        self.email_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.email_placeholder", "z. B. m.mueller@praxis.de"))
         self.email_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(4, 2))
-        self.mobile_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. 0170 1234567")
+        self.mobile_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.mobile_placeholder", "z. B. 0170 1234567"))
         self.mobile_entry.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.notes", "Aufgabengebiet / Notizen:")).pack(anchor="w", pady=(4, 2))
-        self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text="z. B. Zuständig für PVS-Schnittstellen...")
+        self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.notes_placeholder", "z. B. Zuständig für PVS-Schnittstellen..."))
         self.notes_entry.pack(fill="x", pady=(0, 10))
 
         # Absence / Vacation settings
         self.is_absent_var = ctk.BooleanVar(value=False)
         self.chk_absent = ctk.CTkCheckBox(
-            form_scroll, text="⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)", variable=self.is_absent_var
+            form_scroll, text=tr("colleague_mgmt.absent_chk", "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)"), variable=self.is_absent_var
         )
         self.chk_absent.pack(anchor="w", pady=(5, 5))
 
-        self.absence_reason_entry = ctk.CTkEntry(form_scroll, placeholder_text="Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...")
+        self.absence_reason_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.absence_reason_placeholder", "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)..."))
         self.absence_reason_entry.pack(fill="x", pady=(0, 15))
 
         self.err_lbl = ctk.CTkLabel(form_scroll, text="", text_color="red", anchor="w")
@@ -180,8 +180,9 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         for child in self.list_scroll.winfo_children():
             child.destroy()
 
+        from services.i18n_service import tr
         if not self.filtered_colleagues:
-            ctk.CTkLabel(self.list_scroll, text="Keine Einträge gefunden.", text_color="gray").pack(pady=20)
+            ctk.CTkLabel(self.list_scroll, text=tr("colleague_mgmt.no_entries", "Keine Einträge gefunden."), text_color="gray").pack(pady=20)
             return
 
         for col in self.filtered_colleagues:
@@ -207,11 +208,12 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.filter_and_render_list()
 
     def select_colleague(self, col: Colleague | None):
+        from services.i18n_service import tr
         self.selected_colleague = col
         self.err_lbl.configure(text="")
 
         if col:
-            self.form_header_lbl.configure(text=f"✏ Bearbeiten: {col.name}")
+            self.form_header_lbl.configure(text=tr("colleague_mgmt.edit_header", "✏ Bearbeiten: {name}", name=col.name))
             self.username_entry.delete(0, "end")
             self.username_entry.insert(0, col.username)
             self.name_entry.delete(0, "end")
@@ -230,7 +232,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
             self.absence_reason_entry.insert(0, col.absence_reason)
             self.delete_btn.configure(state="normal")
         else:
-            self.form_header_lbl.configure(text="➕ Neuen Mitarbeiter anlegen")
+            self.form_header_lbl.configure(text=tr("colleague_mgmt.create_header", "➕ Neuen Mitarbeiter anlegen"))
             self.username_entry.delete(0, "end")
             self.name_entry.delete(0, "end")
             self.dept_combo.set(DEPARTMENTS[0])

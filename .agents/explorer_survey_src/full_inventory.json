@@ -1,0 +1,1936 @@
+{
+  "__init__.py": {
+    "loc": 2,
+    "entries_count": 0,
+    "entries": []
+  },
+  "config.py": {
+    "loc": 214,
+    "entries_count": 0,
+    "entries": []
+  },
+  "constants.py": {
+    "loc": 603,
+    "entries_count": 0,
+    "entries": []
+  },
+  "enums.py": {
+    "loc": 129,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/__init__.py": {
+    "loc": 1,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/case.py": {
+    "loc": 273,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/customer.py": {
+    "loc": 239,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/export_template.py": {
+    "loc": 47,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/profile.py": {
+    "loc": 383,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/schema.py": {
+    "loc": 119,
+    "entries_count": 0,
+    "entries": []
+  },
+  "models/snippet.py": {
+    "loc": 37,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/__init__.py": {
+    "loc": 1,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/ai_service.py": {
+    "loc": 533,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/anonymizer_service.py": {
+    "loc": 112,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/attachment_service.py": {
+    "loc": 90,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/calendar_email_service.py": {
+    "loc": 254,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/cobra_crm_import_service.py": {
+    "loc": 261,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/customer_service.py": {
+    "loc": 58,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/deep_search_service.py": {
+    "loc": 166,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/export_service.py": {
+    "loc": 117,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/i18n_service.py": {
+    "loc": 115,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/imap_import_service.py": {
+    "loc": 69,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/outlook_integration_service.py": {
+    "loc": 230,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/p2p_sync_service.py": {
+    "loc": 114,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/schema_service.py": {
+    "loc": 98,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/scoring_service.py": {
+    "loc": 64,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/search_service.py": {
+    "loc": 173,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/seed_case_data.py": {
+    "loc": 425,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/seed_service.py": {
+    "loc": 391,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/snippet_service.py": {
+    "loc": 146,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/storage_service.py": {
+    "loc": 547,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/tray_service.py": {
+    "loc": 181,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/webhook_integration_service.py": {
+    "loc": 54,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/wiki_sync_service.py": {
+    "loc": 296,
+    "entries_count": 0,
+    "entries": []
+  },
+  "services/zip_backup_service.py": {
+    "loc": 124,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/__init__.py": {
+    "loc": 1,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/app.py": {
+    "loc": 812,
+    "entries_count": 2,
+    "entries": [
+      {
+        "line": 320,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🔔 0",
+        "snippet": "text=\"🔔 0\","
+      },
+      {
+        "line": 688,
+        "category": "Dialog / FileDialog",
+        "target": "asksaveasfilename.title",
+        "value": "Komplett-Datensicherung als ZIP speichern",
+        "snippet": "title=\"Komplett-Datensicherung als ZIP speichern\","
+      }
+    ]
+  },
+  "ui/app_dialogs.py": {
+    "loc": 346,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/ai_assistant_dialog.py": {
+    "loc": 560,
+    "entries_count": 11,
+    "entries": [
+      {
+        "line": 127,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Prüfe Status...",
+        "snippet": "text=\"Prüfe Status...\","
+      },
+      {
+        "line": 175,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "Schließen",
+        "snippet": "text=\"Schließen\","
+      },
+      {
+        "line": 192,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🤖 KI verarbeitet Anfrage...",
+        "snippet": "text=\"🤖 KI verarbeitet Anfrage...\","
+      },
+      {
+        "line": 202,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Bitte einen Moment gedulden — Modell generiert Antwort",
+        "snippet": "text=\"Bitte einen Moment gedulden — Modell generiert Antwort\","
+      },
+      {
+        "line": 352,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🔄 Zusammenfassung neu generieren",
+        "snippet": "text=\"🔄 Zusammenfassung neu generieren\","
+      },
+      {
+        "line": 363,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "📋 In Zwischenablage kopieren",
+        "snippet": "text=\"📋 In Zwischenablage kopieren\","
+      },
+      {
+        "line": 373,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "📌 In Fall-Zeitleiste einfügen",
+        "snippet": "text=\"📌 In Fall-Zeitleiste einfügen\","
+      },
+      {
+        "line": 444,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:",
+        "snippet": "text=\"💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:\","
+      },
+      {
+        "line": 450,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🔄 Lösungssuche erneut ausführen",
+        "snippet": "text=\"🔄 Lösungssuche erneut ausführen\","
+      },
+      {
+        "line": 510,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🔄 Antwort-Entwurf generieren",
+        "snippet": "text=\"🔄 Antwort-Entwurf generieren\","
+      },
+      {
+        "line": 522,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "✉ In E-Mail-Entwurf öffnen",
+        "snippet": "text=\"✉ In E-Mail-Entwurf öffnen\","
+      }
+    ]
+  },
+  "ui/dialogs/calendar_export_dialog.py": {
+    "loc": 153,
+    "entries_count": 2,
+    "entries": [
+      {
+        "line": 75,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Kalender-Beschreibung / Notiz:",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Kalender-Beschreibung / Notiz:\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", pady=(2, 2))"
+      },
+      {
+        "line": 140,
+        "category": "Dialog / FileDialog",
+        "target": "asksaveasfilename.title",
+        "value": "iCalendar-Datei speichern",
+        "snippet": "title=\"iCalendar-Datei speichern\","
+      }
+    ]
+  },
+  "ui/dialogs/case_print_dialog.py": {
+    "loc": 289,
+    "entries_count": 9,
+    "entries": [
+      {
+        "line": 48,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:\").pack(anchor=\"w\", pady=(0, 8))"
+      },
+      {
+        "line": 54,
+        "category": "UI Widget",
+        "target": "CTkCheckBox.text",
+        "value": "Praxis & Kundendaten",
+        "snippet": "ctk.CTkCheckBox(opts_frame, text=\"Praxis & Kundendaten\", variable=self.include_customer_var).pack(side=\"left\", padx=(0, 12))"
+      },
+      {
+        "line": 55,
+        "category": "UI Widget",
+        "target": "CTkCheckBox.text",
+        "value": "Formularfelder",
+        "snippet": "ctk.CTkCheckBox(opts_frame, text=\"Formularfelder\", variable=self.include_fields_var).pack(side=\"left\", padx=(0, 12))"
+      },
+      {
+        "line": 56,
+        "category": "UI Widget",
+        "target": "CTkCheckBox.text",
+        "value": "Bilder & Anhänge am Ende",
+        "snippet": "ctk.CTkCheckBox(opts_frame, text=\"Bilder & Anhänge am Ende\", variable=self.include_attachments_var).pack(side=\"left\")"
+      },
+      {
+        "line": 58,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(8, 4))"
+      },
+      {
+        "line": 64,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Keine Notizen in der Zeitleiste.",
+        "snippet": "ctk.CTkLabel(scroll, text=\"Keine Notizen in der Zeitleiste.\").pack(pady=10)"
+      },
+      {
+        "line": 100,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🌐 HTML-Bericht",
+        "snippet": "text=\"🌐 HTML-Bericht\","
+      },
+      {
+        "line": 109,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "💾 Speichern...",
+        "snippet": "text=\"💾 Speichern...\","
+      },
+      {
+        "line": 277,
+        "category": "Dialog / FileDialog",
+        "target": "asksaveasfilename.title",
+        "value": "Fallbericht speichern",
+        "snippet": "title=\"Fallbericht speichern\","
+      }
+    ]
+  },
+  "ui/dialogs/cobra_import_dialog.py": {
+    "loc": 243,
+    "entries_count": 12,
+    "entries": [
+      {
+        "line": 46,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🐍 Cobra CRM Praxen-Import Assistent",
+        "snippet": "ctk.CTkLabel(hdr_frame, text=\"🐍 Cobra CRM Praxen-Import Assistent\", font=ctk.CTkFont(size=16, weight=\"bold\")).pack(anchor=\"w\")"
+      },
+      {
+        "line": 47,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).",
+        "snippet": "ctk.CTkLabel(hdr_frame, text=\"Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).\", font=ctk.CTkFont(size=11), text_color=\"gray\").pack(anchor=\"w\")"
+      },
+      {
+        "line": 53,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "1. Cobra Export-Datei auswählen:",
+        "snippet": "ctk.CTkLabel(file_box, text=\"1. Cobra Export-Datei auswählen:\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", padx=10, pady=(8, 4))"
+      },
+      {
+        "line": 58,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Datei auswählen (*.csv, *.txt, *.json)...",
+        "snippet": "self.file_entry = ctk.CTkEntry(f_row, placeholder_text=\"Datei auswählen (*.csv, *.txt, *.json)...\")"
+      },
+      {
+        "line": 61,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "📁 Durchsuchen...",
+        "snippet": "ctk.CTkButton(f_row, text=\"📁 Durchsuchen...\", width=130, command=self.on_browse_file).pack(side=\"right\")"
+      },
+      {
+        "line": 70,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "2. Cobra Spaltenzuordnung (Feld-Mapper):",
+        "snippet": "ctk.CTkLabel(self.content_scroll, text=\"2. Cobra Spaltenzuordnung (Feld-Mapper):\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", pady=(4, 6))"
+      },
+      {
+        "line": 76,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "3. Konfliktbehandlung für bestehende Praxen:",
+        "snippet": "ctk.CTkLabel(self.content_scroll, text=\"3. Konfliktbehandlung für bestehende Praxen:\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", pady=(8, 4))"
+      },
+      {
+        "line": 80,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Bestehende Praxen aktualisieren (Update)",
+        "snippet": "values=[\"Bestehende Praxen aktualisieren (Update)\", \"Bestehende überspringen (Skip)\", \"Alle als neu anlegen\"],"
+      },
+      {
+        "line": 80,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Bestehende überspringen (Skip)",
+        "snippet": "values=[\"Bestehende Praxen aktualisieren (Update)\", \"Bestehende überspringen (Skip)\", \"Alle als neu anlegen\"],"
+      },
+      {
+        "line": 80,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Alle als neu anlegen",
+        "snippet": "values=[\"Bestehende Praxen aktualisieren (Update)\", \"Bestehende überspringen (Skip)\", \"Alle als neu anlegen\"],"
+      },
+      {
+        "line": 86,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Bitte wählen Sie eine Export-Datei aus.",
+        "snippet": "self.summary_lbl = ctk.CTkLabel(self.content_scroll, text=\"Bitte wählen Sie eine Export-Datei aus.\", font=ctk.CTkFont(size=11), text_color=\"dodgerblue\", anchor=\"w\")"
+      },
+      {
+        "line": 112,
+        "category": "Dialog / FileDialog",
+        "target": "askopenfilename.title",
+        "value": "Cobra CRM Export-Datei auswählen",
+        "snippet": "title=\"Cobra CRM Export-Datei auswählen\","
+      }
+    ]
+  },
+  "ui/dialogs/colleague_management_dialog.py": {
+    "loc": 300,
+    "entries_count": 9,
+    "entries": [
+      {
+        "line": 100,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. mmueller",
+        "snippet": "self.username_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. mmueller\")"
+      },
+      {
+        "line": 104,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Max Müller",
+        "snippet": "self.name_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. Max Müller\")"
+      },
+      {
+        "line": 113,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. 4012",
+        "snippet": "self.ext_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. 4012\")"
+      },
+      {
+        "line": 117,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. m.mueller@praxis.de",
+        "snippet": "self.email_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. m.mueller@praxis.de\")"
+      },
+      {
+        "line": 121,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. 0170 1234567",
+        "snippet": "self.mobile_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. 0170 1234567\")"
+      },
+      {
+        "line": 125,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Zuständig für PVS-Schnittstellen...",
+        "snippet": "self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. Zuständig für PVS-Schnittstellen...\")"
+      },
+      {
+        "line": 131,
+        "category": "UI Widget",
+        "target": "CTkCheckBox.text",
+        "value": "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)",
+        "snippet": "form_scroll, text=\"⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)\", variable=self.is_absent_var"
+      },
+      {
+        "line": 135,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...",
+        "snippet": "self.absence_reason_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...\")"
+      },
+      {
+        "line": 184,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Keine Einträge gefunden.",
+        "snippet": "ctk.CTkLabel(self.list_scroll, text=\"Keine Einträge gefunden.\", text_color=\"gray\").pack(pady=20)"
+      }
+    ]
+  },
+  "ui/dialogs/convert_schema_dialog.py": {
+    "loc": 180,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/customer_form_builders.py": {
+    "loc": 363,
+    "entries_count": 55,
+    "entries": [
+      {
+        "line": 72,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Name (A-Z)",
+        "snippet": "values=[\"Name (A-Z)\", \"Praxisnummer / ID\", \"Zeit seit letztem Kontakt\"],"
+      },
+      {
+        "line": 72,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Praxisnummer / ID",
+        "snippet": "values=[\"Name (A-Z)\", \"Praxisnummer / ID\", \"Zeit seit letztem Kontakt\"],"
+      },
+      {
+        "line": 72,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Zeit seit letztem Kontakt",
+        "snippet": "values=[\"Name (A-Z)\", \"Praxisnummer / ID\", \"Zeit seit letztem Kontakt\"],"
+      },
+      {
+        "line": 82,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "↑ Aufst.",
+        "snippet": "text=\"↑ Aufst.\","
+      },
+      {
+        "line": 128,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "CUST-...",
+        "snippet": "self.cust_id_entry = ctk.CTkEntry(self.right_frame, placeholder_text=\"CUST-...\")"
+      },
+      {
+        "line": 138,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Hausarztpraxis Dr. Med. Weber",
+        "snippet": "self.name_entry = ctk.CTkEntry(name_left, placeholder_text=\"z.B. Hausarztpraxis Dr. Med. Weber\")"
+      },
+      {
+        "line": 143,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Praxisname (Alt):",
+        "snippet": "ctk.CTkLabel(name_right, text=\"Praxisname (Alt):\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 144,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Ehem. Praxis Dr. Alt",
+        "snippet": "self.name_old_entry = ctk.CTkEntry(name_right, placeholder_text=\"z.B. Ehem. Praxis Dr. Alt\")"
+      },
+      {
+        "line": 153,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Anrede:",
+        "snippet": "ctk.CTkLabel(salut_col, text=\"Anrede:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 154,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Frau / Herr / Dr.",
+        "snippet": "self.salut_entry = ctk.CTkEntry(salut_col, placeholder_text=\"Frau / Herr / Dr.\", width=95)"
+      },
+      {
+        "line": 159,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Vorname:",
+        "snippet": "ctk.CTkLabel(fname_col, text=\"Vorname:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 160,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Vorname...",
+        "snippet": "self.fname_entry = ctk.CTkEntry(fname_col, placeholder_text=\"Vorname...\")"
+      },
+      {
+        "line": 165,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Nachname:",
+        "snippet": "ctk.CTkLabel(lname_col, text=\"Nachname:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 166,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Nachname...",
+        "snippet": "self.lname_entry = ctk.CTkEntry(lname_col, placeholder_text=\"Nachname...\")"
+      },
+      {
+        "line": 175,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🏠 Straße & Hausnr.:",
+        "snippet": "ctk.CTkLabel(street_col, text=\"🏠 Straße & Hausnr.:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 176,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Hauptstr. 10",
+        "snippet": "self.street_entry = ctk.CTkEntry(street_col, placeholder_text=\"z.B. Hauptstr. 10\")"
+      },
+      {
+        "line": 181,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "PLZ:",
+        "snippet": "ctk.CTkLabel(zip_col, text=\"PLZ:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 187,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Ort:",
+        "snippet": "ctk.CTkLabel(city_col, text=\"Ort:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 188,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Ort...",
+        "snippet": "self.city_entry = ctk.CTkEntry(city_col, placeholder_text=\"Ort...\")"
+      },
+      {
+        "line": 195,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "📞 Telefonnummern (Cobra Export)",
+        "snippet": "ctk.CTkLabel(phone_box, text=\"📞 Telefonnummern (Cobra Export)\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", padx=10, pady=(6, 4))"
+      },
+      {
+        "line": 202,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon Hauptnr.:",
+        "snippet": "ctk.CTkLabel(p_main_col, text=\"Telefon Hauptnr.:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 203,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "0711-...",
+        "snippet": "self.phone_m_entry = ctk.CTkEntry(p_main_col, placeholder_text=\"0711-...\")"
+      },
+      {
+        "line": 208,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon direkt:",
+        "snippet": "ctk.CTkLabel(p_dir_col, text=\"Telefon direkt:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 209,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Durchwahl...",
+        "snippet": "self.phone_dir_entry = ctk.CTkEntry(p_dir_col, placeholder_text=\"Durchwahl...\")"
+      },
+      {
+        "line": 214,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon privat:",
+        "snippet": "ctk.CTkLabel(p_priv_col, text=\"Telefon privat:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 215,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Privat...",
+        "snippet": "self.phone_priv_entry = ctk.CTkEntry(p_priv_col, placeholder_text=\"Privat...\")"
+      },
+      {
+        "line": 223,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon 2:",
+        "snippet": "ctk.CTkLabel(p2_col, text=\"Telefon 2:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 224,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Zweitnr....",
+        "snippet": "self.phone2_entry = ctk.CTkEntry(p2_col, placeholder_text=\"Zweitnr....\")"
+      },
+      {
+        "line": 229,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon 3:",
+        "snippet": "ctk.CTkLabel(p3_col, text=\"Telefon 3:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 230,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Drittnr....",
+        "snippet": "self.phone3_entry = ctk.CTkEntry(p3_col, placeholder_text=\"Drittnr....\")"
+      },
+      {
+        "line": 235,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Mobil:",
+        "snippet": "ctk.CTkLabel(mob_col, text=\"Mobil:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 236,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "0171-...",
+        "snippet": "self.mobile_entry = ctk.CTkEntry(mob_col, placeholder_text=\"0171-...\")"
+      },
+      {
+        "line": 241,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Mobil privat:",
+        "snippet": "ctk.CTkLabel(mob_priv_col, text=\"Mobil privat:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 242,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Mobil privat...",
+        "snippet": "self.mobile_priv_entry = ctk.CTkEntry(mob_priv_col, placeholder_text=\"Mobil privat...\")"
+      },
+      {
+        "line": 251,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "✉ E-Mail 2:",
+        "snippet": "ctk.CTkLabel(em2_col, text=\"✉ E-Mail 2:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 252,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "zweit-email@praxis.de",
+        "snippet": "self.email2_entry = ctk.CTkEntry(em2_col, placeholder_text=\"zweit-email@praxis.de\")"
+      },
+      {
+        "line": 257,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "✉ E-Mail 3:",
+        "snippet": "ctk.CTkLabel(em3_col, text=\"✉ E-Mail 3:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 258,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "dritt-email@praxis.de",
+        "snippet": "self.email3_entry = ctk.CTkEntry(em3_col, placeholder_text=\"dritt-email@praxis.de\")"
+      },
+      {
+        "line": 269,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🌐 Webseite:",
+        "snippet": "ctk.CTkLabel(web_col, text=\"🌐 Webseite:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 274,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "https://praxis-beispiel.de",
+        "snippet": "self.website_entry = ctk.CTkEntry(web_sub, placeholder_text=\"https://praxis-beispiel.de\")"
+      },
+      {
+        "line": 279,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🔗 Öffnen",
+        "snippet": "text=\"🔗 Öffnen\","
+      },
+      {
+        "line": 290,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🖥 VM-Nr.:",
+        "snippet": "ctk.CTkLabel(vm_col, text=\"🖥 VM-Nr.:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 297,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🔢 Instanz-Nr.:",
+        "snippet": "ctk.CTkLabel(inst_col, text=\"🔢 Instanz-Nr.:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 304,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🏷 DSC:",
+        "snippet": "ctk.CTkLabel(dsc_col, text=\"🏷 DSC:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 305,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "DSC...",
+        "snippet": "self.dsc_entry = ctk.CTkEntry(dsc_col, placeholder_text=\"DSC...\", width=90)"
+      },
+      {
+        "line": 310,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🏷 DSCNEU:",
+        "snippet": "ctk.CTkLabel(dsc_neu_col, text=\"🏷 DSCNEU:\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 311,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "DSCNEU...",
+        "snippet": "self.dsc_neu_entry = ctk.CTkEntry(dsc_neu_col, placeholder_text=\"DSCNEU...\", width=90)"
+      },
+      {
+        "line": 318,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "👥 Weitere Ansprechpartner (1 Name pro Zeile):",
+        "snippet": "ctk.CTkLabel(add_contact_box, text=\"👥 Weitere Ansprechpartner (1 Name pro Zeile):\", font=ctk.CTkFont(weight=\"bold\")).pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 325,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "📝 Allgemeine Notizen:",
+        "snippet": "ctk.CTkLabel(notes_row, text=\"📝 Allgemeine Notizen:\").pack(anchor=\"w\", pady=(0, 2))"
+      },
+      {
+        "line": 326,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Erreichbarkeit, Wünsche...",
+        "snippet": "self.notes_entry = ctk.CTkEntry(notes_row, placeholder_text=\"z.B. Erreichbarkeit, Wünsche...\")"
+      },
+      {
+        "line": 331,
+        "category": "UI Widget",
+        "target": "CTkCheckBox.text",
+        "value": "⭐ VIP-Kunde (erhöht den Dringlichkeits-Score um +30)",
+        "snippet": "self.vip_chk = ctk.CTkCheckBox(self.right_frame, text=\"⭐ VIP-Kunde (erhöht den Dringlichkeits-Score um +30)\", variable=self.vip_var)"
+      },
+      {
+        "line": 339,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "⚡ Praxisspezifische KI-Regeln (haben VORRANG vor Basis-Regeln):",
+        "snippet": "text=\"⚡ Praxisspezifische KI-Regeln (haben VORRANG vor Basis-Regeln):\","
+      },
+      {
+        "line": 344,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "1 Regel pro Zeile (z. B. 'Duzen erwünscht (Herr Schmidt)', 'Betreff mit [SCHMIDT] beginnen')",
+        "snippet": "text=\"1 Regel pro Zeile (z. B. 'Duzen erwünscht (Herr Schmidt)', 'Betreff mit [SCHMIDT] beginnen')\","
+      },
+      {
+        "line": 356,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "👥 Ansprechpartner & Kontakte",
+        "snippet": "ctk.CTkLabel(contacts_header_frame, text=\"👥 Ansprechpartner & Kontakte\", font=ctk.CTkFont(size=14, weight=\"bold\")).pack(side=\"left\")"
+      },
+      {
+        "line": 357,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "+ Kontakt hinzufügen",
+        "snippet": "add_contact_btn = ctk.CTkButton(contacts_header_frame, text=\"+ Kontakt hinzufügen\", command=lambda: self.add_contact_row(), fg_color=\"gray30\", width=140)"
+      }
+    ]
+  },
+  "ui/dialogs/customer_management_dialog.py": {
+    "loc": 515,
+    "entries_count": 12,
+    "entries": [
+      {
+        "line": 81,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🗑 Entfernen",
+        "snippet": "text=\"🗑 Entfernen\","
+      },
+      {
+        "line": 96,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Name *:",
+        "snippet": "ctk.CTkLabel(left_r1, text=\"Name *:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 97,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Dr. Hans Weber",
+        "snippet": "name_entry = ctk.CTkEntry(left_r1, placeholder_text=\"z.B. Dr. Hans Weber\")"
+      },
+      {
+        "line": 104,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Rolle / Funktion:",
+        "snippet": "ctk.CTkLabel(right_r1, text=\"Rolle / Funktion:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 105,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Praxisinhaber, Abrechnung...",
+        "snippet": "role_entry = ctk.CTkEntry(right_r1, placeholder_text=\"z.B. Praxisinhaber, Abrechnung...\")"
+      },
+      {
+        "line": 116,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "E-Mail:",
+        "snippet": "ctk.CTkLabel(left_r2, text=\"E-Mail:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 117,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "weber@praxis.de",
+        "snippet": "email_entry = ctk.CTkEntry(left_r2, placeholder_text=\"weber@praxis.de\")"
+      },
+      {
+        "line": 124,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Telefon:",
+        "snippet": "ctk.CTkLabel(right_r2, text=\"Telefon:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 125,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "030 / 1234567",
+        "snippet": "phone_entry = ctk.CTkEntry(right_r2, placeholder_text=\"030 / 1234567\")"
+      },
+      {
+        "line": 133,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Notiz:",
+        "snippet": "ctk.CTkLabel(r3, text=\"Notiz:\").pack(anchor=\"w\", pady=(0, 1))"
+      },
+      {
+        "line": 134,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Erreichbar Mo-Do Vormittag",
+        "snippet": "note_entry = ctk.CTkEntry(r3, placeholder_text=\"z.B. Erreichbar Mo-Do Vormittag\")"
+      },
+      {
+        "line": 216,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Keine Praxen gefunden.",
+        "snippet": "ctk.CTkLabel(self.list_scroll, text=\"Keine Praxen gefunden.\", text_color=\"gray\").pack(pady=20)"
+      }
+    ]
+  },
+  "ui/dialogs/email_calendar_dialog.py": {
+    "loc": 218,
+    "entries_count": 7,
+    "entries": [
+      {
+        "line": 71,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Empfänger (E-Mail):",
+        "snippet": "ctk.CTkLabel(content_scroll, text=\"Empfänger (E-Mail):\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", pady=(2, 1))"
+      },
+      {
+        "line": 72,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "praxis@beispiel.de...",
+        "snippet": "self.to_entry = ctk.CTkEntry(content_scroll, placeholder_text=\"praxis@beispiel.de...\")"
+      },
+      {
+        "line": 78,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Betreff:",
+        "snippet": "ctk.CTkLabel(content_scroll, text=\"Betreff:\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(anchor=\"w\", pady=(2, 1))"
+      },
+      {
+        "line": 79,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Betreff eingeben...",
+        "snippet": "self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=\"Betreff eingeben...\")"
+      },
+      {
+        "line": 88,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "E-Mail Nachrichtentext:",
+        "snippet": "ctk.CTkLabel(body_hdr_row, text=\"E-Mail Nachrichtentext:\", font=ctk.CTkFont(size=12, weight=\"bold\")).pack(side=\"left\")"
+      },
+      {
+        "line": 93,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🧩 Textbaustein",
+        "snippet": "text=\"🧩 Textbaustein\","
+      },
+      {
+        "line": 207,
+        "category": "Dialog / FileDialog",
+        "target": "asksaveasfilename.title",
+        "value": "Kalenderdatei (.ics) speichern",
+        "snippet": "title=\"Kalenderdatei (.ics) speichern\","
+      }
+    ]
+  },
+  "ui/dialogs/email_draft_dialog.py": {
+    "loc": 731,
+    "entries_count": 7,
+    "entries": [
+      {
+        "line": 151,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Prüfe KI-Status...",
+        "snippet": "text=\"Prüfe KI-Status...\","
+      },
+      {
+        "line": 184,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "praxis@beispiel.de oder Name / Praxis eingeben...",
+        "snippet": "placeholder_text=\"praxis@beispiel.de oder Name / Praxis eingeben...\""
+      },
+      {
+        "line": 194,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "📇 Praxiskartei ▾",
+        "snippet": "text=\"📇 Praxiskartei ▾\","
+      },
+      {
+        "line": 219,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):",
+        "snippet": "text=\"🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):\","
+      },
+      {
+        "line": 246,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Betreff eingeben...",
+        "snippet": "self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=\"Betreff eingeben...\")"
+      },
+      {
+        "line": 260,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🧩 Textbaustein",
+        "snippet": "text=\"🧩 Textbaustein\","
+      },
+      {
+        "line": 402,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Keine passenden Praxiskontakte gefunden.",
+        "snippet": "text=\"Keine passenden Praxiskontakte gefunden.\","
+      }
+    ]
+  },
+  "ui/dialogs/email_import_dialog.py": {
+    "loc": 258,
+    "entries_count": 2,
+    "entries": [
+      {
+        "line": 212,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "➕ Als neuen Fall anlegen",
+        "snippet": "text=\"➕ Als neuen Fall anlegen\","
+      },
+      {
+        "line": 221,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🗑 Ignorieren",
+        "snippet": "text=\"🗑 Ignorieren\","
+      }
+    ]
+  },
+  "ui/dialogs/export_dialog.py": {
+    "loc": 249,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/followup_dialog.py": {
+    "loc": 222,
+    "entries_count": 2,
+    "entries": [
+      {
+        "line": 22,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "🔔 Wiedervorlage & Nachfrage-Erinnerung",
+        "snippet": "self.title(\"🔔 Wiedervorlage & Nachfrage-Erinnerung\")"
+      },
+      {
+        "line": 131,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Beim Entwickler nach dem Stand fragen...",
+        "snippet": "self.note_entry = ctk.CTkEntry(main_frame, placeholder_text=\"z. B. Beim Entwickler nach dem Stand fragen...\")"
+      }
+    ]
+  },
+  "ui/dialogs/followup_flyout_dialog.py": {
+    "loc": 181,
+    "entries_count": 6,
+    "entries": [
+      {
+        "line": 84,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "+ 1 Std.",
+        "snippet": "ctk.CTkButton(act_row1, text=\"+ 1 Std.\", width=80, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.snooze_hours(c, 1)).pack(side=\"left\", padx=2)"
+      },
+      {
+        "line": 85,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "+ 2 Std.",
+        "snippet": "ctk.CTkButton(act_row1, text=\"+ 2 Std.\", width=80, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.snooze_hours(c, 2)).pack(side=\"left\", padx=2)"
+      },
+      {
+        "line": 86,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "Heute 16:30",
+        "snippet": "ctk.CTkButton(act_row1, text=\"Heute 16:30\", width=110, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.set_preset_today_1630(c)).pack(side=\"left\", padx=2)"
+      },
+      {
+        "line": 94,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "Morgen 08:00",
+        "snippet": "ctk.CTkButton(act_row2, text=\"Morgen 08:00\", width=120, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.set_preset_tomorrow_8am(c)).pack(side=\"left\", padx=2)"
+      },
+      {
+        "line": 95,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "+ 1 Tag",
+        "snippet": "ctk.CTkButton(act_row2, text=\"+ 1 Tag\", width=90, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.snooze_days(c, 1)).pack(side=\"left\", padx=2)"
+      },
+      {
+        "line": 96,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "+ 1 Woche",
+        "snippet": "ctk.CTkButton(act_row2, text=\"+ 1 Woche\", width=105, fg_color=(\"gray75\", \"gray30\"), hover_color=(\"gray65\", \"gray40\"), command=lambda c=case: self.snooze_days(c, 7)).pack(side=\"left\", padx=2)"
+      }
+    ]
+  },
+  "ui/dialogs/handover_dialog.py": {
+    "loc": 175,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/help_dialog.py": {
+    "loc": 779,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/new_case_dialog.py": {
+    "loc": 450,
+    "entries_count": 4,
+    "entries": [
+      {
+        "line": 32,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Praxis Dr. Weber",
+        "snippet": "self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=\"z.B. Praxis Dr. Weber\")"
+      },
+      {
+        "line": 36,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. Dr. Hans Weber",
+        "snippet": "self.contact_entry = ctk.CTkEntry(main_frame, placeholder_text=\"z.B. Dr. Hans Weber\")"
+      },
+      {
+        "line": 40,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "030 / 123456",
+        "snippet": "self.phone_entry = ctk.CTkEntry(main_frame, placeholder_text=\"030 / 123456\")"
+      },
+      {
+        "line": 173,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Zuzahlungsdatei lässt sich nicht erzeugen",
+        "snippet": "self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text=\"z. B. Zuzahlungsdatei lässt sich nicht erzeugen\")"
+      }
+    ]
+  },
+  "ui/dialogs/p2p_diff_dialog.py": {
+    "loc": 165,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/profile_settings_ai_tab.py": {
+    "loc": 735,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 128,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "AIzaSy...",
+        "snippet": "placeholder_text=\"AIzaSy...\","
+      }
+    ]
+  },
+  "ui/dialogs/profile_settings_dialog.py": {
+    "loc": 930,
+    "entries_count": 19,
+    "entries": [
+      {
+        "line": 253,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Support, Entwicklung, Technik",
+        "snippet": "self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text=\"z. B. Support, Entwicklung, Technik\")"
+      },
+      {
+        "line": 258,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z.B. 4012",
+        "snippet": "self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text=\"z.B. 4012\")"
+      },
+      {
+        "line": 263,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "beispiel@support.de",
+        "snippet": "self.user_email_entry = ctk.CTkEntry(self.tab_user, placeholder_text=\"beispiel@support.de\")"
+      },
+      {
+        "line": 268,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "0170 / 1234567",
+        "snippet": "self.user_mobile_entry = ctk.CTkEntry(self.tab_user, placeholder_text=\"0170 / 1234567\")"
+      },
+      {
+        "line": 273,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)",
+        "snippet": "self.user_sig_entry = ctk.CTkEntry(self.tab_user, placeholder_text=\"z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)\")"
+      },
+      {
+        "line": 279,
+        "category": "UI Widget",
+        "target": "CTkInputDialog.text",
+        "value": "Geben Sie den Namen des neuen Mitarbeiters ein:",
+        "snippet": "text=\"Geben Sie den Namen des neuen Mitarbeiters ein:\","
+      },
+      {
+        "line": 402,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Dark",
+        "snippet": "self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=[\"Dark\", \"Light\", \"System\"])"
+      },
+      {
+        "line": 402,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "Light",
+        "snippet": "self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=[\"Dark\", \"Light\", \"System\"])"
+      },
+      {
+        "line": 402,
+        "category": "UI Widget List Option",
+        "target": "CTkOptionMenu.values[]",
+        "value": "System",
+        "snippet": "self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=[\"Dark\", \"Light\", \"System\"])"
+      },
+      {
+        "line": 496,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Pfad zum Datenordner...",
+        "snippet": "self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text=\"Pfad zum Datenordner...\")"
+      },
+      {
+        "line": 542,
+        "category": "Dialog / FileDialog",
+        "target": "askdirectory.title",
+        "value": "Datenordner auswählen",
+        "snippet": "chosen = filedialog.askdirectory(title=\"Datenordner auswählen\", initialdir=self.ws_entry.get().strip() or None)"
+      },
+      {
+        "line": 549,
+        "category": "Dialog / FileDialog",
+        "target": "askopenfilename.title",
+        "value": "Datei auswählen",
+        "snippet": "chosen = filedialog.askopenfilename(title=\"Datei auswählen\", filetypes=[(\"Datendatei\", file_pattern), (\"Alle Dateien\", \"*.*\")])"
+      },
+      {
+        "line": 565,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "https://wiki.meinepraxis.de/api",
+        "snippet": "self.wiki_url_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=\"https://wiki.meinepraxis.de/api\")"
+      },
+      {
+        "line": 570,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Token ID",
+        "snippet": "self.wiki_token_id_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=\"Token ID\")"
+      },
+      {
+        "line": 575,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Token Secret",
+        "snippet": "self.wiki_token_secret_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=\"Token Secret\", show=\"*\")"
+      },
+      {
+        "line": 656,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Prioritäts-Scoring Punkte",
+        "snippet": "ctk.CTkLabel(scroll, text=\"Prioritäts-Scoring Punkte\", font=ctk.CTkFont(size=14, weight=\"bold\")).pack(anchor=\"w\", pady=(15, 5))"
+      },
+      {
+        "line": 660,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "VIP-Bonus (Punkte):",
+        "snippet": "ctk.CTkLabel(row4, text=\"VIP-Bonus (Punkte):\").pack(side=\"left\")"
+      },
+      {
+        "line": 874,
+        "category": "Dialog / FileDialog",
+        "target": "asksaveasfilename.title",
+        "value": "Datensicherung als ZIP speichern",
+        "snippet": "title=\"Datensicherung als ZIP speichern\","
+      },
+      {
+        "line": 897,
+        "category": "Dialog / FileDialog",
+        "target": "askopenfilename.title",
+        "value": "Datensicherung (ZIP-Datei) auswählen",
+        "snippet": "title=\"Datensicherung (ZIP-Datei) auswählen\","
+      }
+    ]
+  },
+  "ui/dialogs/schema_builder_dialog.py": {
+    "loc": 360,
+    "entries_count": 19,
+    "entries": [
+      {
+        "line": 13,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "🆕 Neues Formular (Schema) erstellen",
+        "snippet": "self.title(\"🆕 Neues Formular (Schema) erstellen\")"
+      },
+      {
+        "line": 24,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Neues Formular-Schema definieren",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Neues Formular-Schema definieren\", font=ctk.CTkFont(size=16, weight=\"bold\")).pack(anchor=\"w\", pady=(0, 10))"
+      },
+      {
+        "line": 26,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Anzeigename (Titel) *:",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Anzeigename (Titel) *:\").pack(anchor=\"w\", pady=(2, 0))"
+      },
+      {
+        "line": 27,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Abrechnung & Tarife",
+        "snippet": "self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=\"z. B. Abrechnung & Tarife\")"
+      },
+      {
+        "line": 30,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Schema-ID (optional):",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Schema-ID (optional):\").pack(anchor=\"w\", pady=(2, 0))"
+      },
+      {
+        "line": 31,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. schema_abrechnung",
+        "snippet": "self.id_entry = ctk.CTkEntry(main_frame, placeholder_text=\"z. B. schema_abrechnung\")"
+      },
+      {
+        "line": 34,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Beschreibung:",
+        "snippet": "ctk.CTkLabel(main_frame, text=\"Beschreibung:\").pack(anchor=\"w\", pady=(2, 0))"
+      },
+      {
+        "line": 35,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Optionale Beschreibung des Formulars",
+        "snippet": "self.desc_entry = ctk.CTkEntry(main_frame, placeholder_text=\"Optionale Beschreibung des Formulars\")"
+      },
+      {
+        "line": 82,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "In-App Formular-Baukasten (Schemata verwalten)",
+        "snippet": "self.title(\"In-App Formular-Baukasten (Schemata verwalten)\")"
+      },
+      {
+        "line": 107,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Formular auswählen:",
+        "snippet": "ctk.CTkLabel(top_frame, text=\"Formular auswählen:\", font=ctk.CTkFont(size=14, weight=\"bold\")).pack(side=\"left\", padx=(0, 10))"
+      },
+      {
+        "line": 175,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "↳ Bedingte Logik (If/Else):",
+        "snippet": "ctk.CTkLabel(v2_row, text=\"↳ Bedingte Logik (If/Else):\", font=ctk.CTkFont(size=11)).pack(side=\"left\", padx=(0, 4))"
+      },
+      {
+        "line": 177,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Abhängig von Feld-ID",
+        "snippet": "self.new_dep_id_entry = ctk.CTkEntry(v2_row, placeholder_text=\"Abhängig von Feld-ID\", width=140)"
+      },
+      {
+        "line": 180,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Bei Wert (z. B. Sonstiges)",
+        "snippet": "self.new_dep_val_entry = ctk.CTkEntry(v2_row, placeholder_text=\"Bei Wert (z. B. Sonstiges)\", width=140)"
+      },
+      {
+        "line": 183,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "↳ Dateitypen:",
+        "snippet": "ctk.CTkLabel(v2_row, text=\"↳ Dateitypen:\", font=ctk.CTkFont(size=11)).pack(side=\"left\", padx=(0, 4))"
+      },
+      {
+        "line": 184,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": ".pdf, .log, .png",
+        "snippet": "self.new_exts_entry = ctk.CTkEntry(v2_row, placeholder_text=\".pdf, .log, .png\", width=140)"
+      },
+      {
+        "line": 297,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▲",
+        "snippet": "up_btn = ctk.CTkButton(f_frame, text=\"▲\", width=30, command=lambda fid=f.field_id: self.on_move(fid, \"up\"))"
+      },
+      {
+        "line": 300,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▼",
+        "snippet": "down_btn = ctk.CTkButton(f_frame, text=\"▼\", width=30, command=lambda fid=f.field_id: self.on_move(fid, \"down\"))"
+      },
+      {
+        "line": 303,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "Pflicht +/-",
+        "snippet": "req_btn = ctk.CTkButton(f_frame, text=\"Pflicht +/-\", width=80, command=lambda fid=f.field_id: self.on_toggle(fid))"
+      },
+      {
+        "line": 306,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "✕",
+        "snippet": "del_btn = ctk.CTkButton(f_frame, text=\"✕\", width=30, fg_color=\"red\", hover_color=\"darkred\", command=lambda fid=f.field_id: self.on_delete(fid))"
+      }
+    ]
+  },
+  "ui/dialogs/snippet_management_dialog.py": {
+    "loc": 257,
+    "entries_count": 4,
+    "entries": [
+      {
+        "line": 70,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. 📸 Rückfrage: Screenshots",
+        "snippet": "self.title_entry = ctk.CTkEntry(self.form_box, placeholder_text=\"z. B. 📸 Rückfrage: Screenshots\")"
+      },
+      {
+        "line": 74,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. Rückfrage, Anleitung, SQL",
+        "snippet": "self.category_entry = ctk.CTkEntry(self.form_box, placeholder_text=\"z. B. Rückfrage, Anleitung, SQL\")"
+      },
+      {
+        "line": 82,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. fehler, sql, anleitung",
+        "snippet": "self.tags_entry = ctk.CTkEntry(self.form_box, placeholder_text=\"z. B. fehler, sql, anleitung\")"
+      },
+      {
+        "line": 89,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. <Control-Alt-1>",
+        "snippet": "self.shortcut_entry = ctk.CTkEntry(sc_row, placeholder_text=\"z. B. <Control-Alt-1>\")"
+      }
+    ]
+  },
+  "ui/dialogs/snippet_picker_dialog.py": {
+    "loc": 152,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 23,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "🧩 Textbaustein auswählen & einfügen",
+        "snippet": "self.title(\"🧩 Textbaustein auswählen & einfügen\")"
+      }
+    ]
+  },
+  "ui/dialogs/tag_management_dialog.py": {
+    "loc": 240,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/dialogs/template_manager_dialog.py": {
+    "loc": 343,
+    "entries_count": 13,
+    "entries": [
+      {
+        "line": 57,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Vorlage-ID *:",
+        "snippet": "ctk.CTkLabel(row1, text=\"Vorlage-ID *:\", width=130, anchor=\"w\").pack(side=\"left\")"
+      },
+      {
+        "line": 58,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. gitlab_dev_ticket",
+        "snippet": "self.id_entry = ctk.CTkEntry(row1, placeholder_text=\"z. B. gitlab_dev_ticket\")"
+      },
+      {
+        "line": 68,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Anzeigename *:",
+        "snippet": "ctk.CTkLabel(row2, text=\"Anzeigename *:\", width=130, anchor=\"w\").pack(side=\"left\")"
+      },
+      {
+        "line": 69,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "z. B. GitLab / Dev-Ticket",
+        "snippet": "self.name_entry = ctk.CTkEntry(row2, placeholder_text=\"z. B. GitLab / Dev-Ticket\")"
+      },
+      {
+        "line": 78,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Beschreibung:",
+        "snippet": "ctk.CTkLabel(row3, text=\"Beschreibung:\", width=130, anchor=\"w\").pack(side=\"left\")"
+      },
+      {
+        "line": 79,
+        "category": "UI Widget",
+        "target": "CTkEntry.placeholder_text",
+        "value": "Kurze Beschreibung des Formats...",
+        "snippet": "self.desc_entry = ctk.CTkEntry(row3, placeholder_text=\"Kurze Beschreibung des Formats...\")"
+      },
+      {
+        "line": 87,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Ziel-Aktion / Typ:",
+        "snippet": "ctk.CTkLabel(row4, text=\"Ziel-Aktion / Typ:\", width=130, anchor=\"w\").pack(side=\"left\")"
+      },
+      {
+        "line": 94,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Zugeordnete Formular-Schemas:",
+        "snippet": "ctk.CTkLabel(scroll_frame, text=\"Zugeordnete Formular-Schemas:\", font=ctk.CTkFont(weight=\"bold\", size=12)).pack(anchor=\"w\", pady=(10, 2))"
+      },
+      {
+        "line": 105,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Erforderliche Pflichtfelder vor Export:",
+        "snippet": "ctk.CTkLabel(scroll_frame, text=\"Erforderliche Pflichtfelder vor Export:\", font=ctk.CTkFont(weight=\"bold\", size=12)).pack(anchor=\"w\", pady=(5, 2))"
+      },
+      {
+        "line": 125,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "Jinja2 Template Text (Markdown / Text):",
+        "snippet": "ctk.CTkLabel(scroll_frame, text=\"Jinja2 Template Text (Markdown / Text):\", font=ctk.CTkFont(weight=\"bold\", size=12)).pack(anchor=\"w\", pady=(5, 2))"
+      },
+      {
+        "line": 216,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "📄 Export-Vorlagen verwalten",
+        "snippet": "self.title(\"📄 Export-Vorlagen verwalten\")"
+      },
+      {
+        "line": 296,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "✓ In Realdaten enthalten",
+        "snippet": "btn_adopt = ctk.CTkButton(top_row, text=\"✓ In Realdaten enthalten\", width=170, state=\"disabled\", fg_color=\"gray40\")"
+      },
+      {
+        "line": 298,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "📥 Zu Realdaten übernehmen",
+        "snippet": "btn_adopt = ctk.CTkButton(top_row, text=\"📥 Zu Realdaten übernehmen\", width=180, fg_color=\"dodgerblue\", command=lambda t=tmpl: self.on_adopt_template(t))"
+      }
+    ]
+  },
+  "ui/dialogs/zip_import_dialog.py": {
+    "loc": 266,
+    "entries_count": 3,
+    "entries": [
+      {
+        "line": 232,
+        "category": "Dialog / FileDialog",
+        "target": "askdirectory.title",
+        "value": "Gesamt-Zielverzeichnis wählen",
+        "snippet": "chosen = filedialog.askdirectory(title=\"Gesamt-Zielverzeichnis wählen\", parent=self)"
+      },
+      {
+        "line": 238,
+        "category": "Dialog / FileDialog",
+        "target": "askdirectory.title",
+        "value": "Zielverzeichnis für Datendateien (data/) wählen",
+        "snippet": "chosen = filedialog.askdirectory(title=\"Zielverzeichnis für Datendateien (data/) wählen\", parent=self)"
+      },
+      {
+        "line": 244,
+        "category": "Dialog / FileDialog",
+        "target": "askdirectory.title",
+        "value": "Zielverzeichnis für Fall-Anhänge (attachments/) wählen",
+        "snippet": "chosen = filedialog.askdirectory(title=\"Zielverzeichnis für Fall-Anhänge (attachments/) wählen\", parent=self)"
+      }
+    ]
+  },
+  "ui/views/analytics_view.py": {
+    "loc": 274,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 272,
+        "category": "Toast Notification",
+        "target": "ToastNotification.message",
+        "value": "Statistik-Bericht wurde in die Zwischenablage kopiert.",
+        "snippet": "ToastNotification(self.winfo_toplevel(), title=tr(\"analytics.copied_title\", \"📋 Statistik kopiert\"), message=\"Statistik-Bericht wurde in die Zwischenablage kopiert.\")"
+      }
+    ]
+  },
+  "ui/views/board_view.py": {
+    "loc": 346,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/views/cockpit_layout_builders.py": {
+    "loc": 356,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 158,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🔔 Nachfragen am:",
+        "snippet": "text=\"🔔 Nachfragen am:\","
+      }
+    ]
+  },
+  "ui/views/cockpit_view.py": {
+    "loc": 558,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 337,
+        "category": "Toast Notification",
+        "target": "ToastNotification.message",
+        "value": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
+        "snippet": "message=\"Für diese Praxis ist keine E-Mail-Adresse hinterlegt.\","
+      }
+    ]
+  },
+  "ui/views/table_view.py": {
+    "loc": 332,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/attachment_widget.py": {
+    "loc": 190,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 118,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "🗑",
+        "snippet": "text=\"🗑\","
+      }
+    ]
+  },
+  "ui/widgets/case_list_widget.py": {
+    "loc": 423,
+    "entries_count": 1,
+    "entries": [
+      {
+        "line": 297,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": "🔔 Nachfragen am:",
+        "snippet": "text=\"🔔 Nachfragen am:\","
+      }
+    ]
+  },
+  "ui/widgets/ctk_tooltip.py": {
+    "loc": 153,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/date_picker.py": {
+    "loc": 478,
+    "entries_count": 6,
+    "entries": [
+      {
+        "line": 23,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "📅 Datum auswählen",
+        "snippet": "self.title(\"📅 Datum auswählen\")"
+      },
+      {
+        "line": 142,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▲",
+        "snippet": "hour_block, text=\"▲\", width=52, height=13,"
+      },
+      {
+        "line": 160,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▼",
+        "snippet": "hour_block, text=\"▼\", width=52, height=13,"
+      },
+      {
+        "line": 169,
+        "category": "UI Widget",
+        "target": "CTkLabel.text",
+        "value": ":",
+        "snippet": "time_card, text=\":\", font=ctk.CTkFont(size=16, weight=\"bold\"),"
+      },
+      {
+        "line": 187,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▲",
+        "snippet": "min_block, text=\"▲\", width=52, height=13,"
+      },
+      {
+        "line": 205,
+        "category": "UI Widget",
+        "target": "CTkButton.text",
+        "value": "▼",
+        "snippet": "min_block, text=\"▼\", width=52, height=13,"
+      }
+    ]
+  },
+  "ui/widgets/dynamic_form_field_renderers.py": {
+    "loc": 331,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/dynamic_form_widget.py": {
+    "loc": 677,
+    "entries_count": 2,
+    "entries": [
+      {
+        "line": 67,
+        "category": "Window Title",
+        "target": "self.title(...)",
+        "value": "🧩 Programmbereiche auswählen",
+        "snippet": "self.title(\"🧩 Programmbereiche auswählen\")"
+      },
+      {
+        "line": 533,
+        "category": "Dialog / FileDialog",
+        "target": "askopenfilename.title",
+        "value": "Datenbank-Backup (.backup) importieren",
+        "snippet": "title=\"Datenbank-Backup (.backup) importieren\","
+      }
+    ]
+  },
+  "ui/widgets/searchable_combobox.py": {
+    "loc": 200,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/timeline_widget.py": {
+    "loc": 140,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/toast_notification.py": {
+    "loc": 186,
+    "entries_count": 0,
+    "entries": []
+  },
+  "ui/widgets/wiki_widget.py": {
+    "loc": 108,
+    "entries_count": 0,
+    "entries": []
+  },
+  "utils/__init__.py": {
+    "loc": 1,
+    "entries_count": 0,
+    "entries": []
+  },
+  "utils/datetime_utils.py": {
+    "loc": 228,
+    "entries_count": 0,
+    "entries": []
+  },
+  "utils/security.py": {
+    "loc": 67,
+    "entries_count": 0,
+    "entries": []
+  },
+  "utils/ui_utils.py": {
+    "loc": 377,
+    "entries_count": 0,
+    "entries": []
+  }
+}

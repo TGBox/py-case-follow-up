@@ -22,8 +22,9 @@ class CalendarExportDialog(ctk.CTkToplevel):
         self.case = case
         self.service = calendar_email_service
 
+        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["calendar_export"]
-        self.title(f"{DIALOG_TITLES['calendar_export']} - Fall {case.case_id}")
+        self.title(f"{DIALOG_TITLES['calendar_export']} - {tr('common.case', 'Fall')} {case.case_id}")
         self.geometry(f"{w}x{h}")
         self.minsize(580, 440)
 
@@ -39,6 +40,7 @@ class CalendarExportDialog(ctk.CTkToplevel):
         self.create_widgets()
 
     def create_widgets(self):
+        from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=15)
 
@@ -48,17 +50,17 @@ class CalendarExportDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             hdr_frame,
-            text=f"📅 Kalendereintrag erstellen (.ics) - Fall {self.case.case_id}",
+            text=tr("calendar_export.header", "📅 Kalendereintrag erstellen (.ics) - Fall {case_id}", case_id=self.case.case_id),
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(anchor="w")
 
-        practice_name = self.case.customer.practice_name if self.case.customer else "Unbekannte Praxis"
-        deadline_str = self.case.formatted_deadline or "Keine Frist gesetzt"
-        followup_str = self.case.formatted_followup or "Keine Wiedervorlage gesetzt"
+        practice_name = self.case.customer.practice_name if self.case.customer else tr("common.unknown_practice", "Unbekannte Praxis")
+        deadline_str = self.case.formatted_deadline or tr("common.no_deadline_set", "Keine Frist gesetzt")
+        followup_str = self.case.formatted_followup or tr("common.no_followup_set", "Keine Wiedervorlage gesetzt")
 
         ctk.CTkLabel(
             hdr_frame,
-            text=f"Praxis: {practice_name} | Rückruf-Deadline: {deadline_str}",
+            text=tr("calendar_export.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str),
             font=ctk.CTkFont(size=11),
             text_color="gray",
         ).pack(anchor="w")
@@ -67,12 +69,28 @@ class CalendarExportDialog(ctk.CTkToplevel):
         info_box = ctk.CTkFrame(main_frame, fg_color=("gray85", "gray20"), corner_radius=6)
         info_box.pack(fill="x", pady=(0, 10), padx=2)
 
-        ctk.CTkLabel(info_box, text=f"📋 Betreff: [{self.case.case_id}] {self.case.classification.title}", font=ctk.CTkFont(size=12, weight="bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 2))
-        ctk.CTkLabel(info_box, text=f"🔔 Wiedervorlage / Fälligkeit: {followup_str}", font=ctk.CTkFont(size=11), text_color="darkorange", anchor="w").pack(fill="x", padx=10, pady=(0, 2))
-        ctk.CTkLabel(info_box, text=f"⏱ Frist / Rückruf bis: {deadline_str}", font=ctk.CTkFont(size=11), anchor="w").pack(fill="x", padx=10, pady=(0, 8))
+        ctk.CTkLabel(
+            info_box,
+            text=tr("calendar_export.subject_line", "📋 Betreff: [{case_id}] {title}", case_id=self.case.case_id, title=self.case.classification.title),
+            font=ctk.CTkFont(size=12, weight="bold"),
+            anchor="w"
+        ).pack(fill="x", padx=10, pady=(8, 2))
+        ctk.CTkLabel(
+            info_box,
+            text=tr("calendar_export.followup_line", "🔔 Wiedervorlage / Fälligkeit: {followup}", followup=followup_str),
+            font=ctk.CTkFont(size=11),
+            text_color="darkorange",
+            anchor="w"
+        ).pack(fill="x", padx=10, pady=(0, 2))
+        ctk.CTkLabel(
+            info_box,
+            text=tr("calendar_export.deadline_line", "⏱ Frist / Rückruf bis: {deadline}", deadline=deadline_str),
+            font=ctk.CTkFont(size=11),
+            anchor="w"
+        ).pack(fill="x", padx=10, pady=(0, 8))
 
         # Description preview
-        ctk.CTkLabel(main_frame, text="Kalender-Beschreibung / Notiz:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 2))
+        ctk.CTkLabel(main_frame, text=tr("calendar_export.desc_label", "Kalender-Beschreibung / Notiz:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 2))
         self.desc_textbox = ctk.CTkTextbox(main_frame, height=140)
         desc_text = (
             f"Support-Fall {self.case.case_id}: {self.case.classification.title}\n"
@@ -135,9 +153,10 @@ class CalendarExportDialog(ctk.CTkToplevel):
             self.status_lbl.configure(text=f"Fehler: {e}", text_color="red")
 
     def on_save_ics(self):
+        from services.i18n_service import tr
         file_path = filedialog.asksaveasfilename(
             parent=self,
-            title="iCalendar-Datei speichern",
+            title=tr("calendar_export.save_dialog_title", "iCalendar-Datei speichern"),
             defaultextension=".ics",
             initialfile=f"Termin_Fall_{self.case.case_id}.ics",
             filetypes=[("iCalendar Datei", "*.ics"), ("Alle Dateien", "*.*")],

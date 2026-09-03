@@ -43,22 +43,23 @@ class CobraImportDialog(ctk.CTkToplevel):
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(hdr_frame, text="🐍 Cobra CRM Praxen-Import Assistent", font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w")
-        ctk.CTkLabel(hdr_frame, text="Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).", font=ctk.CTkFont(size=11), text_color="gray").pack(anchor="w")
+        from services.i18n_service import tr
 
-        # Step 1: File Picker Frame
+        ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w")
+        ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."), font=ctk.CTkFont(size=11), text_color="gray").pack(anchor="w")
+
         file_box = ctk.CTkFrame(main_frame)
         file_box.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(file_box, text="1. Cobra Export-Datei auswählen:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
+        ctk.CTkLabel(file_box, text=tr("cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
 
         f_row = ctk.CTkFrame(file_box, fg_color="transparent")
         f_row.pack(fill="x", padx=10, pady=(0, 8))
 
-        self.file_entry = ctk.CTkEntry(f_row, placeholder_text="Datei auswählen (*.csv, *.txt, *.json)...")
+        self.file_entry = ctk.CTkEntry(f_row, placeholder_text=tr("cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)..."))
         self.file_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
-        ctk.CTkButton(f_row, text="📁 Durchsuchen...", width=130, command=self.on_browse_file).pack(side="right")
+        ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=130, command=self.on_browse_file).pack(side="right")
 
         # Scrollable Content Box for Mapping & Preview
         from utils.ui_utils import enable_auto_hiding_scrollbar
@@ -67,29 +68,32 @@ class CobraImportDialog(ctk.CTkToplevel):
         enable_auto_hiding_scrollbar(self.content_scroll)
 
         # Section 2: Column Mapping
-        ctk.CTkLabel(self.content_scroll, text="2. Cobra Spaltenzuordnung (Feld-Mapper):", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 6))
+        ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 6))
 
         self.map_grid = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
         self.map_grid.pack(fill="x", pady=(0, 10))
 
         # Section 3: Conflict Mode & Preview Summary
-        ctk.CTkLabel(self.content_scroll, text="3. Konfliktbehandlung für bestehende Praxen:", font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(8, 4))
+        ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(8, 4))
 
+        mode_options = [
+            tr("cobra_import.mode_update", "Bestehende Praxen aktualisieren (Update)"),
+            tr("cobra_import.mode_skip", "Bestehende überspringen (Skip)"),
+            tr("cobra_import.mode_all_new", "Alle als neu anlegen"),
+        ]
         self.mode_combo = ctk.CTkOptionMenu(
             self.content_scroll,
-            values=["Bestehende Praxen aktualisieren (Update)", "Bestehende überspringen (Skip)", "Alle als neu anlegen"],
+            values=mode_options,
             width=320,
             command=lambda v: self.update_preview(),
         )
         self.mode_combo.pack(anchor="w", pady=(0, 8))
 
-        self.summary_lbl = ctk.CTkLabel(self.content_scroll, text="Bitte wählen Sie eine Export-Datei aus.", font=ctk.CTkFont(size=11), text_color="dodgerblue", anchor="w")
+        self.summary_lbl = ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus."), font=ctk.CTkFont(size=11), text_color="dodgerblue", anchor="w")
         self.summary_lbl.pack(fill="x", pady=(0, 6))
 
         self.preview_box = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
         self.preview_box.pack(fill="x", pady=(0, 10))
-
-        from services.i18n_service import tr
 
         # Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -108,8 +112,9 @@ class CobraImportDialog(ctk.CTkToplevel):
         ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray50", command=self.destroy, width=90).pack(side="right")
 
     def on_browse_file(self):
+        from services.i18n_service import tr
         fp = filedialog.askopenfilename(
-            title="Cobra CRM Export-Datei auswählen",
+            title=tr("cobra_import.file_dialog_title", "Cobra CRM Export-Datei auswählen"),
             filetypes=[("Cobra / CSV Dateien (*.csv, *.txt, *.json)", "*.csv;*.txt;*.json"), ("Alle Dateien", "*.*")],
         )
         if not fp:
@@ -122,7 +127,7 @@ class CobraImportDialog(ctk.CTkToplevel):
         try:
             self.raw_rows, self.headers = CobraCrmImportService.parse_file(fp)
             if not self.raw_rows:
-                self.summary_lbl.configure(text="⚠ Keine Datensätze in der Datei gefunden.", text_color="crimson")
+                self.summary_lbl.configure(text=tr("cobra_import.no_records_found", "⚠ Keine Datensätze in der Datei gefunden."), text_color="crimson")
                 return
 
             self.mapping = CobraCrmImportService.auto_detect_mapping(self.headers)
@@ -130,43 +135,45 @@ class CobraImportDialog(ctk.CTkToplevel):
             self.update_preview()
             self.import_btn.configure(state="normal")
         except Exception as ex:
-            self.summary_lbl.configure(text=f"❌ Fehler beim Lesen der Datei: {ex}", text_color="crimson")
+            self.summary_lbl.configure(text=tr("cobra_import.read_error", "❌ Fehler beim Lesen der Datei: {error}", error=ex), text_color="crimson")
 
     def render_mapping_grid(self):
         for w in self.map_grid.winfo_children():
             w.destroy()
 
+        from services.i18n_service import tr
         self.mapping_combos.clear()
-        options = ["(Keine Zuordnung)"] + self.headers
+        no_mapping_text = tr("cobra_import.no_mapping", "(Keine Zuordnung)")
+        options = [no_mapping_text] + self.headers
 
         target_labels = {
-            "customer_id": "Kunden-ID / Nr.",
-            "vnum1": "VNUM1 (VM / KdNr 1)",
-            "practice_name": "Praxis- / Firmenname *",
-            "practice_name_old": "Praxisname (Alt)",
-            "salutation": "Anrede",
-            "first_name": "Vorname",
-            "last_name": "Nachname",
-            "street": "Straße & Hausnr.",
-            "zip_code": "Postleitzahl (PLZ)",
-            "city": "Ort / Stadt",
-            "phone_main": "Telefon Hauptnr.",
-            "phone_direct": "Telefon direkt (Durchwahl)",
-            "phone_private": "Telefon privat",
-            "phone2": "Telefon 2",
-            "phone3": "Telefon 3",
-            "mobile": "Mobilnummer",
-            "mobile_private": "Mobil privat",
-            "email_address": "E-Mail Hauptadresse",
-            "email2": "E-Mail Adresse 2",
-            "email3": "E-Mail Adresse 3",
-            "system_version": "System-Version",
-            "dsc": "DSC (Alt-Code)",
-            "dsc_neu": "DSCNEU (Neu-Code)",
-            "is_vip": "VIP-Status",
-            "vm_number": "VM-Nummer",
-            "instance_number": "Instanz-Nummer",
-            "general_notes": "Allgemeine Notizen",
+            "customer_id": tr("cobra_import.field_customer_id", "Kunden-ID / Nr."),
+            "vnum1": tr("cobra_import.field_vnum1", "VNUM1 (VM / KdNr 1)"),
+            "practice_name": tr("cobra_import.field_practice_name", "Praxis- / Firmenname *"),
+            "practice_name_old": tr("cobra_import.field_practice_name_old", "Praxisname (Alt)"),
+            "salutation": tr("cobra_import.field_salutation", "Anrede"),
+            "first_name": tr("cobra_import.field_first_name", "Vorname"),
+            "last_name": tr("cobra_import.field_last_name", "Nachname"),
+            "street": tr("cobra_import.field_street", "Straße & Hausnr."),
+            "zip_code": tr("cobra_import.field_zip_code", "Postleitzahl (PLZ)"),
+            "city": tr("cobra_import.field_city", "Ort / Stadt"),
+            "phone_main": tr("cobra_import.field_phone_main", "Telefon Hauptnr."),
+            "phone_direct": tr("cobra_import.field_phone_direct", "Telefon direkt (Durchwahl)"),
+            "phone_private": tr("cobra_import.field_phone_private", "Telefon privat"),
+            "phone2": tr("cobra_import.field_phone2", "Telefon 2"),
+            "phone3": tr("cobra_import.field_phone3", "Telefon 3"),
+            "mobile": tr("cobra_import.field_mobile", "Mobilnummer"),
+            "mobile_private": tr("cobra_import.field_mobile_private", "Mobil privat"),
+            "email_address": tr("cobra_import.field_email_address", "E-Mail Hauptadresse"),
+            "email2": tr("cobra_import.field_email2", "E-Mail Adresse 2"),
+            "email3": tr("cobra_import.field_email3", "E-Mail Adresse 3"),
+            "system_version": tr("cobra_import.field_system_version", "System-Version"),
+            "dsc": tr("cobra_import.field_dsc", "DSC (Alt-Code)"),
+            "dsc_neu": tr("cobra_import.field_dsc_neu", "DSCNEU (Neu-Code)"),
+            "is_vip": tr("cobra_import.field_is_vip", "VIP-Status"),
+            "vm_number": tr("cobra_import.field_vm_number", "VM-Nummer"),
+            "instance_number": tr("cobra_import.field_instance_number", "Instanz-Nummer"),
+            "general_notes": tr("cobra_import.field_general_notes", "Allgemeine Notizen"),
         }
 
         row_idx = 0
@@ -174,7 +181,7 @@ class CobraImportDialog(ctk.CTkToplevel):
             ctk.CTkLabel(self.map_grid, text=f"{label_text}:", font=ctk.CTkFont(size=11, weight="bold"), anchor="w", width=160).grid(row=row_idx, column=0, sticky="w", padx=4, pady=2)
 
             detected = self.mapping.get(field_key, "")
-            default_val = detected if detected in self.headers else "(Keine Zuordnung)"
+            default_val = detected if detected in self.headers else no_mapping_text
 
             combo = ctk.CTkOptionMenu(
                 self.map_grid,
@@ -189,11 +196,14 @@ class CobraImportDialog(ctk.CTkToplevel):
             row_idx += 1
 
     def on_mapping_changed(self, field_key: str, selected_value: str):
-        val = "" if selected_value == "(Keine Zuordnung)" else selected_value
+        from services.i18n_service import tr
+        no_mapping_text = tr("cobra_import.no_mapping", "(Keine Zuordnung)")
+        val = "" if selected_value == no_mapping_text else selected_value
         self.mapping[field_key] = val
         self.update_preview()
 
     def update_preview(self):
+        from services.i18n_service import tr
         if not self.raw_rows:
             return
 
@@ -206,7 +216,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         mode_str = self.mode_combo.get()
 
-        msg = f"✓ {tot} Praxen erkannt  |  🆕 {new_cnt} neue Praxen  |  ⚠ {dup_cnt} bereits vorhandene Praxen (Duplikate)"
+        msg = tr("cobra_import.preview_summary", "✓ {tot} Praxen erkannt  |  🆕 {new} neue Praxen  |  ⚠ {dup} bereits vorhandene Praxen (Duplikate)", tot=tot, new=new_cnt, dup=dup_cnt)
         self.summary_lbl.configure(text=msg, text_color="limegreen" if new_cnt > 0 else "dodgerblue")
 
         # Render preview items
@@ -215,7 +225,7 @@ class CobraImportDialog(ctk.CTkToplevel):
 
         for c in self.mapped_customers[:15]:
             is_dup = any(d["imported"].customer_id == c.customer_id for d in diff["duplicates"])
-            badge = "⚠ Duplikat" if is_dup else "🆕 Neu"
+            badge = tr("cobra_import.badge_duplicate", "⚠ Duplikat") if is_dup else tr("cobra_import.badge_new", "🆕 Neu")
             badge_color = "darkorange" if is_dup else "limegreen"
 
             row_f = ctk.CTkFrame(self.preview_box, fg_color=("gray90", "gray15"), corner_radius=4)

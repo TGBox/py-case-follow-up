@@ -145,10 +145,12 @@ class EmailDraftDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=16, weight="bold"),
         ).pack(side="left")
 
+        from services.i18n_service import tr
+
         # Ollama Status Badge
         self.ollama_status_badge = ctk.CTkLabel(
             hdr_top_row,
-            text="Prüfe KI-Status...",
+            text=tr("email_draft.checking_ai", "Prüfe KI-Status..."),
             font=ctk.CTkFont(size=10, weight="bold"),
             text_color="gray",
         )
@@ -167,8 +169,6 @@ class EmailDraftDialog(ctk.CTkToplevel):
         self.content_scroll = content_scroll
         enable_auto_hiding_scrollbar(content_scroll)
 
-        from services.i18n_service import tr
-
         # Recipient Email Header & Row
         ctk.CTkLabel(
             content_scroll,
@@ -181,7 +181,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self.to_entry = ctk.CTkEntry(
             self.to_row,
-            placeholder_text="praxis@beispiel.de oder Name / Praxis eingeben..."
+            placeholder_text=tr("email_draft.to_placeholder", "praxis@beispiel.de oder Name / Praxis eingeben...")
         )
         if self.draft_data.get("to"):
             self.to_entry.insert(0, self.draft_data["to"])
@@ -191,7 +191,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self.praxis_btn = ctk.CTkButton(
             self.to_row,
-            text="📇 Praxiskartei ▾",
+            text=tr("email_draft.practice_card_btn", "📇 Praxiskartei ▾"),
             width=135,
             height=28,
             fg_color=("gray75", "gray30"),
@@ -216,7 +216,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self.suggestions_title = ctk.CTkLabel(
             sug_hdr,
-            text="🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):",
+            text=tr("email_draft.suggestions_title", "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w",
         )
@@ -243,7 +243,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         # Subject
         ctk.CTkLabel(content_scroll, text=tr("email_draft.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text="Betreff eingeben...")
+        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_draft.subject_placeholder", "Betreff eingeben..."))
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
         self.subject_entry.pack(fill="x", pady=(0, 6))
@@ -257,7 +257,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if self.snippet_service:
             ctk.CTkButton(
                 body_hdr_row,
-                text="🧩 Textbaustein",
+                text=tr("email_draft.snippet_btn", "🧩 Textbaustein"),
                 width=110,
                 height=26,
                 fg_color="gray30",
@@ -399,7 +399,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if not contacts:
             ctk.CTkLabel(
                 self.suggestions_scroll,
-                text="Keine passenden Praxiskontakte gefunden.",
+                text=tr("email_draft.no_contacts_found", "Keine passenden Praxiskontakte gefunden."),
                 font=ctk.CTkFont(size=11),
                 text_color="gray"
             ).pack(pady=10)

@@ -131,13 +131,14 @@ class CasePrintDialog(ctk.CTkToplevel):
             pass
 
     def build_html_content(self, auto_print: bool = False) -> str:
+        from services.i18n_service import tr
         selected_entries = [self.case.timeline[idx] for var, idx in self.timeline_vars if var.get()]
 
         status_disp = get_board_column_display(self.case.workflow_status.board_column)
         actor_disp = get_actor_display(self.case.workflow_status.current_actor)
         created_str = self.case.formatted_created_at or format_german_datetime(self.case.created_at)
-        deadline_str = self.case.formatted_deadline or "Keine Frist gesetzt"
-        followup_str = self.case.formatted_followup or "Keine Wiedervorlage gesetzt"
+        deadline_str = self.case.formatted_deadline or tr("case_print.no_deadline", "Keine Frist gesetzt")
+        followup_str = self.case.formatted_followup or tr("case_print.no_followup", "Keine Wiedervorlage gesetzt")
 
         print_script = """<script>
 window.addEventListener('DOMContentLoaded', function() {
@@ -146,10 +147,35 @@ window.addEventListener('DOMContentLoaded', function() {
 </script>""" if auto_print else ""
 
         banner_text = (
-            "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“."
+            tr("case_print.banner_print", "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“.")
             if auto_print
-            else f"<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {self.case.case_id}."
+            else tr("case_print.banner_view", "<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {case_id}.", case_id=self.case.case_id)
         )
+
+        btn_print_pdf_txt = tr("case_print.btn_print_pdf", "🖨 Drucken / Als PDF speichern")
+        hdr_customer = tr("case_print.header_customer_data", "Kunden- & Praxisdaten")
+        hdr_fields = tr("case_print.header_form_fields", "Formularfelder & Details")
+        hdr_timeline = tr("case_print.header_timeline", "Verlauf & Zeitleiste")
+        hdr_attachments = tr("case_print.header_attachments", "Anhänge & Bilder")
+
+        lbl_case_id = tr("case_print.col_case_id", "Fall-ID")
+        lbl_score = tr("case_print.col_score", "Priorität / Score")
+        lbl_status = tr("case_print.col_status", "Aktueller Status")
+        lbl_actor = tr("case_print.col_actor", "Zuständigkeit")
+        lbl_created = tr("case_print.col_created", "Erstellt am")
+        lbl_deadline = tr("case_print.col_deadline", "Rückruf-Deadline")
+        lbl_followup = tr("case_print.col_followup", "Wiedervorlage")
+
+        lbl_practice = tr("case_print.col_practice", "Praxisname")
+        lbl_cust_id = tr("case_print.col_cust_id", "Kunden-ID")
+        lbl_contact = tr("case_print.col_contact", "Ansprechpartner")
+        lbl_phone = tr("case_print.col_phone", "Telefon")
+        lbl_email = tr("case_print.col_email", "E-Mail")
+
+        lbl_field = tr("case_print.col_field", "Feld")
+        lbl_value = tr("case_print.col_value", "Wert")
+        lbl_filename = tr("case_print.col_filename", "Dateiname")
+        lbl_filesize = tr("case_print.col_filesize", "Dateigröße")
 
         html_lines = [
             "<!DOCTYPE html>",
@@ -175,40 +201,40 @@ window.addEventListener('DOMContentLoaded', function() {
             "</head><body>",
             "<div class='no-print'>",
             f"  <div>{banner_text}</div>",
-            "  <button class='print-btn' onclick='window.print()'>🖨 Drucken / Als PDF speichern</button>",
+            f"  <button class='print-btn' onclick='window.print()'>{btn_print_pdf_txt}</button>",
             "</div>",
             f"<h1>Fall-Akte: {self.case.case_id} — {self.case.classification.title}</h1>",
             "<table>",
-            f"<tr><th>Fall-ID</th><td><strong>{self.case.case_id}</strong></td><th>Priorität / Score</th><td>{self.case.classification.calculated_score:.0f} Pkt. ({self.case.classification.urgency_level})</td></tr>",
-            f"<tr><th>Aktueller Status</th><td>{status_disp}</td><th>Zuständigkeit</th><td>{actor_disp}</td></tr>",
-            f"<tr><th>Erstellt am</th><td>{created_str} ({self.case.created_by})</td><th>Rückruf-Deadline</th><td>{deadline_str}</td></tr>",
-            f"<tr><th>Wiedervorlage</th><td colspan='3'>{followup_str}</td></tr>",
+            f"<tr><th>{lbl_case_id}</th><td><strong>{self.case.case_id}</strong></td><th>{lbl_score}</th><td>{self.case.classification.calculated_score:.0f} Pkt. ({self.case.classification.urgency_level})</td></tr>",
+            f"<tr><th>{lbl_status}</th><td>{status_disp}</td><th>{lbl_actor}</th><td>{actor_disp}</td></tr>",
+            f"<tr><th>{lbl_created}</th><td>{created_str} ({self.case.created_by})</td><th>{lbl_deadline}</th><td>{deadline_str}</td></tr>",
+            f"<tr><th>{lbl_followup}</th><td colspan='3'>{followup_str}</td></tr>",
             "</table>",
         ]
 
         if self.include_customer_var.get() and self.case.customer:
             cust = self.case.customer
-            vip_str = " (VIP-Kunde)" if cust.is_vip else ""
+            vip_str = tr("case_print.vip_suffix", " (VIP-Kunde)") if cust.is_vip else ""
             html_lines.extend([
-                "<h2>Kunden- & Praxisdaten</h2>",
+                f"<h2>{hdr_customer}</h2>",
                 "<table>",
-                f"<tr><th>Praxisname</th><td>{cust.practice_name}{vip_str}</td></tr>",
-                f"<tr><th>Kunden-ID</th><td>{cust.customer_id}</td></tr>",
-                f"<tr><th>Ansprechpartner</th><td>{cust.contact_person or '-'}</td></tr>",
-                f"<tr><th>Telefon</th><td>{cust.phone or '-'}</td></tr>",
-                f"<tr><th>E-Mail</th><td>{cust.email or '-'}</td></tr>",
+                f"<tr><th>{lbl_practice}</th><td>{cust.practice_name}{vip_str}</td></tr>",
+                f"<tr><th>{lbl_cust_id}</th><td>{cust.customer_id}</td></tr>",
+                f"<tr><th>{lbl_contact}</th><td>{cust.contact_person or '-'}</td></tr>",
+                f"<tr><th>{lbl_phone}</th><td>{cust.phone or '-'}</td></tr>",
+                f"<tr><th>{lbl_email}</th><td>{cust.email or '-'}</td></tr>",
                 "</table>",
             ])
 
         if self.include_fields_var.get() and self.case.form_data:
-            html_lines.extend(["<h2>Formularfelder & Details</h2><table>", "<tr><th>Feld</th><th>Wert</th></tr>"])
+            html_lines.extend([f"<h2>{hdr_fields}</h2><table>", f"<tr><th>{lbl_field}</th><th>{lbl_value}</th></tr>"])
             for k, v in self.case.form_data.items():
                 val_disp = "<br>".join(str(v).splitlines()) if "\n" in str(v) else str(v)
                 html_lines.append(f"<tr><th>{k}</th><td>{val_disp}</td></tr>")
             html_lines.append("</table>")
 
         if selected_entries:
-            html_lines.append("<h2>Verlauf & Zeitleiste</h2>")
+            html_lines.append(f"<h2>{hdr_timeline}</h2>")
             for entry in selected_entries:
                 ts_str = format_german_datetime(entry.timestamp)
                 note_html = "<br>".join(entry.note.splitlines())
@@ -220,13 +246,13 @@ window.addEventListener('DOMContentLoaded', function() {
             try:
                 att_files = self.attachment_service.list_attachments(self.case)
                 if att_files:
-                    html_lines.append("<h2>Anhänge & Bilder</h2>")
+                    html_lines.append(f"<h2>{hdr_attachments}</h2>")
                     img_exts = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
                     img_files = [f for f in att_files if f.suffix.lower() in img_exts]
                     other_files = [f for f in att_files if f.suffix.lower() not in img_exts]
 
                     if other_files:
-                        html_lines.append("<table><tr><th>Dateiname</th><th>Dateigröße</th></tr>")
+                        html_lines.append(f"<table><tr><th>{lbl_filename}</th><th>{lbl_filesize}</th></tr>")
                         for f in other_files:
                             size_kb = f.stat().st_size / 1024.0 if f.exists() else 0
                             html_lines.append(f"<tr><td>📄 {f.name}</td><td>{size_kb:.1f} KB</td></tr>")

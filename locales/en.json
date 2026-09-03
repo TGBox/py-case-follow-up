@@ -219,7 +219,33 @@
     "no_timeline_notes": "No notes in timeline.",
     "save_btn": "💾 Save...",
     "sub_header": "Select which elements should appear in print report:",
-    "timeline_lbl": "Timeline / Notes History (deselect individual entries):"
+    "timeline_lbl": "Timeline / Notes History (deselect individual entries):",
+    "banner_print": "<strong>Case File Print View</strong> — Print dialog is opening. Select your printer or 'Save as PDF'.",
+    "banner_view": "<strong>Case File View</strong> — Overview for case {case_id}.",
+    "btn_print_pdf": "🖨 Print / Save as PDF",
+    "header_customer_data": "Customer & Practice Data",
+    "header_form_fields": "Form Fields & Details",
+    "header_timeline": "History & Timeline",
+    "header_attachments": "Attachments & Images",
+    "col_case_id": "Case ID",
+    "col_score": "Priority / Score",
+    "col_status": "Current Status",
+    "col_actor": "Assignee",
+    "col_created": "Created at",
+    "col_deadline": "Callback Deadline",
+    "col_followup": "Follow-up",
+    "no_deadline": "No deadline set",
+    "no_followup": "No follow-up set",
+    "col_practice": "Practice Name",
+    "col_cust_id": "Customer ID",
+    "col_contact": "Contact Person",
+    "col_phone": "Phone",
+    "col_email": "Email",
+    "col_field": "Field",
+    "col_value": "Value",
+    "col_filename": "Filename",
+    "col_filesize": "File Size",
+    "vip_suffix": " (VIP Customer)"
   },
   "channels": {
     "DEV_TICKET": "GitLab Ticket",
@@ -407,7 +433,8 @@
     "select_target": "Select new target form:",
     "select_valid": "Please select a valid target form.",
     "case_info": "Case ID: {case_id} — {title}",
-    "current_form": "Current form: {schema_name}"
+    "current_form": "Current form: {schema_name}",
+    "notice_text": "ℹ Data Backup:\nWhen converting, previously entered form information will be added as a new note to the timeline so no content is lost. Common fields (e.g. program area) will be transferred to the new form."
   },
   "customer_form": {
     "btn_add_contact": "+ Add Contact",
@@ -823,7 +850,11 @@
     "sub_header_free": "Free draft | Choose a recipient from the practice directory or enter one freely",
     "suggestions_count": "🔍 {hint} ({count})",
     "window_title_case": "{base_title} - Case {case_id}",
-    "window_title_new": "{base_title} (New draft)"
+    "window_title_new": "{base_title} (New draft)",
+    "custom_instruction": "⚡ Priority AI Instruction:",
+    "custom_hint": "e.g. use bullet points, enforce specific greetings, adjust tone...",
+    "draft_btn_disabled": "🤖 AI Draft (AI disabled globally)",
+    "open_assistant_btn": "🤖 Open AI Assistant"
   },
   "email_import": {
     "btn_create_new_case": "➕ Create as new case",
@@ -1084,7 +1115,7 @@
     "wiki_search": "Focus Wiki Search:"
   },
   "hotkey_recorder": {
-    "button": "🎙 Record Key",
+    "button": "🎙 Capture Key",
     "cancel": "Cancel (Esc)",
     "header": "⌨ Press Key Combination",
     "info": "Press your keys (e.g. Ctrl+S, Alt+1)...",
@@ -1242,7 +1273,7 @@
     "provider_gemini": "GOOGLE GEMINI (Cloud)",
     "provider_ollama": "OLLAMA (Local)",
     "reset_paths_btn": "🔄 Reset Individual Paths to Default",
-    "reset_widths_btn": "🔄 Reset all column widths to default",
+    "reset_widths_btn": "↻ Reset all column widths to default",
     "save_btn": "💾 Save Settings",
     "saved_msg": "✓ Settings & profile saved!",
     "saved_settings_msg": "✅ Settings & paths saved!",
@@ -1314,7 +1345,11 @@
     "ollama_stopped": "Ollama server has been stopped.",
     "pvs_model_error": "⚠ {msg}",
     "pvs_model_ok": "✅ {msg}",
-    "switched_to": "Switched to profile '{name}'."
+    "switched_to": "Switched to profile '{name}'.",
+    "shortcuts_app_header": "⚡ App Action Keyboard Shortcuts (Hotkeys)",
+    "shortcuts_snippet_header": "📝 Text Snippet Macros (Snippet Shortcuts)",
+    "no_snippets": "No text snippets available.",
+    "widths_summary": "• Cockpit: Left {left}px | Center {center}px | Right {right}px\n• Kanban Board: Min column width {board}px\n• Table: ID {id}px | Practice {prac}px | Title {title}px | Score {score}px"
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -1754,5 +1789,10 @@
     "reply_generated": "✓ Email reply draft generated{info}.",
     "rules_info": " ({base_count} base rules, {practice_count} practice rules{ci_info})",
     "summary_generated": "✓ Summary generated successfully{info}."
+  },
+  "sort_criteria": {
+    "name": "Name (A-Z)",
+    "id": "Practice No. / ID",
+    "contact": "Time since last contact"
   }
 }

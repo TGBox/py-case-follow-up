@@ -219,7 +219,33 @@
     "no_timeline_notes": "Keine Notizen in der Zeitleiste.",
     "save_btn": "💾 Speichern...",
     "sub_header": "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:",
-    "timeline_lbl": "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"
+    "timeline_lbl": "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):",
+    "banner_print": "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“.",
+    "banner_view": "<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {case_id}.",
+    "btn_print_pdf": "🖨 Drucken / Als PDF speichern",
+    "header_customer_data": "Kunden- & Praxisdaten",
+    "header_form_fields": "Formularfelder & Details",
+    "header_timeline": "Verlauf & Zeitleiste",
+    "header_attachments": "Anhänge & Bilder",
+    "col_case_id": "Fall-ID",
+    "col_score": "Priorität / Score",
+    "col_status": "Aktueller Status",
+    "col_actor": "Zuständigkeit",
+    "col_created": "Erstellt am",
+    "col_deadline": "Rückruf-Deadline",
+    "col_followup": "Wiedervorlage",
+    "no_deadline": "Keine Frist gesetzt",
+    "no_followup": "Keine Wiedervorlage gesetzt",
+    "col_practice": "Praxisname",
+    "col_cust_id": "Kunden-ID",
+    "col_contact": "Ansprechpartner",
+    "col_phone": "Telefon",
+    "col_email": "E-Mail",
+    "col_field": "Feld",
+    "col_value": "Wert",
+    "col_filename": "Dateiname",
+    "col_filesize": "Dateigröße",
+    "vip_suffix": " (VIP-Kunde)"
   },
   "channels": {
     "DEV_TICKET": "GitLab-Ticket",
@@ -407,7 +433,8 @@
     "select_target": "Neues Ziel-Formular auswählen:",
     "select_valid": "Bitte ein gültiges Ziel-Formular auswählen.",
     "case_info": "Fall-ID: {case_id} — {title}",
-    "current_form": "Aktuelles Formular: {schema_name}"
+    "current_form": "Aktuelles Formular: {schema_name}",
+    "notice_text": "ℹ Datensicherung:\nBeim Umwandeln werden bisher eingegebene Formular-Informationen als neue Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
   },
   "customer_form": {
     "btn_add_contact": "+ Kontakt hinzufügen",
@@ -823,7 +850,11 @@
     "sub_header_free": "Freier Entwurf | Empfänger aus Praxiskartei wählen oder frei eingeben",
     "suggestions_count": "🔍 {hint} ({count})",
     "window_title_case": "{base_title} - Fall {case_id}",
-    "window_title_new": "{base_title} (Neuer Entwurf)"
+    "window_title_new": "{base_title} (Neuer Entwurf)",
+    "custom_instruction": "⚡ Priorisierte KI-Sonderanweisung:",
+    "custom_hint": "z. B. Stichpunkte verwenden, bestimmte Grüße erzwingen, Tonfall anpassen...",
+    "draft_btn_disabled": "🤖 KI-Entwurf (KI global inaktiv)",
+    "open_assistant_btn": "🤖 KI-Assistent öffnen"
   },
   "email_import": {
     "btn_create_new_case": "➕ Als neuen Fall anlegen",
@@ -1242,7 +1273,7 @@
     "provider_gemini": "GOOGLE GEMINI (Cloud)",
     "provider_ollama": "OLLAMA (Lokal)",
     "reset_paths_btn": "🔄 Einzelpfade auf Standard zurücksetzen",
-    "reset_widths_btn": "🔄 Alle Spaltenbreiten auf Standard zurücksetzen",
+    "reset_widths_btn": "↻ Alle Spaltenbreiten auf Standard zurücksetzen",
     "save_btn": "💾 Einstellungen Speichern",
     "saved_msg": "✓ Einstellungen & Pfade gespeichert!",
     "saved_settings_msg": "✅ Einstellungen & Pfade gespeichert!",
@@ -1314,7 +1345,11 @@
     "ollama_stopped": "Ollama Server wurde beendet.",
     "pvs_model_error": "⚠ {msg}",
     "pvs_model_ok": "✅ {msg}",
-    "switched_to": "Profil auf '{name}' gewechselt."
+    "switched_to": "Profil auf '{name}' gewechselt.",
+    "shortcuts_app_header": "⚡ App-Aktionen Tastenkürzel (Hotkeys)",
+    "shortcuts_snippet_header": "📝 Textbaustein-Makros (Snippet Shortcuts)",
+    "no_snippets": "Keine Textbausteine vorhanden.",
+    "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px"
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -1754,5 +1789,10 @@
     "reply_generated": "✓ E-Mail-Antwort-Entwurf generiert{info}.",
     "rules_info": " ({base_count} Basis-Regeln, {practice_count} Praxis-Regeln{ci_info})",
     "summary_generated": "✓ Zusammenfassung erfolgreich generiert{info}."
+  },
+  "sort_criteria": {
+    "name": "Name (A-Z)",
+    "id": "Praxisnummer / ID",
+    "contact": "Zeit seit letztem Kontakt"
   }
 }

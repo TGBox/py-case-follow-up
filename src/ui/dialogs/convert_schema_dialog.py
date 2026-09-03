@@ -90,12 +90,13 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         notice_frame = ctk.CTkFrame(main_frame, fg_color=("lightblue", "#1e293b"))
         notice_frame.pack(fill="x", pady=(0, 15))
 
-        notice_text = (
+        default_notice = (
             "ℹ Datensicherung:\n"
             "Beim Umwandeln werden bisher eingegebene Formular-Informationen als neue "
             "Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. "
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
         )
+        notice_text = tr("convert_schema.notice_text", default_notice)
         ctk.CTkLabel(
             notice_frame, text=notice_text, font=ctk.CTkFont(size=11), justify="left", wraplength=460
         ).pack(padx=10, pady=8, anchor="w")

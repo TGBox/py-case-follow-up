@@ -310,7 +310,11 @@ class CockpitLayoutBuilderMixin:
                 self.actor_combo.set(get_actor_display(self.current_case.workflow_status.current_actor))
         if hasattr(self, "case_title_label"):
             if getattr(self, "current_case", None):
-                self._update_title_label()
+                if hasattr(self, "_update_title_label"):
+                    self._update_title_label()
+                else:
+                    status_tag = f"  [{tr('cockpit.status_completed_tag', '✓ ERLEDIGT')}]" if self.current_case.workflow_status.is_completed else ""
+                    self.case_title_label.configure(text=f"{self.current_case.case_id}: {self.current_case.classification.title}{status_tag}")
             else:
                 self.case_title_label.configure(text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"))
         if getattr(self, "current_case", None):
@@ -355,7 +359,7 @@ class CockpitLayoutBuilderMixin:
     def _build_right_pane(self):
         from services.i18n_service import tr
         # 3. Right Pane: Tabbed Sidebar
-        self.right_tabview = ctk.CTkTabview(self.paned, command=self._on_sidebar_tab_changed)
+        self.right_tabview = ctk.CTkTabview(self.paned, bg_color=("gray92", "#2b2b2b"), command=self._on_sidebar_tab_changed)
 
         t_title = tr("cockpit.tab_timeline", "Zeitleiste")
         t_attach = tr("cockpit.tab_attachments", "Anhänge")

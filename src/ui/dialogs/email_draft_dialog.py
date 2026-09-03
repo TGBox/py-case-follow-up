@@ -276,14 +276,14 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             ci_frame,
-            text=AI_LABEL_EMAIL_CUSTOM_INSTRUCTION,
+            text=tr("email_draft.custom_instruction", AI_LABEL_EMAIL_CUSTOM_INSTRUCTION),
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color=COLOR_TEXT_BLUE,
         ).pack(side="left", padx=(10, 4), pady=4)
 
         self.custom_instruction_entry = ctk.CTkEntry(
             ci_frame,
-            placeholder_text=AI_HINT_EMAIL_CUSTOM_INSTRUCTION,
+            placeholder_text=tr("email_draft.custom_hint", AI_HINT_EMAIL_CUSTOM_INSTRUCTION),
             height=28,
             font=ctk.CTkFont(size=11),
         )
@@ -297,7 +297,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
 
         self.ki_generate_btn = ctk.CTkButton(
             ki_row,
-            text=AI_BTN_GENERATE_DRAFT if ai_enabled else AI_BTN_GENERATE_DRAFT_DISABLED,
+            text=AI_BTN_GENERATE_DRAFT if ai_enabled else tr("email_draft.draft_btn_disabled", AI_BTN_GENERATE_DRAFT_DISABLED),
             width=180,
             height=28,
             fg_color=COLOR_AI_PURPLE if ai_enabled else COLOR_BTN_GRAY,
@@ -310,7 +310,7 @@ class EmailDraftDialog(ctk.CTkToplevel):
         if self.case:
             ctk.CTkButton(
                 ki_row,
-                text=AI_BTN_OPEN_ASSISTANT,
+                text=tr("email_draft.open_assistant_btn", AI_BTN_OPEN_ASSISTANT),
                 width=160,
                 height=28,
                 fg_color=COLOR_MUTED_GRAY,

@@ -54,8 +54,8 @@ class CaseListWidget(ctk.CTkFrame):
             qfilter_frame,
             text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
             width=100,
-            fg_color="gray30",
-            hover_color="darkmagenta",
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
             command=self.toggle_deep_search,
         )
         self.deep_btn.pack(side="left", padx=2)
@@ -105,7 +105,7 @@ class CaseListWidget(ctk.CTkFrame):
         if self.is_deep_search_active:
             self.deep_btn.configure(fg_color="darkmagenta", hover_color="purple")
         else:
-            self.deep_btn.configure(fg_color="gray30", hover_color="gray40")
+            self.deep_btn.configure(fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER)
 
         if self.on_toggle_deep_search:
             self.on_toggle_deep_search(self.is_deep_search_active)

@@ -127,7 +127,7 @@ class AnalyticsView(ctk.CTkFrame):
 
         # --- LEFT COLUMN: Urgency Breakdown & Schema/Form breakdown ---
         # Card L1: Urgency Breakdown
-        urg_frame = ctk.CTkFrame(left_col, fg_color=("gray85", "gray20"), corner_radius=8)
+        urg_frame = ctk.CTkFrame(left_col, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8)
         urg_frame.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(urg_frame, text=tr("analytics.urgency_title", "🚨 Dringlichkeits-Verteilung (Scoring)"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
@@ -145,7 +145,7 @@ class AnalyticsView(ctk.CTkFrame):
         ctk.CTkLabel(urg_row, text=tr("analytics.urgency_green", "🟢 Grün (Normal): {count} ({pct}%)", count=green_count, pct=f"{green_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color="limegreen").pack(anchor="w", pady=2)
 
         # Card L2: Schema / Form Distribution
-        schema_frame = ctk.CTkFrame(left_col, fg_color=("gray85", "gray20"), corner_radius=8)
+        schema_frame = ctk.CTkFrame(left_col, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8)
         schema_frame.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(schema_frame, text=tr("analytics.schema_title", "📄 Verteilung nach Formular / Schema"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
@@ -164,7 +164,7 @@ class AnalyticsView(ctk.CTkFrame):
 
         # --- RIGHT COLUMN: Top Practices, Assignee Workload, Department breakdown ---
         # Card R1: Top Practices Ranking
-        prac_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
+        prac_frame = ctk.CTkFrame(right_col, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8)
         prac_frame.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(prac_frame, text=tr("analytics.top_practices_title", "🏆 Top 5 Praxen nach Fallaufkommen"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
@@ -182,7 +182,7 @@ class AnalyticsView(ctk.CTkFrame):
             ctk.CTkLabel(prac_frame, text=tr("analytics.practice_ranking_item", "{idx}. {name}{vip} — {count} Vorgänge", idx=idx, name=p_name, vip=vip_str, count=count), font=ctk.CTkFont(size=12), anchor="w").pack(fill="x", padx=16, pady=2)
 
         # Card R2: Assignee Workload (Bearbeiter)
-        staff_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
+        staff_frame = ctk.CTkFrame(right_col, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8)
         staff_frame.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(staff_frame, text=tr("analytics.assignee_title", "👤 Bearbeiter-Auslastung"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
@@ -201,7 +201,7 @@ class AnalyticsView(ctk.CTkFrame):
             ctk.CTkLabel(staff_frame, text=tr("analytics.assignee_workload_item", "• {assignee}: {open} offen, {done} erledigt", assignee=assignee, open=st['open'], done=st['done']), font=ctk.CTkFont(size=12), anchor="w").pack(fill="x", padx=16, pady=2)
 
         # Card R3: Department / Actor Breakdown
-        dept_frame = ctk.CTkFrame(right_col, fg_color=("gray85", "gray20"), corner_radius=8)
+        dept_frame = ctk.CTkFrame(right_col, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8)
         dept_frame.pack(fill="x", pady=(0, 10))
 
         ctk.CTkLabel(dept_frame, text=tr("analytics.department_title", "👥 Offene Fälle nach Abteilung / Zuständigkeit"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", padx=12, pady=(10, 6))
@@ -215,7 +215,7 @@ class AnalyticsView(ctk.CTkFrame):
             ctk.CTkLabel(dept_frame, text=tr("analytics.dept_cases_item", "• {dept}: {count} Fälle", dept=act_str, count=count), font=ctk.CTkFont(size=12), anchor="w").pack(fill="x", padx=16, pady=2)
 
     def create_card(self, parent, title: str, value: str, color: str):
-        card = ctk.CTkFrame(parent, fg_color=("gray85", "gray20"), corner_radius=8, width=130)
+        card = ctk.CTkFrame(parent, fg_color=("white", "gray20"), border_width=1, border_color=("gray75", "gray30"), corner_radius=8, width=130)
         card.pack(side="left", fill="x", expand=True, padx=3, pady=2)
 
         ctk.CTkLabel(card, text=title, font=ctk.CTkFont(size=10, weight="bold"), text_color=("gray40", "gray70")).pack(pady=(6, 1))

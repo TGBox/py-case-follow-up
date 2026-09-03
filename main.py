@@ -12,6 +12,11 @@ import tkinter
 import traceback
 from types import TracebackType
 
+from utils.ui_utils import patch_ctk_scrollable_frame
+
+patch_ctk_scrollable_frame()
+
+
 
 _seen_exceptions: set[str] = set()
 

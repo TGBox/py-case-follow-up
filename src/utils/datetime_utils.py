@@ -212,12 +212,16 @@ def parse_german_date(german_str: str) -> str:
     """Parses date format DD.MM.YYYY [HH:MM] into ISO format string YYYY-MM-DD[THH:MM:SS]."""
     if not german_str or not german_str.strip():
         return ""
-    cleaned = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", german_str, flags=re.IGNORECASE).strip()
+    cleaned = re.sub(r"\s*\(.*?\)", "", german_str).strip()
+    cleaned = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", cleaned, flags=re.IGNORECASE).strip()
     for fmt, iso_fmt in [
         ("%d.%m.%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"),
         ("%d.%m.%Y %H:%M", "%Y-%m-%dT%H:%M:00"),
         ("%d.%m.%Y", "%Y-%m-%dT00:00:00"),
         ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%S"),
+        ("%Y-%m-%dT%H:%M", "%Y-%m-%dT%H:%M:00"),
+        ("%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"),
+        ("%Y-%m-%d %H:%M", "%Y-%m-%dT%H:%M:00"),
         ("%Y-%m-%d", "%Y-%m-%dT00:00:00"),
     ]:
         try:
@@ -226,6 +230,44 @@ def parse_german_date(german_str: str) -> str:
         except ValueError:
             continue
     return cleaned
+
+
+def parse_followup_datetime(val: str | datetime | None) -> datetime | None:
+    """Parses followup_at string or datetime into a timezone-aware datetime object."""
+    if not val:
+        return None
+    if isinstance(val, datetime):
+        if val.tzinfo is None:
+            return val.replace(tzinfo=get_local_now().tzinfo)
+        return val
+
+    s = str(val).strip()
+    if not s:
+        return None
+
+    s = re.sub(r"\s*\(.*?\)", "", s).strip()
+    s = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", s, flags=re.IGNORECASE).strip()
+
+    try:
+        return parse_iso(s)
+    except Exception:
+        pass
+
+    try:
+        iso_str = parse_german_date(s)
+        if iso_str:
+            return parse_iso(iso_str)
+    except Exception:
+        pass
+
+    for fmt in ("%d.%m.%Y %H:%M:%S", "%d.%m.%Y %H:%M", "%d.%m.%Y", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            dt = datetime.strptime(s, fmt)
+            return dt.replace(tzinfo=get_local_now().tzinfo)
+        except ValueError:
+            continue
+
+    return None
 
 
 # Generic and modern aliases

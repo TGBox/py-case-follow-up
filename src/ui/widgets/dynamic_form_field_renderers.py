@@ -304,8 +304,13 @@ class FieldRendererMixin:
     def _render_textbox_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any] | None = None):
         from ui.widgets.dynamic_form_widget import TextboxResizeHandle
         custom_height = 90
-        if self.profile and self.profile.textbox_heights and f.field_id in self.profile.textbox_heights:
-            custom_height = self.profile.textbox_heights[f.field_id]
+        if self.profile:
+            ui = getattr(self.profile, "ui_settings", None)
+            cust_heights = getattr(ui, "custom_textbox_heights", None) or getattr(self.profile, "textbox_heights", None)
+            if isinstance(cust_heights, dict) and f.field_id in cust_heights:
+                custom_height = cust_heights[f.field_id]
+            elif ui and getattr(ui, "textbox_height", None):
+                custom_height = ui.textbox_height
 
         textbox = ctk.CTkTextbox(row_frame, height=custom_height, **(entry_kwargs or {}))
         if val:

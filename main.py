@@ -16,7 +16,20 @@ from types import TracebackType
 _seen_exceptions: set[str] = set()
 
 
-def _report_tkinter_exception(exc: type[BaseException], val: BaseException, tb: TracebackType | None) -> None:
+def _report_tkinter_exception(*args) -> None:
+    if len(args) == 4:
+        _, exc, val, tb = args
+    elif len(args) == 3:
+        exc, val, tb = args
+    elif len(args) == 1 and isinstance(args[0], tuple) and len(args[0]) == 3:
+        exc, val, tb = args[0]
+    else:
+        exc_type, exc_val, exc_tb = sys.exc_info()
+        exc, val, tb = exc_type, exc_val, exc_tb
+
+    if exc is None:
+        return
+
     tb_lines = traceback.format_exception(exc, val, tb)
     tb_str = "".join(tb_lines)
 

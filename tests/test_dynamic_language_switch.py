@@ -49,7 +49,7 @@ def reset_i18n_language():
     i18n.current_language = "de"
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def headless_root():
     """Provide a headless Tk/CustomTkinter root window."""
     root = ctk.CTk()
@@ -59,6 +59,16 @@ def headless_root():
         root.destroy()
     except Exception:
         pass
+
+
+@pytest.fixture(autouse=True)
+def clean_headless_root(headless_root):
+    yield
+    for child in list(headless_root.winfo_children()):
+        try:
+            child.destroy()
+        except Exception:
+            pass
 
 
 # ============================================================================

@@ -27,7 +27,18 @@ def test_german_salutation_formatting():
     assert format_german_salutation("", "") == "Sehr geehrte Damen und Herren,"
 
 
-def test_email_draft_dialog_initialization(tmp_path: Path):
+@pytest.fixture(scope="module")
+def shared_app():
+    app = ctk.CTk()
+    app.withdraw()
+    yield app
+    try:
+        app.destroy()
+    except Exception:
+        pass
+
+
+def test_email_draft_dialog_initialization(tmp_path: Path, shared_app):
     """Verify EmailDraftDialog populates recipient, subject, and body from case details."""
     config = AppConfig(workspace_dir=tmp_path)
     cal_email_svc = CalendarEmailService(config)
@@ -45,11 +56,8 @@ def test_email_draft_dialog_initialization(tmp_path: Path):
         workflow_status=WorkflowStatus(current_actor=Actor.SUPPORT),
     )
 
-    app = ctk.CTk()
-    app.withdraw()
-
     dialog = EmailDraftDialog(
-        app,
+        shared_app,
         case=case,
         calendar_email_service=cal_email_svc,
         user_name="DaniBani",
@@ -67,10 +75,9 @@ def test_email_draft_dialog_initialization(tmp_path: Path):
     assert "Zusätzlicher Text" in dialog.body_textbox.get("1.0", "end")
 
     dialog.destroy()
-    app.destroy()
 
 
-def test_email_draft_dialog_without_case_and_praxiskartei_autocomplete(tmp_path: Path):
+def test_email_draft_dialog_without_case_and_praxiskartei_autocomplete(tmp_path: Path, shared_app):
     """Verify EmailDraftDialog supports case=None, Praxiskartei dropdown, typing filter, and freeform input."""
     from models.customer import Customer, Contact
 
@@ -95,11 +102,8 @@ def test_email_draft_dialog_without_case_and_praxiskartei_autocomplete(tmp_path:
         ),
     ]
 
-    app = ctk.CTk()
-    app.withdraw()
-
     dialog = EmailDraftDialog(
-        app,
+        shared_app,
         case=None,
         calendar_email_service=cal_email_svc,
         user_name="SupportAgent",
@@ -147,10 +151,9 @@ def test_email_draft_dialog_without_case_and_praxiskartei_autocomplete(tmp_path:
     assert dialog.to_entry.get() == "ganz.neue.praxis@gesundheit-nord.de"
 
     dialog.destroy()
-    app.destroy()
 
 
-def test_calendar_export_dialog_initialization(tmp_path: Path):
+def test_calendar_export_dialog_initialization(tmp_path: Path, shared_app):
     """Verify CalendarExportDialog formats .ics summary and handles direct opening and file saving."""
     config = AppConfig(workspace_dir=tmp_path)
     cal_email_svc = CalendarEmailService(config)
@@ -171,11 +174,8 @@ def test_calendar_export_dialog_initialization(tmp_path: Path):
         ),
     )
 
-    app = ctk.CTk()
-    app.withdraw()
-
     dialog = CalendarExportDialog(
-        app,
+        shared_app,
         case=case,
         calendar_email_service=cal_email_svc,
     )
@@ -187,4 +187,3 @@ def test_calendar_export_dialog_initialization(tmp_path: Path):
     assert "Konnektor neu starten" in dialog.desc_textbox.get("1.0", "end")
 
     dialog.destroy()
-    app.destroy()

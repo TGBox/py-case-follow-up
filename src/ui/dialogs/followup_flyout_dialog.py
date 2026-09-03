@@ -2,7 +2,8 @@ import customtkinter as ctk
 from datetime import datetime, timedelta
 from typing import Callable
 from models.case import Case
-from utils.datetime_utils import format_german_datetime, parse_iso, get_local_now, format_german_date
+from ui.widgets.date_picker import DatePickerWidget
+from utils.datetime_utils import format_german_datetime, parse_iso, parse_followup_datetime, get_local_now, format_german_date
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
@@ -73,17 +74,23 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 if case.workflow_status.followup_note:
                     ctk.CTkLabel(card, text=tr("followup.note_prefix", "Notiz: {note}", note=case.workflow_status.followup_note), font=ctk.CTkFont(size=11), text_color=("gray30", "gray70"), anchor="w").pack(fill="x", padx=10, pady=(0, 6))
 
-                # Action buttons frame (2 clean compact rows)
+                # Action buttons frame (2 preset rows + the date/time field they act on)
                 act_frame = ctk.CTkFrame(card, fg_color="transparent")
                 act_frame.pack(fill="x", padx=10, pady=(0, 6))
+
+                # The date/time field lives BELOW the preset rows (created here so the
+                # preset button commands below can already close over it), matching the
+                # layout of the general Wiedervorlage dialog.
+                picker_row = ctk.CTkFrame(act_frame, fg_color="transparent")
+                picker = DatePickerWidget(picker_row, include_time=True, width=150)
 
                 # Row 1: Short term shifts (+1h, +2h, Heute 16:30, Erledigt)
                 act_row1 = ctk.CTkFrame(act_frame, fg_color="transparent")
                 act_row1.pack(fill="x", pady=(0, 2))
 
-                ctk.CTkButton(act_row1, text=tr("followup.preset_1h", "+ 1 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_hours(c, 1)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row1, text=tr("followup.preset_2h", "+ 2 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_hours(c, 2)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row1, text=tr("followup.preset_today_1630", "Heute 16:30"), width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.set_preset_today_1630(c)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row1, text=tr("followup.preset_1h", "+ 1 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 1)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row1, text=tr("followup.preset_2h", "+ 2 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 2)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row1, text=tr("followup.preset_today_1630", "Heute 16:30"), width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_today_1630(p)).pack(side="left", padx=2)
 
                 ctk.CTkButton(act_row1, text=tr("cockpit.complete", "✓ Erledigt"), width=95, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)).pack(side="right", padx=2)
 
@@ -91,9 +98,16 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
                 act_row2 = ctk.CTkFrame(act_frame, fg_color="transparent")
                 act_row2.pack(fill="x", pady=(2, 0))
 
-                ctk.CTkButton(act_row2, text=tr("followup.preset_tomorrow_8am", "Morgen 08:00"), width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.set_preset_tomorrow_8am(c)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row2, text=tr("followup.preset_1d", "+ 1 Tag"), width=90, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_days(c, 1)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row2, text=tr("followup.preset_1w", "+ 1 Woche"), width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda c=case: self.snooze_days(c, 7)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row2, text=tr("followup.preset_tomorrow_8am", "Morgen 08:00"), width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_tomorrow_8am(p)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row2, text=tr("followup.preset_1d", "+ 1 Tag"), width=90, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 1)).pack(side="left", padx=2)
+                ctk.CTkButton(act_row2, text=tr("followup.preset_1w", "+ 1 Woche"), width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 7)).pack(side="left", padx=2)
+
+                # Row 3: the date/time field the presets above write into, plus the button
+                # that actually commits it as the case's new follow-up time.
+                picker_row.pack(fill="x", pady=(4, 0))
+                ctk.CTkLabel(picker_row, text=tr("followup.new_time_lbl", "🕒 Neue Zeit:"), font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
+                picker.pack(side="left", fill="x", expand=True, padx=(0, 6))
+                ctk.CTkButton(picker_row, text=tr("ui_buttons.apply", "✓ Übernehmen"), width=95, fg_color="forestgreen", hover_color="darkgreen", command=lambda c=case, p=picker: self.apply_new_time(c, p)).pack(side="right")
 
         btn_close = ctk.CTkButton(main_frame, text=tr("common.close", "Schließen"), fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100)
         btn_close.pack(side="right")
@@ -155,24 +169,30 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         else:
             self.create_widgets()
 
-    def snooze_hours(self, case: Case, hours: int):
-        new_dt = get_local_now() + timedelta(hours=hours)
-        case.workflow_status.followup_at = format_german_datetime(new_dt)
-        self._on_action_completed(case)
+    def bump_hours(self, picker: DatePickerWidget, hours: int):
+        # If the field already shows a date/time, add the increment on top of it (so
+        # repeated clicks stack up); only fall back to "now" when the field is empty
+        # or its content can't be parsed.
+        base_dt = parse_followup_datetime(picker.get()) or get_local_now()
+        picker.set_date(format_german_datetime(base_dt + timedelta(hours=hours)))
 
-    def set_preset_today_1630(self, case: Case):
+    def set_field_today_1630(self, picker: DatePickerWidget):
         now = get_local_now()
-        case.workflow_status.followup_at = f"{format_german_date(now)} 16:30"
-        self._on_action_completed(case)
+        picker.set_date(f"{format_german_date(now)} 16:30")
 
-    def set_preset_tomorrow_8am(self, case: Case):
+    def set_field_tomorrow_8am(self, picker: DatePickerWidget):
         tmw = get_local_now() + timedelta(days=1)
-        case.workflow_status.followup_at = f"{format_german_date(tmw)} 08:00"
-        self._on_action_completed(case)
+        picker.set_date(f"{format_german_date(tmw)} 08:00")
 
-    def snooze_days(self, case: Case, days: int):
+    def set_field_days(self, picker: DatePickerWidget, days: int):
         new_dt = get_local_now() + timedelta(days=days)
-        case.workflow_status.followup_at = f"{format_german_date(new_dt)} 09:00"
+        picker.set_date(f"{format_german_date(new_dt)} 09:00")
+
+    def apply_new_time(self, case: Case, picker: DatePickerWidget):
+        iso_val = picker.get_iso()
+        if not iso_val:
+            return
+        case.workflow_status.followup_at = format_german_datetime(iso_val)
         self._on_action_completed(case)
 
     def complete_followup(self, case: Case):

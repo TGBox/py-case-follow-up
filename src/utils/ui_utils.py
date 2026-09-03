@@ -43,14 +43,33 @@ def patch_ctk_scrollable_frame() -> None:
             return orig_sr(self, event)
         ctk.CTkScrollableFrame._keyboard_shift_release_all = safe_sr
 
-    # Also make CTkBaseClass dimension updates resilient to None/missing event
+    # Also make CTkBaseClass dimension updates resilient to None/missing event and re-entrant loops
     if hasattr(ctk, "CTkBaseClass") and hasattr(ctk.CTkBaseClass, "_update_dimensions_event"):
         orig_update_dim = ctk.CTkBaseClass._update_dimensions_event
         def safe_update_dim(self, event=None):
             if event is None:
                 return
-            return orig_update_dim(self, event)
+            if getattr(self, "_in_update_dim", False):
+                return
+            try:
+                self._in_update_dim = True
+                return orig_update_dim(self, event)
+            finally:
+                self._in_update_dim = False
         ctk.CTkBaseClass._update_dimensions_event = safe_update_dim
+
+    # Prevent CTkScrollbar._draw from triggering re-entrant update_idletasks cascades
+    if hasattr(ctk, "CTkScrollbar") and hasattr(ctk.CTkScrollbar, "_draw"):
+        orig_draw = ctk.CTkScrollbar._draw
+        def safe_draw(self, *args, **kwargs):
+            if getattr(self, "_in_draw", False):
+                return
+            try:
+                self._in_draw = True
+                return orig_draw(self, *args, **kwargs)
+            finally:
+                self._in_draw = False
+        ctk.CTkScrollbar._draw = safe_draw
 
     # Make CTk / CTkToplevel focus handlers resilient
     for cls in (getattr(ctk, "CTk", None), getattr(ctk, "CTkToplevel", None)):
@@ -270,31 +289,42 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     except Exception:
         pass
 
-    _last_dims = (0, 0)
+    _updating = False
     _scheduled = False
+    _last_visible = None
 
     def update_scrollbar_visibility(*_args):
-        nonlocal _last_dims, _scheduled
-        if _scheduled:
+        nonlocal _scheduled
+        if _updating or _scheduled:
             return
         _scheduled = True
 
         def _do_update():
-            nonlocal _last_dims, _scheduled
+            nonlocal _updating, _scheduled, _last_visible
             _scheduled = False
+            if _updating:
+                return
             try:
                 if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
                     return
+                _updating = True
                 canvas_h = canvas.winfo_height()
                 bbox = canvas.bbox("all")
                 content_h = (bbox[3] - bbox[1]) if bbox else 0
 
-                curr_dims = (canvas_h, content_h)
-                if curr_dims == _last_dims:
+                if canvas_h <= 1:
                     return
-                _last_dims = curr_dims
 
-                if canvas_h > 1 and content_h <= canvas_h + 2:
+                should_show = content_h > (canvas_h + 2)
+                if should_show == _last_visible:
+                    return
+                _last_visible = should_show
+
+                if not should_show:
+                    try:
+                        canvas.yview_moveto(0.0)
+                    except Exception:
+                        pass
                     if hasattr(scrollbar, "grid_remove"):
                         scrollbar.grid_remove()
                     elif hasattr(scrollbar, "pack_forget"):
@@ -306,6 +336,8 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
                         scrollbar.pack(side="right", fill="y")
             except Exception:
                 pass
+            finally:
+                _updating = False
 
         try:
             scroll_frame.after_idle(_do_update)

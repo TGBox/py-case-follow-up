@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
-from utils.datetime_utils import format_german_date, parse_german_date, get_local_now
+from utils.datetime_utils import format_german_date, parse_german_date, parse_followup_datetime, get_local_now
 from utils.ui_utils import center_window
 
 
@@ -168,7 +168,11 @@ class FollowupDialog(ctk.CTkToplevel):
         ).pack(side="left", padx=(0, 4))
 
     def set_preset_hours(self, hours: int):
-        target_dt = get_local_now() + timedelta(hours=hours)
+        # If the field below already shows a date/time, add the increment on top of it
+        # (so repeated clicks stack up); only fall back to "now" when the field is empty
+        # or its content can't be parsed.
+        base_dt = parse_followup_datetime(self.date_picker.get()) or get_local_now()
+        target_dt = base_dt + timedelta(hours=hours)
         german_str = format_german_datetime(target_dt)
         self.date_picker.set_date(german_str)
 

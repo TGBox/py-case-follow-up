@@ -81,8 +81,9 @@ class HotkeyRecorderDialog(ctk.CTkToplevel):
     def __init__(self, parent, on_recorded: Callable[[str], None]):
         super().__init__(parent)
         self.on_recorded = on_recorded
+        from services.i18n_service import tr
         w, h = HOTKEY_RECORDER_DIMENSIONS
-        self.title(HOTKEY_RECORDER_TITLE)
+        self.title(tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE))
         self.geometry(f"{w}x{h}")
         self.resizable(False, False)
 
@@ -91,11 +92,11 @@ class HotkeyRecorderDialog(ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
 
-        ctk.CTkLabel(self, text=HOTKEY_RECORDER_HEADER, font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 5))
-        self.info_lbl = ctk.CTkLabel(self, text=HOTKEY_RECORDER_INFO, text_color=("gray30", "gray70"))
+        ctk.CTkLabel(self, text=tr("hotkey_recorder.header", HOTKEY_RECORDER_HEADER), font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 5))
+        self.info_lbl = ctk.CTkLabel(self, text=tr("hotkey_recorder.info", HOTKEY_RECORDER_INFO), text_color=("gray30", "gray70"))
         self.info_lbl.pack(pady=5)
 
-        cancel_btn = ctk.CTkButton(self, text=HOTKEY_RECORDER_CANCEL, command=self.destroy, fg_color="gray40", width=120)
+        cancel_btn = ctk.CTkButton(self, text=tr("hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL), command=self.destroy, fg_color="gray40", width=120)
         cancel_btn.pack(pady=(10, 0))
 
         self.bind("<KeyPress>", self.on_key_press)
@@ -443,24 +444,38 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.col_widths_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
         widths = self.profile.ui_settings.column_widths
-        w_str = (
-            f"• Cockpit: Links {widths.get('cockpit_left', 300)}px | Mitte {widths.get('cockpit_center', 420)}px | Rechts {widths.get('cockpit_right', 320)}px\n"
-            f"• Kanban-Board: Mindestspaltenbreite {widths.get('board_column', 280)}px\n"
-            f"• Tabelle: ID {widths.get('table_col_id', 120)}px | Praxis {widths.get('table_col_practice', 220)}px | Titel {widths.get('table_col_title', 280)}px | Score {widths.get('table_col_score', 90)}px"
-        )
+        def build_widths_str(w_dict: dict) -> str:
+            from services.i18n_service import tr
+            return tr(
+                "profile.widths_summary",
+                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
+                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
+                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
+                left=w_dict.get('cockpit_left', 300),
+                center=w_dict.get('cockpit_center', 420),
+                right=w_dict.get('cockpit_right', 320),
+                board=w_dict.get('board_column', 280),
+                id=w_dict.get('table_col_id', 120),
+                prac=w_dict.get('table_col_practice', 220),
+                title=w_dict.get('table_col_title', 280),
+                score=w_dict.get('table_col_score', 90),
+            )
+
+        w_str = build_widths_str(widths)
         self.widths_label = ctk.CTkLabel(self.tab_ui, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
         self.widths_label.pack(anchor="w", pady=(0, 12))
 
         from services.i18n_service import tr
 
-        btn_reset_widths = ctk.CTkButton(
+        self.btn_reset_widths = ctk.CTkButton(
             self.tab_ui,
-            text=tr("profile.reset_widths_btn", "🔄 Alle Spaltenbreiten auf Standard zurücksetzen"),
+            text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
             command=self.on_reset_column_widths,
-            fg_color="gray30",
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
             width=280,
         )
-        btn_reset_widths.pack(anchor="w")
+        self.btn_reset_widths.pack(anchor="w")
 
     def on_reset_column_widths(self):
         from services.i18n_service import tr
@@ -468,12 +483,23 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.profile.ui_settings.reset_column_widths()
         self.storage_service.save_profile(self.profile)
         widths = self.profile.ui_settings.column_widths
-        w_str = (
-            f"• Cockpit: Links {widths.get('cockpit_left', 300)}px | Mitte {widths.get('cockpit_center', 420)}px | Rechts {widths.get('cockpit_right', 320)}px\n"
-            f"• Kanban-Board: Mindestspaltenbreite {widths.get('board_column', 280)}px\n"
-            f"• Tabelle: ID {widths.get('table_col_id', 120)}px | Praxis {widths.get('table_col_practice', 220)}px | Titel {widths.get('table_col_title', 280)}px | Score {widths.get('table_col_score', 90)}px"
-        )
-        self.widths_label.configure(text=w_str)
+        def build_widths_str(w_dict: dict) -> str:
+            return tr(
+                "profile.widths_summary",
+                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
+                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
+                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
+                left=w_dict.get('cockpit_left', 300),
+                center=w_dict.get('cockpit_center', 420),
+                right=w_dict.get('cockpit_right', 320),
+                board=w_dict.get('board_column', 280),
+                id=w_dict.get('table_col_id', 120),
+                prac=w_dict.get('table_col_practice', 220),
+                title=w_dict.get('table_col_title', 280),
+                score=w_dict.get('table_col_score', 90),
+            )
+
+        self.widths_label.configure(text=build_widths_str(widths))
         self.status_lbl.configure(text=tr("profile.widths_reset_msg", "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!"))
         if self.on_profile_updated:
             self.on_profile_updated()
@@ -583,12 +609,15 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ctk.CTkCheckBox(self.tab_wiki, text=tr("profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren"), variable=self.sync_startup_var).pack(anchor="w", pady=5)
 
     def setup_scoring_tab(self):
+        from services.i18n_service import tr
         scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        ctk.CTkLabel(scroll, text=LABEL_APP_SHORTCUTS_HEADER, font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(5, 5))
+        self.app_shortcuts_hdr_lbl = ctk.CTkLabel(scroll, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold"))
+        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
         self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
+        self.rec_buttons: list[ctk.CTkButton] = []
 
         for attr_name, label_text in HOTKEY_ACTION_LABELS:
             row = ctk.CTkFrame(scroll, fg_color="transparent")
@@ -603,24 +632,27 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
             rec_btn = ctk.CTkButton(
                 row,
-                text=HOTKEY_RECORDER_BUTTON,
+                text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
                 width=120,
-                fg_color="gray30",
-                hover_color="gray45",
+                fg_color=("gray75", "gray30"),
+                hover_color=("gray65", "gray40"),
                 command=lambda e=entry: self.open_hotkey_recorder(e)
             )
             rec_btn.pack(side="left")
+            self.rec_buttons.append(rec_btn)
 
             entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
         # --- Text-Makros (Snippets) Section ---
-        ctk.CTkLabel(scroll, text=LABEL_SNIPPET_SHORTCUTS_HEADER, font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(20, 5))
+        self.snippet_shortcuts_hdr_lbl = ctk.CTkLabel(scroll, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold"))
+        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(20, 5))
 
         self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
         all_snippets = self.snippet_service.get_all_snippets()
 
         if not all_snippets:
-            ctk.CTkLabel(scroll, text=LABEL_NO_SNIPPETS, text_color="gray60").pack(anchor="w", pady=2)
+            self.no_snippets_lbl = ctk.CTkLabel(scroll, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60")
+            self.no_snippets_lbl.pack(anchor="w", pady=2)
         else:
             for snip in all_snippets:
                 s_row = ctk.CTkFrame(scroll, fg_color="transparent")
@@ -636,13 +668,14 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
                 s_rec_btn = ctk.CTkButton(
                     s_row,
-                    text=HOTKEY_RECORDER_BUTTON,
+                    text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
                     width=120,
-                    fg_color="gray30",
-                    hover_color="gray45",
+                    fg_color=("gray75", "gray30"),
+                    hover_color=("gray65", "gray40"),
                     command=lambda e=s_entry: self.open_hotkey_recorder(e)
                 )
                 s_rec_btn.pack(side="left")
+                self.rec_buttons.append(s_rec_btn)
 
                 s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 

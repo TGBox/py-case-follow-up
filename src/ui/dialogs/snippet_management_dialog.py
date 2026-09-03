@@ -91,10 +91,10 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         rec_btn = ctk.CTkButton(
             sc_row,
-            text=HOTKEY_RECORDER_BUTTON,
+            text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
             width=110,
-            fg_color="gray30",
-            hover_color="gray45",
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
             command=self.open_hotkey_recorder,
         )
         rec_btn.pack(side="right")

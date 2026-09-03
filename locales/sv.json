@@ -219,7 +219,33 @@
     "no_timeline_notes": "Inga anteckningar i tidslinjen.",
     "save_btn": "💾 Spara...",
     "sub_header": "Välj vilka element som ska visas i utskriftsrapporten:",
-    "timeline_lbl": "Tidslinje / Anteckningshistorik (avmarkera enskilda poster):"
+    "timeline_lbl": "Tidslinje / Anteckningshistorik (avmarkera enskilda poster):",
+    "banner_print": "<strong>Utskriftsvy för ärendeakt</strong> — Utskriftsdialogrutan öppnas. Välj din skrivare eller \"Spara som PDF\".",
+    "banner_view": "<strong>Ärendeaktvy</strong> — Översikt för ärende {case_id}.",
+    "btn_print_pdf": "🖨 Skriv ut / Spara som PDF",
+    "header_customer_data": "Kund- & mottagningsdata",
+    "header_form_fields": "Formulärfält & detaljer",
+    "header_timeline": "Historik & tidslinje",
+    "header_attachments": "Bilagor & bilder",
+    "col_case_id": "Ärende-ID",
+    "col_score": "Prioritet / Poäng",
+    "col_status": "Aktuell status",
+    "col_actor": "Ansvarig",
+    "col_created": "Skapad",
+    "col_deadline": "Återuppringningsdeadline",
+    "col_followup": "Uppföljning",
+    "no_deadline": "Ingen deadline angiven",
+    "no_followup": "Ingen uppföljning angiven",
+    "col_practice": "Mottagningsnamn",
+    "col_cust_id": "Kund-ID",
+    "col_contact": "Kontaktperson",
+    "col_phone": "Telefon",
+    "col_email": "E-post",
+    "col_field": "Fält",
+    "col_value": "Värde",
+    "col_filename": "Filnamn",
+    "col_filesize": "Filstorlek",
+    "vip_suffix": " (VIP-kund)"
   },
   "channels": {
     "DEV_TICKET": "GitLab-ärende",
@@ -407,7 +433,8 @@
     "select_target": "Välj nytt målformulär:",
     "select_valid": "Välj ett giltigt målformulär.",
     "case_info": "Ärende-ID: {case_id} — {title}",
-    "current_form": "Aktuellt formulär: {schema_name}"
+    "current_form": "Aktuellt formulär: {schema_name}",
+    "notice_text": "ℹ Säkerhetskopiering:\nVid omvandling överförs tidigare angiven formulärinformation som en ny anteckning till tidslinjen så att inget innehåll går förlorat. Gemensamma fält (t.ex. programområde) överförs till det nya formuläret."
   },
   "customer_form": {
     "btn_add_contact": "+ Lägg till kontakt",
@@ -823,7 +850,11 @@
     "sub_header_free": "Fritt utkast | Välj mottagare från mottagningsregistret eller ange fritt",
     "suggestions_count": "🔍 {hint} ({count})",
     "window_title_case": "{base_title} - Ärende {case_id}",
-    "window_title_new": "{base_title} (Nytt utkast)"
+    "window_title_new": "{base_title} (Nytt utkast)",
+    "custom_instruction": "⚡ Prioriterad AI-instruktion:",
+    "custom_hint": "t.ex. använd punktlistor, tvinga fram valda hälsningar, anpassa tonfall...",
+    "draft_btn_disabled": "🤖 AI-utkast (AI inaktiverad globalt)",
+    "open_assistant_btn": "🤖 Öppna AI-assistent"
   },
   "email_import": {
     "btn_create_new_case": "➕ Skapa som nytt ärende",
@@ -1242,7 +1273,7 @@
     "provider_gemini": "GOOGLE GEMINI (Moln)",
     "provider_ollama": "OLLAMA (Lokal)",
     "reset_paths_btn": "🔄 Återställ enskilda sökvägar till standard",
-    "reset_widths_btn": "🔄 Återställ alla kolumnbredder till standard",
+    "reset_widths_btn": "↻ Återställ alla kolumnbredder till standard",
     "save_btn": "💾 Spara inställningar",
     "saved_msg": "✓ Inställningar & profil sparades!",
     "saved_settings_msg": "✅ Inställningar & sökvägar sparade!",
@@ -1314,7 +1345,11 @@
     "ollama_stopped": "Ollama-servern har stoppats.",
     "pvs_model_error": "⚠ {msg}",
     "pvs_model_ok": "✅ {msg}",
-    "switched_to": "Bytte till profilen '{name}'."
+    "switched_to": "Bytte till profilen '{name}'.",
+    "shortcuts_app_header": "⚡ App-åtgärder tangentbordsgenvägar (Hotkeys)",
+    "shortcuts_snippet_header": "📝 Textavsnittsmakron (Snippet-genvägar)",
+    "no_snippets": "Inga textavsnitt tillgängliga.",
+    "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px"
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -1754,5 +1789,10 @@
     "reply_generated": "✓ Utkast till e-postsvar genererat{info}.",
     "rules_info": " ({base_count} grundregler, {practice_count} mottagningsregler{ci_info})",
     "summary_generated": "✓ Sammanfattning genererad{info}."
+  },
+  "sort_criteria": {
+    "name": "Namn (A-Ö)",
+    "id": "Mottagningsnummer / ID",
+    "contact": "Tid sedan senaste kontakt"
   }
 }

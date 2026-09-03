@@ -35,7 +35,7 @@ class TimelineWidget(ctk.CTkFrame):
         enable_auto_hiding_scrollbar(self.scroll_frame)
 
         # Input Area for New Note
-        input_frame = ctk.CTkFrame(self)
+        input_frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), corner_radius=6)
         input_frame.pack(fill="x", padx=5, pady=5)
 
         ctrl_row = ctk.CTkFrame(input_frame, fg_color="transparent")
@@ -48,8 +48,8 @@ class TimelineWidget(ctk.CTkFrame):
             ctrl_row,
             text=tr("cockpit.snippets_btn", "📝 Textbaustein"),
             width=110,
-            fg_color="gray30",
-            hover_color="darkmagenta",
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
             command=self.on_click_snippet,
         )
         self.snip_btn.pack(side="right")

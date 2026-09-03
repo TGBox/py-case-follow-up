@@ -59,12 +59,13 @@ class AttachmentWidget(ctk.CTkFrame):
             self.hdr_lbl.configure(text=tr("attachments.title", "Fall-Dateianhänge"))
         if hasattr(self, "open_exp_btn"):
             self.open_exp_btn.configure(text=tr("attachments.open_explorer", "📁 Explorer öffnen"))
-        if getattr(self, "preview_label", None) is not None:
+        plbl = getattr(self, "preview_label", None)
+        if plbl is not None:
             try:
-                if self.preview_label.winfo_exists():
-                    txt = self.preview_label.cget("text")
+                if plbl.winfo_exists():
+                    txt = plbl.cget("text")
                     if not txt.startswith("📄") and not txt.startswith("🖼"):
-                        self.preview_label.configure(text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"))
+                        plbl.configure(text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"))
             except Exception:
                 pass
         if hasattr(self, "add_file_btn"):
@@ -113,8 +114,8 @@ class AttachmentWidget(ctk.CTkFrame):
                 f_frame,
                 text=tr("common.open", "📂 Öffnen"),
                 width=65,
-                fg_color="gray30",
-                hover_color="gray40",
+                fg_color=("gray75", "gray30"),
+                hover_color=("gray65", "gray40"),
                 command=lambda filepath=f: self.open_in_os(filepath),
             )
             btn_open.pack(side="right", padx=2)

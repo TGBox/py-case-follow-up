@@ -897,7 +897,8 @@
     "preset_2h": "+ 2 tim",
     "preset_3d": "+ 3 dagar",
     "preset_today_1630": "Idag 16:30",
-    "preset_tomorrow_8am": "Imorgon 08:00"
+    "preset_tomorrow_8am": "Imorgon 08:00",
+    "new_time_lbl": "🕒 Ny tid:"
   },
   "form": {
     "no_fields": "Inga formulärfält definierade."

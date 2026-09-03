@@ -897,7 +897,8 @@
     "preset_2h": "+ 2 Hrs.",
     "preset_3d": "+ 3 Days",
     "preset_today_1630": "Today 16:30",
-    "preset_tomorrow_8am": "Tomorrow 08:00"
+    "preset_tomorrow_8am": "Tomorrow 08:00",
+    "new_time_lbl": "🕒 New time:"
   },
   "form": {
     "no_fields": "No form fields defined."

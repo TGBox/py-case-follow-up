@@ -334,13 +334,6 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
             self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
 
-    def on_language_selected(self, selected_display_name: str):
-        from services.i18n_service import LANGUAGE_DISPLAY_TO_CODE, get_i18n
-        lang_code = LANGUAGE_DISPLAY_TO_CODE.get(selected_display_name, "de")
-        self.profile.ui_settings.language = lang_code
-        get_i18n().current_language = lang_code
-        self.refresh_ui_labels()
-
     def refresh_ui_labels(self):
         from services.i18n_service import tr
         self.title(tr("dialog_titles.profile_settings", "⚙ Profil & Anwendungseinstellungen"))
@@ -395,7 +388,6 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.language_combo = ctk.CTkOptionMenu(
             self.tab_ui,
             values=list(SUPPORTED_LANGUAGES.values()),
-            command=self.on_language_selected,
         )
         curr_lang = getattr(self.profile.ui_settings, "language", "de")
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))

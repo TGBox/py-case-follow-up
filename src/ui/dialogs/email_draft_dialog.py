@@ -245,7 +245,6 @@ class EmailDraftDialog(ctk.CTkToplevel):
             fg_color="transparent"
         )
         self.suggestions_scroll.pack(fill="both", expand=True, padx=4, pady=(2, 6))
-        enable_auto_hiding_scrollbar(self.suggestions_scroll)
 
         # Subject
         ctk.CTkLabel(content_scroll, text=tr("email_draft.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
@@ -662,15 +661,19 @@ class EmailDraftDialog(ctk.CTkToplevel):
                 pass
 
             def ui_callback():
-                if not self.winfo_exists():
-                    return
-                self.ollama_status_badge.configure(
-                    text=badge_text,
-                    text_color=badge_color,
-                )
+                try:
+                    if getattr(self, "_destroyed", False) or not self.winfo_exists():
+                        return
+                    self.ollama_status_badge.configure(
+                        text=badge_text,
+                        text_color=badge_color,
+                    )
+                except Exception:
+                    pass
 
             try:
-                self.after(0, ui_callback)
+                if not getattr(self, "_destroyed", False):
+                    self.after(0, ui_callback)
             except Exception:
                 pass
 
@@ -747,3 +750,8 @@ class EmailDraftDialog(ctk.CTkToplevel):
             on_case_updated=self.on_case_updated,
             wiki_articles=wiki_articles,
         )
+
+    def destroy(self):
+        self._destroyed = True
+        super().destroy()
+

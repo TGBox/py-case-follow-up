@@ -17,20 +17,29 @@ from services.export_service import ExportService
 from services.calendar_email_service import CalendarEmailService
 
 
-@pytest.fixture
-def app_and_storage(tmp_path: Path):
-    config = AppConfig(workspace_dir=tmp_path)
-    storage = StorageService(config)
-    
+@pytest.fixture(scope="module")
+def shared_app():
     app = ctk.CTk()
     app.withdraw()
-    
-    yield app, storage, config
-    
+    yield app
     try:
         app.destroy()
     except Exception:
         pass
+
+
+@pytest.fixture
+def app_and_storage(tmp_path: Path, shared_app):
+    config = AppConfig(workspace_dir=tmp_path)
+    storage = StorageService(config)
+    
+    yield shared_app, storage, config
+    
+    for child in shared_app.winfo_children():
+        try:
+            child.destroy()
+        except Exception:
+            pass
 
 
 def test_customer_management_dialog_full_crud(app_and_storage):

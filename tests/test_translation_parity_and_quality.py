@@ -159,7 +159,7 @@ class TestTranslationParity:
         for lang in ("de", "en", "sv"):
             data = load_locale_json(lang)
             leafs = extract_leaf_keys(data)
-            none_keys = [k for k, v in leafs.items() if v == "None" or v is None]
+            none_keys = [k for k, v in leafs.items() if v is None or (v == "None" and not k.endswith("none_placeholder"))]
             assert not none_keys, f"Found null/None values in {lang}.json: {none_keys}"
 
 

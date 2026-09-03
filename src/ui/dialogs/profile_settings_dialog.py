@@ -337,7 +337,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
-        self.title(tr("dialog_titles.profile_settings", "⚙ Profil & Anwendungseinstellungen"))
+        w, h = DIALOG_DIMENSIONS["profile_settings"]
+        self.title(tr("profile.title", DIALOG_TITLES["profile_settings"]))
         if hasattr(self, "top_header_lbl"):
             self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
         if hasattr(self, "save_btn"):
@@ -345,11 +346,22 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         if hasattr(self, "tabview") and hasattr(self.tabview, "_segmented_button") and hasattr(self.tabview._segmented_button, "_buttons_dict"):
             btns = self.tabview._segmented_button._buttons_dict
+            new_tab_name_map = {}
             for tab_id, key, default in getattr(self, "_tab_keys", []):
                 orig_name = getattr(self, "_tab_name_map", {}).get(tab_id)
+                new_txt = tr(key, default)
+                new_tab_name_map[tab_id] = new_txt
                 if orig_name and orig_name in btns:
-                    new_txt = tr(key, default)
                     btns[orig_name].configure(text=new_txt)
+                    btns[new_txt] = btns.pop(orig_name)
+            self._tab_name_map = new_tab_name_map
+
+        if hasattr(self, "popup_target_combo"):
+            curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+            opt_app = tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)")
+            opt_pri = tr("profile.popup_target_primary", "Hauptbildschirm")
+            self.popup_target_combo.configure(values=[opt_app, opt_pri])
+            self.popup_target_combo.set(opt_app if curr_target == "APP_SCREEN" else opt_pri)
 
         if hasattr(self, "appearance_hdr_lbl"):
             self.appearance_hdr_lbl.configure(text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"))
@@ -368,7 +380,26 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         if hasattr(self, "col_widths_hdr_lbl"):
             self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
         if hasattr(self, "btn_reset_widths"):
-            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "Alle Spaltenbreiten auf Standard zurücksetzen"))
+            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"))
+        if hasattr(self, "widths_label"):
+            widths = self.profile.ui_settings.column_widths
+            def build_widths_str(w_dict: dict) -> str:
+                return tr(
+                    "profile.widths_summary",
+                    "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
+                    "• Kanban-Board: Mindestspaltenbreite {board}px\n"
+                    "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
+                    left=w_dict.get('cockpit_left', 300),
+                    center=w_dict.get('cockpit_center', 420),
+                    right=w_dict.get('cockpit_right', 320),
+                    board=w_dict.get('board_column', 280),
+                    id=w_dict.get('table_col_id', 120),
+                    prac=w_dict.get('table_col_practice', 220),
+                    title=w_dict.get('table_col_title', 280),
+                    score=w_dict.get('table_col_score', 90),
+                )
+            self.widths_label.configure(text=build_widths_str(widths))
+
         if hasattr(self, "user_tab_hdr_lbl"):
             self.user_tab_hdr_lbl.configure(text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"))
         if hasattr(self, "active_prof_lbl"):
@@ -377,6 +408,16 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
         if hasattr(self, "user_details_hdr_lbl"):
             self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
+
+        if hasattr(self, "app_shortcuts_hdr_lbl"):
+            self.app_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER))
+        if hasattr(self, "snippet_shortcuts_hdr_lbl"):
+            self.snippet_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER))
+        if hasattr(self, "no_snippets_lbl"):
+            self.no_snippets_lbl.configure(text=tr("profile.no_snippets", LABEL_NO_SNIPPETS))
+        if hasattr(self, "rec_buttons"):
+            for btn in self.rec_buttons:
+                btn.configure(text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON))
 
     def setup_ui_tab(self):
         from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
@@ -810,6 +851,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             pass
 
         self.storage_service.save_profile(self.profile)
+        self.refresh_ui_labels()
         self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color="green")
 
         if self.on_profile_updated:

@@ -3,6 +3,86 @@ from typing import Any
 import customtkinter as ctk
 
 
+def patch_ctk_scrollable_frame() -> None:
+    """Fixes CustomTkinter event callback signature mismatches (e.g. Python 3.14/Windows Tcl events).
+    
+    CustomTkinter registers `<Configure>` on CTkScrollableFrame using `lambda e: ...`,
+    and defines internal handlers with strict single-argument signatures `(self, event)`.
+    Under certain Tcl event dispatches, callbacks are executed without positional arguments,
+    triggering `TypeError: CTkScrollableFrame.__init__.<locals>.<lambda>() missing 1 required positional argument: 'e'`.
+    This patch ensures all callbacks accept optional or variable arguments.
+    """
+    if getattr(ctk.CTkScrollableFrame, "_ctk_resilience_patched", False):
+        return
+
+    orig_init = ctk.CTkScrollableFrame.__init__
+    orig_fit = getattr(ctk.CTkScrollableFrame, "_fit_frame_dimensions_to_canvas", None)
+    orig_mw = getattr(ctk.CTkScrollableFrame, "_mouse_wheel_all", None)
+    orig_sp = getattr(ctk.CTkScrollableFrame, "_keyboard_shift_press_all", None)
+    orig_sr = getattr(ctk.CTkScrollableFrame, "_keyboard_shift_release_all", None)
+
+    if orig_fit:
+        def safe_fit(self, event=None):
+            return orig_fit(self, event)
+        ctk.CTkScrollableFrame._fit_frame_dimensions_to_canvas = safe_fit
+
+    if orig_mw:
+        def safe_mw(self, event=None):
+            if event is None:
+                return
+            return orig_mw(self, event)
+        ctk.CTkScrollableFrame._mouse_wheel_all = safe_mw
+
+    if orig_sp:
+        def safe_sp(self, event=None):
+            return orig_sp(self, event)
+        ctk.CTkScrollableFrame._keyboard_shift_press_all = safe_sp
+
+    if orig_sr:
+        def safe_sr(self, event=None):
+            return orig_sr(self, event)
+        ctk.CTkScrollableFrame._keyboard_shift_release_all = safe_sr
+
+    # Also make CTkBaseClass dimension updates resilient to None/missing event
+    if hasattr(ctk, "CTkBaseClass") and hasattr(ctk.CTkBaseClass, "_update_dimensions_event"):
+        orig_update_dim = ctk.CTkBaseClass._update_dimensions_event
+        def safe_update_dim(self, event=None):
+            if event is None:
+                return
+            return orig_update_dim(self, event)
+        ctk.CTkBaseClass._update_dimensions_event = safe_update_dim
+
+    # Make CTk / CTkToplevel focus handlers resilient
+    for cls in (getattr(ctk, "CTk", None), getattr(ctk, "CTkToplevel", None)):
+        if cls and hasattr(cls, "_focus_in_event"):
+            orig_focus = cls._focus_in_event
+            def safe_focus(self, event=None, orig=orig_focus):
+                if event is None:
+                    return
+                return orig(self, event)
+            cls._focus_in_event = safe_focus
+
+    def safe_init(self, *args, **kwargs):
+        orig_init(self, *args, **kwargs)
+        try:
+            canvas = getattr(self, "_parent_canvas", None)
+            if canvas is not None:
+                # Re-bind <Configure> on the inner frame with a resilient handler accepting arbitrary arguments
+                self.bind("<Configure>", lambda *a, **kw: canvas.configure(scrollregion=canvas.bbox("all")))
+                # Re-bind <Configure> on the parent canvas with a resilient handler
+                canvas.bind("<Configure>", lambda *a, **kw: self._fit_frame_dimensions_to_canvas(*a, **kw))
+        except Exception:
+            pass
+
+    ctk.CTkScrollableFrame.__init__ = safe_init
+    ctk.CTkScrollableFrame._ctk_resilience_patched = True
+
+
+# Automatically apply patch on import
+patch_ctk_scrollable_frame()
+
+
+
 def get_main_app_window(window: ctk.CTk | ctk.CTkToplevel) -> ctk.CTk | ctk.CTkToplevel:
     """Finds the root main application window (SupportCockpitApp) by walking up the master chain."""
     curr = window

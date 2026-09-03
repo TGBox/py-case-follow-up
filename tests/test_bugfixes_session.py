@@ -109,6 +109,8 @@ def test_render_textbox_field_height_lookup():
     except Exception as e:
         pytest.skip(f"Tkinter environment unavailable: {e}")
 
+    assert root is not None
+
     try:
         frame = ctk.CTkFrame(root)
         field = SchemaField(field_id="test_field", field_type="textbox", label="Test Textbox")
@@ -121,3 +123,51 @@ def test_render_textbox_field_height_lookup():
     finally:
         if root is not None:
             root.destroy()
+
+
+def test_ctk_scrollable_frame_callback_resilience():
+    """Verify CTkScrollableFrame configure and dimension callbacks can be invoked with 0 args without raising TypeError."""
+    import re
+    from utils.ui_utils import patch_ctk_scrollable_frame
+
+    patch_ctk_scrollable_frame()
+
+    root = None
+    try:
+        root = ctk.CTk()
+        root.withdraw()
+    except Exception as e:
+        pytest.skip(f"Tkinter environment unavailable: {e}")
+
+    assert root is not None
+
+    try:
+        scroll_frame = ctk.CTkScrollableFrame(root)
+        scroll_frame.pack()
+        root.update()
+
+        # 1. Test inner frame <Configure> Tcl callback with 0 arguments
+        script1 = scroll_frame.bind("<Configure>")
+        match1 = re.search(r"\[([^\s]+)", script1)
+        assert match1 is not None
+        cmd1 = match1.group(1)
+        root.tk.call(cmd1)
+
+        # 2. Test parent canvas <Configure> Tcl callback with 0 arguments
+        canvas = getattr(scroll_frame, "_parent_canvas", None)
+        assert canvas is not None
+        script2 = canvas.bind("<Configure>")
+        match2 = re.search(r"\[([^\s]+)", script2)
+        assert match2 is not None
+        cmd2 = match2.group(1)
+        root.tk.call(cmd2)
+
+        # 3. Test direct method invocations with None/no event
+        scroll_frame._fit_frame_dimensions_to_canvas()
+        scroll_frame._mouse_wheel_all(None)
+        scroll_frame._keyboard_shift_press_all()
+        scroll_frame._keyboard_shift_release_all()
+    finally:
+        if root is not None:
+            root.destroy()
+

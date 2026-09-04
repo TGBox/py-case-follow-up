@@ -23,11 +23,12 @@ try:
 
     if not getattr(_tkinter, "_is_resilient_patched", False):
         _orig_create = getattr(_tkinter, "create", None)
-        if _orig_create is not None:
+        if callable(_orig_create):
+            _active_create = _orig_create
             def _resilient_create(*args, **kwargs):
                 for attempt in range(4):
                     try:
-                        return _orig_create(*args, **kwargs)
+                        return _active_create(*args, **kwargs)
                     except _tkinter.TclError:
                         if attempt == 3:
                             raise
@@ -41,14 +42,14 @@ except (ImportError, AttributeError):
 # Suppress native Windows desktop notifications during tests
 try:
     import winotify
-    winotify.Notification.show = lambda self, *args, **kwargs: None
+    setattr(winotify.Notification, "show", lambda self, *args, **kwargs: None)
 except (ImportError, AttributeError):
     pass
 
 try:
     import pystray
     if hasattr(pystray, "Icon"):
-        pystray.Icon.notify = lambda self, *args, **kwargs: None
+        setattr(pystray.Icon, "notify", lambda self, *args, **kwargs: None)
 except (ImportError, AttributeError):
     pass
 
@@ -98,17 +99,17 @@ try:
             pass
         return ""
 
-    tk.Wm.wm_state = _headless_wm_state
-    tk.Wm.state = _headless_wm_state
-    tk.Wm.wm_deiconify = _headless_wm_deiconify
-    tk.Wm.deiconify = _headless_wm_deiconify
-    tk.Wm.wm_withdraw = _headless_wm_withdraw
-    tk.Wm.withdraw = _headless_wm_withdraw
-    tk.Wm.wm_iconify = _headless_wm_iconify
-    tk.Wm.iconify = _headless_wm_iconify
+    setattr(tk.Wm, "wm_state", _headless_wm_state)
+    setattr(tk.Wm, "state", _headless_wm_state)
+    setattr(tk.Wm, "wm_deiconify", _headless_wm_deiconify)
+    setattr(tk.Wm, "deiconify", _headless_wm_deiconify)
+    setattr(tk.Wm, "wm_withdraw", _headless_wm_withdraw)
+    setattr(tk.Wm, "withdraw", _headless_wm_withdraw)
+    setattr(tk.Wm, "wm_iconify", _headless_wm_iconify)
+    setattr(tk.Wm, "iconify", _headless_wm_iconify)
 
     # Prevent focus stealing during test runs
-    tk.Misc.focus_force = lambda self: None
+    setattr(tk.Misc, "focus_force", lambda self: None)
 
     _orig_tk_init = tk.Tk.__init__
     def _headless_tk_init(self, *args, **kwargs):
@@ -118,7 +119,7 @@ try:
         except Exception:
             pass
         self._simulated_state = "withdrawn"
-    tk.Tk.__init__ = _headless_tk_init
+    setattr(tk.Tk, "__init__", _headless_tk_init)
 
     _orig_toplevel_init = tk.Toplevel.__init__
     def _headless_toplevel_init(self, *args, **kwargs):
@@ -128,7 +129,7 @@ try:
         except Exception:
             pass
         self._simulated_state = "withdrawn"
-    tk.Toplevel.__init__ = _headless_toplevel_init
+    setattr(tk.Toplevel, "__init__", _headless_toplevel_init)
 
 except (ImportError, AttributeError):
     pass

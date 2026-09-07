@@ -169,8 +169,11 @@ class TableView(ctk.CTkFrame):
         tab_timeline = self.detail_tabview.add("🕒 Zeitleiste")
         tab_attachments = self.detail_tabview.add("📎 Anhänge")
 
-        if hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):
-            btns = self.detail_tabview._segmented_button._buttons_dict
+        # Undocumented CTkTabview internal used to rename tab labels in place;
+        # guarded by the hasattr() checks - customtkinter's stubs don't
+        # declare it.
+        if hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
+            btns = self.detail_tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             if "📝 Formular & Ausfüllen" in btns:
                 btns["📝 Formular & Ausfüllen"].configure(text=t_form)
             if "🕒 Zeitleiste" in btns:
@@ -366,8 +369,8 @@ class TableView(ctk.CTkFrame):
             )
         self.save_btn.configure(text=tr("table.save_btn", "💾 Ändern & Speichern"))
 
-        if hasattr(self, "detail_tabview") and hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):
-            btns = self.detail_tabview._segmented_button._buttons_dict
+        if hasattr(self, "detail_tabview") and hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
+            btns = self.detail_tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             initial_tab_keys = {
                 "form": "📝 Formular & Ausfüllen",
                 "timeline": "🕒 Zeitleiste",

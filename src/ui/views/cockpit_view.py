@@ -174,11 +174,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
     def set_schemas(self, schemas: list[QuestionSchema]):
         self.schemas = schemas
 
-    def focus_wiki_search(self):
-        wiki_tab = getattr(self, "_sidebar_tab_names", {}).get("wiki", "Wiki")
-        self.right_tabview.set(wiki_tab)
-        self.wiki_widget.focus_search()
-
     def focus_timeline_note(self):
         tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", "Zeitleiste")
         self.right_tabview.set(tl_tab)
@@ -324,8 +319,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             return
 
         email = self.current_case.customer.email
-        if not email and getattr(self.current_case.customer, "all_emails", None):
-            emails = self.current_case.customer.all_emails
+        if not email:
+            # case.customer is a CaseCustomer snapshot (single `email` field
+            # only); all_emails is a property on the full Customer record.
+            # Kept as a defensive getattr() in case a caller ever attaches a
+            # full Customer here instead.
+            emails = getattr(self.current_case.customer, "all_emails", None)
             if emails:
                 email = emails[0]
 
@@ -562,6 +561,14 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(2, 0))
 
     def focus_wiki_search(self):
+        # cockpit_view.py used to define focus_wiki_search() twice; this was
+        # the second (active - Python/pyright both use the last definition)
+        # of the two, and it never switched to the Wiki tab first, so the
+        # shortcut bound to it in app.py silently focused a hidden widget.
+        # Restoring the tab-switch from the (until now dead) first definition.
+        if hasattr(self, "right_tabview"):
+            wiki_tab = getattr(self, "_sidebar_tab_names", {}).get("wiki", "Wiki")
+            self.right_tabview.set(wiki_tab)
         if hasattr(self, "wiki_widget") and hasattr(self.wiki_widget, "search_entry"):
             self.wiki_widget.search_entry.focus()
             self.wiki_widget.search_entry.select_range(0, "end")

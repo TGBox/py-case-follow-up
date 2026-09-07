@@ -167,7 +167,11 @@ class ToastNotification(ctk.CTkToplevel):
             if hasattr(self, "master") and self.master:
                 top = self.master.winfo_toplevel()
                 if hasattr(top, "bring_to_foreground"):
-                    top.bring_to_foreground()
+                    # bring_to_foreground is a custom method only the real
+                    # app-root (SupportCockpitApp) defines; winfo_toplevel()
+                    # is typed generically as Tk | Toplevel, which doesn't
+                    # declare it, hence the hasattr() guard above.
+                    top.bring_to_foreground()  # pyright: ignore[reportAttributeAccessIssue]
                 elif top:
                     if top.state() == "iconic" or not top.winfo_viewable():
                         top.deiconify()

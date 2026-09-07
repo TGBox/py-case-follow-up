@@ -398,6 +398,7 @@ class StorageService:
 
     def save_profile(self, profile: UserProfile, sync: bool = False) -> None:
         self._profile_cache = profile
+        p_dict: dict[str, Any] | None = None
         if sync:
             p_dict = profile.to_dict()
             atomic_save_json(self.config.app_profile_path, p_dict)
@@ -407,7 +408,8 @@ class StorageService:
         if safe_filename:
             target_path = self.profiles_dir / f"profile_{safe_filename}.json"
             if sync:
-                p_dict = profile.to_dict() if 'p_dict' not in locals() else p_dict
+                if p_dict is None:
+                    p_dict = profile.to_dict()
                 atomic_save_json(target_path, p_dict)
             else:
                 self.saver.save_debounced(target_path, lambda: profile.to_dict())

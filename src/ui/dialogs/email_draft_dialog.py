@@ -686,15 +686,21 @@ class EmailDraftDialog(ctk.CTkToplevel):
             self.status_lbl.configure(text=tr("email_draft.case_required_for_ai", "⚠ KI-Entwurf benötigt einen aktiven Fall."), text_color="darkorange")
             return
 
+        # Bind the None-checked case to a local now: self.case is a plain
+        # attribute, so the "if not self.case: return" guard above doesn't
+        # narrow it inside worker(), a nested function that could run after
+        # self.case has changed - capturing it here keeps both the type
+        # checker and the actual value stable for the closure below.
+        case = self.case
         self._show_overlay(tr("email_draft.ai_generating_wait", "🤖 KI generiert E-Mail-Entwurf... Bitte warten"))
 
         def worker():
             user_name = self.profile.user.name if (self.profile and hasattr(self.profile, 'user')) else self.user_name or "Ihr Support-Team"
             base_rules = self.profile.ai_settings.base_rules if (self.profile and hasattr(self.profile, 'ai_settings') and self.profile.ai_settings) else []
-            practice_rules = getattr(self.case.customer, "custom_ai_rules", []) or []
+            practice_rules = getattr(case.customer, "custom_ai_rules", []) or []
             custom_instruction = self.custom_instruction_entry.get().strip() if (hasattr(self, "custom_instruction_entry") and self.custom_instruction_entry) else ""
             return self.ai_service.generate_customer_response(
-                self.case,
+                case,
                 user_name=user_name,
                 base_rules=base_rules,
                 practice_rules=practice_rules,

@@ -29,6 +29,13 @@ dev = [
 
 [tool.pyright]
 extraPaths = ["src", "."]
+# The app only ever runs on Windows (winotify, pystray tray icon, ctypes.windll
+# theming, os.startfile everywhere) - without this, pyright infers the host
+# platform of whatever machine/CI runner it's invoked on and hides every
+# Windows-only stdlib member (os.startfile, ctypes.windll) behind
+# reportAttributeAccessIssue, even though the code always guards them with
+# hasattr()/sys.platform checks for the (never taken) non-Windows branch.
+pythonPlatform = "Windows"
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html"

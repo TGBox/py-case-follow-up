@@ -62,6 +62,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         super().__init__(parent)
         self.available_tags = available_tags
         self.selected_tags = set(selected_tags)
+        self.on_apply = on_apply
         from services.i18n_service import tr
         self.title(tr("dynamic_form.select_tags_dialog_title", "🧩 Programmbereiche auswählen"))
         self.geometry("450x440")

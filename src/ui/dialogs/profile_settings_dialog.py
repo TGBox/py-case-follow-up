@@ -344,8 +344,11 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         if hasattr(self, "save_btn"):
             self.save_btn.configure(text=tr("profile.save_btn", "💾 Einstellungen Speichern"))
 
-        if hasattr(self, "tabview") and hasattr(self.tabview, "_segmented_button") and hasattr(self.tabview._segmented_button, "_buttons_dict"):
-            btns = self.tabview._segmented_button._buttons_dict
+        # Undocumented CTkTabview internal used to rename tab labels in place;
+        # guarded by the hasattr() checks - customtkinter's stubs don't
+        # declare it.
+        if hasattr(self, "tabview") and hasattr(self.tabview, "_segmented_button") and hasattr(self.tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
+            btns = self.tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             new_tab_name_map = {}
             for tab_id, key, default in getattr(self, "_tab_keys", []):
                 orig_name = getattr(self, "_tab_name_map", {}).get(tab_id)

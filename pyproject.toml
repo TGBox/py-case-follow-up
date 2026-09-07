@@ -22,6 +22,24 @@ dependencies = [
     "winotify>=1.1.0",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest-cov==7.1.0",
+]
+
 [tool.pyright]
 extraPaths = ["src", "."]
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=term-missing --cov-report=html"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
 

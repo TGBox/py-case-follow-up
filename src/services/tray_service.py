@@ -16,7 +16,13 @@ _ICON_SIZE = 64
 _BADGE_RADIUS = 12
 
 
-def _create_tray_icon_image(badge_count: int = 0) -> Image.Image:
+def _create_tray_icon_image(badge_count: int = 0) -> Image.Image:  # pyright: ignore[reportInvalidTypeForm]
+    # The `# type: ignore` on the `from PIL import Image` line above (needed
+    # because pystray/PIL ship incomplete type info here) makes pyright treat
+    # the imported `Image` submodule itself as an unresolved variable rather
+    # than a proper module/class when it's then used as `Image.Image` in a
+    # type position - a stub-resolution quirk, not an actual type problem
+    # (`Image.Image` is Pillow's standard, correct way to type an image).
     """Generate a tray icon image with an optional red notification badge.
 
     The base icon is a medical-cross style icon matching the app's 🩺 theme.
@@ -125,7 +131,7 @@ class TrayService:
         """
         if self._icon and type(self._icon).__name__ == "DummyIcon":
             try:
-                self._icon.notify(message, title)
+                self._icon.notify(message, title)  # pyright: ignore[reportAttributeAccessIssue]
                 logger.info(f"Mock tray notification recorded: {title}")
                 return True
             except Exception:
@@ -148,7 +154,11 @@ class TrayService:
 
         if self._icon and hasattr(self._icon, "notify"):
             try:
-                self._icon.notify(message, title)
+                # notify() exists on pystray's real platform-specific Icon
+                # backend (win32/appindicator/xorg) at runtime, guarded here by
+                # hasattr(); pyright only resolves pystray's generic base Icon
+                # type, which doesn't declare it.
+                self._icon.notify(message, title)  # pyright: ignore[reportAttributeAccessIssue]
                 logger.info(f"Native tray notification sent via icon: {title}")
                 return True
             except Exception as e:

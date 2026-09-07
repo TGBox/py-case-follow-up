@@ -158,9 +158,14 @@ class LocalizedDict(dict):
         except Exception:
             return super().get(key, default)
 
-    def values(self) -> list[str]:
+    def values(self) -> list[str]:  # pyright: ignore[reportIncompatibleMethodOverride]
+        # Deliberately returns a materialized, already-translated list rather
+        # than a dict_values view - that's the whole point of this proxy
+        # class - so it can never satisfy dict.values()'s exact return type.
         return [self[k] for k in self.keys()]
 
-    def items(self) -> list[tuple[str, str]]:
+    def items(self) -> list[tuple[str, str]]:  # pyright: ignore[reportIncompatibleMethodOverride]
+        # Same reasoning as values() above: translated-on-the-fly list, not a
+        # dict_items view.
         return [(k, self[k]) for k in self.keys()]
 

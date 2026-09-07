@@ -58,13 +58,25 @@ class DialogLaunchersMixin:
         deep_search_service: Any
         search_query: str
         refresh_views: Callable[..., Any]
-        bring_to_foreground: Callable[[], None]
-        switch_to_cockpit_view_for_case: Callable[[Any], None]
-        on_language_changed: Callable[[str], None]
-        load_all_data: Callable[[], None]
-        on_case_updated: Callable[[Any], None]
-        on_customers_updated: Callable[[], None]
-        on_tags_updated: Callable[[], None]
+
+        # bring_to_foreground/switch_to_cockpit_view_for_case/on_language_changed/
+        # load_all_data are implemented on the host (SupportCockpitApp in app.py),
+        # not here - declared as real stub methods (not Callable-typed attributes)
+        # so that app.py's actual `def` overrides are checked against a proper
+        # bound-method signature instead of a self-less Callable, which is what
+        # caused pyright's earlier "positional parameter count mismatch" reports.
+        def bring_to_foreground(self) -> None: ...
+        def switch_to_cockpit_view_for_case(self, case: Any) -> None: ...
+        def on_language_changed(self, lang_code: str) -> None: ...
+        def load_all_data(self) -> None: ...
+
+        # NOTE: on_case_updated / on_customers_updated / on_tags_updated are
+        # intentionally NOT declared here - they are real methods defined further
+        # down in this very class. Redeclaring them above as Callable-typed
+        # attributes made pyright treat every `self.on_case_updated(...)` call/
+        # pass-through elsewhere in this file as unbound (self not applied),
+        # producing spurious "Argument missing for parameter" and "Extra
+        # parameter" errors at every call site.
 
     def open_followup_dialog_for_case(self, case: Case):
         from ui.dialogs.followup_dialog import FollowupDialog

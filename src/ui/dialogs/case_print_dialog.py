@@ -3,6 +3,7 @@ import tempfile
 import webbrowser
 import customtkinter as ctk
 from pathlib import Path
+from tkinter import filedialog
 from typing import Any
 from enums import get_actor_display, get_board_column_display
 from models.case import Case

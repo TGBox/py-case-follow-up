@@ -39,12 +39,16 @@ class CockpitLayoutBuilderMixin:
         attachment_service: Any
         wiki_service: Any
         author_name: str
+        current_case: Any
+        case_list_widget: Any
         on_paned_sash_released: Callable[..., Any]
         on_select_case_from_list: Callable[..., Any]
         on_search_changed: Callable[..., Any]
         on_manage_module_tags: Callable[..., Any]
         _get_wiedervorlage_tooltip_text: Callable[..., Any]
         _on_info_frame_configure: Callable[..., Any]
+        _update_title_label: Callable[..., Any]
+        _update_wiedervorlage_display: Callable[..., Any]
         on_click_archive: Callable[..., Any]
         on_toggle_complete: Callable[..., Any]
         on_actor_changed: Callable[..., Any]
@@ -335,8 +339,12 @@ class CockpitLayoutBuilderMixin:
         self.convert_schema_btn = self.more_actions_combo
 
         # Refresh right pane tabs ("Zeitleiste", "Anhänge", "Wiki")
-        if hasattr(self, "right_tabview") and hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):
-            btns = self.right_tabview._segmented_button._buttons_dict
+        # _segmented_button/_buttons_dict are undocumented CTkTabview internals
+        # (guarded by the hasattr() checks above) used to rename tab labels
+        # in place - customtkinter's public API has no supported way to do
+        # this, and the type stubs don't declare these private attributes.
+        if hasattr(self, "right_tabview") and hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
+            btns = self.right_tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             tab_defs = {"timeline": "Zeitleiste", "attachments": "Anhänge", "wiki": "Wiki"}
             for tab_key, init_name in tab_defs.items():
                 if init_name in btns:
@@ -375,8 +383,9 @@ class CockpitLayoutBuilderMixin:
         tab_attachments = self.right_tabview.add("Anhänge")
         tab_wiki = self.right_tabview.add("Wiki")
 
-        if hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):
-            btns = self.right_tabview._segmented_button._buttons_dict
+        # Same undocumented CTkTabview internal as refresh_ui_labels() above.
+        if hasattr(self.right_tabview, "_segmented_button") and hasattr(self.right_tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
+            btns = self.right_tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             if "Zeitleiste" in btns:
                 btns["Zeitleiste"].configure(text=t_title)
             if "Anhänge" in btns:

@@ -43,9 +43,12 @@ def patch_ctk_scrollable_frame() -> None:
             return orig_sr(self, event)
         ctk.CTkScrollableFrame._keyboard_shift_release_all = safe_sr
 
-    # Also make CTkBaseClass dimension updates resilient to None/missing event and re-entrant loops
-    if hasattr(ctk, "CTkBaseClass") and hasattr(ctk.CTkBaseClass, "_update_dimensions_event"):
-        orig_update_dim = ctk.CTkBaseClass._update_dimensions_event
+    # Also make CTkBaseClass dimension updates resilient to None/missing event and re-entrant loops.
+    # CTkBaseClass is an internal customtkinter class not exported/declared in
+    # its public API across all versions - hence the hasattr(ctk, ...) guard
+    # before ever touching it.
+    if hasattr(ctk, "CTkBaseClass") and hasattr(ctk.CTkBaseClass, "_update_dimensions_event"):  # pyright: ignore[reportAttributeAccessIssue]
+        orig_update_dim = ctk.CTkBaseClass._update_dimensions_event  # pyright: ignore[reportAttributeAccessIssue]
         def safe_update_dim(self, event=None):
             if event is None:
                 return
@@ -56,11 +59,12 @@ def patch_ctk_scrollable_frame() -> None:
                 return orig_update_dim(self, event)
             finally:
                 self._in_update_dim = False
-        ctk.CTkBaseClass._update_dimensions_event = safe_update_dim
+        ctk.CTkBaseClass._update_dimensions_event = safe_update_dim  # pyright: ignore[reportAttributeAccessIssue]
 
-    # Prevent CTkScrollbar._draw from triggering re-entrant update_idletasks cascades
-    if hasattr(ctk, "CTkScrollbar") and hasattr(ctk.CTkScrollbar, "_draw"):
-        orig_draw = ctk.CTkScrollbar._draw
+    # Prevent CTkScrollbar._draw from triggering re-entrant update_idletasks
+    # cascades. Same undeclared-internal situation as CTkBaseClass above.
+    if hasattr(ctk, "CTkScrollbar") and hasattr(ctk.CTkScrollbar, "_draw"):  # pyright: ignore[reportAttributeAccessIssue]
+        orig_draw = ctk.CTkScrollbar._draw  # pyright: ignore[reportAttributeAccessIssue]
         def safe_draw(self, *args, **kwargs):
             if getattr(self, "_in_draw", False):
                 return
@@ -69,7 +73,7 @@ def patch_ctk_scrollable_frame() -> None:
                 return orig_draw(self, *args, **kwargs)
             finally:
                 self._in_draw = False
-        ctk.CTkScrollbar._draw = safe_draw
+        ctk.CTkScrollbar._draw = safe_draw  # pyright: ignore[reportAttributeAccessIssue]
 
     # Make CTk / CTkToplevel focus handlers resilient
     for cls in (getattr(ctk, "CTk", None), getattr(ctk, "CTkToplevel", None)):
@@ -94,7 +98,9 @@ def patch_ctk_scrollable_frame() -> None:
             pass
 
     ctk.CTkScrollableFrame.__init__ = safe_init
-    ctk.CTkScrollableFrame._ctk_resilience_patched = True
+    # Idempotency marker invented by this patch itself (read back via getattr(
+    # ..., False) at the top of this function) - not a real customtkinter attribute.
+    ctk.CTkScrollableFrame._ctk_resilience_patched = True  # pyright: ignore[reportAttributeAccessIssue]
 
 
 # Automatically apply patch on import
@@ -112,7 +118,12 @@ def get_main_app_window(window: ctk.CTk | ctk.CTkToplevel) -> ctk.CTk | ctk.CTkT
         if master is None or master is curr or type(master).__name__ in ("MagicMock", "Mock", "str"):
             break
         curr = master
-    return curr
+    # curr can never actually be None here (the walk only ever reassigns it to
+    # a master that's just been checked to be non-None, above) but pyright's
+    # loop-carried type for `curr` widens to include None/Any across the
+    # back-edge - the `window` fallback is unreachable in practice, just a
+    # type-safe guard.
+    return curr if curr is not None else window
 
 
 def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int, int, int]:
@@ -159,8 +170,11 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
 
     top_app = get_main_app_window(window)
     target_setting = "APP_SCREEN"
-    if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):
-        target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+    # .profile is a custom attribute only the real app root (SupportCockpitApp)
+    # has; top_app is typed generically as CTk | CTkToplevel, hence the
+    # hasattr() guards.
+    if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):  # pyright: ignore[reportAttributeAccessIssue]
+        target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")  # pyright: ignore[reportAttributeAccessIssue]
 
     if target_setting == "APP_SCREEN":
         bx, by, bw, bh = get_app_monitor_bounds(window)

@@ -44,8 +44,12 @@ logger = logging.getLogger("SupportCockpit")
 
 class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def __init__(self, config: AppConfig):
-        # Deactivate CustomTkinter's internal header manipulation which causes multiple withdraw/update/deiconify cycles on Windows
-        ctk.CTk._deactivate_windows_window_header_manipulation = True
+        # Deactivate CustomTkinter's internal header manipulation which causes multiple withdraw/update/deiconify cycles on Windows.
+        # This is a private/undocumented CTk class attribute that doesn't exist in
+        # customtkinter's own stubs, hence the pyright suppression (setattr() used
+        # to hide this from pyright entirely, but plain attribute assignment is
+        # clearer and ruff's B010 flags setattr() with a constant name anyway).
+        ctk.CTk._deactivate_windows_window_header_manipulation = True  # pyright: ignore[reportAttributeAccessIssue]
 
         super().__init__()
         self.app_config = config

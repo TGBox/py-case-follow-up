@@ -28,15 +28,14 @@ dev = [
     "ruff==0.16.0",
 ]
 
-[tool.pyright]
-extraPaths = ["src", "."]
-# The app only ever runs on Windows (winotify, pystray tray icon, ctypes.windll
-# theming, os.startfile everywhere) - without this, pyright infers the host
-# platform of whatever machine/CI runner it's invoked on and hides every
-# Windows-only stdlib member (os.startfile, ctypes.windll) behind
-# reportAttributeAccessIssue, even though the code always guards them with
-# hasattr()/sys.platform checks for the (never taken) non-Windows branch.
-pythonPlatform = "Windows"
+# NOTE: pyright is configured via pyrightconfig.json at the project root, not
+# here. pyright uses pyrightconfig.json exclusively whenever it's present and
+# silently ignores any [tool.pyright] section in this file - a [tool.pyright]
+# block used to live here (including a pythonPlatform = "Windows" setting)
+# but it was never actually being read by `uvx pyright`, which is why
+# Windows-only stdlib members (os.startfile, ctypes.windll, sys._MEIPASS)
+# kept getting flagged in CI despite that setting. See pyrightconfig.json for
+# the real pythonPlatform/stubPath/venv configuration.
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html"

@@ -1,10 +1,10 @@
 from utils.datetime_utils import format_german_datetime
 import customtkinter as ctk
 from datetime import timedelta
-from typing import Callable
+from collections.abc import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
-from utils.datetime_utils import format_german_date, parse_german_date, parse_followup_datetime, get_local_now
+from utils.datetime_utils import format_german_date, parse_followup_datetime, get_local_now
 from utils.ui_utils import center_window
 
 
@@ -104,7 +104,7 @@ class FollowupDialog(ctk.CTkToplevel):
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
         ).pack(fill="x", padx=12, pady=(6, 2))
-        
+
         init_date = ""
         if self.case.workflow_status.followup_at:
             init_date = self.case.workflow_status.followup_at

@@ -1,4 +1,3 @@
-import os
 import json
 from pathlib import Path
 from typing import Any
@@ -28,7 +27,7 @@ class DeepSearchService:
                 cached_mtime, cached_size, lines = self._file_lines_cache[path_str]
                 if (cached_mtime, cached_size) == cache_key:
                     return lines
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
                 lines = f.readlines()
             self._file_lines_cache[path_str] = (cache_key[0], cache_key[1], lines)
             return lines
@@ -87,7 +86,7 @@ class DeepSearchService:
                 cached_mtime, cached_size, articles = self._wiki_cache_data
                 if (cached_mtime, cached_size) == cache_key:
                     return articles
-            with open(cache_path, "r", encoding="utf-8", errors="ignore") as f:
+            with open(cache_path, encoding="utf-8", errors="ignore") as f:
                 articles = json.load(f)
             if isinstance(articles, list):
                 self._wiki_cache_data = (cache_key[0], cache_key[1], articles)
@@ -144,7 +143,7 @@ class DeepSearchService:
 
         for case in cases:
             att_matches = self.search_case_attachments(case, clean_query)
-            
+
             # Check if wiki matches relate to case module or tags
             related_wiki = []
             if wiki_matches:

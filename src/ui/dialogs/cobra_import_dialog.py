@@ -1,9 +1,8 @@
-import os
 import customtkinter as ctk
 from tkinter import filedialog
-from typing import Callable, Any
+from collections.abc import Callable
 from models.customer import Customer
-from services.cobra_crm_import_service import CobraCrmImportService, FIELD_ALIAS_MAP
+from services.cobra_crm_import_service import CobraCrmImportService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
@@ -213,8 +212,6 @@ class CobraImportDialog(ctk.CTkToplevel):
         new_cnt = len(diff["new"])
         dup_cnt = len(diff["duplicates"])
         tot = len(self.mapped_customers)
-
-        mode_str = self.mode_combo.get()
 
         msg = tr("cobra_import.preview_summary", "✓ {tot} Praxen erkannt  |  🆕 {new} neue Praxen  |  ⚠ {dup} bereits vorhandene Praxen (Duplikate)", tot=tot, new=new_cnt, dup=dup_cnt)
         self.summary_lbl.configure(text=msg, text_color="limegreen" if new_cnt > 0 else "dodgerblue")

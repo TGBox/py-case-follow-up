@@ -79,7 +79,7 @@ class AppConfig:
     @property
     def example_data_dir(self) -> Path:
         if is_frozen_app():
-            meipass_examples = Path(getattr(sys, "_MEIPASS")) / "data_examples"
+            meipass_examples = Path(sys._MEIPASS) / "data_examples"
             if meipass_examples.exists():
                 return meipass_examples
         return self.workspace_dir / "data_examples"
@@ -173,7 +173,7 @@ class AppConfig:
             logger.error(f"Failed to save user config: {e}")
 
     @classmethod
-    def load_user_config(cls, cli_workspace: str | Path | None = None) -> "AppConfig":
+    def load_user_config(cls, cli_workspace: str | Path | None = None) -> AppConfig:
         """Loads AppConfig with persisted global settings if present."""
         if cli_workspace:
             ws_dir = Path(cli_workspace)
@@ -182,7 +182,7 @@ class AppConfig:
         config_file = get_global_config_file()
         if config_file.exists():
             try:
-                with open(config_file, "r", encoding="utf-8") as f:
+                with open(config_file, encoding="utf-8") as f:
                     data = json.load(f)
 
                 ws_path_str = data.get("workspace_dir")

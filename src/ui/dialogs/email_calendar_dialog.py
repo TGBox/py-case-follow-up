@@ -24,13 +24,12 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.user_name = user_name
         self.snippet_service = snippet_service
 
-        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["email_calendar"]
-        self.title(tr("email_calendar.window_title", "{base_title} - Fall {case_id}", base_title=DIALOG_TITLES["email_calendar"], case_id=case.case_id))
+        self.title(f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}")
         self.geometry(f"{w}x{h}")
         self.minsize(720, 540)
 
-        from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
+        from utils.ui_utils import center_window
         center_window(self, w, h)
 
         self.transient(parent)
@@ -201,10 +200,9 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.status_lbl.configure(text=tr("email_calendar.text_copied", "✓ E-Mail Text wurde in die Zwischenablage kopiert."), text_color="lightgreen")
 
     def on_open_ics(self):
-        from services.i18n_service import tr
         ics_path = self.service.generate_ics_file(self.case, user_name=self.user_name)
         self.service.open_ics_file(ics_path)
-        self.status_lbl.configure(text=tr("email_calendar.ics_opened", "✓ Kalendereintrag (.ics) geöffnet: {name}", name=ics_path.name), text_color="lightgreen")
+        self.status_lbl.configure(text=f"✓ Kalendereintrag (.ics) geöffnet: {ics_path.name}", text_color="lightgreen")
 
     def on_save_ics(self):
         from services.i18n_service import tr
@@ -220,5 +218,4 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        from services.i18n_service import tr
-        self.status_lbl.configure(text=tr("email_calendar.ics_saved", "✓ .ics Kalenderdatei gespeichert unter: {name}", name=os.path.basename(file_path)), text_color="lightgreen")
+        self.status_lbl.configure(text=f"✓ .ics Kalenderdatei gespeichert unter: {os.path.basename(file_path)}", text_color="lightgreen")

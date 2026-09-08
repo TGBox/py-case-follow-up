@@ -4,7 +4,8 @@ import shutil
 import threading
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 from datetime import datetime
 
 from config import AppConfig
@@ -13,7 +14,7 @@ from models.customer import Customer
 from models.profile import UserProfile, Colleague
 from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
-from utils.datetime_utils import now_iso, parse_iso, calculate_idle_days
+from utils.datetime_utils import calculate_idle_days
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -78,7 +79,7 @@ def safe_read_json(
             return default_val
 
     try:
-        with open(target_path, "r", encoding="utf-8") as f:
+        with open(target_path, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"Corrupted or unreadable JSON file {target_path}: {e}")
@@ -94,7 +95,7 @@ def safe_read_json(
         if example_path and example_path.exists():
             try:
                 shutil.copy2(example_path, target_path)
-                with open(target_path, "r", encoding="utf-8") as f:
+                with open(target_path, encoding="utf-8") as f:
                     return json.load(f)
             except Exception:
                 pass
@@ -251,7 +252,7 @@ class StorageService:
     def archive_single_case(self, case_id: str) -> bool:
         cases = self.load_cases()
         archive = self.load_archive()
-        
+
         target_case = None
         remaining_cases = []
         for c in cases:
@@ -259,7 +260,7 @@ class StorageService:
                 target_case = c
             else:
                 remaining_cases.append(c)
-                
+
         if not target_case:
             return False
 
@@ -279,10 +280,10 @@ class StorageService:
         """Automatically archives cases completed >= threshold_days ago."""
         cases = self.load_cases()
         archive = self.load_archive()
-        
+
         archived_count = 0
         remaining_cases = []
-        
+
         for c in cases:
             if c.workflow_status.is_completed:
                 idle_days = calculate_idle_days(c.updated_at)
@@ -304,10 +305,10 @@ class StorageService:
         """Performs daily backup of cases.json to backups/cases_YYYY-MM-DD.json."""
         if not date_str:
             date_str = datetime.now().strftime("%Y-%m-%d")
-        
+
         backup_filename = f"cases_{date_str}.json"
         backup_path = self.config.backups_dir / backup_filename
-        
+
         if backup_path.exists():
             return backup_path
 
@@ -360,7 +361,7 @@ class StorageService:
         if self.profiles_dir.exists():
             for f in self.profiles_dir.glob("*.json"):
                 try:
-                    with open(f, "r", encoding="utf-8") as file:
+                    with open(f, encoding="utf-8") as file:
                         data = json.load(file)
                     name = data.get("user", {}).get("name")
                     if name and name not in profiles:
@@ -393,7 +394,7 @@ class StorageService:
             data = safe_read_json(target_path, default_factory=dict)
             if isinstance(data, dict):
                 return UserProfile.from_dict(data)
-        
+
         return self.load_profile()
 
     def save_profile(self, profile: UserProfile, sync: bool = False) -> None:
@@ -430,7 +431,7 @@ class StorageService:
         example_path = self.config.get_example_path("question_schemas.json")
         if example_path and example_path.exists():
             try:
-                with open(example_path, "r", encoding="utf-8") as f:
+                with open(example_path, encoding="utf-8") as f:
                     ex_data = json.load(f)
                 ex_raw = ex_data.get("schemas", []) if isinstance(ex_data, dict) else []
                 ex_schemas = [QuestionSchema.from_dict(s) for s in ex_raw if isinstance(s, dict)]
@@ -487,7 +488,7 @@ class StorageService:
         example_path = self.config.get_example_path("export_templates.json")
         if example_path and example_path.exists():
             try:
-                with open(example_path, "r", encoding="utf-8") as f:
+                with open(example_path, encoding="utf-8") as f:
                     ex_data = json.load(f)
                 ex_raw = ex_data.get("templates", []) if isinstance(ex_data, dict) else []
                 ex_templates = [ExportTemplate.from_dict(t) for t in ex_raw if isinstance(t, dict)]

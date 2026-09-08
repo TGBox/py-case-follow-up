@@ -1,6 +1,7 @@
 """Centralized application constants, design tokens, layout dimensions, default datasets, and system strings."""
 
-from pathlib import Path
+from services.i18n_service import LocalizedDict
+
 
 # --- App Metadata & Titles ---
 APP_NAME = "SupportCockpit"
@@ -8,9 +9,6 @@ APP_TITLE = "🩺 Support-Cockpit"
 APP_WINDOW_TITLE = "Support-Cockpit & Ticket Management"
 APP_MIN_WIDTH = 900
 APP_MIN_HEIGHT = 650
-
-from typing import Any
-from services.i18n_service import LocalizedDict
 
 
 # --- Enum Display Names & Labels ---
@@ -52,25 +50,6 @@ DISPLAY_BOARD_COLUMN_NAMES = LocalizedDict("board_columns", {
     "WAITING": "Warten auf zuständige Stelle",
     "IN_PROGRESS": "In Bearbeitung",
     "DONE": "Erledigt",
-})
-
-# Anzeige-Werte fuer den Farb-Thema-Dropdown (Profil-Einstellungen). Intern bleibt
-# stets "Dark"/"Light"/"System" gespeichert bzw. an ctk.set_appearance_mode()
-# uebergeben - nur das Dropdown-Label wird uebersetzt (siehe get_theme_display()/
-# get_theme_val_from_display() in enums.py).
-DISPLAY_THEME_NAMES = LocalizedDict("theme_modes", {
-    "Dark": "Dunkel",
-    "Light": "Hell",
-    "System": "Systemstandard",
-})
-
-# Anzeige-Werte fuer den Sortier-Kriterium-Dropdown der Praxisverwaltung. Intern
-# wird mit den sprachunabhaengigen Codes "name"/"id"/"contact" verglichen (siehe
-# get_sort_criterion_display()/get_sort_criterion_val_from_display() in enums.py).
-DISPLAY_SORT_CRITERION_NAMES = LocalizedDict("sort_criteria", {
-    "name": "Name (A-Z)",
-    "id": "Praxisnummer / ID",
-    "contact": "Zeit seit letztem Kontakt",
 })
 
 
@@ -242,7 +221,7 @@ DIALOG_DIMENSIONS = {
     "profile_settings": (960, 780),
     "template_mgmt": (980, 720),
     "edit_template": (880, 740),
-    "schema_builder": (1040, 720),
+    "schema_builder": (940, 720),
     "new_schema": (440, 320),
     "convert_schema": (520, 400),
     "followup_flyout": (680, 560),
@@ -447,7 +426,9 @@ DEFAULT_MODULE_TAGS = [
     "Kartei",
     "Terminarten",
     "Ressourcen",
-    "Datenbank"
+    "Datenbank",
+    "ESOL Dateien",
+    "Abrechnung",
 ]
 
 DEFAULT_INTERNAL_TASK_CATEGORIES = [

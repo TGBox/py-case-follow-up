@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Any
 from enums import FieldType
 from constants import VALIDATION_MESSAGES
@@ -49,7 +49,7 @@ class SchemaField:
         return res
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "SchemaField":
+    def from_dict(cls, data: dict[str, Any]) -> SchemaField:
         exts_raw = data.get("allowed_extensions", [])
         exts = list(exts_raw) if isinstance(exts_raw, list) else []
         return cls(
@@ -102,7 +102,7 @@ class QuestionSchema:
         return res
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "QuestionSchema":
+    def from_dict(cls, data: dict[str, Any]) -> QuestionSchema:
         fields_raw = data.get("fields", [])
         fields = [SchemaField.from_dict(f) for f in fields_raw] if isinstance(fields_raw, list) else []
         rep_ids_raw = data.get("repeatable_field_ids", [])

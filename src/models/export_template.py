@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field
 from typing import Any
 from enums import TargetType
 
@@ -35,7 +35,7 @@ class ExportTemplate:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ExportTemplate":
+    def from_dict(cls, data: dict[str, Any]) -> ExportTemplate:
         return cls(
             template_id=data.get("template_id", ""),
             display_name=data.get("display_name", ""),

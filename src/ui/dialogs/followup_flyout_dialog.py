@@ -1,9 +1,9 @@
 import customtkinter as ctk
-from datetime import datetime, timedelta
-from typing import Callable
+from datetime import timedelta
+from collections.abc import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
-from utils.datetime_utils import format_german_datetime, parse_iso, parse_followup_datetime, get_local_now, format_german_date
+from utils.datetime_utils import format_german_datetime, parse_followup_datetime, get_local_now, format_german_date
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 

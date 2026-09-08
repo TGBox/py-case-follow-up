@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
 from constants import DIALOG_DIMENSIONS
@@ -76,7 +76,7 @@ class SnippetPickerDialog(ctk.CTkToplevel):
         preview_box.grid(row=0, column=1, sticky="nsew")
 
         ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
-        
+
         self.preview_textbox = ctk.CTkTextbox(preview_box)
         self.preview_textbox.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 

@@ -14,7 +14,7 @@ def load_env_file(env_path: Path | str | None = None) -> None:
         return
 
     try:
-        with open(target_path, "r", encoding="utf-8") as f:
+        with open(target_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line or line.startswith("#") or "=" not in line:
@@ -32,13 +32,13 @@ def normalize_url(url_str: str) -> str:
     """Normalizes URL string, stripping markdown link wrappers if present."""
     if not url_str:
         return ""
-    
+
     cleaned = url_str.strip()
     # Match markdown link pattern [text](url)
     md_match = re.match(r"^\[.*?\]\((https?://[^\s)]+)\)$", cleaned)
     if md_match:
         return md_match.group(1).rstrip("/")
-    
+
     # Strip trailing slash
     return cleaned.rstrip("/")
 
@@ -49,12 +49,12 @@ def resolve_secret(secret_ref: str) -> str:
     """
     if not secret_ref:
         return ""
-    
+
     if secret_ref.startswith("ENV_"):
         env_var_name = secret_ref[4:]
         val = os.environ.get(env_var_name, "") or os.environ.get(secret_ref, "")
         return val
-    
+
     return secret_ref
 
 

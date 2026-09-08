@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 from models.case import Case
 from services.outlook_integration_service import OutlookIntegrationService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, DIALOG_HEADERS
@@ -105,7 +106,7 @@ class EmailImportDialog(ctk.CTkToplevel):
 
         self.emails = OutlookIntegrationService.fetch_recent_emails(max_count=15)
         self.render_email_list()
-        self.status_lbl.configure(text=tr("email_import.loaded_count", "✓ {count} E-Mails aus Posteingang geladen.", count=len(self.emails)))
+        self.status_lbl.configure(text=f"✓ {len(self.emails)} E-Mails aus Posteingang geladen.")
 
     def render_email_list(self):
         from services.i18n_service import tr
@@ -122,7 +123,7 @@ class EmailImportDialog(ctk.CTkToplevel):
             return
 
         for idx, mail in enumerate(self.emails):
-            subj = mail.get("subject") or tr("email_import.no_subject", "Ohne Betreff")
+            subj = mail.get("subject", "Ohne Betreff")
             sender_n = mail.get("sender_name", "")
             sender_e = mail.get("sender_email", "")
             body = mail.get("body", "")
@@ -232,7 +233,6 @@ class EmailImportDialog(ctk.CTkToplevel):
             ).pack(side="right")
 
     def append_to_case(self, mail: dict[str, Any], case: Case, index: int):
-        from services.i18n_service import tr
         OutlookIntegrationService.append_outlook_email_to_case_timeline(
             case=case,
             sender_name=mail.get("sender_name", ""),
@@ -242,11 +242,10 @@ class EmailImportDialog(ctk.CTkToplevel):
             author=self.author_name,
         )
         self.on_case_updated(case)
-        self.status_lbl.configure(text=tr("email_import.appended", "✓ E-Mail erfolgreich an Fall [{case_id}] angehängt.", case_id=case.case_id))
+        self.status_lbl.configure(text=f"✓ E-Mail erfolgreich an Fall [{case.case_id}] angehängt.")
         self.ignore_mail(index)
 
     def create_new_case_from_mail(self, mail: dict[str, Any], index: int):
-        from services.i18n_service import tr
         new_case = OutlookIntegrationService.parse_outlook_email_to_case(
             subject=mail.get("subject", ""),
             sender_email=mail.get("sender_email", ""),
@@ -256,7 +255,7 @@ class EmailImportDialog(ctk.CTkToplevel):
             default_author=self.author_name,
         )
         self.on_case_created(new_case)
-        self.status_lbl.configure(text=tr("email_import.created_new_case", "✓ Neuer Fall [{case_id}] aus E-Mail erstellt.", case_id=new_case.case_id))
+        self.status_lbl.configure(text=f"✓ Neuer Fall [{new_case.case_id}] aus E-Mail erstellt.")
         self.ignore_mail(index)
 
     def ignore_mail(self, index: int):

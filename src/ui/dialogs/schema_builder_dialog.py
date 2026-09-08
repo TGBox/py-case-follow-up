@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from models.schema import QuestionSchema, SchemaField
 from enums import FieldType
 from services.schema_service import SchemaService
@@ -82,7 +82,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         w, h = DIALOG_DIMENSIONS["schema_builder"]
         self.title(tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"))
         self.geometry(f"{w}x{h}")
-        self.minsize(960, 640)
+        self.minsize(860, 640)
         from utils.ui_utils import center_window
         center_window(self, w, h)
 
@@ -106,29 +106,20 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         top_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 15))
 
-        # Pack red delete button on the right FIRST to guarantee space
-        del_schema_btn = ctk.CTkButton(
-            top_frame,
-            text=tr("common.delete", "🗑 Löschen"),
-            command=self.on_delete_schema,
-            fg_color="red",
-            hover_color="darkred",
-            width=90,
-        )
-        del_schema_btn.pack(side="right", padx=(5, 0))
+        ctk.CTkLabel(top_frame, text=tr("schema_builder.select_form_lbl", "Formular auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
 
-        ctk.CTkLabel(top_frame, text=tr("schema_builder.select_form_lbl", "Formular auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 8))
-        
         schema_names = [s.display_name for s in self.schemas] if self.schemas else ["Kein Formular"]
         self.schema_combo = ctk.CTkOptionMenu(
             top_frame,
             values=schema_names,
             command=self.on_schema_selected,
-            width=240,
+            width=280,
         )
-        self.schema_combo.pack(side="left", padx=(0, 8))
+        self.schema_combo.pack(side="left", padx=(0, 10))
 
-        add_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=125)
+        from services.i18n_service import tr
+
+        add_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=130)
         add_schema_btn.pack(side="left", padx=(0, 5))
 
         self.adopt_schema_btn = ctk.CTkButton(
@@ -136,18 +127,21 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             text=tr("schema_builder.adopt_schema", "📥 Zu Realdaten übernehmen"),
             command=self.on_adopt_schema,
             fg_color="dodgerblue",
-            width=180,
+            width=200,
         )
         self.adopt_schema_btn.pack(side="left", padx=(0, 5))
 
-        reset_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.default_schemas", "🔄 Standard-Formulare"), command=self.on_reset_schemas, fg_color="gray30", width=140)
+        reset_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.default_schemas", "🔄 Standard-Formulare"), command=self.on_reset_schemas, fg_color="gray30", width=150)
         reset_schema_btn.pack(side="left", padx=(0, 5))
+
+        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
+        del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()
 
         # Fields List Frame
         ctk.CTkLabel(main_frame, text=tr("schema_builder.fields_header", "Enthaltene Formularfelder:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 5))
-        
+
         self.fields_scroll = ctk.CTkScrollableFrame(main_frame, width=680, height=300)
         self.fields_scroll.pack(fill="both", expand=True, pady=(0, 15))
 
@@ -156,7 +150,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         add_frame.pack(fill="x", pady=(0, 15), padx=5)
 
         ctk.CTkLabel(add_frame, text=tr("schema_builder.add_field_header", "Neues Feld hinzufügen (V2 mit bedingter Logik):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 5))
-        
+
         inputs_row = ctk.CTkFrame(add_frame, fg_color="transparent")
         inputs_row.pack(fill="x", padx=10, pady=(0, 4))
 
@@ -253,7 +247,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         for s in saved_schemas:
             if s.schema_id == self.selected_schema.schema_id:
                 if len(s.fields) == len(self.selected_schema.fields):
-                    if all(f1.field_id == f2.field_id and f1.label == f2.label for f1, f2 in zip(s.fields, self.selected_schema.fields)):
+                    if all(f1.field_id == f2.field_id and f1.label == f2.label for f1, f2 in zip(s.fields, self.selected_schema.fields, strict=True)):
                         is_already_saved = True
                         break
 

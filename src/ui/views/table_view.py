@@ -1,7 +1,7 @@
-import tkinter as tk
 from tkinter import ttk
 import customtkinter as ctk
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 from models.case import Case
 from models.schema import QuestionSchema
 from services.scoring_service import ScoringService

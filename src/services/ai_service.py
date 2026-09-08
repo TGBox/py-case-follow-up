@@ -1,9 +1,7 @@
 import json
 import urllib.request
 import urllib.error
-import re
 import logging
-from typing import Any
 from models.case import Case
 from enums import get_actor_display, get_board_column_display
 from services.anonymizer_service import PiiAnonymizer
@@ -31,7 +29,7 @@ logger = logging.getLogger("AiService")
 
 
 class AiService:
-    """Service providing Hybrid AI Capabilities: 
+    """Service providing Hybrid AI Capabilities:
     - Local Ollama LLM REST API
     - Cloud Google Gemini REST API (with Client-Side PII Anonymization for GDPR/Medical Compliance)
     - Rule-Based Zero-Token Fallback Engine
@@ -315,7 +313,7 @@ class AiService:
         """Unified method for querying LLM (Ollama or Gemini) with PII Anonymization."""
         # 1. Anonymize prompt and system prompt locally if Gemini or anonymization enabled
         should_anonymize = self.enable_anonymization or (self.provider == "GEMINI")
-        
+
         mapping: dict[str, str] = {}
         anon_prompt = prompt
         anon_system = system_prompt
@@ -395,7 +393,7 @@ class AiService:
             f"3. Nächster erforderlicher Schritt"
         )
         sys_prompt = self.build_system_prompt(base_rules, practice_rules, custom_instruction=custom_instruction)
-        
+
         res = self.query_llm(prompt, system_prompt=sys_prompt, case=case)
         if res:
             return res
@@ -471,7 +469,6 @@ class AiService:
         if wiki_articles:
             for art in wiki_articles:
                 t_str = str(art.get("title", "")).lower()
-                c_str = str(art.get("content", "")).lower()
                 if any(w in full_text for w in t_str.split()) and len(t_str) > 3:
                     solutions.append({
                         "title": f"📚 Wiki: {art.get('title', '')}",
@@ -514,7 +511,7 @@ class AiService:
             custom_instruction=custom_instruction,
             default_role=AI_SYSTEM_ROLE_EMAIL,
         )
-        
+
         res = self.query_llm(prompt, system_prompt=sys_prompt, case=case)
         if res:
             return res

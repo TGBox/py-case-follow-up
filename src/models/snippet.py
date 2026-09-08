@@ -26,7 +26,7 @@ class Snippet:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Snippet":
+    def from_dict(cls, data: dict[str, Any]) -> Snippet:
         return cls(
             snippet_id=data.get("snippet_id", ""),
             title=data.get("title", ""),

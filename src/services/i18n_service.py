@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 
 SUPPORTED_LANGUAGES = {
     "de": "Deutsch",
@@ -38,7 +39,7 @@ class I18nService:
             file_path = self.locales_dir / f"{lang_code}.json"
             if file_path.exists():
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, encoding="utf-8") as f:
                         self._translations[lang_code] = json.load(f)
                 except Exception:
                     self._translations[lang_code] = {}

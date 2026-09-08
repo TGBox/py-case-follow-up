@@ -9,7 +9,6 @@ import urllib.error
 from pathlib import Path
 from typing import Any
 from config import AppConfig
-from enums import SyncMode
 from models.profile import WikiSettings
 from utils.security import resolve_secret, normalize_url
 

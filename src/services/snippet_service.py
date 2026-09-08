@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Any
 from models.snippet import Snippet
 
 
@@ -90,7 +89,7 @@ class SnippetService:
             return self.snippets
 
         try:
-            with open(self.snippets_file, "r", encoding="utf-8") as f:
+            with open(self.snippets_file, encoding="utf-8") as f:
                 data = json.load(f)
                 if isinstance(data, list):
                     self.snippets = [Snippet.from_dict(d) for d in data]

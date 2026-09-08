@@ -1,12 +1,11 @@
 import sqlite3
 from pathlib import Path
-from config import AppConfig
-from enums import UrgencyLevel, BoardColumn, Actor, FieldType, TargetType, Channel, SyncMode, LayoutMode
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from enums import FieldType, TargetType, SyncMode, LayoutMode
+from models.case import Case
 from models.customer import Customer, Contact
 from models.schema import QuestionSchema, SchemaField
 from models.export_template import ExportTemplate
-from models.profile import UserProfile, UserInfo, UISettings, ShortcutSettings, ReminderSettings, ScoringMatrix, WikiSettings, Colleague
+from models.profile import UserProfile, UserInfo, UISettings, WikiSettings, Colleague
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.seed_case_data import build_seed_cases

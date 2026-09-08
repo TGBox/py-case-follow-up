@@ -1,5 +1,4 @@
 import os
-import re
 import urllib.parse
 import webbrowser
 from datetime import datetime, timedelta
@@ -100,7 +99,7 @@ class CalendarEmailService:
             "",
             f"Erstellt von: {user_name or case.created_by}",
         ]
-        
+
         # Escape special iCalendar characters
         desc_text = "\\n".join(desc_lines).replace(",", "\\,").replace(";", "\\;")
         summary_escaped = summary.replace(",", "\\,").replace(";", "\\;")

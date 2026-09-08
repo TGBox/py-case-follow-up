@@ -68,6 +68,16 @@ ACTOR_DISPLAY = DISPLAY_ACTOR_NAMES
 LAYOUT_DISPLAY = DISPLAY_LAYOUT_NAMES
 BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
 
+# Not sourced from constants.py like the DISPLAY_* dicts above: these are the
+# exact strings customtkinter's set_appearance_mode()/get_appearance_mode()
+# use ("Dark"/"Light"/"System"), so the dict keys have to match that casing
+# rather than the SCREAMING_SNAKE_CASE style used elsewhere in this file.
+THEME_DISPLAY = {
+    "Dark": "Dunkel",
+    "Light": "Hell",
+    "System": "System",
+}
+
 
 def get_channel_display(val: str) -> str:
     from services.i18n_service import tr
@@ -108,6 +118,32 @@ def get_board_column_display(val: str) -> str:
     return BOARD_COLUMN_DISPLAY.get(val, val)
 
 
+def get_theme_display(val: str) -> str:
+    from services.i18n_service import tr
+    key_map = {
+        "Dark": "theme.dark",
+        "Light": "theme.light",
+        "System": "theme.system",
+    }
+    default = THEME_DISPLAY.get(val, val)
+    return tr(key_map.get(val, ""), default=default)
+
+
+def get_sort_criterion_display(val: str) -> str:
+    from services.i18n_service import tr
+    key_map = {
+        "name": "customer_mgmt.sort_name",
+        "id": "customer_mgmt.sort_id",
+        "contact": "customer_mgmt.sort_contact",
+    }
+    defaults = {
+        "name": "Name (A-Z)",
+        "id": "Praxisnummer / ID",
+        "contact": "Zeit seit letztem Kontakt",
+    }
+    return tr(key_map.get(val, ""), default=defaults.get(val, val))
+
+
 def get_actor_val_from_display(display: str) -> str:
     for k in ACTOR_DISPLAY:
         if get_actor_display(k) == display or ACTOR_DISPLAY[k] == display:
@@ -125,5 +161,12 @@ def get_channel_val_from_display(display: str) -> str:
 def get_layout_val_from_display(display: str) -> str:
     for k in LAYOUT_DISPLAY:
         if get_layout_display(k) == display or LAYOUT_DISPLAY[k] == display:
+            return k
+    return display
+
+
+def get_theme_val_from_display(display: str) -> str:
+    for k in THEME_DISPLAY:
+        if get_theme_display(k) == display or THEME_DISPLAY[k] == display:
             return k
     return display

@@ -2,5 +2,6 @@
   "stubPath": "typings",
   "venvPath": ".",
   "venv": ".venv",
-  "pythonVersion": "3.14"
+  "pythonVersion": "3.14",
+  "pythonPlatform": "Windows"
 }

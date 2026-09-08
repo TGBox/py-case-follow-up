@@ -79,7 +79,13 @@ class AppConfig:
     @property
     def example_data_dir(self) -> Path:
         if is_frozen_app():
-            meipass_examples = Path(sys._MEIPASS) / "data_examples"
+            # sys._MEIPASS is injected by PyInstaller at runtime for frozen builds -
+            # it isn't in typeshed for any platform (unlike os.startfile/ctypes.windll,
+            # which pythonPlatform="Windows" covers), so pyright never knows about it
+            # regardless of platform config. is_frozen_app() already confirms
+            # hasattr(sys, "_MEIPASS") above; getattr() here just avoids needing a
+            # pyright suppression comment for something already runtime-guarded.
+            meipass_examples = Path(getattr(sys, "_MEIPASS", "")) / "data_examples"
             if meipass_examples.exists():
                 return meipass_examples
         return self.workspace_dir / "data_examples"

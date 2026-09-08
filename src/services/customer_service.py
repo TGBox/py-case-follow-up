@@ -19,7 +19,7 @@ class CustomerService:
     def search_customers(self, query: str) -> list[Customer]:
         if not query:
             return self.get_all_customers()
-        
+
         q_lower = query.lower()
         results = []
         for c in self.get_all_customers():

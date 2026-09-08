@@ -1,16 +1,15 @@
-from models import schema
 import os
 import shutil
 import customtkinter as ctk
 from tkinter import filedialog
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 from models.schema import QuestionSchema, SchemaField
 from models.case import Case
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.attachment_service import AttachmentService
 from enums import FieldType
-from constants import DEFAULT_MODULE_TAGS
 from ui.widgets.dynamic_form_field_renderers import FieldRendererMixin
 
 

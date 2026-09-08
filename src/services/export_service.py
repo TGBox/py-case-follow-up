@@ -1,10 +1,9 @@
 import logging
 from typing import Any
-from jinja2 import Template, Environment  # type: ignore
+from jinja2 import Environment  # type: ignore
 from models.case import Case
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema
-from services.schema_service import SchemaService
 from services.storage_service import StorageService
 
 logger = logging.getLogger("SupportCockpit")

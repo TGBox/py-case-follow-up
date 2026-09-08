@@ -9,7 +9,8 @@ und alle hier aufgerufenen self.-Attribute (self.storage_service, self.cases,
 self.cockpit_view, usw.) unveraendert funktionieren. Reines Verschieben von
 Code, keine Verhaltensaenderung.
 """
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
 import customtkinter as ctk
 from models.case import Case
 from models.customer import Customer

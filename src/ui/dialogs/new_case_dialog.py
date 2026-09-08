@@ -1,10 +1,10 @@
 import customtkinter as ctk
 from datetime import datetime, timedelta
-from typing import Callable
+from collections.abc import Callable
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from models.customer import Customer, Contact
 from models.schema import QuestionSchema
-from enums import BoardColumn, Actor, UrgencyLevel, Channel
+from enums import BoardColumn, Actor, Channel
 from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
 from constants import DEFAULT_TAGS, DIALOG_DIMENSIONS
 
@@ -154,7 +154,7 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         # Customer selection row
         ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.customer", "Kunde / Praxis:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
-        
+
         cust_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
         cust_row.pack(fill="x", pady=(0, 6))
 
@@ -196,7 +196,7 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         # Tags Selection
         ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.tags", "Tags / Stichworte zuweisen:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
-        
+
         self.tags_frame = ctk.CTkFrame(form_scroll, fg_color="transparent")
         self.tags_frame.pack(fill="x", pady=(0, 6))
 
@@ -214,7 +214,7 @@ class NewCaseDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(note_hdr_row, text=tr("new_case_dialog.initial_note", "Initiale Notiz / Eingangskanal:"), font=ctk.CTkFont(size=13, weight="bold")).pack(side="left")
 
-        from enums import CHANNEL_DISPLAY, get_channel_display, Channel
+        from enums import CHANNEL_DISPLAY, get_channel_display
         channel_names = [get_channel_display(c) for c in CHANNEL_DISPLAY]
         self.channel_combo = ctk.CTkOptionMenu(note_hdr_row, values=channel_names, width=175, font=ctk.CTkFont(size=11))
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
@@ -409,7 +409,7 @@ class NewCaseDialog(ctk.CTkToplevel):
         initial_note = self.note_textbox.get("1.0", "end-1c").strip()
         timeline = []
         if initial_note:
-            from enums import get_channel_val_from_display, Channel
+            from enums import get_channel_val_from_display
             selected_chan_disp = self.channel_combo.get() if hasattr(self, "channel_combo") else "Telefon (Eingang)"
             selected_chan_val = get_channel_val_from_display(selected_chan_disp)
             timeline.append(TimelineEntry(

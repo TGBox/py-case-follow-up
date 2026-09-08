@@ -5,7 +5,7 @@ import customtkinter as ctk
 
 def patch_ctk_scrollable_frame() -> None:
     """Fixes CustomTkinter event callback signature mismatches (e.g. Python 3.14/Windows Tcl events).
-    
+
     CustomTkinter registers `<Configure>` on CTkScrollableFrame using `lambda e: ...`,
     and defines internal handlers with strict single-argument signatures `(self, event)`.
     Under certain Tcl event dispatches, callbacks are executed without positional arguments,
@@ -129,10 +129,10 @@ def get_main_app_window(window: ctk.CTk | ctk.CTkToplevel) -> ctk.CTk | ctk.CTkT
 def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int, int, int]:
     """Returns (x, y, width, height) of the monitor/window area where the app is located or last located."""
     top_app = get_main_app_window(window)
-    
+
     # 1. Try last stored geometry from app if window is iconic/minimized
     last_geom = getattr(top_app, "_last_geometry", None)
-    
+
     parent_x = top_app.winfo_x()
     parent_y = top_app.winfo_y()
     parent_w = top_app.winfo_width()
@@ -246,7 +246,7 @@ def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkSc
         if getattr(w, "_mw_bound", False):
             return
         try:
-            setattr(w, "_mw_bound", True)
+            w._mw_bound = True
         except Exception:
             pass
 
@@ -487,7 +487,7 @@ def wrap_and_truncate_text(
 def enable_textbox_cursor_autoscroll(textbox: ctk.CTkTextbox) -> None:
     """Ensures a CTkTextbox automatically scrolls to keep the insertion cursor in view while typing."""
     inner = getattr(textbox, "_textbox", textbox)
-    
+
     def _scroll_to_cursor(event=None):
         try:
             inner.see("insert")

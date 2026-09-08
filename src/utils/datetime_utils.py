@@ -1,6 +1,6 @@
 """Date and time parsing, formatting, and localization utilities."""
 
-from datetime import datetime, date, timezone
+from datetime import datetime, date
 import re
 from constants import ISO_DATETIME_FORMAT
 from services.i18n_service import tr
@@ -22,7 +22,7 @@ def parse_iso(iso_str: str) -> datetime:
     """
     if not iso_str:
         raise ValueError("ISO datetime string cannot be empty.")
-    
+
     cleaned = iso_str.strip()
     dt = datetime.fromisoformat(cleaned)
     if dt.tzinfo is None:
@@ -40,11 +40,11 @@ def calculate_idle_days(updated_at_str: str, now: datetime | None = None) -> flo
     """Calculates difference in fractional days between updated_at and now."""
     if not updated_at_str:
         return 0.0
-    
+
     ref_now = now or get_local_now()
     if ref_now.tzinfo is None:
         ref_now = ref_now.replace(tzinfo=get_local_now().tzinfo)
-        
+
     updated_dt = parse_iso(updated_at_str)
     diff_seconds = (ref_now - updated_dt).total_seconds()
     if diff_seconds < 0:
@@ -56,7 +56,7 @@ def hours_until_deadline(deadline_str: str, now: datetime | None = None) -> floa
     """Calculates remaining hours until deadline (negative if overdue)."""
     if not deadline_str:
         return float("inf")
-    
+
     ref_now = now or get_local_now()
     if ref_now.tzinfo is None:
         ref_now = ref_now.replace(tzinfo=get_local_now().tzinfo)

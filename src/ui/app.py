@@ -2,9 +2,8 @@ import logging
 import sys
 import threading
 import ctypes
-from typing import Any, Callable, cast
+from typing import cast
 import customtkinter as ctk
-from pathlib import Path
 
 from config import AppConfig
 from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
@@ -12,16 +11,12 @@ from models.case import Case
 from models.customer import Customer
 from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
-from models.profile import UserProfile, Colleague
+from models.profile import Colleague
 from constants import (
     APP_WINDOW_TITLE,
     APP_MIN_WIDTH,
     APP_MIN_HEIGHT,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
-    AUTO_ARCHIVE_THRESHOLD_DAYS,
-    MENU_OPTIONS_STAMMDATEN,
-    MENU_OPTIONS_VORLAGEN,
-    MENU_OPTIONS_DATENAUSTAUSCH,
     TOAST_SNIPPET_MACRO_TITLE,
     TOAST_SNIPPET_NO_FOCUS,
 )
@@ -33,7 +28,6 @@ from services.wiki_sync_service import WikiSyncService
 from services.export_service import ExportService
 from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
-from services.schema_service import SchemaService
 from services.customer_service import CustomerService
 from services.tray_service import TrayService
 from services.i18n_service import tr
@@ -42,16 +36,6 @@ from ui.views.cockpit_view import CockpitView
 from ui.views.board_view import BoardView
 from ui.views.table_view import TableView
 
-from ui.dialogs.new_case_dialog import NewCaseDialog
-from ui.dialogs.export_dialog import ExportDialog
-from ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
-from ui.dialogs.template_manager_dialog import TemplateManagerDialog
-from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
-from ui.dialogs.help_dialog import HelpDialog
-from ui.dialogs.customer_management_dialog import CustomerManagementDialog
-from ui.dialogs.colleague_management_dialog import ColleagueManagementDialog
-from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
-from ui.dialogs.tag_management_dialog import TagManagementDialog
 from ui.widgets.toast_notification import ToastNotification
 from ui.app_dialogs import DialogLaunchersMixin
 
@@ -61,7 +45,7 @@ logger = logging.getLogger("SupportCockpit")
 class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def __init__(self, config: AppConfig):
         # Deactivate CustomTkinter's internal header manipulation which causes multiple withdraw/update/deiconify cycles on Windows
-        setattr(ctk.CTk, "_deactivate_windows_window_header_manipulation", True)
+        ctk.CTk._deactivate_windows_window_header_manipulation = True
 
         super().__init__()
         self.app_config = config

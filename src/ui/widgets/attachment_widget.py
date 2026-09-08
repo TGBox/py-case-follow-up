@@ -39,7 +39,7 @@ class AttachmentWidget(ctk.CTkFrame):
         # Preview Frame for Image or Text
         self.preview_frame = ctk.CTkFrame(self, height=120, fg_color=("gray90", "gray15"))
         self.preview_frame.pack(fill="x", padx=5, pady=2)
-        
+
         self.preview_label = ctk.CTkLabel(self.preview_frame, text=tr("attachments.no_preview", "Keine Datei zur Vorschau ausgewählt"), font=ctk.CTkFont(size=11), text_color=("gray50", "gray60"))
         self.preview_label.pack(expand=True, pady=10)
 

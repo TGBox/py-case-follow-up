@@ -1,66 +1,13 @@
 from typing import Any
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
-from enums import LayoutMode, SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
+from enums import SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
 from ui.dialogs.profile_settings_ai_tab import AiSettingsTabMixin
 from constants import (
     DIALOG_DIMENSIONS,
     DIALOG_TITLES,
-    DEFAULT_OLLAMA_URL,
-    DEFAULT_OLLAMA_MODEL,
-    DEFAULT_GEMINI_MODEL,
-    AVAILABLE_GEMINI_MODELS,
-    OLLAMA_DOWNLOAD_URL,
-    OLLAMA_LIBRARY_QWEN_URL,
-    OLLAMA_LIBRARY_LLAMA_URL,
-    AI_STATUS_ONLINE_LOADED,
-    AI_STATUS_ONLINE_STANDBY,
-    AI_STATUS_ONLINE_DISABLED,
-    AI_STATUS_OFFLINE_LABEL,
-    AI_STATUS_GEMINI_ACTIVE,
-    AI_STATUS_GEMINI_NO_KEY,
-    AI_STATUS_CHECKING,
-    AI_STATUS_UNLOADING,
-    AI_STATUS_UNLOADED,
-    AI_STATUS_ACTIVATED,
-    AI_STATUS_STARTING,
-    AI_STATUS_STOPPING,
-    AI_NO_MODELS_TITLE,
-    AI_NO_MODELS_DESC,
-    AI_OFFLINE_DESC,
-    AI_LABEL_BASE_RULES_TITLE,
-    AI_LABEL_BASE_RULES_HINT,
-    AI_LABEL_SELECT_MODEL,
-    AI_LABEL_OLLAMA_URL,
-    AI_BTN_GLOBAL_TOGGLE,
-    AI_BTN_START_SERVER,
-    AI_BTN_STOP_SERVER,
-    AI_BTN_TEST_GEMINI_KEY,
-    AI_BTN_DOWNLOAD_OLLAMA,
-    AI_BTN_DOWNLOAD_QWEN,
-    AI_BTN_DOWNLOAD_LLAMA,
-    AI_BTN_CREATE_PVS_MODEL,
-    AI_BTN_PRELOAD_MODEL,
-    AI_BTN_UNLOAD_MODEL,
-    TEXTBOX_SPACING1_PARAGRAPH,
-    TEXTBOX_SPACING3_PARAGRAPH,
-    TEXTBOX_SPACING2_PARAGRAPH,
-    COLOR_SUCCESS,
-    COLOR_SUCCESS_HOVER,
-    COLOR_DANGER,
-    COLOR_DANGER_HOVER,
-    COLOR_TEXT_RED,
-    COLOR_TEXT_GREEN,
-    COLOR_TEXT_ORANGE,
-    COLOR_TEXT_GRAY,
-    COLOR_TEXT_BLUE,
-    COLOR_PURPLE_DARK,
-    COLOR_PRIMARY_BLUE,
-    COLOR_BTN_GRAY,
-    COLOR_MUTED_LABEL,
-    COLOR_MUTED_DISABLED,
     HOTKEY_RECORDER_TITLE,
     HOTKEY_RECORDER_HEADER,
     HOTKEY_RECORDER_INFO,
@@ -549,7 +496,6 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.on_profile_updated()
 
     def setup_paths_tab(self):
-        from pathlib import Path
         from services.i18n_service import tr
 
         ctk.CTkLabel(self.tab_paths, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
@@ -861,10 +807,6 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.on_profile_updated()
 
     def setup_backup_tab(self):
-        from tkinter import filedialog
-        from pathlib import Path
-        from services.zip_backup_service import ZipBackupService
-        from ui.dialogs.zip_import_dialog import ZipImportPathDialog
         from services.i18n_service import tr
 
         ctk.CTkLabel(

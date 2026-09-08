@@ -2,7 +2,16 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import SyncMode, LayoutMode
 from utils.security import normalize_url
-from constants import DEFAULT_COLUMN_WIDTHS, DEFAULT_TAGS, DEFAULT_MODULE_TAGS, VALIDATION_MESSAGES, DEFAULT_SHORTCUTS
+from constants import (
+    DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_TAGS,
+    DEFAULT_MODULE_TAGS,
+    VALIDATION_MESSAGES,
+    DEFAULT_SHORTCUTS,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_GEMINI_MODEL,
+)
 
 
 @dataclass
@@ -18,7 +27,7 @@ class UserInfo:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "UserInfo":
+    def from_dict(cls, data: dict[str, Any]) -> UserInfo:
         return cls(
             name=data.get("name", "Support Agent"),
             department=data.get("department", "Support"),
@@ -76,7 +85,7 @@ class UISettings:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "UISettings":
+    def from_dict(cls, data: dict[str, Any]) -> UISettings:
         widths = data.get("column_widths", {})
         default_widths = dict(DEFAULT_COLUMN_WIDTHS)
         if isinstance(widths, dict):
@@ -142,7 +151,7 @@ class ShortcutSettings:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ShortcutSettings":
+    def from_dict(cls, data: dict[str, Any]) -> ShortcutSettings:
         return cls(
             new_case=data.get("new_case", DEFAULT_SHORTCUTS["new_case"]),
             search_customer=data.get("search_customer", DEFAULT_SHORTCUTS["search_customer"]),
@@ -170,7 +179,7 @@ class ReminderSettings:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ReminderSettings":
+    def from_dict(cls, data: dict[str, Any]) -> ReminderSettings:
         return cls(
             notification_level=data.get("notification_level", "LEVEL_A"),
             audio_enabled=bool(data.get("audio_enabled", False)),
@@ -192,7 +201,7 @@ class ScoringMatrix:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ScoringMatrix":
+    def from_dict(cls, data: dict[str, Any]) -> ScoringMatrix:
         return cls(
             vip_bonus_points=int(data.get("vip_bonus_points", 50)),
             points_per_idle_day=int(data.get("points_per_idle_day", 15)),
@@ -225,7 +234,7 @@ class WikiSettings:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "WikiSettings":
+    def from_dict(cls, data: dict[str, Any]) -> WikiSettings:
         return cls(
             api_url=normalize_url(data.get("api_url", "")),
             token_id=data.get("token_id", "ENV_BOOKSTACK_TOKEN_ID"),
@@ -233,9 +242,6 @@ class WikiSettings:
             sync_mode=data.get("sync_mode", SyncMode.METADATA_ONLY),
             sync_on_startup=bool(data.get("sync_on_startup", True)),
         )
-
-
-from constants import DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL, DEFAULT_GEMINI_MODEL
 
 
 @dataclass
@@ -255,7 +261,7 @@ class AiSettings:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "AiSettings":
+    def from_dict(cls, data: dict[str, Any]) -> AiSettings:
         rules_raw = data.get("base_rules", [])
         rules = list(rules_raw) if isinstance(rules_raw, list) else []
         return cls(
@@ -270,33 +276,6 @@ class AiSettings:
             use_modelfile_rules_for_gemini=bool(data.get("use_modelfile_rules_for_gemini", False)),
             base_rules=rules,
         )
-
-
-DEFAULT_MODULE_TAGS = [
-    "Fakturaübersicht",
-    "Terminkalender",
-    "System allgemein",
-    "Benutzerverwaltung und Einstellungen",
-    "Go2Doc",
-    "Heilmittelkatalog",
-    "Kostenträgerliste",
-    "Heilmittelpreisliste",
-    "Fabius",
-    "Termed",
-    "Benutzerrechte",
-    "Patientenstamm",
-    "Terminabrechnung",
-    "Rezeptnachvervollgung",
-    "Ausgangsbelege",
-    "Kassenbuch",
-    "Statistiken",
-    "Kartei",
-    "Terminarten",
-    "Ressourcen",
-    "Datenbank",
-    "ESOL Dateien",
-    "Abrechnung"
-  ]
 
 
 @dataclass
@@ -325,7 +304,7 @@ class UserProfile:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "UserProfile":
+    def from_dict(cls, data: dict[str, Any]) -> UserProfile:
         tags_raw = data.get("available_tags", DEFAULT_TAGS)
         tags = list(tags_raw) if isinstance(tags_raw, list) else list(DEFAULT_TAGS)
         mod_tags_raw = data.get("available_module_tags", DEFAULT_MODULE_TAGS)
@@ -368,7 +347,7 @@ class Colleague:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Colleague":
+    def from_dict(cls, data: dict[str, Any]) -> Colleague:
         return cls(
             username=data.get("username", ""),
             name=data.get("name", ""),

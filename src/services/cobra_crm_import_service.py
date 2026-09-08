@@ -19,7 +19,7 @@ class CobraCrmImportService:
             raise FileNotFoundError(f"Import file not found: {p}")
 
         if p.suffix.lower() == ".json":
-            with open(p, "r", encoding="utf-8", errors="ignore") as f:
+            with open(p, encoding="utf-8", errors="ignore") as f:
                 data = json.load(f)
                 if isinstance(data, list) and data and isinstance(data[0], dict):
                     headers = list(data[0].keys())
@@ -98,7 +98,7 @@ class CobraCrmImportService:
             fname = row.get(mapping.get("first_name", ""), "").strip()
             lname = row.get(mapping.get("last_name", ""), "").strip()
             contact_name = row.get(mapping.get("contact_person", ""), "").strip()
-            
+
             street = row.get(mapping.get("street", ""), "").strip()
             zip_code = row.get(mapping.get("zip_code", ""), "").strip()
             city = row.get(mapping.get("city", ""), "").strip()

@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import filedialog
 from pathlib import Path
-from typing import Callable, Any
+from collections.abc import Callable
 from services.zip_backup_service import ZipBackupService
 from utils.ui_utils import center_window
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES

@@ -30,7 +30,7 @@ class TimelineEntry:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "TimelineEntry":
+    def from_dict(cls, data: dict[str, Any]) -> TimelineEntry:
         return cls(
             timestamp=data.get("timestamp", ""),
             author=data.get("author", ""),
@@ -67,7 +67,7 @@ class CaseCustomer:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "CaseCustomer":
+    def from_dict(cls, data: dict[str, Any]) -> CaseCustomer:
         return cls(
             customer_id=data.get("customer_id", ""),
             practice_name=data.get("practice_name", ""),
@@ -107,7 +107,7 @@ class Classification:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Classification":
+    def from_dict(cls, data: dict[str, Any]) -> Classification:
         return cls(
             schema_id=data.get("schema_id", ""),
             title=data.get("title", ""),
@@ -149,7 +149,7 @@ class WorkflowStatus:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "WorkflowStatus":
+    def from_dict(cls, data: dict[str, Any]) -> WorkflowStatus:
         return cls(
             is_completed=bool(data.get("is_completed", False)),
             is_archived=bool(data.get("is_archived", False)),
@@ -253,7 +253,7 @@ class Case:
         }
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Case":
+    def from_dict(cls, data: dict[str, Any]) -> Case:
         timeline_raw = data.get("timeline", [])
         timeline = [TimelineEntry.from_dict(t) for t in timeline_raw] if isinstance(timeline_raw, list) else []
         return cls(

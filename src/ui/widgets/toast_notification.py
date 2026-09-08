@@ -1,7 +1,7 @@
 import sys
 import logging
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from constants import TOAST_DURATION_DEFAULT_MS
 
 logger = logging.getLogger("SupportCockpit")
@@ -138,7 +138,9 @@ class ToastNotification(ctk.CTkToplevel):
         self.after(duration_ms, self.safe_destroy)
 
         # 3. Bind click handler recursively to all child widgets (including _label and _canvas)
-        click_handler = lambda e: self.handle_open() if on_open else self.safe_destroy()
+        def click_handler(e):
+            return self.handle_open() if on_open else self.safe_destroy()
+
         self._bind_click_recursive(frame, click_handler)
 
     def _bind_click_recursive(self, widget, handler):

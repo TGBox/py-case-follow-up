@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
 from enums import Channel
@@ -60,14 +60,14 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
 
         ctk.CTkLabel(
             info_inner,
-            text=tr("convert_schema.case_info", "Fall-ID: {case_id} — {title}", case_id=self.case.case_id, title=self.case.classification.title),
+            text=f"Fall-ID: {self.case.case_id} — {self.case.classification.title}",
             font=ctk.CTkFont(size=12, weight="bold"),
             anchor="w",
         ).pack(fill="x")
 
         ctk.CTkLabel(
             info_inner,
-            text=tr("convert_schema.current_form", "Aktuelles Formular: {schema_name}", schema_name=curr_schema_name),
+            text=f"Aktuelles Formular: {curr_schema_name}",
             text_color="gray",
             anchor="w",
         ).pack(fill="x", pady=(2, 0))
@@ -90,13 +90,12 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         notice_frame = ctk.CTkFrame(main_frame, fg_color=("lightblue", "#1e293b"))
         notice_frame.pack(fill="x", pady=(0, 15))
 
-        default_notice = (
+        notice_text = (
             "ℹ Datensicherung:\n"
             "Beim Umwandeln werden bisher eingegebene Formular-Informationen als neue "
             "Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. "
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
         )
-        notice_text = tr("convert_schema.notice_text", default_notice)
         ctk.CTkLabel(
             notice_frame, text=notice_text, font=ctk.CTkFont(size=11), justify="left", wraplength=460
         ).pack(padx=10, pady=8, anchor="w")

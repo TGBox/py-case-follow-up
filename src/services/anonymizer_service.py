@@ -1,11 +1,10 @@
 import re
-from typing import Any
 from models.case import Case
 
 
 class PiiAnonymizer:
     """Client-side Local PII/PHI Anonymization & Pseudonymization Engine.
-    
+
     Strips personally identifiable information (PII) and protected health information (PHI)
     such as practice names, contact persons, email addresses, phone numbers, patient names,
     dates, and case IDs before transmitting prompts to cloud LLM providers (e.g. Google Gemini).
@@ -28,7 +27,7 @@ class PiiAnonymizer:
 
     def anonymize(self, text: str, case: Case | None = None) -> tuple[str, dict[str, str]]:
         """Anonymizes text by replacing PII entities with placeholders.
-        
+
         Returns:
             tuple[str, dict[str, str]]: (anonymized_text, mapping_dict)
             where mapping_dict maps placeholders like '[PATIENT_1]' -> original value.
@@ -46,7 +45,7 @@ class PiiAnonymizer:
                 return original
             if clean_orig in reverse_mapping:
                 return reverse_mapping[clean_orig]
-            
+
             # Count existing of same prefix
             count = sum(1 for p in mapping if p.startswith(f"[{prefix}_")) + 1
             placeholder = f"[{prefix}_{count}]"
@@ -61,7 +60,7 @@ class PiiAnonymizer:
                     orig = case.customer.practice_name.strip()
                     ph = get_or_create_placeholder(orig, "PRAXIS")
                     anonymized = anonymized.replace(orig, ph)
-                
+
                 if case.customer.contact_person and case.customer.contact_person.strip():
                     orig = case.customer.contact_person.strip()
                     ph = get_or_create_placeholder(orig, "ANSPRECHPARTNER")
@@ -90,7 +89,6 @@ class PiiAnonymizer:
 
         # 3. Patient Name Titles Regex
         for match in self.PATIENT_TITLE_REGEX.finditer(anonymized):
-            full_match = match.group(0)
             name_part = match.group(1)
             if name_part and name_part not in reverse_mapping:
                 ph = get_or_create_placeholder(name_part, "PATIENT")

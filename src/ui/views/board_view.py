@@ -1,5 +1,6 @@
 import customtkinter as ctk
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 from models.case import Case
 from enums import Actor, get_actor_display
 from utils.datetime_utils import format_german_datetime

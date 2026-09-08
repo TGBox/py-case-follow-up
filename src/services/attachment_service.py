@@ -4,7 +4,6 @@ import shutil
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 from config import AppConfig
 from models.case import Case
 
@@ -56,7 +55,7 @@ class AttachmentService:
         """Copies an external file into the case attachment directory."""
         dir_path = self.get_case_attachment_dir(case)
         dest_path = dir_path / file_path.name
-        
+
         # Handle collision
         if dest_path.exists():
             timestamp = datetime.now().strftime("%H%M%S")
@@ -77,7 +76,7 @@ class AttachmentService:
             if isinstance(img, Image.Image):
                 img.save(dest_path, "PNG")
                 return dest_path
-        except Exception as e:
+        except Exception:
             pass
         return None
 

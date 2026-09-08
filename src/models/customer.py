@@ -21,7 +21,7 @@ class Contact:
         return asdict(self)
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Contact":
+    def from_dict(cls, data: dict[str, Any]) -> Contact:
         return cls(
             name=data.get("name", ""),
             role=data.get("role", ""),
@@ -166,7 +166,7 @@ class Customer:
         return res
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "Customer":
+    def from_dict(cls, data: dict[str, Any]) -> Customer:
         contacts_raw = data.get("contacts", [])
         contacts = [Contact.from_dict(c) for c in contacts_raw] if isinstance(contacts_raw, list) else []
 

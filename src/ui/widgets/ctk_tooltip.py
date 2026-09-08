@@ -1,6 +1,6 @@
 import customtkinter as ctk
-import tkinter as tk
-from typing import Any, Callable
+from typing import Any
+from collections.abc import Callable
 from constants import (
     TOOLTIP_DEFAULT_DELAY_MS,
     TOOLTIP_POINTER_OFFSET_X,
@@ -14,7 +14,7 @@ from constants import (
 class CTkTooltip:
     """Hover Overlay Tooltip for CustomTkinter widgets and containers."""
 
-    _active_tooltips: set["CTkTooltip"] = set()
+    _active_tooltips: set[CTkTooltip] = set()
 
     @classmethod
     def dismiss_all(cls):

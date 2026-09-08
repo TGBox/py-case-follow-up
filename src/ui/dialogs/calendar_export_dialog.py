@@ -5,7 +5,6 @@ from pathlib import Path
 from tkinter import filedialog
 from models.case import Case
 from services.calendar_email_service import CalendarEmailService
-from utils.datetime_utils import format_german_datetime
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 

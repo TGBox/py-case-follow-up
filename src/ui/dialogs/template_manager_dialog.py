@@ -1,4 +1,4 @@
-from typing import Callable, Any
+from collections.abc import Callable
 import customtkinter as ctk
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema
@@ -24,7 +24,6 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.export_service = export_service
         self.on_save = on_save
 
-        is_new = template is None
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["edit_template"]
         self.title(tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"))

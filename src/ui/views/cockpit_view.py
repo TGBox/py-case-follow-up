@@ -1,9 +1,9 @@
 import customtkinter as ctk
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 from models.case import Case, TimelineEntry
-from models.customer import Customer
 from models.schema import QuestionSchema
-from enums import BoardColumn, Actor, get_actor_display, get_actor_val_from_display, ACTOR_DISPLAY
+from enums import get_actor_display
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
@@ -11,17 +11,11 @@ from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
 from services.schema_service import SchemaService
 
-from ui.widgets.case_list_widget import CaseListWidget
-from ui.widgets.dynamic_form_widget import DynamicFormWidget
-from ui.widgets.timeline_widget import TimelineWidget
-from ui.widgets.attachment_widget import AttachmentWidget
-from ui.widgets.wiki_widget import WikiWidget
 from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
 from ui.views.cockpit_layout_builders import CockpitLayoutBuilderMixin
 
 
 import logging
-import tkinter as tk
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -257,7 +251,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.save_btn.configure(state="normal")
         self.convert_schema_btn.configure(state="normal")
 
-        from utils.datetime_utils import format_german_datetime
         from services.i18n_service import tr
         vip_str = " ★ VIP" if case.customer.is_vip else ""
         if case.is_internal:
@@ -522,13 +515,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.wiedervorlage_frame.pack_forget()
             return
 
-        from utils.datetime_utils import format_german_date_with_relative, format_german_time, format_german_datetime
+        from utils.datetime_utils import format_german_date_with_relative, format_german_time
 
         fw_date_str = format_german_date_with_relative(self.current_case.workflow_status.followup_at)
         fw_time_str = format_german_time(self.current_case.workflow_status.followup_at, with_uhr=True)
         note = self.current_case.workflow_status.followup_note or ""
 
-        fw_dt_str = format_german_datetime(self.current_case.workflow_status.followup_at)
         note_suffix = f" ({note})" if note else ""
         from services.i18n_service import tr
         self._wiedervorlage_full_text = f"{tr('cockpit.followup_at', '🔔 Nachfragen am:')} {fw_date_str}, {fw_time_str}{note_suffix}"

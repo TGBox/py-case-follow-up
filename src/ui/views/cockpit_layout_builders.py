@@ -17,7 +17,8 @@ import tkinter as tk
 from enums import ACTOR_DISPLAY
 from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
 
-from typing import TYPE_CHECKING, Any, Callable, cast
+from typing import TYPE_CHECKING, Any, cast
+from collections.abc import Callable
 
 from ui.widgets.case_list_widget import CaseListWidget
 from ui.widgets.dynamic_form_widget import DynamicFormWidget

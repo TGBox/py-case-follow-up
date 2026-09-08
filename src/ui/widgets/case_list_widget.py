@@ -1,6 +1,6 @@
 from typing import Any
 import customtkinter as ctk
-from typing import Callable
+from collections.abc import Callable
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
 from constants import COLOR_MUTED_GRAY, COLOR_MUTED_HOVER
@@ -49,13 +49,13 @@ class CaseListWidget(ctk.CTkFrame):
         self.qfilter_urgent_btn.pack(side="left", padx=2)
         self.qfilter_followup_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=105, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due"))
         self.qfilter_followup_btn.pack(side="left", padx=2)
-        
+
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
             text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
             width=100,
-            fg_color=COLOR_MUTED_GRAY,
-            hover_color=COLOR_MUTED_HOVER,
+            fg_color="gray30",
+            hover_color="darkmagenta",
             command=self.toggle_deep_search,
         )
         self.deep_btn.pack(side="left", padx=2)
@@ -105,7 +105,7 @@ class CaseListWidget(ctk.CTkFrame):
         if self.is_deep_search_active:
             self.deep_btn.configure(fg_color="darkmagenta", hover_color="purple")
         else:
-            self.deep_btn.configure(fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER)
+            self.deep_btn.configure(fg_color="gray30", hover_color="gray40")
 
         if self.on_toggle_deep_search:
             self.on_toggle_deep_search(self.is_deep_search_active)
@@ -123,7 +123,9 @@ class CaseListWidget(ctk.CTkFrame):
         if deep_results is not None:
             self.deep_search_results = deep_results
 
-        sig = lambda c: (c.case_id, round(c.classification.calculated_score, 1), c.workflow_status.is_completed, c.workflow_status.followup_at, c.workflow_status.current_actor)
+        def sig(c):
+            return (c.case_id, round(c.classification.calculated_score, 1), c.workflow_status.is_completed, c.workflow_status.followup_at, c.workflow_status.current_actor)
+
         old_sigs = [sig(c) for c in self.cases]
         new_sigs = [sig(c) for c in new_cases]
 

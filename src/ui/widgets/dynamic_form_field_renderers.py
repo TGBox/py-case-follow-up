@@ -16,14 +16,11 @@ import os
 import shutil
 import customtkinter as ctk
 from tkinter import filedialog
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any
+from collections.abc import Callable
 from models.schema import SchemaField
 from models.case import Case
 from constants import DEFAULT_MODULE_TAGS
-
-if TYPE_CHECKING:
-    from models.profile import UserProfile
-    from services.storage_service import StorageService
 
 
 class FieldRendererMixin:

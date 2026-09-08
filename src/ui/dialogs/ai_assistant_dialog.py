@@ -1,6 +1,7 @@
 import threading
 import customtkinter as ctk
-from typing import Callable, Any
+from typing import Any
+from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.profile import UserProfile
 from services.ai_service import AiService
@@ -11,8 +12,6 @@ from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
 from constants import (
     DIALOG_TITLES,
     DIALOG_DIMENSIONS,
-    UI_BUTTON_TEXTS,
-    STATUS_MESSAGES,
     DEFAULT_OLLAMA_URL,
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_GEMINI_MODEL,
@@ -27,15 +26,11 @@ from constants import (
     AI_BTN_GLOBAL_TOGGLE_HEADER,
     AI_LABEL_CUSTOM_INSTRUCTION,
     AI_HINT_CUSTOM_INSTRUCTION,
-    AI_STATUS_DISABLED_HINT,
     COLOR_BADGE_GREEN,
     COLOR_BADGE_BLUE,
     COLOR_BADGE_GRAY,
     COLOR_TEXT_BLUE,
-    COLOR_TEXT_ORANGE,
     COLOR_TEXT_GRAY,
-    COLOR_TEXT_GREEN,
-    COLOR_TEXT_RED,
     COLOR_MUTED_GRAY,
     COLOR_MUTED_HOVER,
 )
@@ -237,8 +232,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
                 if not isinstance(res, Exception):
                     on_success(res)
                 else:
-                    from services.i18n_service import tr
-                    self.status_lbl.configure(text=tr("ai_assistant.error_generation", "⚠ Fehler bei KI-Generierung: {error}", error=res), text_color="red")
+                    self.status_lbl.configure(text=f"⚠ Fehler bei KI-Generierung: {res}", text_color="red")
 
             try:
                 self.after(0, ui_callback)
@@ -254,10 +248,10 @@ class AiAssistantDialog(ctk.CTkToplevel):
                     is_online, msg = self.ai_service.check_gemini_status()
                     running_models = [self.ai_service.gemini_model] if is_online else []
                 else:
-                    is_online, models = self.ai_service.check_ollama_status()
+                    is_online, _models = self.ai_service.check_ollama_status()
                     running_models = self.ai_service.get_running_models() if is_online else []
             except Exception:
-                is_online, models, running_models = False, [], []
+                is_online, _models, running_models = False, [], []
 
             def ui_callback():
                 if not self.winfo_exists():
@@ -318,12 +312,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
                     self.update_ai_buttons_state()
                     self.update_status_header_async()
                     from ui.widgets.toast_notification import ToastNotification
-                    from services.i18n_service import tr
-                    ToastNotification(
-                        self,
-                        tr("ai_constants.toast_ai_status_title", "KI-Status"),
-                        tr("ai_constants.toast_ai_disabled", "KI global deaktiviert & Modelle entladen"),
-                    )
+                    ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
 
                 self.after(0, done)
 
@@ -334,12 +323,7 @@ class AiAssistantDialog(ctk.CTkToplevel):
             self.update_ai_buttons_state()
             self.update_status_header_async()
             from ui.widgets.toast_notification import ToastNotification
-            from services.i18n_service import tr
-            ToastNotification(
-                self,
-                tr("ai_constants.toast_ai_status_title", "KI-Status"),
-                tr("ai_constants.toast_ai_enabled", "KI global aktiviert"),
-            )
+            ToastNotification(self, "KI-Status", "KI global aktiviert")
 
     def update_ai_buttons_state(self):
         is_enabled = self.profile.ai_settings.enable_ai if (self.profile and hasattr(self.profile, "ai_settings")) else True
@@ -419,12 +403,11 @@ class AiAssistantDialog(ctk.CTkToplevel):
         def on_success(summary_text: str):
             self.summary_textbox.delete("1.0", "end")
             self.summary_textbox.insert("1.0", summary_text)
-            from services.i18n_service import tr
             b_cnt, p_cnt = len(self.get_active_rules()[0]), len(self.get_active_rules()[1])
             has_ci = bool(self.get_custom_instruction())
-            ci_info = tr("ai_assistant.custom_instruction_suffix", " + ⚡ Sonderanweisung") if has_ci else ""
-            info = tr("ai_assistant.rules_info", " ({base_count} Basis-Regeln, {practice_count} Praxis-Regeln{ci_info})", base_count=b_cnt, practice_count=p_cnt, ci_info=ci_info) if (b_cnt or p_cnt or has_ci) else ""
-            self.status_lbl.configure(text=tr("ai_assistant.summary_generated", "✓ Zusammenfassung erfolgreich generiert{info}.", info=info), text_color="dodgerblue")
+            ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
+            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
+            self.status_lbl.configure(text=f"✓ Zusammenfassung erfolgreich generiert{info}.", text_color="dodgerblue")
 
         self._run_async(worker, on_success, "🤖 KI generiert Zusammenfassung... Bitte warten")
 
@@ -566,12 +549,11 @@ class AiAssistantDialog(ctk.CTkToplevel):
         def on_success(draft_text: str):
             self.draft_textbox.delete("1.0", "end")
             self.draft_textbox.insert("1.0", draft_text)
-            from services.i18n_service import tr
             b_cnt, p_cnt = len(self.get_active_rules()[0]), len(self.get_active_rules()[1])
             has_ci = bool(self.get_custom_instruction())
-            ci_info = tr("ai_assistant.custom_instruction_suffix", " + ⚡ Sonderanweisung") if has_ci else ""
-            info = tr("ai_assistant.rules_info", " ({base_count} Basis-Regeln, {practice_count} Praxis-Regeln{ci_info})", base_count=b_cnt, practice_count=p_cnt, ci_info=ci_info) if (b_cnt or p_cnt or has_ci) else ""
-            self.status_lbl.configure(text=tr("ai_assistant.reply_generated", "✓ E-Mail-Antwort-Entwurf generiert{info}.", info=info), text_color="dodgerblue")
+            ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
+            info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
+            self.status_lbl.configure(text=f"✓ E-Mail-Antwort-Entwurf generiert{info}.", text_color="dodgerblue")
 
         self._run_async(worker, on_success, "✉ KI generiert E-Mail-Antwort... Bitte warten")
 

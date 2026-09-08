@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from typing import Callable, Any
+from collections.abc import Callable
 from models.profile import Colleague
 from services.storage_service import StorageService
 from constants import DEFAULT_DEPARTMENTS, DIALOG_DIMENSIONS, DIALOG_TITLES

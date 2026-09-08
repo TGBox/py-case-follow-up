@@ -1,6 +1,6 @@
 import calendar
 from datetime import datetime, timedelta
-from typing import Callable
+from collections.abc import Callable
 import customtkinter as ctk
 from utils.datetime_utils import format_german_date, format_german_datetime, parse_german_date, parse_iso, get_local_now
 from utils.ui_utils import center_window
@@ -301,11 +301,11 @@ class CalendarDialog(ctk.CTkToplevel):
         cal = calendar.monthcalendar(self.current_year, self.current_month)
         today = get_local_now()
 
-        for row_idx, week in enumerate(cal):
+        for _row_idx, week in enumerate(cal):
             row_frame = ctk.CTkFrame(self.days_frame, fg_color="transparent")
             row_frame.pack(fill="x", pady=1)
 
-            for col_idx, day in enumerate(week):
+            for _col_idx, day in enumerate(week):
                 if day == 0:
                     lbl = ctk.CTkLabel(row_frame, text="", width=48)
                     lbl.pack(side="left", padx=1)

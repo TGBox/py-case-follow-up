@@ -25,6 +25,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest-cov==7.1.0",
+    "ruff==0.16.0",
 ]
 
 [tool.pyright]
@@ -49,4 +50,33 @@ exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
 ]
+
+[tool.ruff]
+target-version = "py314"
+# Long lines are common throughout (mostly i18n tr(...) calls with long
+# German default strings) - not worth a mass reformat right now, so line
+# length is left unchecked rather than fighting the whole codebase at once.
+line-length = 200
+exclude = [".venv", "build", "dist"]
+
+[tool.ruff.lint]
+# Deliberately narrow starter set focused on real-bug classes rather than
+# style nits, since this is the first lint pass this project has ever had:
+#   F  (pyflakes)   - unused imports, undefined names, redefined functions/
+#                      methods (this alone would have caught the duplicate
+#                      focus_wiki_search() and the missing filedialog import
+#                      pyright turned up in the last pyright cleanup pass)
+#   E/W (pycodestyle) - basic style/whitespace correctness
+#   B  (flake8-bugbear) - common real-bug patterns (mutable default args,
+#                      loop-variable closures, etc.)
+#   UP (pyupgrade)  - modernizes syntax to match requires-python >=3.14
+select = ["E", "F", "W", "B", "UP"]
+ignore = [
+    "E501",  # line length - see line-length comment above
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files commonly shadow fixture names and use star-ish patterns that
+# are fine in test context but would be flagged as real-code smells elsewhere.
+"tests/*" = ["F841"]
 

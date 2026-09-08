@@ -27,18 +27,29 @@ jobs:
 
       - name: Run test suite
         run: uv run pytest -q
+        # --cov=src --cov-report=term-missing --cov-report=html now live in
+        # pyproject.toml's [tool.pytest.ini_options] addopts, so every run
+        # (including this one) already measures coverage - no extra flags
+        # needed here.
 
-      # Hinweis: Fuer Coverage-Zahlen (pytest-cov) muesste die Dependency erst lokal
-      # per "uv add --dev pytest-cov" hinzugefuegt werden (aktualisiert die uv.lock).
-      # Das konnte hier nicht gemacht werden, da diese Sandbox keinen Zugriff auf
-      # PyPI hat. Danach kann dieser Schritt um --cov=src --cov-report=xml erweitert
-      # und ein Upload-Schritt fuer den Report ergaenzt werden.
+      - name: Upload coverage HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-html
+          path: htmlcov/
+          retention-days: 14
+        # No --cov-fail-under gate yet: we don't have a known-good coverage
+        # baseline for this codebase to set a threshold against. Once a
+        # baseline run has been reviewed, add e.g. --cov-fail-under=70 to the
+        # "Run test suite" step above to stop coverage regressing silently.
 
   typecheck:
-    # Nicht blockierend: markiert Typfehler sichtbar in den Checks, ohne den Build rot zu machen,
-    # solange die bestehende Codebasis nicht vollstaendig pyright-sauber ist.
+    # Was continue-on-error: true while the codebase had pre-existing pyright
+    # errors; now that a full cleanup pass has landed (78 -> 0), this blocks
+    # the build like the other jobs, so a *new* type error fails CI instead
+    # of quietly sitting in the logs.
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -54,3 +65,28 @@ jobs:
 
       - name: Run pyright
         run: uvx pyright src
+
+  lint:
+    # Non-blocking for now (same reasoning the typecheck job used to have):
+    # this is ruff's first pass over the codebase, and its actual findings
+    # here are still unknown/unreviewed. Once a baseline pass has been
+    # triaged (real bugs fixed, remaining noise either fixed or suppressed
+    # with a per-line/per-file ignore + reason), remove continue-on-error so
+    # new lint violations fail the build like typecheck now does.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies (uv.lock)
+        run: uv sync --locked
+
+      - name: Run ruff
+        run: uv run ruff check src

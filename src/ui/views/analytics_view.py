@@ -3,7 +3,14 @@ from typing import Any
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
 from utils.datetime_utils import parse_iso, get_local_now
-from constants import COLOR_PANEL_BG, COLOR_PANEL_BORDER
+from constants import (
+    COLOR_PANEL_BG,
+    COLOR_PANEL_BORDER,
+    COLOR_URGENCY_RED,
+    COLOR_URGENCY_YELLOW,
+    COLOR_URGENCY_GREEN,
+    COLOR_WARNING_ORANGE,
+)
 
 
 class AnalyticsView(ctk.CTkFrame):
@@ -107,11 +114,11 @@ class AnalyticsView(ctk.CTkFrame):
         summary_row.pack(fill="x", pady=(0, 12))
 
         self.create_card(summary_row, tr("analytics.total_cases", "📋 Fälle Gesamt"), str(total_count), "dodgerblue")
-        self.create_card(summary_row, tr("analytics.open_cases", "⏳ Offene Fälle"), str(len(open_cases)), "darkorange")
+        self.create_card(summary_row, tr("analytics.open_cases", "⏳ Offene Fälle"), str(len(open_cases)), COLOR_WARNING_ORANGE)
         self.create_card(summary_row, tr("analytics.completed_cases", "✓ Erledigt"), f"{len(completed_cases)} ({completed_pct:.0f}%)", "forestgreen")
-        self.create_card(summary_row, tr("analytics.overdue_cases", "⚠ Überfällig"), str(len(overdue_cases)), "firebrick" if overdue_cases else "forestgreen")
+        self.create_card(summary_row, tr("analytics.overdue_cases", "⚠ Überfällig"), str(len(overdue_cases)), COLOR_URGENCY_RED if overdue_cases else "forestgreen")
         self.create_card(summary_row, tr("analytics.avg_res_time", "⏱ Ø Bearbeitung"), avg_res_str, "darkviolet")
-        self.create_card(summary_row, tr("analytics.vip_rate", "⭐ VIP-Quote"), f"{vip_pct:.1f}%", "gold")
+        self.create_card(summary_row, tr("analytics.vip_rate", "⭐ VIP-Quote"), f"{vip_pct:.1f}%", COLOR_URGENCY_YELLOW)
 
         # 2. Grid Container (2 Columns for balanced layout)
         grid_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
@@ -140,9 +147,9 @@ class AnalyticsView(ctk.CTkFrame):
         urg_row = ctk.CTkFrame(urg_frame, fg_color="transparent")
         urg_row.pack(fill="x", padx=12, pady=(0, 10))
 
-        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_red", "🔴 Rot (Kritisch): {count} ({pct}%)", count=red_count, pct=f"{red_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color="red").pack(anchor="w", pady=2)
-        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_yellow", "🟡 Gelb (Mittel): {count} ({pct}%)", count=yellow_count, pct=f"{yellow_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color="gold").pack(anchor="w", pady=2)
-        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_green", "🟢 Grün (Normal): {count} ({pct}%)", count=green_count, pct=f"{green_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color="limegreen").pack(anchor="w", pady=2)
+        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_red", "🔴 Rot (Kritisch): {count} ({pct}%)", count=red_count, pct=f"{red_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_URGENCY_RED).pack(anchor="w", pady=2)
+        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_yellow", "🟡 Gelb (Mittel): {count} ({pct}%)", count=yellow_count, pct=f"{yellow_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_URGENCY_YELLOW).pack(anchor="w", pady=2)
+        ctk.CTkLabel(urg_row, text=tr("analytics.urgency_green", "🟢 Grün (Normal): {count} ({pct}%)", count=green_count, pct=f"{green_count/open_total*100:.0f}"), font=ctk.CTkFont(size=12, weight="bold"), text_color=COLOR_URGENCY_GREEN).pack(anchor="w", pady=2)
 
         # Card L2: Schema / Form Distribution
         schema_frame = ctk.CTkFrame(left_col, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER, corner_radius=8)
@@ -214,7 +221,7 @@ class AnalyticsView(ctk.CTkFrame):
         for act_str, count in actor_counts.items():
             ctk.CTkLabel(dept_frame, text=tr("analytics.dept_cases_item", "• {dept}: {count} Fälle", dept=act_str, count=count), font=ctk.CTkFont(size=12), anchor="w").pack(fill="x", padx=16, pady=2)
 
-    def create_card(self, parent, title: str, value: str, color: str):
+    def create_card(self, parent, title: str, value: str, color: str | tuple[str, str]):
         card = ctk.CTkFrame(parent, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER, corner_radius=8, width=130)
         card.pack(side="left", fill="x", expand=True, padx=3, pady=2)
 

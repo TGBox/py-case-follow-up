@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from unittest.mock import MagicMock
 import customtkinter as ctk
 import pytest
@@ -241,3 +242,130 @@ def test_analytics_high_contrast_styling(dummy_app):
     assert len(found_cards) > 0
 
     view.destroy()
+
+
+def test_ctk_tabview_patch_preserves_color_tuples_and_prevents_dark_mode_white_boxes(dummy_app):
+    ctk.set_appearance_mode("Light")
+    dummy_app.update_idletasks()
+
+    tv = ctk.CTkTabview(dummy_app)
+    tv.pack()
+    tab: Any = tv.add("TestTab")
+    scroll = ctk.CTkScrollableFrame(tab, fg_color="transparent")
+    scroll.pack()
+    lbl: Any = ctk.CTkLabel(scroll, text="Test Label")
+    lbl.pack()
+
+    dummy_app.update_idletasks()
+    assert tab._fg_color == ["gray86", "gray17"] or tab._fg_color == ("gray86", "gray17")
+    assert lbl._label.cget("bg") == "gray86"
+
+    # Switch to Dark Mode
+    ctk.set_appearance_mode("Dark")
+    dummy_app.update_idletasks()
+
+    # Verify tab kept color tuple and label background adapted to dark without white boxes
+    assert tab._fg_color == ["gray86", "gray17"] or tab._fg_color == ("gray86", "gray17")
+    assert lbl._label.cget("bg") == "gray17"
+    assert lbl._label.cget("fg") == "#DCE4EE"
+
+    # Switch back to Light Mode
+    ctk.set_appearance_mode("Light")
+    dummy_app.update_idletasks()
+
+    assert lbl._label.cget("bg") == "gray86"
+    assert lbl._label.cget("fg") == "gray10"
+
+    tv.destroy()
+
+
+def test_profile_settings_dialog_appearance_switch_no_white_boxes(dummy_app, real_storage_service):
+    profile = UserProfile(user=UserInfo(name="Daniel Rösch"))
+    storage_mock = MagicMock(spec=StorageService)
+    storage_mock.list_profiles.return_value = ["Daniel Rösch"]
+    storage_mock.config = real_storage_service.config
+
+    ctk.set_appearance_mode("Light")
+    dummy_app.update_idletasks()
+
+    dialog = ProfileSettingsDialog(dummy_app, profile=profile, storage_service=storage_mock)
+    dummy_app.update_idletasks()
+
+    user_lbl: Any = dialog.user_tab_hdr_lbl
+    app_lbl: Any = dialog.app_shortcuts_hdr_lbl
+    tab_paths: Any = dialog.tab_paths
+    paths_scroll: Any = dialog.paths_scroll
+
+    # Switch to Dark Mode dynamically (as happens when saving or switching themes)
+    ctk.set_appearance_mode("Dark")
+    dummy_app.update_idletasks()
+
+    # Tab 1: Verify header label has dark background and bright text
+    assert user_lbl._label.cget("bg") == "gray17"
+    assert user_lbl._label.cget("fg") == "#DCE4EE"
+
+    # Tab 2: Verify paths tab and backup cards
+    assert tab_paths._fg_color == ["gray86", "gray17"] or tab_paths._fg_color == ("gray86", "gray17")
+    assert paths_scroll._parent_canvas.cget("bg") == "gray17"
+
+    # Verify export and import cards have border styling and panel bg
+    found_cards = [w for w in dialog.paths_scroll.winfo_children() if isinstance(w, ctk.CTkFrame) and w.cget("corner_radius") == 8]
+    assert len(found_cards) >= 2
+    for card in found_cards:
+        assert card.cget("border_width") == 1
+        assert card.cget("fg_color") == COLOR_PANEL_BG
+
+    # Tab 5: Verify shortcuts header has dark background
+    assert app_lbl._label.cget("bg") == "gray17"
+    assert app_lbl._label.cget("fg") == "#DCE4EE"
+
+    # Switch back to Light Mode
+    ctk.set_appearance_mode("Light")
+    dummy_app.update_idletasks()
+
+    assert user_lbl._label.cget("bg") == "gray86"
+    assert user_lbl._label.cget("fg") == "gray10"
+    assert app_lbl._label.cget("bg") == "gray86"
+    assert app_lbl._label.cget("fg") == "gray10"
+
+    dialog.destroy()
+
+
+def test_urgency_and_warning_tokens_wcag_aa_contrast():
+    from constants import (
+        COLOR_URGENCY_RED,
+        COLOR_URGENCY_YELLOW,
+        COLOR_URGENCY_GREEN,
+        COLOR_WARNING_ORANGE,
+    )
+
+    def hex_to_rgb(h: str) -> tuple[int, int, int]:
+        h = h.lstrip("#")
+        return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
+
+    def get_luminance(rgb: tuple[int, int, int]) -> float:
+        vals = []
+        for c in rgb:
+            s = c / 255.0
+            vals.append(s / 12.92 if s <= 0.04045 else ((s + 0.055) / 1.055) ** 2.4)
+        return 0.2126 * vals[0] + 0.7152 * vals[1] + 0.0722 * vals[2]
+
+    def contrast(h1: str, h2: str) -> float:
+        l1 = get_luminance(hex_to_rgb(h1))
+        l2 = get_luminance(hex_to_rgb(h2))
+        return (max(l1, l2) + 0.05) / (min(l1, l2) + 0.05)
+
+    light_panel = "#d4d4d8"
+    dark_panel = "#333333"
+
+    # All light tokens on light panel must have contrast >= 4.5:1 (WCAG AA)
+    assert contrast(COLOR_URGENCY_RED[0], light_panel) >= 4.5
+    assert contrast(COLOR_URGENCY_YELLOW[0], light_panel) >= 4.5
+    assert contrast(COLOR_URGENCY_GREEN[0], light_panel) >= 4.5
+    assert contrast(COLOR_WARNING_ORANGE[0], light_panel) >= 4.5
+
+    # All dark tokens on dark panel must have contrast >= 4.5:1 (WCAG AA)
+    assert contrast(COLOR_URGENCY_RED[1], dark_panel) >= 4.5
+    assert contrast(COLOR_URGENCY_YELLOW[1], dark_panel) >= 4.5
+    assert contrast(COLOR_URGENCY_GREEN[1], dark_panel) >= 4.5
+    assert contrast(COLOR_WARNING_ORANGE[1], dark_panel) >= 4.5

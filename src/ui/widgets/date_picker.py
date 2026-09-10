@@ -4,6 +4,7 @@ from collections.abc import Callable
 import customtkinter as ctk
 from utils.datetime_utils import format_german_date, format_german_datetime, parse_german_date, parse_iso, get_local_now
 from utils.ui_utils import center_window
+from constants import COLOR_URGENCY_YELLOW
 
 
 class CalendarDialog(ctk.CTkToplevel):
@@ -157,6 +158,7 @@ class CalendarDialog(ctk.CTkToplevel):
                 hour_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
+                text_color=("gray20", "gray90"),
                 corner_radius=4, command=lambda: self.step_hour(1)
             )
             btn_h_up.pack(fill="x", pady=(1, 0))
@@ -175,6 +177,7 @@ class CalendarDialog(ctk.CTkToplevel):
                 hour_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
+                text_color=("gray20", "gray90"),
                 corner_radius=4, command=lambda: self.step_hour(-1)
             )
             btn_h_down.pack(fill="x", pady=(0, 1))
@@ -202,6 +205,7 @@ class CalendarDialog(ctk.CTkToplevel):
                 min_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
+                text_color=("gray20", "gray90"),
                 corner_radius=4, command=lambda: self.step_minute(5)
             )
             btn_m_up.pack(fill="x", pady=(1, 0))
@@ -220,6 +224,7 @@ class CalendarDialog(ctk.CTkToplevel):
                 min_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
                 font=ctk.CTkFont(size=8, weight="bold"),
                 fg_color="transparent", hover_color=("gray65", "gray40"),
+                text_color=("gray20", "gray90"),
                 corner_radius=4, command=lambda: self.step_minute(-5)
             )
             btn_m_down.pack(fill="x", pady=(0, 1))
@@ -321,8 +326,8 @@ class CalendarDialog(ctk.CTkToplevel):
                         and self.current_year == today.year
                     )
 
-                    fg_col = "dodgerblue" if is_selected else ("gray25" if is_today else "transparent")
-                    border_col = "gold" if is_today and not is_selected else None
+                    fg_col = "dodgerblue" if is_selected else (("gray80", "gray25") if is_today else "transparent")
+                    border_col = COLOR_URGENCY_YELLOW if is_today and not is_selected else None
 
                     btn = ctk.CTkButton(
                         row_frame,
@@ -331,6 +336,7 @@ class CalendarDialog(ctk.CTkToplevel):
                         height=26,
                         fg_color=fg_col,
                         hover_color="royalblue" if not is_selected else None,
+                        text_color="white" if is_selected else ("gray10", "#DCE4EE"),
                         border_width=1 if border_col else 0,
                         border_color=border_col,
                         command=lambda d=day: self.select_day(d),

@@ -15,7 +15,7 @@ delegiert - reines Verschieben von Code, keine Verhaltensaenderung.
 import customtkinter as ctk
 import tkinter as tk
 from enums import ACTOR_DISPLAY
-from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
+from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT, COLOR_WARNING_ORANGE
 
 from typing import TYPE_CHECKING, Any, cast
 from collections.abc import Callable
@@ -164,7 +164,7 @@ class CockpitLayoutBuilderMixin:
             self.wiedervorlage_frame,
             text=tr("cockpit.followup_at", "🔔 Nachfragen am:"),
             font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="darkorange",
+            text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
             height=0,
@@ -173,7 +173,7 @@ class CockpitLayoutBuilderMixin:
             self.wiedervorlage_frame,
             text="",
             font=ctk.CTkFont(size=11, weight="bold"),
-            text_color="darkorange",
+            text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
             height=0,
@@ -182,7 +182,7 @@ class CockpitLayoutBuilderMixin:
             self.wiedervorlage_frame,
             text="",
             font=ctk.CTkFont(size=11),
-            text_color="darkorange",
+            text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
             height=0,
@@ -191,7 +191,7 @@ class CockpitLayoutBuilderMixin:
             self.wiedervorlage_frame,
             text="",
             font=ctk.CTkFont(size=11),
-            text_color="darkorange",
+            text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
             height=0,

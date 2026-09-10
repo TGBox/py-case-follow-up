@@ -379,9 +379,10 @@ COLOR_TOOLTIP_BG = ("gray20", "gray10")
 COLOR_TOOLTIP_BORDER = ("gray60", "gray40")
 COLOR_TOOLTIP_TEXT = ("gray95", "gray95")
 
-COLOR_URGENCY_RED = "#dc2626"
-COLOR_URGENCY_YELLOW = "#d97706"
-COLOR_URGENCY_GREEN = "#16a34a"
+COLOR_URGENCY_RED = ("#991b1b", "#f87171")
+COLOR_URGENCY_YELLOW = ("#92400e", "#fbbf24")
+COLOR_URGENCY_GREEN = ("#166534", "#4ade80")
+COLOR_WARNING_ORANGE = ("#9a3412", "#fb923c")
 
 # --- Default Application Tags & Lists ---
 DEFAULT_TAGS = [

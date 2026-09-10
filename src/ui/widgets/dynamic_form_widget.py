@@ -23,8 +23,9 @@ class TextboxResizeHandle(ctk.CTkFrame):
         field_id: str,
         profile: UserProfile | None,
         storage_service: StorageService | None,
+        width: int = 520,
     ):
-        super().__init__(parent, fg_color=("gray75", "gray35"), height=7, cursor="sb_v_double_arrow")
+        super().__init__(parent, fg_color=("gray75", "gray35"), height=7, width=width, cursor="sb_v_double_arrow")
         self.target_textbox = target_textbox
         self.field_id = field_id
         self.profile = profile

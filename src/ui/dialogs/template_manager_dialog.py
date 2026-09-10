@@ -6,7 +6,7 @@ from models.case import Case
 from enums import TargetType
 from services.export_service import ExportService
 from services.storage_service import StorageService
-from constants import DIALOG_DIMENSIONS
+from constants import DIALOG_DIMENSIONS, COLOR_PANEL_BG, COLOR_PANEL_BORDER
 
 
 class EditTemplateDialog(ctk.CTkToplevel):
@@ -238,19 +238,37 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         btn_new = ctk.CTkButton(top_bar, text=tr("template_mgmt.new_template", "+ Neue Vorlage"), command=self.on_add_template, fg_color="forestgreen", width=140)
         btn_new.pack(side="right", padx=5)
 
-        btn_reset = ctk.CTkButton(top_bar, text=tr("template_mgmt.load_defaults", "🔄 Standard-Vorlagen laden"), command=self.on_reset_templates, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), width=180)
-        btn_reset.pack(side="right", padx=5)
+        self.btn_toggle_defaults = ctk.CTkButton(
+            top_bar,
+            text=self._get_toggle_defaults_text(),
+            command=self.on_toggle_default_templates,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            width=210,
+        )
+        self.btn_toggle_defaults.pack(side="right", padx=5)
 
         self.scroll_frame = ctk.CTkScrollableFrame(self)
         self.scroll_frame.pack(fill="both", expand=True, padx=10, pady=5)
 
         self.render_list()
 
-    def on_reset_templates(self):
-        self.templates = self.storage_service.reset_templates_to_defaults()
+    def _get_toggle_defaults_text(self) -> str:
+        from services.i18n_service import tr
+        if self.storage_service.has_default_templates():
+            return tr("template_mgmt.remove_defaults", "➖ Standard-Vorlagen entfernen")
+        return tr("template_mgmt.add_defaults", "➕ Standard-Vorlagen laden")
+
+    def on_toggle_default_templates(self):
+        self.templates, is_added = self.storage_service.toggle_default_templates()
+        if hasattr(self, "btn_toggle_defaults"):
+            self.btn_toggle_defaults.configure(text=self._get_toggle_defaults_text())
         self.render_list()
         if self.on_templates_updated:
             self.on_templates_updated(self.templates)
+
+    def on_reset_templates(self):
+        self.on_toggle_default_templates()
 
     def render_list(self):
         from services.i18n_service import tr
@@ -258,21 +276,15 @@ class TemplateManagerDialog(ctk.CTkToplevel):
         for w in self.scroll_frame.winfo_children():
             w.destroy()
 
-        from services.seed_service import SeedService
-        seed_templates = SeedService(self.storage_service).create_seed_templates()
-        saved_templates = self.storage_service.load_templates()
-
         display_templates = list(self.templates)
-        for st in seed_templates:
-            if not any(t.template_id == st.template_id for t in display_templates):
-                display_templates.append(st)
+        saved_templates = self.storage_service.load_templates()
 
         if not display_templates:
             ctk.CTkLabel(self.scroll_frame, text=tr("template_mgmt.no_templates", "Keine Vorlagen vorhanden."), text_color="gray").pack(pady=20)
             return
 
         for tmpl in display_templates:
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6)
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER, corner_radius=6)
             card.pack(fill="x", pady=5, padx=5)
 
             top_row = ctk.CTkFrame(card, fg_color="transparent")

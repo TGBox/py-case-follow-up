@@ -3,7 +3,7 @@ from collections.abc import Callable
 from models.schema import QuestionSchema, SchemaField
 from enums import FieldType
 from services.schema_service import SchemaService
-from constants import DIALOG_DIMENSIONS
+from constants import DIALOG_DIMENSIONS, COLOR_PANEL_BG, COLOR_PANEL_BORDER, COLOR_PANEL_ALT_BG
 
 
 class NewSchemaDialog(ctk.CTkToplevel):
@@ -131,8 +131,15 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         )
         self.adopt_schema_btn.pack(side="left", padx=(0, 5))
 
-        reset_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.default_schemas", "🔄 Standard-Formulare"), command=self.on_reset_schemas, fg_color="gray30", width=150)
-        reset_schema_btn.pack(side="left", padx=(0, 5))
+        self.toggle_schema_btn = ctk.CTkButton(
+            top_frame,
+            text=self._get_toggle_schemas_text(),
+            command=self.on_toggle_default_schemas,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            width=210,
+        )
+        self.toggle_schema_btn.pack(side="left", padx=(0, 5))
 
         del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
         del_schema_btn.pack(side="right")
@@ -142,11 +149,24 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         # Fields List Frame
         ctk.CTkLabel(main_frame, text=tr("schema_builder.fields_header", "Enthaltene Formularfelder:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 5))
 
-        self.fields_scroll = ctk.CTkScrollableFrame(main_frame, width=680, height=300)
+        self.fields_scroll = ctk.CTkScrollableFrame(
+            main_frame,
+            width=680,
+            height=300,
+            fg_color=COLOR_PANEL_BG,
+            border_width=1,
+            border_color=COLOR_PANEL_BORDER,
+        )
         self.fields_scroll.pack(fill="both", expand=True, pady=(0, 15))
 
         # Field Addition Form
-        add_frame = ctk.CTkFrame(main_frame)
+        add_frame = ctk.CTkFrame(
+            main_frame,
+            fg_color=COLOR_PANEL_BG,
+            border_width=1,
+            border_color=COLOR_PANEL_BORDER,
+            corner_radius=8,
+        )
         add_frame.pack(fill="x", pady=(0, 15), padx=5)
 
         ctk.CTkLabel(add_frame, text=tr("schema_builder.add_field_header", "Neues Feld hinzufügen (V2 mit bedingter Logik):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 5))
@@ -196,14 +216,28 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         save_btn = ctk.CTkButton(btn_frame, text=tr("cockpit.save", "Änderungen Speichern"), command=self.on_save, width=180)
         save_btn.pack(side="right")
 
-    def on_reset_schemas(self):
+    def _get_toggle_schemas_text(self) -> str:
+        from services.i18n_service import tr
+        storage_service = getattr(self.master, "storage_service", None)
+        has_defaults = storage_service.has_default_schemas() if storage_service else False
+        if has_defaults:
+            return tr("schema_builder.remove_defaults", "➖ Standard-Formulare entfernen")
+        return tr("schema_builder.add_defaults", "➕ Standard-Formulare laden")
+
+    def on_toggle_default_schemas(self):
         storage_service = getattr(self.master, "storage_service", None)
         if storage_service:
-            self.schemas = storage_service.reset_schemas_to_defaults()
-            self.selected_schema = self.schemas[0] if self.schemas else None
+            self.schemas, is_added = storage_service.toggle_default_schemas()
+            if self.selected_schema not in self.schemas:
+                self.selected_schema = self.schemas[0] if self.schemas else None
             self.refresh_schema_combo()
             self.refresh_fields_list()
             self.on_schemas_updated(self.schemas)
+            if hasattr(self, "toggle_schema_btn"):
+                self.toggle_schema_btn.configure(text=self._get_toggle_schemas_text())
+
+    def on_reset_schemas(self):
+        self.on_toggle_default_schemas()
 
     def refresh_schema_combo(self):
         schema_names = [s.display_name for s in self.schemas]
@@ -286,7 +320,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             return
 
         for idx, f in enumerate(self.selected_schema.fields):
-            f_frame = ctk.CTkFrame(self.fields_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+            f_frame = ctk.CTkFrame(self.fields_scroll, fg_color=COLOR_PANEL_ALT_BG if idx % 2 == 0 else "transparent", corner_radius=6)
             f_frame.pack(fill="x", pady=2, padx=5)
 
             req_str = "[PFLICHT]" if f.required else "[OPTIONAL]"

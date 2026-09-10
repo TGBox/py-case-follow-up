@@ -176,13 +176,13 @@ class FieldRendererMixin:
 
     def _render_date_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         entry_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-        entry_row.pack(fill="x")
+        entry_row.pack(anchor="w")
 
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or tr("common.date_placeholder", "TT.MM.JJJJ"), **entry_kwargs)
+        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or tr("common.date_placeholder", "TT.MM.JJJJ"), width=295, **entry_kwargs)
         if val:
             entry.insert(0, str(val))
-        entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        entry.pack(side="left", padx=(0, 10))
 
         from services.i18n_service import tr
 
@@ -194,7 +194,7 @@ class FieldRendererMixin:
             hover_color="gray40",
             command=lambda e=entry: self.open_calendar_picker(e),
         )
-        cal_btn.pack(side="right")
+        cal_btn.pack(side="left")
         target_widget_dict[f.field_id] = (f.field_type, entry)
 
     def _render_dropdown_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], is_missing: bool):
@@ -204,11 +204,12 @@ class FieldRendererMixin:
             row_frame,
             values=options,
             command=lambda _val: self.update_conditional_visibility(),
+            width=400,
             **opt_kwargs,
         )
         if val and str(val) in options:
             combo.set(str(val))
-        combo.pack(fill="x")
+        combo.pack(anchor="w", pady=(0, 2))
         target_widget_dict[f.field_id] = (f.field_type, combo)
 
     def _render_boolean_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any], case: Case | None):
@@ -251,15 +252,16 @@ class FieldRendererMixin:
     def _render_file_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
         file_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-        file_row.pack(fill="x")
+        file_row.pack(anchor="w")
         file_entry = ctk.CTkEntry(
             file_row,
             placeholder_text=f.placeholder or tr("dynamic_form.no_file_selected", "Keine Datei ausgewählt..."),
+            width=280,
             **entry_kwargs,
         )
         if val:
             file_entry.insert(0, str(val))
-        file_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
+        file_entry.pack(side="left", padx=(0, 10))
 
         def open_file_picker(e=file_entry, f_item=f):
             exts = f_item.allowed_extensions
@@ -286,16 +288,16 @@ class FieldRendererMixin:
             fg_color="gray30",
             hover_color="gray40",
             command=open_file_picker,
-        ).pack(side="right")
+        ).pack(side="left")
 
         target_widget_dict[f.field_id] = ("file", file_entry)
 
     def _render_number_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.number_placeholder", "Zahl..."), **entry_kwargs)
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.number_placeholder", "Zahl..."), width=400, **entry_kwargs)
         if val is not None:
             entry.insert(0, str(val))
-        entry.pack(fill="x")
+        entry.pack(anchor="w", pady=(0, 2))
         target_widget_dict[f.field_id] = (f.field_type, entry)
 
     def _render_textbox_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any] | None = None):
@@ -309,10 +311,10 @@ class FieldRendererMixin:
             elif ui and getattr(ui, "textbox_height", None):
                 custom_height = ui.textbox_height
 
-        textbox = ctk.CTkTextbox(row_frame, height=custom_height, **(entry_kwargs or {}))
+        textbox = ctk.CTkTextbox(row_frame, width=520, height=custom_height, wrap="word", **(entry_kwargs or {}))
         if val:
             textbox.insert("1.0", str(val))
-        textbox.pack(fill="x", pady=(0, 2))
+        textbox.pack(anchor="w", pady=(0, 2))
 
         handle = TextboxResizeHandle(
             row_frame,
@@ -320,15 +322,16 @@ class FieldRendererMixin:
             field_id=f.field_id,
             profile=self.profile,
             storage_service=self.storage_service,
+            width=520,
         )
-        handle.pack(fill="x", pady=(2, 0))
+        handle.pack(anchor="w", pady=(2, 0))
 
         target_widget_dict[f.field_id] = ("textbox", textbox)
 
     def _render_text_entry_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.text_placeholder", "Text..."), **entry_kwargs)
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.text_placeholder", "Text..."), width=400, **entry_kwargs)
         if val:
             entry.insert(0, str(val))
-        entry.pack(fill="x")
+        entry.pack(anchor="w", pady=(0, 2))
         target_widget_dict[f.field_id] = (f.field_type, entry)

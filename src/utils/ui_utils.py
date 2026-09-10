@@ -103,8 +103,48 @@ def patch_ctk_scrollable_frame() -> None:
     ctk.CTkScrollableFrame._ctk_resilience_patched = True  # pyright: ignore[reportAttributeAccessIssue]
 
 
-# Automatically apply patch on import
+
+def patch_ctk_tabview() -> None:
+    """Ensures CTkTabview child tabs retain theme color tuples across appearance mode changes.
+
+    By default, CustomTkinter's CTkTabview._create_tab and CTkTabview._draw call
+    `self._apply_appearance_mode(self._fg_color)` which collapses the ('gray86', 'gray17')
+    color tuple into a static single string ('gray86' in Light mode, 'gray17' in Dark mode).
+    When child widgets (frames, scrollables, labels) detect their master's background color,
+    they inherit this single string. Subsequent calls to `ctk.set_appearance_mode(...)` fail
+    to update the child backgrounds, causing solid light-gray boxes behind transparent
+    widgets in Dark mode and vice-versa.
+
+    This patch ensures tabs are always configured with the raw color tuples `self._fg_color`
+    and `self._bg_color` directly, preserving dynamic appearance mode evaluation.
+    """
+    if getattr(ctk.CTkTabview, "_ctk_resilience_patched", False):
+        return
+
+    def safe_create_tab(self):
+        new_tab: Any = ctk.CTkFrame(self, height=0, width=0, border_width=0, corner_radius=0)
+        target_color = getattr(self, "_bg_color", None) if getattr(self, "_fg_color", None) == "transparent" else getattr(self, "_fg_color", None)
+        new_tab.configure(fg_color=target_color, bg_color=target_color)
+        return new_tab
+
+    orig_draw = getattr(ctk.CTkTabview, "_draw", None)
+
+    def safe_draw(self, no_color_updates: bool = False):
+        if orig_draw:
+            orig_draw(self, no_color_updates)
+        target_color = getattr(self, "_bg_color", None) if getattr(self, "_fg_color", None) == "transparent" else getattr(self, "_fg_color", None)
+        tab_dict: dict[str, Any] = getattr(self, "_tab_dict", {})
+        for tab in tab_dict.values():
+            tab.configure(fg_color=target_color, bg_color=target_color)
+
+    ctk.CTkTabview._create_tab = safe_create_tab  # pyright: ignore[reportAttributeAccessIssue]
+    ctk.CTkTabview._draw = safe_draw  # pyright: ignore[reportAttributeAccessIssue]
+    ctk.CTkTabview._ctk_resilience_patched = True  # pyright: ignore[reportAttributeAccessIssue]
+
+
+# Automatically apply patches on import
 patch_ctk_scrollable_frame()
+patch_ctk_tabview()
 
 
 

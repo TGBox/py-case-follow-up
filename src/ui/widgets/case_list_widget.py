@@ -3,7 +3,14 @@ import customtkinter as ctk
 from collections.abc import Callable
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
-from constants import COLOR_MUTED_GRAY, COLOR_MUTED_HOVER
+from constants import (
+    COLOR_MUTED_GRAY,
+    COLOR_MUTED_HOVER,
+    COLOR_URGENCY_RED,
+    COLOR_URGENCY_YELLOW,
+    COLOR_URGENCY_GREEN,
+    COLOR_WARNING_ORANGE,
+)
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -183,7 +190,11 @@ class CaseListWidget(ctk.CTkFrame):
 
             # Urgency Dot Indicator
             urg = case.classification.urgency_level
-            dot_color = "red" if urg == UrgencyLevel.RED else ("gold" if urg == UrgencyLevel.YELLOW else "limegreen")
+            dot_color = (
+                COLOR_URGENCY_RED
+                if urg == UrgencyLevel.RED
+                else (COLOR_URGENCY_YELLOW if urg == UrgencyLevel.YELLOW else COLOR_URGENCY_GREEN)
+            )
             dot = ctk.CTkLabel(top_row, text=tr("common.dot", "●"), text_color=dot_color, font=ctk.CTkFont(size=16))
             dot.pack(side="left", padx=(0, 5))
             dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
@@ -303,7 +314,7 @@ class CaseListWidget(ctk.CTkFrame):
                     justify="left",
                     wraplength=current_wrap,
                     font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="darkorange"
+                    text_color=COLOR_WARNING_ORANGE,
                 )
                 lbl_h.pack(fill="x", pady=0)
                 lbl_h.bind("<Button-1>", lambda e, c=case: self.select_case(c))
@@ -317,7 +328,7 @@ class CaseListWidget(ctk.CTkFrame):
                     justify="left",
                     wraplength=current_wrap,
                     font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="darkorange"
+                    text_color=COLOR_WARNING_ORANGE,
                 )
                 lbl_d.pack(fill="x", pady=0)
                 lbl_d.bind("<Button-1>", lambda e, c=case: self.select_case(c))
@@ -331,7 +342,7 @@ class CaseListWidget(ctk.CTkFrame):
                     justify="left",
                     wraplength=current_wrap,
                     font=ctk.CTkFont(size=10),
-                    text_color="darkorange"
+                    text_color=COLOR_WARNING_ORANGE,
                 )
                 lbl_t.pack(fill="x", pady=0)
                 lbl_t.bind("<Button-1>", lambda e, c=case: self.select_case(c))
@@ -346,7 +357,7 @@ class CaseListWidget(ctk.CTkFrame):
                         justify="left",
                         wraplength=current_wrap,
                         font=ctk.CTkFont(size=10),
-                        text_color="darkorange"
+                        text_color=COLOR_WARNING_ORANGE,
                     )
                     lbl_n.pack(fill="x", pady=0)
                     lbl_n.bind("<Button-1>", lambda e, c=case: self.select_case(c))

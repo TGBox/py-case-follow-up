@@ -17,6 +17,8 @@ from constants import (
     HOTKEY_ACTION_LABELS,
     STATUS_SHORTCUT_CONFLICT,
     STATUS_SHORTCUT_CONFLICT_GENERIC,
+    COLOR_PANEL_BG,
+    COLOR_PANEL_BORDER,
     LABEL_APP_SHORTCUTS_HEADER,
     LABEL_SNIPPET_SHORTCUTS_HEADER,
     LABEL_NO_SNIPPETS,
@@ -135,6 +137,13 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.tab_wiki = self.tabview.add(self._tab_name_map["tab_wiki"])
         self.tab_ai = self.tabview.add(self._tab_name_map["tab_ai"])
         self.tab_scoring = self.tabview.add(self._tab_name_map["tab_scoring"])
+
+        tv_fg = getattr(self.tabview, "_fg_color", ("gray86", "gray17"))
+        tv_bg = getattr(self.tabview, "_bg_color", ("gray86", "gray17"))
+        target_tab_color = tv_bg if tv_fg == "transparent" else tv_fg
+        all_tabs: list[Any] = [self.tab_user, self.tab_paths, self.tab_wiki, self.tab_ai, self.tab_scoring]
+        for tab in all_tabs:
+            tab.configure(fg_color=target_tab_color, bg_color=target_tab_color)
 
         # Backward compatibility aliases for tab_ui and tab_backup
         self.tab_ui = self.tab_user
@@ -701,7 +710,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ).pack(anchor="w", pady=(0, 15))
 
         # Section 2.1: Export
-        exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8)
+        exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         exp_card.pack(fill="x", pady=(0, 15), padx=2)
 
         ctk.CTkLabel(
@@ -728,7 +737,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         btn_export.pack(anchor="w", padx=12, pady=(0, 12))
 
         # Section 2.2: Import
-        imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8)
+        imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         imp_card.pack(fill="x", pady=(0, 15), padx=2)
 
         ctk.CTkLabel(

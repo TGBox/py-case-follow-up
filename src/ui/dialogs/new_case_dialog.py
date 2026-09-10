@@ -173,6 +173,9 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("new_case_dialog.title_placeholder", "z. B. Zuzahlungsdatei lässt sich nicht erzeugen"))
         self.title_entry.pack(fill="x", pady=(0, 6))
 
+        # After picking a practice the cursor jumps straight into the title field
+        self.customer_combo.set_next_focus_widget(self.title_entry)
+
         # Creation Date (defaulting to current time)
         ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.created_at", "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
         from ui.widgets.date_picker import DatePickerWidget

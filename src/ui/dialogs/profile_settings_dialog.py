@@ -162,11 +162,27 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.user_scroll = ctk.CTkScrollableFrame(self.tab_user, fg_color="transparent")
         self.user_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
+        # 2-Column Side-by-Side Container
+        cols_container = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
+        cols_container.pack(fill="both", expand=True, padx=5, pady=5)
+        cols_container.columnconfigure(0, weight=1, uniform="user_cols")
+        cols_container.columnconfigure(1, weight=1, uniform="user_cols")
+
+        left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
+
+        right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
+
+        # =========================================================================
+        # LEFT COLUMN: Profil & Benutzerdaten inkl. E-Mail Signatur
+        # =========================================================================
+
         # Section 1: Profil verwalten & wechseln
-        self.user_tab_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_tab_hdr_lbl = ctk.CTkLabel(left_col, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
         self.user_tab_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
-        prof_frame = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
+        prof_frame = ctk.CTkFrame(left_col, fg_color="transparent")
         prof_frame.pack(anchor="w", pady=(0, 15))
 
         self.active_prof_lbl = ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:"))
@@ -177,65 +193,62 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             prof_frame,
             values=profiles_list,
             command=self.on_switch_profile,
-            width=220,
+            width=210,
         )
         self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
         self.profile_combo.pack(side="left", padx=(0, 10))
 
         self.btn_new_prof = ctk.CTkButton(
             prof_frame,
-            text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"),
+            text=tr("profile.btn_new_profile", "➕ Neues Profil"),
             command=self.open_create_profile_dialog,
             fg_color="forestgreen",
-            width=160,
+            width=130,
         )
         self.btn_new_prof.pack(side="left")
 
         # Section 2: Persönliche Angaben & Kontaktdaten
-        self.user_details_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_details_hdr_lbl = ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
         self.user_details_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
-        ctk.CTkLabel(self.user_scroll, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
-        self.user_name_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380)
+        ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
+        self.user_name_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380)
         self.user_name_entry.insert(0, self.profile.user.name)
         self.user_name_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.user_scroll, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
-        self.user_dept_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380)
+        ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
+        self.user_dept_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380)
         self.user_dept_entry.insert(0, self.profile.user.department)
         self.user_dept_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.user_scroll, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
-        self.user_ext_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380)
+        ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
+        self.user_ext_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380)
         self.user_ext_entry.insert(0, self.profile.user.extension)
         self.user_ext_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.user_scroll, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
-        self.user_email_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380)
+        ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
+        self.user_email_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380)
         self.user_email_entry.insert(0, self.profile.user.email)
         self.user_email_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.user_scroll, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
-        self.user_mobile_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380)
+        ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
+        self.user_mobile_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380)
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
         self.user_mobile_entry.pack(anchor="w", pady=(0, 10))
 
         # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
-        self.sig_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
+        self.sig_lbl = ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
         self.sig_lbl.pack(anchor="w", pady=(5, 2))
 
-        sig_frame = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
-        sig_frame.pack(anchor="w", pady=(0, 15))
-
         self.user_sig_txt = ctk.CTkTextbox(
-            sig_frame,
-            width=460,
+            left_col,
+            width=380,
             height=110,
             wrap="word",
             corner_radius=6,
         )
         self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
-        self.user_sig_txt.pack(side="left", padx=(0, 10))
+        self.user_sig_txt.pack(anchor="w", pady=(0, 6))
 
         # Safe wrappers for backward compatibility with CTkEntry
         orig_get = self.user_sig_txt.get
@@ -246,8 +259,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.user_sig_txt.insert = lambda index, text, *args: orig_ins("1.0" if index in (0, "0") else index, text, *args)  # type: ignore[assignment]
         self.user_sig_entry: Any = self.user_sig_txt
 
-        sig_btn_frame = ctk.CTkFrame(sig_frame, fg_color="transparent")
-        sig_btn_frame.pack(side="left", anchor="n", pady=2)
+        sig_btn_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        sig_btn_frame.pack(anchor="w", pady=(0, 10))
 
         self.btn_save_sig = ctk.CTkButton(
             sig_btn_frame,
@@ -255,9 +268,9 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             command=self.on_export_signature,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
-            width=180,
+            width=185,
         )
-        self.btn_save_sig.pack(pady=(0, 8), anchor="w")
+        self.btn_save_sig.pack(side="left", padx=(0, 10))
 
         self.btn_load_sig = ctk.CTkButton(
             sig_btn_frame,
@@ -265,54 +278,69 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             command=self.on_import_signature,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
-            width=180,
+            width=185,
         )
-        self.btn_load_sig.pack(anchor="w")
+        self.btn_load_sig.pack(side="left")
 
-        # Section 4: Erscheinungsbild & Layout (integriert)
-        self.appearance_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.appearance_hdr_lbl.pack(anchor="w", pady=(15, 5))
+        # =========================================================================
+        # RIGHT COLUMN: Erscheinungsbild, Layout & Benachrichtigungen
+        # =========================================================================
 
-        self.lang_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.language", "Sprache / Language:"))
+        # Section 4: Erscheinungsbild & Layout
+        self.appearance_hdr_lbl = ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.appearance_hdr_lbl.pack(anchor="w", pady=(5, 5))
+
+        self.lang_lbl = ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:"))
         self.lang_lbl.pack(anchor="w", pady=(5, 2))
         self.language_combo = ctk.CTkOptionMenu(
-            self.user_scroll,
+            right_col,
             values=list(SUPPORTED_LANGUAGES.values()),
             width=380,
         )
         curr_lang = getattr(self.profile.ui_settings, "language", "de")
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
-        self.language_combo.pack(anchor="w", pady=(0, 15))
+        self.language_combo.pack(anchor="w", pady=(0, 12))
 
-        self.theme_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.theme", "Farb-Thema (Theme):"))
+        self.theme_lbl = ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):"))
         self.theme_lbl.pack(anchor="w", pady=(5, 2))
-        self.theme_combo = ctk.CTkOptionMenu(self.user_scroll, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
+        self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        self.theme_combo.pack(anchor="w", pady=(0, 15))
+        self.theme_combo.pack(anchor="w", pady=(0, 12))
 
-        self.default_layout_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
+        self.default_layout_lbl = ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
         self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
         self.layout_combo = ctk.CTkOptionMenu(
-            self.user_scroll,
+            right_col,
             values=list(LAYOUT_DISPLAY.values()),
             width=380,
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(anchor="w", pady=(0, 15))
+        self.layout_combo.pack(anchor="w", pady=(0, 12))
+
+        self.popup_target_lbl = ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
+        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
+        self.popup_target_combo = ctk.CTkOptionMenu(
+            right_col,
+            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")],
+            width=380,
+        )
+        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
+        self.popup_target_combo.pack(anchor="w", pady=(0, 15))
 
         self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
-            self.user_scroll,
-            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden")
+            right_col,
+            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) einblenden")
         )
         if self.profile.ui_settings.show_demo_data is True:
             self.demo_switch.select()
         else:
             self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 15))
+        self.demo_switch.pack(anchor="w", pady=(0, 12))
 
         self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
-            self.user_scroll,
-            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren")
+            right_col,
+            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (Toast) aktivieren")
         )
         if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
             self.os_popup_switch.select()
@@ -320,20 +348,9 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.os_popup_switch.deselect()
         self.os_popup_switch.pack(anchor="w", pady=(0, 15))
 
-        self.popup_target_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
-        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
-        self.popup_target_combo = ctk.CTkOptionMenu(
-            self.user_scroll,
-            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")],
-            width=380,
-        )
-        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-        self.popup_target_combo.pack(anchor="w", pady=(0, 20))
-
         # Column widths reset section
-        self.col_widths_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.col_widths_hdr_lbl.pack(anchor="w", pady=(10, 5))
+        self.col_widths_hdr_lbl = ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.col_widths_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
         widths = self.profile.ui_settings.column_widths
         def build_widths_str(w_dict: dict) -> str:
@@ -354,16 +371,16 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             )
 
         w_str = build_widths_str(widths)
-        self.widths_label = ctk.CTkLabel(self.user_scroll, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
-        self.widths_label.pack(anchor="w", pady=(0, 12))
+        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
+        self.widths_label.pack(anchor="w", pady=(0, 10))
 
         self.btn_reset_widths = ctk.CTkButton(
-            self.user_scroll,
+            right_col,
             text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
             command=self.on_reset_column_widths,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
-            width=280,
+            width=380,
         )
         self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
 

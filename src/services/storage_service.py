@@ -427,29 +427,64 @@ class StorageService:
         )
         schemas_raw = data.get("schemas", []) if isinstance(data, dict) else []
         loaded_schemas = [QuestionSchema.from_dict(s) for s in schemas_raw if isinstance(s, dict)]
+        self._schemas_cache = loaded_schemas
+        return self._schemas_cache
 
+    def _create_safety_backup(self, path: Path) -> None:
+        """Creates a safety backup (.bak) of the given file before destructive or modifying operations."""
+        if path.exists():
+            try:
+                bak_path = path.with_suffix(path.suffix + ".bak")
+                shutil.copy2(path, bak_path)
+                logger.info(f"Created safety backup at {bak_path}")
+            except Exception as e:
+                logger.warning(f"Failed to create safety backup for {path}: {e}")
+
+    def get_default_schemas(self) -> list[QuestionSchema]:
+        """Loads and returns default schemas from data_examples/question_schemas.json."""
         example_path = self.config.get_example_path("question_schemas.json")
         if example_path and example_path.exists():
             try:
                 with open(example_path, encoding="utf-8") as f:
                     ex_data = json.load(f)
                 ex_raw = ex_data.get("schemas", []) if isinstance(ex_data, dict) else []
-                ex_schemas = [QuestionSchema.from_dict(s) for s in ex_raw if isinstance(s, dict)]
-
-                existing_ids = {s.schema_id for s in loaded_schemas}
-                updated = False
-                for ex_s in ex_schemas:
-                    if ex_s.schema_id not in existing_ids:
-                        loaded_schemas.append(ex_s)
-                        updated = True
-
-                if updated:
-                    self.save_schemas(loaded_schemas)
+                return [QuestionSchema.from_dict(s) for s in ex_raw if isinstance(s, dict)]
             except Exception as e:
-                logger.warning(f"Failed to auto-merge example schemas: {e}")
+                logger.warning(f"Failed to load default schemas from {example_path}: {e}")
+        return []
 
-        self._schemas_cache = loaded_schemas
-        return self._schemas_cache
+    def has_default_schemas(self) -> bool:
+        """Returns True if all default schemas are present in the current schema list."""
+        defaults = self.get_default_schemas()
+        if not defaults:
+            return False
+        curr_ids = {s.schema_id for s in self.load_schemas()}
+        return all(d.schema_id in curr_ids for d in defaults)
+
+    def toggle_default_schemas(self) -> tuple[list[QuestionSchema], bool]:
+        """Toggles default schemas: adds them if missing, or removes only defaults if present.
+        Existing custom schemas created by the user are never deleted.
+        Automatically creates a safety backup.
+        Returns: (updated_schemas_list, is_added: bool)
+        """
+        self._create_safety_backup(self.config.question_schemas_path)
+        curr = list(self.load_schemas(use_cache=False))
+        defaults = self.get_default_schemas()
+        default_ids = {d.schema_id for d in defaults}
+
+        if self.has_default_schemas():
+            # Remove ONLY default schemas; keep all custom user schemas!
+            updated = [s for s in curr if s.schema_id not in default_ids]
+            is_added = False
+        else:
+            # Add missing default schemas; keep all existing custom user schemas!
+            existing_ids = {s.schema_id for s in curr}
+            to_add = [d for d in defaults if d.schema_id not in existing_ids]
+            updated = curr + to_add
+            is_added = True
+
+        self.save_schemas(updated, sync=True)
+        return updated, is_added
 
     def save_schemas(self, schemas: list[QuestionSchema], sync: bool = False) -> None:
         self._schemas_cache = schemas
@@ -464,7 +499,8 @@ class StorageService:
             )
 
     def reset_schemas_to_defaults(self) -> list[QuestionSchema]:
-        """Overwrites working schemas with data_examples/question_schemas.json."""
+        """Overwrites working schemas with data_examples/question_schemas.json with safety backup."""
+        self._create_safety_backup(self.config.question_schemas_path)
         self._schemas_cache = None
         example_path = self.config.get_example_path("question_schemas.json")
         if example_path and example_path.exists():
@@ -484,29 +520,54 @@ class StorageService:
         )
         templates_raw = data.get("templates", []) if isinstance(data, dict) else []
         loaded_templates = [ExportTemplate.from_dict(t) for t in templates_raw if isinstance(t, dict)]
+        self._templates_cache = loaded_templates
+        return self._templates_cache
 
+    def get_default_templates(self) -> list[ExportTemplate]:
+        """Loads and returns default templates from data_examples/export_templates.json."""
         example_path = self.config.get_example_path("export_templates.json")
         if example_path and example_path.exists():
             try:
                 with open(example_path, encoding="utf-8") as f:
                     ex_data = json.load(f)
                 ex_raw = ex_data.get("templates", []) if isinstance(ex_data, dict) else []
-                ex_templates = [ExportTemplate.from_dict(t) for t in ex_raw if isinstance(t, dict)]
-
-                existing_ids = {t.template_id for t in loaded_templates}
-                updated = False
-                for ex_t in ex_templates:
-                    if ex_t.template_id not in existing_ids:
-                        loaded_templates.append(ex_t)
-                        updated = True
-
-                if updated:
-                    self.save_templates(loaded_templates)
+                return [ExportTemplate.from_dict(t) for t in ex_raw if isinstance(t, dict)]
             except Exception as e:
-                logger.warning(f"Failed to auto-merge example templates: {e}")
+                logger.warning(f"Failed to load default templates from {example_path}: {e}")
+        return []
 
-        self._templates_cache = loaded_templates
-        return self._templates_cache
+    def has_default_templates(self) -> bool:
+        """Returns True if all default templates are present in the current template list."""
+        defaults = self.get_default_templates()
+        if not defaults:
+            return False
+        curr_ids = {t.template_id for t in self.load_templates()}
+        return all(d.template_id in curr_ids for d in defaults)
+
+    def toggle_default_templates(self) -> tuple[list[ExportTemplate], bool]:
+        """Toggles default templates: adds them if missing, or removes only defaults if present.
+        Existing custom templates created by the user are never deleted.
+        Automatically creates a safety backup.
+        Returns: (updated_templates_list, is_added: bool)
+        """
+        self._create_safety_backup(self.config.export_templates_path)
+        curr = list(self.load_templates(use_cache=False))
+        defaults = self.get_default_templates()
+        default_ids = {d.template_id for d in defaults}
+
+        if self.has_default_templates():
+            # Remove ONLY default templates; keep all custom user templates!
+            updated = [t for t in curr if t.template_id not in default_ids]
+            is_added = False
+        else:
+            # Add missing default templates; keep all existing custom user templates!
+            existing_ids = {t.template_id for t in curr}
+            to_add = [d for d in defaults if d.template_id not in existing_ids]
+            updated = curr + to_add
+            is_added = True
+
+        self.save_templates(updated, sync=True)
+        return updated, is_added
 
     def save_templates(self, templates: list[ExportTemplate], sync: bool = False) -> None:
         self._templates_cache = templates
@@ -517,7 +578,8 @@ class StorageService:
             self.saver.save_debounced(self.config.export_templates_path, data)
 
     def reset_templates_to_defaults(self) -> list[ExportTemplate]:
-        """Overwrites working templates with data_examples/export_templates.json."""
+        """Overwrites working templates with data_examples/export_templates.json with safety backup."""
+        self._create_safety_backup(self.config.export_templates_path)
         self._templates_cache = None
         example_path = self.config.get_example_path("export_templates.json")
         if example_path and example_path.exists():

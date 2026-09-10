@@ -217,6 +217,14 @@ def test_user_profile_two_column_side_by_side_layout(dummy_app, real_storage_ser
     assert dialog.btn_save_sig.cget("width") == 185
     assert dialog.btn_load_sig.cget("width") == 185
 
+    # Verify signature textbox has distinct border
+    assert dialog.user_sig_txt.cget("border_width") == 1
+    assert dialog.user_sig_txt.cget("border_color") is not None
+
+    from constants import DIALOG_DIMENSIONS
+    assert DIALOG_DIMENSIONS["profile_settings"][1] >= 860
+    assert DIALOG_DIMENSIONS["schema_builder"][0] >= 1150
+
     dialog.destroy()
 
 

@@ -82,7 +82,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         w, h = DIALOG_DIMENSIONS["schema_builder"]
         self.title(tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"))
         self.geometry(f"{w}x{h}")
-        self.minsize(860, 640)
+        self.minsize(1080, 640)
         from utils.ui_utils import center_window
         center_window(self, w, h)
 
@@ -113,23 +113,23 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             top_frame,
             values=schema_names,
             command=self.on_schema_selected,
-            width=280,
+            width=260,
         )
-        self.schema_combo.pack(side="left", padx=(0, 10))
+        self.schema_combo.pack(side="left", padx=(0, 8))
 
         from services.i18n_service import tr
 
-        add_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=130)
-        add_schema_btn.pack(side="left", padx=(0, 5))
+        add_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=125)
+        add_schema_btn.pack(side="left", padx=(0, 6))
 
         self.adopt_schema_btn = ctk.CTkButton(
             top_frame,
             text=tr("schema_builder.adopt_schema", "📥 Zu Realdaten übernehmen"),
             command=self.on_adopt_schema,
             fg_color="dodgerblue",
-            width=200,
+            width=190,
         )
-        self.adopt_schema_btn.pack(side="left", padx=(0, 5))
+        self.adopt_schema_btn.pack(side="left", padx=(0, 6))
 
         self.toggle_schema_btn = ctk.CTkButton(
             top_frame,
@@ -137,11 +137,11 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
             command=self.on_toggle_default_schemas,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
-            width=210,
+            width=220,
         )
-        self.toggle_schema_btn.pack(side="left", padx=(0, 5))
+        self.toggle_schema_btn.pack(side="left", padx=(0, 6))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=90)
+        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=85)
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()

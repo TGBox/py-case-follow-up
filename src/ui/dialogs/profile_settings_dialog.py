@@ -95,7 +95,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         w, h = DIALOG_DIMENSIONS["profile_settings"]
         self.title(tr("profile.title", DIALOG_TITLES["profile_settings"]))
         self.geometry(f"{w}x{h}")
-        self.minsize(880, 680)
+        self.minsize(920, 780)
         from utils.ui_utils import center_window
         center_window(self, w, h)
 
@@ -209,43 +209,46 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         # Section 2: Persönliche Angaben & Kontaktdaten
         self.user_details_hdr_lbl = ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.user_details_hdr_lbl.pack(anchor="w", pady=(10, 5))
+        self.user_details_hdr_lbl.pack(anchor="w", pady=(8, 4))
 
-        ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(4, 2))
         self.user_name_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380)
         self.user_name_entry.insert(0, self.profile.user.name)
-        self.user_name_entry.pack(anchor="w", pady=(0, 10))
+        self.user_name_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(4, 2))
         self.user_dept_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380)
         self.user_dept_entry.insert(0, self.profile.user.department)
-        self.user_dept_entry.pack(anchor="w", pady=(0, 10))
+        self.user_dept_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(4, 2))
         self.user_ext_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380)
         self.user_ext_entry.insert(0, self.profile.user.extension)
-        self.user_ext_entry.pack(anchor="w", pady=(0, 10))
+        self.user_ext_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(4, 2))
         self.user_email_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380)
         self.user_email_entry.insert(0, self.profile.user.email)
-        self.user_email_entry.pack(anchor="w", pady=(0, 10))
+        self.user_email_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
+        ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(4, 2))
         self.user_mobile_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380)
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
-        self.user_mobile_entry.pack(anchor="w", pady=(0, 10))
+        self.user_mobile_entry.pack(anchor="w", pady=(0, 7))
 
         # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
         self.sig_lbl = ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
-        self.sig_lbl.pack(anchor="w", pady=(5, 2))
+        self.sig_lbl.pack(anchor="w", pady=(4, 2))
 
         self.user_sig_txt = ctk.CTkTextbox(
             left_col,
             width=380,
-            height=110,
+            height=95,
             wrap="word",
             corner_radius=6,
+            border_width=1,
+            border_color=("gray65", "gray35"),
+            fg_color=("#F8F9FA", "gray17"),
         )
         self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
         self.user_sig_txt.pack(anchor="w", pady=(0, 6))
@@ -260,7 +263,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.user_sig_entry: Any = self.user_sig_txt
 
         sig_btn_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        sig_btn_frame.pack(anchor="w", pady=(0, 10))
+        sig_btn_frame.pack(anchor="w", pady=(0, 8))
 
         self.btn_save_sig = ctk.CTkButton(
             sig_btn_frame,

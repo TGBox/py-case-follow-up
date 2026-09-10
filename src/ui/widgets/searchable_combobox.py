@@ -25,6 +25,7 @@ class SearchableCombobox(ctk.CTkFrame):
         self._selected_value: str = ""
         self.placeholder_text = placeholder_text if placeholder_text is not None else tr("common.please_select", "– Bitte auswählen –")
         self._popover: ctk.CTkToplevel | None = None
+        self._focus_next: Any | None = None
 
         # Display Button
         self.btn = ctk.CTkButton(
@@ -43,6 +44,14 @@ class SearchableCombobox(ctk.CTkFrame):
 
         if self._values:
             self.set_selected(self._values[0])
+
+    def set_next_focus_widget(self, widget: Any) -> None:
+        """Widget that should receive the keyboard focus after an item was picked.
+
+        Without this the focus lands back on the picker button, which is fine but
+        costs the user an extra click on the field they want to fill in next.
+        """
+        self._focus_next = widget
 
     def set_values(self, values: list[str], default_value: str | None = None) -> None:
         self._values = list(values)
@@ -118,7 +127,7 @@ class SearchableCombobox(ctk.CTkFrame):
         self.search_entry.pack(fill="x", padx=6, pady=(6, 4))
         self.search_entry.bind("<KeyRelease>", self._on_search_changed)
         self.search_entry.bind("<Return>", self._on_enter_pressed)
-        self.search_entry.bind("<Escape>", lambda e: self.close_popover())
+        self.search_entry.bind("<Escape>", lambda e: self.close_popover())  # focus returns to the picker button
 
         # Scrollable Options List
         self.options_scroll = ctk.CTkScrollableFrame(outer, fg_color="transparent")
@@ -128,25 +137,101 @@ class SearchableCombobox(ctk.CTkFrame):
         enable_auto_hiding_scrollbar(self.options_scroll)
 
         self._render_options(self._values)
-        self.search_entry.focus_set()
+
+        # An overrideredirect toplevel is not activated by Windows on its own,
+        # so claim the keyboard explicitly - otherwise typing in the search
+        # field silently goes to the window underneath.
+        self._activate_popover()
 
         # Close popover when clicking outside
         self._popover.bind("<FocusOut>", self._on_focus_out)
+
+    def _activate_popover(self) -> None:
+        def _do():
+            pop = self._popover
+            if pop is None or not pop.winfo_exists():
+                return
+            try:
+                pop.lift()
+                pop.focus_force()
+                self.search_entry.focus_set()
+            except Exception:
+                pass
+
+        try:
+            self.after(10, _do)
+        except Exception:
+            _do()
 
     def _on_focus_out(self, event=None) -> None:
         if self._popover and self._popover.winfo_exists():
             # Check if focus moved to a child of popover
             focused = self._popover.focus_get()
             if not focused or not str(focused).startswith(str(self._popover)):
-                self.after(100, self.close_popover)
+                # Focus went somewhere else on purpose (another field or even
+                # another application) - just close, never pull it back.
+                self.after(100, lambda: self.close_popover(restore_focus=False))
 
-    def close_popover(self) -> None:
-        if self._popover and self._popover.winfo_exists():
+    def close_popover(self, restore_focus: bool = True, focus_target: Any | None = None) -> None:
+        pop = self._popover
+        self._popover = None
+
+        top = None
+        prev_grab = None
+        if pop is not None and pop.winfo_exists():
             try:
-                self._popover.destroy()
+                top = self.winfo_toplevel()
+                prev_grab = top.grab_current()
+            except Exception:
+                top = None
+            try:
+                pop.destroy()
             except Exception:
                 pass
-            self._popover = None
+
+        if restore_focus and top is not None:
+            self._restore_parent_focus(top, prev_grab, focus_target)
+
+    def _restore_parent_focus(self, top: Any, prev_grab: Any, focus_target: Any | None) -> None:
+        """Hands the keyboard back to the owning window after the popover died.
+
+        On Windows the destroyed overrideredirect popover leaves the dialog
+        without keyboard activation: mouse clicks still arrive, but entries
+        ignore every keystroke until the user clicks another window and back.
+        Re-activating the toplevel (and re-arming a modal grab that was lost
+        with the popover) restores normal typing right away.
+        """
+        def _do():
+            try:
+                if not top.winfo_exists():
+                    return
+                top.lift()
+                top.focus_force()
+            except Exception:
+                pass
+
+            try:
+                if prev_grab is not None and not top.grab_current():
+                    prev_grab.grab_set()
+            except Exception:
+                pass
+
+            target = focus_target
+            try:
+                if target is None or not target.winfo_exists():
+                    target = self.btn
+            except Exception:
+                target = self.btn
+
+            try:
+                target.focus_set()
+            except Exception:
+                pass
+
+        try:
+            self.after(10, _do)
+        except Exception:
+            _do()
 
     def _on_search_changed(self, event=None) -> None:
         query = self.search_entry.get().strip().lower()
@@ -197,7 +282,7 @@ class SearchableCombobox(ctk.CTkFrame):
 
     def _select_item(self, val: str) -> None:
         self.set_selected(val)
-        self.close_popover()
+        self.close_popover(focus_target=self._focus_next)
         if self._command:
             self._command(val)
 

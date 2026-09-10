@@ -218,7 +218,7 @@ DIALOG_DIMENSIONS = {
     "customer_mgmt": (1024, 720),
     "colleague_mgmt": (1024, 720),
     "tag_mgmt": (620, 520),
-    "profile_settings": (1000, 880),
+    "profile_settings": (1050, 880),
     "template_mgmt": (980, 720),
     "edit_template": (880, 740),
     "schema_builder": (1180, 750),

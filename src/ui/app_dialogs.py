@@ -70,6 +70,9 @@ class DialogLaunchersMixin:
         def switch_to_cockpit_view_for_case(self, case: Any) -> None: ...
         def on_language_changed(self, lang_code: str) -> None: ...
         def load_all_data(self) -> None: ...
+        def state(self, newstate: str | None = None) -> str: ...
+        def _set_scaled_min_max(self) -> None: ...
+        def _maximize_window(self) -> None: ...
 
         # NOTE: on_case_updated / on_customers_updated / on_tags_updated are
         # intentionally NOT declared here - they are real methods defined further
@@ -228,6 +231,14 @@ class DialogLaunchersMixin:
             self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         self.cockpit_view.author_name = self.profile.user.name
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
+        font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+        is_zoomed = (self.state() == "zoomed")
+        ctk.set_widget_scaling(font_scale)
+        self._set_scaled_min_max()
+        if is_zoomed:
+            self._maximize_window()
+        if hasattr(self, "table_view") and hasattr(self.table_view, "setup_treeview_style"):
+            self.table_view.setup_treeview_style()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         lang_code = getattr(self.profile.ui_settings, "language", "de")
         get_i18n().current_language = lang_code

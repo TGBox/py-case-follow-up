@@ -120,12 +120,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
 
         self._tab_keys = [
             ("tab_user", "profile.tab_user", "👤 Benutzerprofil"),
-            ("tab_ui", "profile.tab_ui", "🎨 Erscheinungsbild"),
-            ("tab_paths", "profile.tab_paths", "📁 Speicherort & Pfade"),
+            ("tab_paths", "profile.tab_paths", "📁 Speicherort & Datenexport"),
             ("tab_wiki", "profile.tab_wiki", "📚 BookStack Wiki"),
             ("tab_ai", "profile.tab_ai", "🤖 KI & NLP"),
             ("tab_scoring", "profile.tab_shortcuts", "⌨ Tastenkürzel & Scoring"),
-            ("tab_backup", "profile.tab_backup", "💾 Datensicherung"),
         ]
         self._tab_name_map = {}
         for tab_id, key, default in self._tab_keys:
@@ -133,20 +131,20 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self._tab_name_map[tab_id] = orig_t
 
         self.tab_user = self.tabview.add(self._tab_name_map["tab_user"])
-        self.tab_ui = self.tabview.add(self._tab_name_map["tab_ui"])
         self.tab_paths = self.tabview.add(self._tab_name_map["tab_paths"])
         self.tab_wiki = self.tabview.add(self._tab_name_map["tab_wiki"])
         self.tab_ai = self.tabview.add(self._tab_name_map["tab_ai"])
         self.tab_scoring = self.tabview.add(self._tab_name_map["tab_scoring"])
-        self.tab_backup = self.tabview.add(self._tab_name_map["tab_backup"])
+
+        # Backward compatibility aliases for tab_ui and tab_backup
+        self.tab_ui = self.tab_user
+        self.tab_backup = self.tab_paths
 
         self.setup_user_tab()
-        self.setup_ui_tab()
         self.setup_paths_tab()
         self.setup_wiki_tab()
         self.setup_ai_tab()
         self.setup_scoring_tab()
-        self.setup_backup_tab()
 
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
@@ -159,13 +157,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.status_lbl.pack(side="left", padx=5)
 
     def setup_user_tab(self):
-        from services.i18n_service import tr
+        from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
 
-        self.user_tab_hdr_lbl = ctk.CTkLabel(self.tab_user, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.user_tab_hdr_lbl.pack(anchor="w", pady=(10, 5))
+        self.user_scroll = ctk.CTkScrollableFrame(self.tab_user, fg_color="transparent")
+        self.user_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        prof_frame = ctk.CTkFrame(self.tab_user, fg_color="transparent")
-        prof_frame.pack(fill="x", pady=(0, 15))
+        # Section 1: Profil verwalten & wechseln
+        self.user_tab_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_tab_hdr_lbl.pack(anchor="w", pady=(5, 5))
+
+        prof_frame = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
+        prof_frame.pack(anchor="w", pady=(0, 15))
 
         self.active_prof_lbl = ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:"))
         self.active_prof_lbl.pack(side="left", padx=(0, 10))
@@ -189,38 +191,229 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         )
         self.btn_new_prof.pack(side="left")
 
-        self.user_details_hdr_lbl = ctk.CTkLabel(self.tab_user, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.user_details_hdr_lbl.pack(anchor="w", pady=(15, 5))
+        # Section 2: Persönliche Angaben & Kontaktdaten
+        self.user_details_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_details_hdr_lbl.pack(anchor="w", pady=(10, 5))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
-        self.user_name_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.name_placeholder", "Ihr Name"))
+        ctk.CTkLabel(self.user_scroll, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(5, 2))
+        self.user_name_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380)
         self.user_name_entry.insert(0, self.profile.user.name)
-        self.user_name_entry.pack(fill="x", pady=(0, 10))
+        self.user_name_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
-        self.user_dept_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"))
+        ctk.CTkLabel(self.user_scroll, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(5, 2))
+        self.user_dept_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380)
         self.user_dept_entry.insert(0, self.profile.user.department)
-        self.user_dept_entry.pack(fill="x", pady=(0, 10))
+        self.user_dept_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
-        self.user_ext_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"))
+        ctk.CTkLabel(self.user_scroll, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(5, 2))
+        self.user_ext_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380)
         self.user_ext_entry.insert(0, self.profile.user.extension)
-        self.user_ext_entry.pack(fill="x", pady=(0, 10))
+        self.user_ext_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
-        self.user_email_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"))
+        ctk.CTkLabel(self.user_scroll, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(5, 2))
+        self.user_email_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380)
         self.user_email_entry.insert(0, self.profile.user.email)
-        self.user_email_entry.pack(fill="x", pady=(0, 10))
+        self.user_email_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
-        self.user_mobile_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"))
+        ctk.CTkLabel(self.user_scroll, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(5, 2))
+        self.user_mobile_entry = ctk.CTkEntry(self.user_scroll, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380)
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
-        self.user_mobile_entry.pack(fill="x", pady=(0, 10))
+        self.user_mobile_entry.pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_user, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")).pack(anchor="w", pady=(5, 2))
-        self.user_sig_entry = ctk.CTkEntry(self.tab_user, placeholder_text=tr("profile.signature_placeholder", "z. B. Mit freundlichen Grüßen, Ihr Support-Team (Tel. 0800-12345)"))
-        self.user_sig_entry.insert(0, self.profile.user.email_signature)
-        self.user_sig_entry.pack(fill="x", pady=(0, 10))
+        # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
+        self.sig_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
+        self.sig_lbl.pack(anchor="w", pady=(5, 2))
+
+        sig_frame = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
+        sig_frame.pack(anchor="w", pady=(0, 15))
+
+        self.user_sig_txt = ctk.CTkTextbox(
+            sig_frame,
+            width=460,
+            height=110,
+            wrap="word",
+            corner_radius=6,
+        )
+        self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
+        self.user_sig_txt.pack(side="left", padx=(0, 10))
+
+        # Safe wrappers for backward compatibility with CTkEntry
+        orig_get = self.user_sig_txt.get
+        self.user_sig_txt.get = lambda index1="1.0", index2="end-1c": orig_get(index1, index2)  # type: ignore[assignment]
+        orig_del = self.user_sig_txt.delete
+        self.user_sig_txt.delete = lambda index1="1.0", index2="end": orig_del("1.0" if index1 in (0, "0") else index1, index2)  # type: ignore[assignment]
+        orig_ins = self.user_sig_txt.insert
+        self.user_sig_txt.insert = lambda index, text, *args: orig_ins("1.0" if index in (0, "0") else index, text, *args)  # type: ignore[assignment]
+        self.user_sig_entry: Any = self.user_sig_txt
+
+        sig_btn_frame = ctk.CTkFrame(sig_frame, fg_color="transparent")
+        sig_btn_frame.pack(side="left", anchor="n", pady=2)
+
+        self.btn_save_sig = ctk.CTkButton(
+            sig_btn_frame,
+            text=tr("profile.btn_export_signature", "💾 Signatur speichern..."),
+            command=self.on_export_signature,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            width=180,
+        )
+        self.btn_save_sig.pack(pady=(0, 8), anchor="w")
+
+        self.btn_load_sig = ctk.CTkButton(
+            sig_btn_frame,
+            text=tr("profile.btn_import_signature", "📂 Signatur laden..."),
+            command=self.on_import_signature,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            width=180,
+        )
+        self.btn_load_sig.pack(anchor="w")
+
+        # Section 4: Erscheinungsbild & Layout (integriert)
+        self.appearance_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.appearance_hdr_lbl.pack(anchor="w", pady=(15, 5))
+
+        self.lang_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.language", "Sprache / Language:"))
+        self.lang_lbl.pack(anchor="w", pady=(5, 2))
+        self.language_combo = ctk.CTkOptionMenu(
+            self.user_scroll,
+            values=list(SUPPORTED_LANGUAGES.values()),
+            width=380,
+        )
+        curr_lang = getattr(self.profile.ui_settings, "language", "de")
+        self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
+        self.language_combo.pack(anchor="w", pady=(0, 15))
+
+        self.theme_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.theme", "Farb-Thema (Theme):"))
+        self.theme_lbl.pack(anchor="w", pady=(5, 2))
+        self.theme_combo = ctk.CTkOptionMenu(self.user_scroll, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
+        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
+        self.theme_combo.pack(anchor="w", pady=(0, 15))
+
+        self.default_layout_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
+        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
+        self.layout_combo = ctk.CTkOptionMenu(
+            self.user_scroll,
+            values=list(LAYOUT_DISPLAY.values()),
+            width=380,
+        )
+        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        self.layout_combo.pack(anchor="w", pady=(0, 15))
+
+        self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+            self.user_scroll,
+            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden")
+        )
+        if self.profile.ui_settings.show_demo_data is True:
+            self.demo_switch.select()
+        else:
+            self.demo_switch.deselect()
+        self.demo_switch.pack(anchor="w", pady=(0, 15))
+
+        self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+            self.user_scroll,
+            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren")
+        )
+        if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
+            self.os_popup_switch.select()
+        else:
+            self.os_popup_switch.deselect()
+        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
+
+        self.popup_target_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
+        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
+        self.popup_target_combo = ctk.CTkOptionMenu(
+            self.user_scroll,
+            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")],
+            width=380,
+        )
+        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
+        self.popup_target_combo.pack(anchor="w", pady=(0, 20))
+
+        # Column widths reset section
+        self.col_widths_hdr_lbl = ctk.CTkLabel(self.user_scroll, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.col_widths_hdr_lbl.pack(anchor="w", pady=(10, 5))
+
+        widths = self.profile.ui_settings.column_widths
+        def build_widths_str(w_dict: dict) -> str:
+            from services.i18n_service import tr
+            return tr(
+                "profile.widths_summary",
+                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
+                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
+                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
+                left=w_dict.get('cockpit_left', 300),
+                center=w_dict.get('cockpit_center', 420),
+                right=w_dict.get('cockpit_right', 320),
+                board=w_dict.get('board_column', 280),
+                id=w_dict.get('table_col_id', 120),
+                prac=w_dict.get('table_col_practice', 220),
+                title=w_dict.get('table_col_title', 280),
+                score=w_dict.get('table_col_score', 90),
+            )
+
+        w_str = build_widths_str(widths)
+        self.widths_label = ctk.CTkLabel(self.user_scroll, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
+        self.widths_label.pack(anchor="w", pady=(0, 12))
+
+        self.btn_reset_widths = ctk.CTkButton(
+            self.user_scroll,
+            text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
+            command=self.on_reset_column_widths,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+            width=280,
+        )
+        self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
+
+    def on_export_signature(self):
+        from tkinter import filedialog
+        from services.i18n_service import tr
+        current_sig = self.user_sig_txt.get("1.0", "end-1c") if hasattr(self, "user_sig_txt") else ""
+        file_path = filedialog.asksaveasfilename(
+            title=tr("profile.title_save_sig", "Signatur in Datei speichern"),
+            defaultextension=".txt",
+            filetypes=[
+                ("Textdatei (*.txt)", "*.txt"),
+                ("HTML-Datei (*.html)", "*.html"),
+                ("Markdown (*.md)", "*.md"),
+                ("Alle Dateien (*.*)", "*.*"),
+            ],
+            initialfile="email_signature.txt",
+            parent=self,
+        )
+        if file_path:
+            try:
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(current_sig)
+                self.status_lbl.configure(text=tr("profile.sig_saved_success", "✅ Signatur erfolgreich gespeichert!"), text_color="green")
+            except Exception as e:
+                self.status_lbl.configure(text=f"⚠ Fehler beim Speichern der Signatur: {e}", text_color="red")
+
+    def on_import_signature(self):
+        from tkinter import filedialog
+        from services.i18n_service import tr
+        file_path = filedialog.askopenfilename(
+            title=tr("profile.title_load_sig", "Signatur aus Datei laden"),
+            filetypes=[
+                ("Text- & Web-Dateien (*.txt, *.html, *.md)", "*.txt *.html *.htm *.md"),
+                ("Textdatei (*.txt)", "*.txt"),
+                ("HTML-Datei (*.html, *.htm)", "*.html *.htm"),
+                ("Markdown (*.md)", "*.md"),
+                ("Alle Dateien (*.*)", "*.*"),
+            ],
+            parent=self,
+        )
+        if file_path:
+            try:
+                with open(file_path, encoding="utf-8") as f:
+                    content = f.read()
+                self.user_sig_txt.delete("1.0", "end")
+                self.user_sig_txt.insert("1.0", content)
+                self.status_lbl.configure(text=tr("profile.sig_loaded_success", "✅ Signatur geladen!"), text_color="green")
+            except Exception as e:
+                self.status_lbl.configure(text=f"⚠ Fehler beim Laden der Signatur: {e}", text_color="red")
 
     def open_create_profile_dialog(self):
         from services.i18n_service import tr
@@ -271,9 +464,9 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.user_mobile_entry.delete(0, "end")
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
 
-        if hasattr(self, "user_sig_entry"):
-            self.user_sig_entry.delete(0, "end")
-            self.user_sig_entry.insert(0, self.profile.user.email_signature)
+        if hasattr(self, "user_sig_txt"):
+            self.user_sig_txt.delete("1.0", "end")
+            self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
 
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
@@ -358,6 +551,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
         if hasattr(self, "user_details_hdr_lbl"):
             self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
+        if hasattr(self, "sig_lbl"):
+            self.sig_lbl.configure(text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
+        if hasattr(self, "btn_save_sig"):
+            self.btn_save_sig.configure(text=tr("profile.btn_export_signature", "💾 Signatur speichern..."))
+        if hasattr(self, "btn_load_sig"):
+            self.btn_load_sig.configure(text=tr("profile.btn_import_signature", "📂 Signatur laden..."))
 
         if hasattr(self, "app_shortcuts_hdr_lbl"):
             self.app_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER))
@@ -370,103 +569,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
                 btn.configure(text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON))
 
     def setup_ui_tab(self):
-        from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
-
-        self.appearance_hdr_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.appearance_hdr_lbl.pack(anchor="w", pady=(10, 5))
-
-        self.lang_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.language", "Sprache / Language:"))
-        self.lang_lbl.pack(anchor="w", pady=(5, 2))
-        self.language_combo = ctk.CTkOptionMenu(
-            self.tab_ui,
-            values=list(SUPPORTED_LANGUAGES.values()),
-        )
-        curr_lang = getattr(self.profile.ui_settings, "language", "de")
-        self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
-        self.language_combo.pack(fill="x", pady=(0, 15))
-
-        self.theme_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.theme", "Farb-Thema (Theme):"))
-        self.theme_lbl.pack(anchor="w", pady=(5, 2))
-        self.theme_combo = ctk.CTkOptionMenu(self.tab_ui, values=[get_theme_display(v) for v in ("Dark", "Light", "System")])
-        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        self.theme_combo.pack(fill="x", pady=(0, 15))
-
-        self.default_layout_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
-        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
-        self.layout_combo = ctk.CTkOptionMenu(
-            self.tab_ui,
-            values=list(LAYOUT_DISPLAY.values())
-        )
-        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(fill="x", pady=(0, 15))
-
-        self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
-            self.tab_ui,
-            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden")
-        )
-        if self.profile.ui_settings.show_demo_data is True:
-            self.demo_switch.select()
-        else:
-            self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 15))
-
-        self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
-            self.tab_ui,
-            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren")
-        )
-        if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
-            self.os_popup_switch.select()
-        else:
-            self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
-
-        self.popup_target_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
-        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
-        self.popup_target_combo = ctk.CTkOptionMenu(
-            self.tab_ui,
-            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")]
-        )
-        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-        self.popup_target_combo.pack(fill="x", pady=(0, 20))
-
-        # Column widths reset section
-        self.col_widths_hdr_lbl = ctk.CTkLabel(self.tab_ui, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.col_widths_hdr_lbl.pack(anchor="w", pady=(10, 5))
-
-        widths = self.profile.ui_settings.column_widths
-        def build_widths_str(w_dict: dict) -> str:
-            from services.i18n_service import tr
-            return tr(
-                "profile.widths_summary",
-                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
-                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
-                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
-                left=w_dict.get('cockpit_left', 300),
-                center=w_dict.get('cockpit_center', 420),
-                right=w_dict.get('cockpit_right', 320),
-                board=w_dict.get('board_column', 280),
-                id=w_dict.get('table_col_id', 120),
-                prac=w_dict.get('table_col_practice', 220),
-                title=w_dict.get('table_col_title', 280),
-                score=w_dict.get('table_col_score', 90),
-            )
-
-        w_str = build_widths_str(widths)
-        self.widths_label = ctk.CTkLabel(self.tab_ui, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
-        self.widths_label.pack(anchor="w", pady=(0, 12))
-
-        from services.i18n_service import tr
-
-        self.btn_reset_widths = ctk.CTkButton(
-            self.tab_ui,
-            text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
-            command=self.on_reset_column_widths,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
-            width=280,
-        )
-        self.btn_reset_widths.pack(anchor="w")
+        """Integrated into setup_user_tab; retained for backward compatibility."""
+        pass
 
     def on_reset_column_widths(self):
         from services.i18n_service import tr
@@ -498,11 +602,15 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
     def setup_paths_tab(self):
         from services.i18n_service import tr
 
-        ctk.CTkLabel(self.tab_paths, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.paths_scroll = ctk.CTkScrollableFrame(self.tab_paths, fg_color="transparent")
+        self.paths_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # --- Sektion 1: Speicherorte & Dateipfade ---
+        ctk.CTkLabel(self.paths_scroll, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(5, 5))
 
         # Main Workspace Directory
-        ctk.CTkLabel(self.tab_paths, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")).pack(anchor="w", pady=(5, 2))
-        ws_frame = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        ctk.CTkLabel(self.paths_scroll, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")).pack(anchor="w", pady=(5, 2))
+        ws_frame = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         ws_frame.pack(fill="x", pady=(0, 10))
 
         self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner..."))
@@ -513,10 +621,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         btn_browse_ws.pack(side="right")
 
         # Custom Individual File Path Overrides
-        ctk.CTkLabel(self.tab_paths, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(10, 5))
+        ctk.CTkLabel(self.paths_scroll, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(10, 5))
 
         # Cases Path Override
-        row_cases = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_cases = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_cases.pack(fill="x", pady=2)
         ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=160, anchor="w").pack(side="left")
         self.path_cases_entry = ctk.CTkEntry(row_cases, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
@@ -526,7 +634,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70).pack(side="right")
 
         # Customers Path Override
-        row_cust = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_cust = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_cust.pack(fill="x", pady=2)
         ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=160, anchor="w").pack(side="left")
         self.path_cust_entry = ctk.CTkEntry(row_cust, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
@@ -536,7 +644,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70).pack(side="right")
 
         # Wiki DB Path Override
-        row_wiki = ctk.CTkFrame(self.tab_paths, fg_color="transparent")
+        row_wiki = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_wiki.pack(fill="x", pady=2)
         ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=160, anchor="w").pack(side="left")
         self.path_wiki_entry = ctk.CTkEntry(row_wiki, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
@@ -546,8 +654,85 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70).pack(side="right")
 
         # Reset button
-        btn_reset_paths = ctk.CTkButton(self.tab_paths, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240)
-        btn_reset_paths.pack(anchor="w", pady=(15, 5))
+        btn_reset_paths = ctk.CTkButton(self.paths_scroll, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240)
+        btn_reset_paths.pack(anchor="w", pady=(15, 20))
+
+        # --- Sektion 2: Komplett-Datensicherung & ZIP-Archivierung (Datenexport / Import) ---
+        ctk.CTkLabel(
+            self.paths_scroll,
+            text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
+            font=ctk.CTkFont(size=14, weight="bold"),
+        ).pack(anchor="w", pady=(10, 5))
+
+        desc_str = tr(
+            "profile.backup_desc",
+            "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter "
+            "und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für "
+            "den Wechsel auf einen anderen Arbeitsplatz genutzt werden."
+        )
+        ctk.CTkLabel(
+            self.paths_scroll,
+            text=desc_str,
+            font=ctk.CTkFont(size=11),
+            text_color=("gray30", "gray80"),
+            justify="left",
+            anchor="w",
+            wraplength=800,
+        ).pack(anchor="w", pady=(0, 15))
+
+        # Section 2.1: Export
+        exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8)
+        exp_card.pack(fill="x", pady=(0, 15), padx=2)
+
+        ctk.CTkLabel(
+            exp_card,
+            text=tr("profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren"),
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+
+        ctk.CTkLabel(
+            exp_card,
+            text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+            anchor="w",
+        ).pack(anchor="w", padx=12, pady=(0, 10))
+
+        btn_export = ctk.CTkButton(
+            exp_card,
+            text=tr("profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren..."),
+            command=self.on_click_export_zip,
+            fg_color="dodgerblue",
+            width=240,
+        )
+        btn_export.pack(anchor="w", padx=12, pady=(0, 12))
+
+        # Section 2.2: Import
+        imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8)
+        imp_card.pack(fill="x", pady=(0, 15), padx=2)
+
+        ctk.CTkLabel(
+            imp_card,
+            text=tr("profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren"),
+            font=ctk.CTkFont(size=12, weight="bold"),
+        ).pack(anchor="w", padx=12, pady=(10, 2))
+
+        ctk.CTkLabel(
+            imp_card,
+            text=tr("profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her."),
+            font=ctk.CTkFont(size=11),
+            text_color=("gray40", "gray70"),
+            anchor="w",
+        ).pack(anchor="w", padx=12, pady=(0, 10))
+
+        btn_import = ctk.CTkButton(
+            imp_card,
+            text=tr("profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren..."),
+            command=self.on_click_import_zip,
+            fg_color="forestgreen",
+            width=240,
+        )
+        btn_import.pack(anchor="w", padx=12, pady=(0, 12))
 
     def on_browse_workspace(self):
         from tkinter import filedialog
@@ -726,6 +911,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.profile.user.extension = self.user_ext_entry.get().strip()
         self.profile.user.email = self.user_email_entry.get().strip()
         self.profile.user.mobile = self.user_mobile_entry.get().strip()
+        if hasattr(self, "user_sig_txt"):
+            self.profile.user.email_signature = self.user_sig_txt.get("1.0", "end-1c").strip()
 
         # Update UI Settings & Reminders
         if hasattr(self, "language_combo"):
@@ -807,83 +994,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.on_profile_updated()
 
     def setup_backup_tab(self):
-        from services.i18n_service import tr
-
-        ctk.CTkLabel(
-            self.tab_backup,
-            text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
-            font=ctk.CTkFont(size=14, weight="bold"),
-        ).pack(anchor="w", pady=(10, 5))
-
-        desc_str = tr(
-            "profile.backup_desc",
-            "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter "
-            "und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für "
-            "den Wechsel auf einen anderen Arbeitsplatz genutzt werden."
-        )
-        ctk.CTkLabel(
-            self.tab_backup,
-            text=desc_str,
-            font=ctk.CTkFont(size=11),
-            text_color=("gray30", "gray80"),
-            justify="left",
-            anchor="w",
-            wraplength=800,
-        ).pack(anchor="w", pady=(0, 15))
-
-        # Section 1: Export
-        exp_card = ctk.CTkFrame(self.tab_backup, corner_radius=8)
-        exp_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        ctk.CTkLabel(
-            exp_card,
-            text=tr("profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren"),
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", padx=12, pady=(10, 2))
-
-        ctk.CTkLabel(
-            exp_card,
-            text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
-            anchor="w",
-        ).pack(anchor="w", padx=12, pady=(0, 10))
-
-        btn_export = ctk.CTkButton(
-            exp_card,
-            text=tr("profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren..."),
-            command=self.on_click_export_zip,
-            fg_color="dodgerblue",
-            width=240,
-        )
-        btn_export.pack(anchor="w", padx=12, pady=(0, 12))
-
-        # Section 2: Import
-        imp_card = ctk.CTkFrame(self.tab_backup, corner_radius=8)
-        imp_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        ctk.CTkLabel(
-            imp_card,
-            text=tr("profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren"),
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", padx=12, pady=(10, 2))
-
-        ctk.CTkLabel(
-            imp_card,
-            text=tr("profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her."),
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
-            anchor="w",
-        ).pack(anchor="w", padx=12, pady=(0, 10))
-
-        btn_import = ctk.CTkButton(
-            imp_card,
-            text=tr("profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren..."),
-            command=self.on_click_import_zip,
-            fg_color="forestgreen",
-            width=240,
-        )
-        btn_import.pack(anchor="w", padx=12, pady=(0, 12))
+        """Integrated into setup_paths_tab; retained for backward compatibility."""
+        pass
 
     def on_click_export_zip(self):
         from tkinter import filedialog

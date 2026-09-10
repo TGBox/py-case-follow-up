@@ -2,7 +2,7 @@ import logging
 import sys
 import threading
 import ctypes
-from typing import cast
+from typing import Any, cast
 import customtkinter as ctk
 
 from config import AppConfig
@@ -51,12 +51,18 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # clearer and ruff's B010 flags setattr() with a constant name anyway).
         ctk.CTk._deactivate_windows_window_header_manipulation = True  # pyright: ignore[reportAttributeAccessIssue]
 
-        super().__init__()
         self.app_config = config
 
-        # Initialize Services
+        # Initialize Services & Profile before super().__init__() so font scaling
+        # can be configured globally in CustomTkinter before creating the root window,
+        # preventing CustomTkinter from clamping window dimensions to initial unmapped size.
         self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
+        font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+        ctk.set_widget_scaling(font_scale)
+
+        super().__init__()
+
         self.customer_service = CustomerService(self.storage_service)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         self.attachment_service = AttachmentService(self.app_config)
@@ -78,10 +84,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.title(tr("app.window_title", APP_WINDOW_TITLE))
         self.geometry("1440x880")
         self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
+        self._set_scaled_min_max()
         try:
             self.state("zoomed")
         except Exception:
             pass
+
+        self._initial_map_done = False
+        self.bind("<Map>", self._on_initial_window_mapped, add="+")
+        self.after(100, self._maximize_initial_window)
+        self.after(400, self._maximize_initial_window)
+
         self.apply_windows_theme(theme_mode == "Dark")
 
         # Load Working Data
@@ -211,6 +224,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self.splash_overlay = None
             except Exception:
                 pass
+        if not getattr(self, "_initial_map_done", False):
+            self._maximize_window()
+            self._initial_map_done = True
 
     def load_all_data(self):
         self.cases = self.storage_service.load_cases()
@@ -564,6 +580,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception:
                 pass
 
+    def _on_initial_window_mapped(self, event: Any = None):
+        if event and getattr(event, "widget", None) == self and not getattr(self, "_initial_map_done", False):
+            self._initial_map_done = True
+            self._maximize_window()
+
+    def _maximize_initial_window(self):
+        if not getattr(self, "_initial_map_done", False):
+            self._maximize_window()
+
     def _maximize_window(self):
         try:
             self.state("zoomed")
@@ -610,11 +635,47 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         safe_bind(shortcuts.toggle_theme, lambda e: self.toggle_theme())
         safe_bind("<F1>", lambda e: self.open_help_dialog())
 
+        # Global Font / UI Zoom shortcuts:
+        safe_bind("<Control-plus>", lambda e: self.zoom_font(0.1))
+        safe_bind("<Control-KP_Add>", lambda e: self.zoom_font(0.1))
+        safe_bind("<Control-equal>", lambda e: self.zoom_font(0.1))
+        safe_bind("<Control-minus>", lambda e: self.zoom_font(-0.1))
+        safe_bind("<Control-KP_Subtract>", lambda e: self.zoom_font(-0.1))
+        safe_bind("<Control-0>", lambda e: self.zoom_font(0.0, reset=True))
+        safe_bind("<Control-KP_0>", lambda e: self.zoom_font(0.0, reset=True))
+
         # Text Snippet Macro Shortcuts
         if hasattr(self, "snippet_service"):
             for snip in self.snippet_service.get_all_snippets():
                 if snip.shortcut and snip.shortcut.strip():
                     safe_bind(snip.shortcut, lambda e, content=snip.content: self.insert_snippet_shortcut(content))
+
+    def zoom_font(self, delta: float, reset: bool = False):
+        if reset:
+            new_scale = 1.0
+        else:
+            curr_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+            new_scale = round(curr_scale + delta, 2)
+            new_scale = max(0.8, min(1.5, new_scale))
+
+        self.profile.ui_settings.font_scale = new_scale
+        is_zoomed = (self.state() == "zoomed")
+        ctk.set_widget_scaling(new_scale)
+        self._set_scaled_min_max()
+        if is_zoomed:
+            self._maximize_window()
+        if hasattr(self, "table_view") and hasattr(self.table_view, "setup_treeview_style"):
+            self.table_view.setup_treeview_style()
+        self.storage_service.save_profile(self.profile)
+
+        pct = round(new_scale * 100)
+        from services.i18n_service import tr
+        from ui.widgets.toast_notification import ToastNotification
+        ToastNotification(
+            self,
+            title=tr("profile.font_scale", "Schriftgröße / Skalierung"),
+            message=tr("profile.font_scale_changed", "Schriftgröße auf {scale}% angepasst.", scale=pct),
+        )
 
     def on_archive_current_case(self):
         if self.active_case:

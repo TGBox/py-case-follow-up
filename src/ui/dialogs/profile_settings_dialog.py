@@ -24,6 +24,37 @@ from constants import (
     LABEL_NO_SNIPPETS,
 )
 
+FONT_SCALE_OPTIONS: list[tuple[float, str, str]] = [
+    (0.9, "profile.font_scale_90", "90% (Kompakt)"),
+    (1.0, "profile.font_scale_100", "100% (Standard)"),
+    (1.1, "profile.font_scale_110", "110% (Mittel)"),
+    (1.2, "profile.font_scale_120", "120% (Groß)"),
+    (1.3, "profile.font_scale_130", "130% (Sehr groß)"),
+]
+
+
+def get_font_scale_display(scale: float) -> str:
+    from services.i18n_service import tr
+    for s, key, default in FONT_SCALE_OPTIONS:
+        if abs(s - scale) < 0.04:
+            return tr(key, default)
+    pct = round(scale * 100)
+    return f"{pct}%"
+
+
+def get_font_scale_val_from_display(display_text: str) -> float:
+    from services.i18n_service import tr
+    for s, key, default in FONT_SCALE_OPTIONS:
+        if display_text == tr(key, default) or display_text == default:
+            return s
+    try:
+        val = float(display_text.split("%")[0].strip()) / 100.0
+        if 0.7 <= val <= 2.0:
+            return val
+    except Exception:
+        pass
+    return 1.0
+
 
 class HotkeyRecorderDialog(ctk.CTkToplevel):
     """Interactive modal dialog to capture pressed hotkeys and key combinations."""
@@ -104,6 +135,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.transient(parent)
         self.grab_set()
 
+        self._initial_font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+        self._saved = False
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.create_widgets()
 
     def create_widgets(self):
@@ -158,6 +193,16 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
+
+        self.close_btn = ctk.CTkButton(
+            bottom_bar,
+            text=tr("common.close", "Schließen"),
+            command=self.on_close,
+            fg_color="gray40",
+            hover_color="gray50",
+            width=120,
+        )
+        self.close_btn.pack(side="right", padx=5)
 
         self.save_btn = ctk.CTkButton(bottom_bar, text=tr("profile.save_btn", "💾 Einstellungen Speichern"), command=self.save_settings, fg_color="forestgreen", width=180)
         self.save_btn.pack(side="right", padx=5)
@@ -318,6 +363,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         self.theme_combo.pack(anchor="w", pady=(0, 12))
+
+        self.font_scale_lbl = ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:"))
+        self.font_scale_lbl.pack(anchor="w", pady=(5, 2))
+        self.font_scale_combo = ctk.CTkOptionMenu(
+            right_col,
+            values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS],
+            command=self.on_font_scale_preview,
+            width=380,
+        )
+        self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
+        self.font_scale_combo.pack(anchor="w", pady=(0, 12))
 
         self.default_layout_lbl = ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
         self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
@@ -498,11 +554,22 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
 
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
+        if hasattr(self, "font_scale_combo"):
+            self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         if hasattr(self, "popup_target_combo"):
             from services.i18n_service import tr
             curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
             self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
+
+    def on_font_scale_preview(self, val: str):
+        scale = get_font_scale_val_from_display(val)
+        ctk.set_widget_scaling(scale)
+
+    def on_close(self):
+        if not getattr(self, "_saved", False):
+            ctk.set_widget_scaling(getattr(self, "_initial_font_scale", 1.0))
+        self.destroy()
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
@@ -512,6 +579,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
         if hasattr(self, "save_btn"):
             self.save_btn.configure(text=tr("profile.save_btn", "💾 Einstellungen Speichern"))
+        if hasattr(self, "close_btn"):
+            self.close_btn.configure(text=tr("common.close", "Schließen"))
 
         # Undocumented CTkTabview internal used to rename tab labels in place;
         # guarded by the hasattr() checks - customtkinter's stubs don't
@@ -541,6 +610,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             self.lang_lbl.configure(text=tr("profile.language", "Sprache / Language:"))
         if hasattr(self, "theme_lbl"):
             self.theme_lbl.configure(text=tr("profile.theme", "Farb-Thema (Theme):"))
+        if hasattr(self, "font_scale_lbl"):
+            self.font_scale_lbl.configure(text=tr("profile.font_scale", "Schriftgröße / Skalierung:"))
+        if hasattr(self, "font_scale_combo"):
+            curr_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+            self.font_scale_combo.configure(values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS])
+            self.font_scale_combo.set(get_font_scale_display(curr_scale))
         if hasattr(self, "default_layout_lbl"):
             self.default_layout_lbl.configure(text=tr("profile.default_layout", "Standard-Layout beim Start:"))
         if hasattr(self, "demo_switch"):
@@ -952,6 +1027,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
             get_i18n().current_language = lang_code
 
         self.profile.ui_settings.theme = get_theme_val_from_display(self.theme_combo.get())
+        if hasattr(self, "font_scale_combo"):
+            chosen_scale = get_font_scale_val_from_display(self.font_scale_combo.get())
+            self.profile.ui_settings.font_scale = chosen_scale
+            ctk.set_widget_scaling(chosen_scale)
+            self._initial_font_scale = chosen_scale
+        self._saved = True
         self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
         if hasattr(self, "demo_switch"):
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())

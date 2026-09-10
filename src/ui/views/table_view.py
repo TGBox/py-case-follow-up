@@ -200,13 +200,26 @@ class TableView(ctk.CTkFrame):
         hdr_bg = "#383838" if is_dark else "#e0e0e0"
         sel_bg = "#1f538d" if is_dark else "#2563eb"
 
+        font_scale = 1.0
+        ui_settings = getattr(self.app_config, "ui_settings", None) if self.app_config else None
+        if ui_settings and hasattr(ui_settings, "font_scale"):
+            font_scale = float(ui_settings.font_scale)
+        else:
+            try:
+                font_scale = ctk.ScalingTracker.widget_scaling
+            except Exception:
+                font_scale = 1.0
+
+        font_size = max(8, round(10 * font_scale))
+        row_height = max(24, round(32 * font_scale))
+
         style.configure(
             "Matrix.Treeview",
             background=bg_color,
             foreground=fg_color,
             fieldbackground=bg_color,
-            rowheight=32,
-            font=("Segoe UI", 10),
+            rowheight=row_height,
+            font=("Segoe UI", font_size),
             borderwidth=0,
         )
         style.map("Matrix.Treeview", background=[("selected", sel_bg)], foreground=[("selected", "#ffffff")])
@@ -215,7 +228,7 @@ class TableView(ctk.CTkFrame):
             "Matrix.Treeview.Heading",
             background=hdr_bg,
             foreground=fg_color,
-            font=("Segoe UI", 10, "bold"),
+            font=("Segoe UI", font_size, "bold"),
             borderwidth=1,
             relief="raised",
         )

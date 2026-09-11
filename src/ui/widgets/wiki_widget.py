@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import webbrowser
 from services.wiki_sync_service import WikiSyncService
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 
 class WikiWidget(ctk.CTkFrame):
@@ -78,22 +79,54 @@ class WikiWidget(ctk.CTkFrame):
             return
 
         for item in results:
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6, cursor="hand2")
+            card_bg = ("gray85", "gray20")
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=card_bg, corner_radius=6, cursor="hand2")
             card.pack(fill="x", pady=4, padx=4)
 
             url = item.get("url", "")
-            if url:
-                card.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
+            on_click = (lambda e, u=url: webbrowser.open(u)) if url else None
+            if on_click:
+                card.bind("<Button-1>", on_click)
 
-            title_lbl = ctk.CTkLabel(card, text=f"📄 {item['title']}", anchor="w", font=ctk.CTkFont(weight="bold", size=12), text_color="dodgerblue")
+            title_text = f"📄 {item['title']}"
+            if query and query.lower() in title_text.lower():
+                title_lbl = create_highlighted_label(
+                    card,
+                    text=title_text,
+                    query=query,
+                    font=ctk.CTkFont(weight="bold", size=12),
+                    text_color="dodgerblue",
+                    bg_color=card_bg,
+                    wrap="none",
+                    on_click=on_click,
+                    scroll_frame=self.scroll_frame,
+                )
+            else:
+                title_lbl = ctk.CTkLabel(card, text=title_text, anchor="w", font=ctk.CTkFont(weight="bold", size=12), text_color="dodgerblue")
+                if on_click:
+                    title_lbl.bind("<Button-1>", on_click)
             title_lbl.pack(fill="x", padx=8, pady=(6, 2))
-            if url:
-                title_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
 
-            snip_lbl = ctk.CTkLabel(card, text=item.get("snippet", ""), anchor="w", justify="left", font=ctk.CTkFont(size=11), text_color=("gray30", "gray80"), wraplength=280)
+            snip_text = item.get("snippet", "")
+            if query and query.lower() in snip_text.lower():
+                snip_lbl = create_highlighted_label(
+                    card,
+                    text=snip_text,
+                    query=query,
+                    font=ctk.CTkFont(size=11),
+                    text_color=("gray30", "gray80"),
+                    bg_color=card_bg,
+                    wrap="word",
+                    on_click=on_click,
+                    scroll_frame=self.scroll_frame,
+                )
+            else:
+                snip_lbl = ctk.CTkLabel(card, text=snip_text, anchor="w", justify="left", font=ctk.CTkFont(size=11), text_color=("gray30", "gray80"), wraplength=280)
+                if on_click:
+                    snip_lbl.bind("<Button-1>", on_click)
             snip_lbl.pack(fill="x", padx=8, pady=(0, 6))
-            if url:
-                snip_lbl.bind("<Button-1>", lambda e, u=url: webbrowser.open(u))
+
+            bind_mouse_wheel_to_canvas(card, self.scroll_frame)
 
     def on_sync_wiki(self):
         from services.i18n_service import tr

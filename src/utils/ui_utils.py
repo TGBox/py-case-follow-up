@@ -588,21 +588,21 @@ def cancel_debounce(widget, key: str) -> None:
 def create_highlighted_label(
     parent: Any,
     text: str,
-    query: str,
+    query: str | list[str],
     font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont,
     text_color: str | tuple[str, str],
     bg_color: str | tuple[str, str],
     highlight_color: str | tuple[str, str] = ("#D97706", "#F59E0B"),
     highlight_font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont | None = None,
     wrap: Literal["none", "char", "word"] = "word",
-    on_click: Callable[[Any], None] | None = None,
+    on_click: Callable[[Any], Any] | None = None,
     scroll_frame: ctk.CTkScrollableFrame | None = None,
     max_height_chars: int = 35,
 ) -> tk.Text:
     """Creates a seamless, borderless tk.Text widget with highlighted query occurrences.
 
-    Tags matching substrings with a prominent gold/yellow highlight color while preserving
-    smooth scrolling and click handling.
+    Supports single search string or list of search terms, tagging matching substrings
+    with a prominent gold/yellow highlight color while preserving smooth scrolling and click handling.
     """
     mode = ctk.get_appearance_mode().lower()
 
@@ -651,23 +651,40 @@ def create_highlighted_label(
     txt.tag_configure("normal", foreground=res_text, font=cast(Any, font))
     txt.tag_configure("match", foreground=res_hl, font=cast(Any, hl_f))
 
-    q = query.strip()
-    if not q:
+    if isinstance(query, str):
+        raw_terms = [query.strip()] if query.strip() else []
+    else:
+        raw_terms = [t.strip() for t in query if t and t.strip()]
+
+    terms = [t for t in raw_terms if t]
+    if not terms:
         txt.insert("end", text, "normal")
     else:
-        q_len = len(q)
         lower_text = text.lower()
-        lower_q = q.lower()
+        terms_info = [(t.lower(), len(t)) for t in terms]
         pos = 0
-        while pos < len(text):
-            idx = lower_text.find(lower_q, pos)
-            if idx == -1:
+        text_len = len(text)
+        while pos < text_len:
+            best_idx = -1
+            best_len = 0
+            for t_low, t_len in terms_info:
+                idx = lower_text.find(t_low, pos)
+                if idx != -1:
+                    if best_idx == -1 or idx < best_idx:
+                        best_idx = idx
+                        best_len = t_len
+                    elif idx == best_idx and t_len > best_len:
+                        best_len = t_len
+
+            if best_idx == -1:
                 txt.insert("end", text[pos:], "normal")
                 break
-            if idx > pos:
-                txt.insert("end", text[pos:idx], "normal")
-            txt.insert("end", text[idx:idx + q_len], "match")
-            pos = idx + q_len
+
+            if best_idx > pos:
+                txt.insert("end", text[pos:best_idx], "normal")
+
+            txt.insert("end", text[best_idx : best_idx + best_len], "match")
+            pos = best_idx + best_len
 
     txt.configure(state="disabled")
 

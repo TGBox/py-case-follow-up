@@ -114,6 +114,8 @@ class DebouncedSaver:
         self._timers: dict[Path, threading.Timer] = {}
         self._data: dict[Path, Any] = {}
         self._lock = threading.Lock()
+        self._active_writes: set[Path] = set()
+        self._write_cond = threading.Condition(self._lock)
 
     def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = 0.15):
         with self._lock:
@@ -125,12 +127,18 @@ class DebouncedSaver:
                 with self._lock:
                     val = self._data.pop(target_path, None)
                     self._timers.pop(target_path, None)
-                if val is not None:
-                    try:
-                        data = val() if callable(val) else val
-                        atomic_save_json(target_path, data)
-                    except Exception as e:
-                        logger.error(f"Debounced background save failed for {target_path}: {e}")
+                    if val is None:
+                        return
+                    self._active_writes.add(target_path)
+                try:
+                    data = val() if callable(val) else val
+                    atomic_save_json(target_path, data)
+                except Exception as e:
+                    logger.error(f"Debounced background save failed for {target_path}: {e}")
+                finally:
+                    with self._lock:
+                        self._active_writes.discard(target_path)
+                        self._write_cond.notify_all()
 
             timer = threading.Timer(delay_seconds, flush)
             timer.daemon = True
@@ -152,6 +160,10 @@ class DebouncedSaver:
                 atomic_save_json(path, data)
             except Exception as e:
                 logger.error(f"Flush save failed for {path}: {e}")
+
+        with self._lock:
+            while self._active_writes:
+                self._write_cond.wait(timeout=0.5)
 
 
 class StorageService:

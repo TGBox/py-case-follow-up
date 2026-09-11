@@ -41,6 +41,13 @@ from ui.app_dialogs import DialogLaunchersMixin
 
 logger = logging.getLogger("SupportCockpit")
 
+LAYOUT_VALUES = (
+    LayoutMode.COCKPIT.value,
+    LayoutMode.BOARD.value,
+    LayoutMode.TABLE.value,
+    LayoutMode.ANALYTICS.value,
+)
+
 
 class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def __init__(self, config: AppConfig):
@@ -131,48 +138,18 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
         self.splash_msg_lbl.pack()
 
-        self.cockpit_view = CockpitView(
-            self.container_frame,
-            author_name=self.profile.user.name,
-            scoring_service=self.scoring_service,
-            attachment_service=self.attachment_service,
-            wiki_service=self.wiki_service,
-            on_case_updated=self.on_case_updated,
-            on_case_selected=self.on_case_selected,
-            on_search_changed=self.on_search_changed,
-            on_open_export_dialog=self.open_export_dialog,
-            on_archive_case=self.on_archive_case,
-            app_config=self.app_config,
-            profile=self.profile,
-            storage_service=self.storage_service,
-            on_manage_module_tags=self.open_module_tag_management_dialog,
-            on_open_email_calendar=self.open_email_calendar_dialog,
-            on_open_email=self.open_email_draft_dialog,
-            on_open_calendar=self.open_calendar_export_dialog,
-            on_open_snippet_picker=self.open_snippet_picker_dialog,
-        )
-        self.board_view = BoardView(
-            self.container_frame,
-            on_select_case=self.on_case_selected,
-            on_switch_to_cockpit=self.switch_to_cockpit_view_for_case,
-            on_open_followup=self.open_followup_dialog_for_case,
-            on_toggle_complete=self.on_toggle_complete_for_case,
-            on_change_actor=self.open_handover_dialog_for_case,
-            app_config=self.app_config,
-        )
-        self.table_view = TableView(
-            self.container_frame,
-            author_name=self.profile.user.name,
-            scoring_service=self.scoring_service,
-            attachment_service=self.attachment_service,
-            on_case_updated=self.on_case_updated,
-            on_case_selected=self.on_case_selected,
-            app_config=self.app_config,
-        )
-        from ui.views.analytics_view import AnalyticsView
-        self.analytics_view = AnalyticsView(self.container_frame)
+        # Flush the splash to screen BEFORE the expensive view build below.
+        # Tk only paints once the event loop runs or is pumped explicitly, so
+        # without this the splash stayed invisible for exactly the period it is
+        # meant to cover and the window looked frozen.
+        self.update_idletasks()
+
+        # Views are built on first use (see _get_view); only the layout the
+        # user actually starts in is created during startup.
+        self._views: dict[str, Any] = {}
 
         self.active_view = None
+        self._active_layout: str = LayoutMode.COCKPIT.value
         self.switch_layout(get_layout_display(self.profile.ui_settings.default_layout))
 
         # Geometry tracking for multi-monitor positioning
@@ -194,7 +171,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if self.profile.wiki_settings.sync_on_startup:
             def _on_startup_sync_done(success: bool, msg: str):
                 def _update_ui():
-                    if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "wiki_widget"):
+                    if self.is_view_built(LayoutMode.COCKPIT.value) and hasattr(self.cockpit_view, "wiki_widget"):
                         self.cockpit_view.wiki_widget.on_sync_finished(success, msg)
                 self.after(0, _update_ui)
 
@@ -243,14 +220,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def on_language_changed(self, lang_code: str):
         self.title(tr("app.window_title", APP_WINDOW_TITLE))
         self.create_menu_bar()
-        if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "refresh_ui_labels"):
-            self.cockpit_view.refresh_ui_labels()
-        if hasattr(self, "board_view") and hasattr(self.board_view, "refresh_ui_labels"):
-            self.board_view.refresh_ui_labels()
-        if hasattr(self, "table_view") and hasattr(self.table_view, "refresh_ui_labels"):
-            self.table_view.refresh_ui_labels()
-        if hasattr(self, "analytics_view") and hasattr(self.analytics_view, "refresh_ui_labels"):
-            self.analytics_view.refresh_ui_labels()
+        # Only views that were actually built need relabelling - one created
+        # later picks up the new language on construction anyway.
+        for view in list(getattr(self, "_views", {}).values()):
+            if hasattr(view, "refresh_ui_labels"):
+                view.refresh_ui_labels()
         self.refresh_views(force_all=True)
 
     def create_menu_bar(self):
@@ -424,25 +398,121 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.storage_service.save_profile(self.profile)
         self.refresh_views()
 
+    # --- Lazy view construction ---
+
+    def _build_view(self, layout_value: str):
+        """Creates one layout view. Called at most once per layout, on first use."""
+        if layout_value == LayoutMode.BOARD.value:
+            return BoardView(
+                self.container_frame,
+                on_select_case=self.on_case_selected,
+                on_switch_to_cockpit=self.switch_to_cockpit_view_for_case,
+                on_open_followup=self.open_followup_dialog_for_case,
+                on_toggle_complete=self.on_toggle_complete_for_case,
+                on_change_actor=self.open_handover_dialog_for_case,
+                app_config=self.app_config,
+            )
+        if layout_value == LayoutMode.TABLE.value:
+            return TableView(
+                self.container_frame,
+                author_name=self.profile.user.name,
+                scoring_service=self.scoring_service,
+                attachment_service=self.attachment_service,
+                on_case_updated=self.on_case_updated,
+                on_case_selected=self.on_case_selected,
+                app_config=self.app_config,
+            )
+        if layout_value == LayoutMode.ANALYTICS.value:
+            from ui.views.analytics_view import AnalyticsView
+            return AnalyticsView(self.container_frame)
+        return CockpitView(
+            self.container_frame,
+            author_name=self.profile.user.name,
+            scoring_service=self.scoring_service,
+            attachment_service=self.attachment_service,
+            wiki_service=self.wiki_service,
+            on_case_updated=self.on_case_updated,
+            on_case_selected=self.on_case_selected,
+            on_search_changed=self.on_search_changed,
+            on_open_export_dialog=self.open_export_dialog,
+            on_archive_case=self.on_archive_case,
+            app_config=self.app_config,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            on_manage_module_tags=self.open_module_tag_management_dialog,
+            on_open_email_calendar=self.open_email_calendar_dialog,
+            on_open_email=self.open_email_draft_dialog,
+            on_open_calendar=self.open_calendar_export_dialog,
+            on_open_snippet_picker=self.open_snippet_picker_dialog,
+        )
+
+    def _get_view(self, layout_value: str):
+        """Returns the view for a layout, building it on first access."""
+        views = self.__dict__.setdefault("_views", {})
+        view = views.get(layout_value)
+        if view is None:
+            view = self._build_view(layout_value)
+            views[layout_value] = view
+        return view
+
+    def is_view_built(self, layout_value: str) -> bool:
+        """True once the given layout's view exists - used to avoid building a
+        view just to ask it something (a plain hasattr would construct it)."""
+        return layout_value in getattr(self, "_views", {})
+
+    def _set_view(self, layout_value: str, view) -> None:
+        """Replaces a layout's view (used by tests and by anything swapping a view in)."""
+        self.__dict__.setdefault("_views", {})[layout_value] = view
+
+    def _is_cockpit_active(self) -> bool:
+        """True when the cockpit is the visible layout - without building it."""
+        cockpit = getattr(self, "_views", {}).get(LayoutMode.COCKPIT.value)
+        return cockpit is not None and self.active_view is cockpit
+
+    @property
+    def cockpit_view(self):
+        return self._get_view(LayoutMode.COCKPIT.value)
+
+    @cockpit_view.setter
+    def cockpit_view(self, view):
+        self._set_view(LayoutMode.COCKPIT.value, view)
+
+    @property
+    def board_view(self):
+        return self._get_view(LayoutMode.BOARD.value)
+
+    @board_view.setter
+    def board_view(self, view):
+        self._set_view(LayoutMode.BOARD.value, view)
+
+    @property
+    def table_view(self):
+        return self._get_view(LayoutMode.TABLE.value)
+
+    @table_view.setter
+    def table_view(self, view):
+        self._set_view(LayoutMode.TABLE.value, view)
+
+    @property
+    def analytics_view(self):
+        return self._get_view(LayoutMode.ANALYTICS.value)
+
+    @analytics_view.setter
+    def analytics_view(self, view):
+        self._set_view(LayoutMode.ANALYTICS.value, view)
+
     def switch_layout(self, layout_name: str):
         if self.active_view:
             self.active_view.pack_forget()
 
         # Handle both display name and internal enum value
         val = get_layout_val_from_display(layout_name)
+        if val not in (LayoutMode.BOARD.value, LayoutMode.TABLE.value, LayoutMode.ANALYTICS.value):
+            val = LayoutMode.COCKPIT.value
 
-        if val == LayoutMode.BOARD.value:
-            self.board_view.pack(fill="both", expand=True)
-            self.active_view = self.board_view
-        elif val == LayoutMode.TABLE.value:
-            self.table_view.pack(fill="both", expand=True)
-            self.active_view = self.table_view
-        elif val == LayoutMode.ANALYTICS.value:
-            self.analytics_view.pack(fill="both", expand=True)
-            self.active_view = self.analytics_view
-        else:
-            self.cockpit_view.pack(fill="both", expand=True)
-            self.active_view = self.cockpit_view
+        self._active_layout = val
+        self.active_view = self._get_view(val)
+        self.active_view.pack(fill="both", expand=True)
 
         if self.__dict__.get("layout_combo"):
             self.layout_combo.set(get_layout_display(val))
@@ -451,11 +521,28 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.storage_service.save_profile(self.profile)
         self.refresh_views()
 
+    def _apply_cases_to_view(self, layout_value: str, cases: list[Case], deep_results: dict):
+        """Pushes the current case selection into one layout's view."""
+        view = self._get_view(layout_value)
+        if layout_value == LayoutMode.BOARD.value:
+            view.set_cases(cases)
+        elif layout_value == LayoutMode.TABLE.value:
+            view.set_schemas(self.schemas)
+            view.set_cases(cases)
+        elif layout_value == LayoutMode.ANALYTICS.value:
+            view.set_cases(cases)
+        else:
+            view.set_cases(cases, deep_results=deep_results)
+            if hasattr(view, "update_sash_color"):
+                view.update_sash_color()
+
     def refresh_views(self, force_all: bool = False):
         active_cases = self.get_filtered_cases()
         deep_results = {}
+        cockpit_built = self.is_view_built(LayoutMode.COCKPIT.value)
         is_deep_active = (
-            hasattr(self.cockpit_view, "left_frame")
+            cockpit_built
+            and hasattr(self.cockpit_view, "left_frame")
             and getattr(self.cockpit_view.left_frame, "is_deep_search_active", False)
         )
 
@@ -467,49 +554,22 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         else:
             filtered_cases = SearchService.filter_cases(active_cases, self.search_query) if self.search_query else active_cases
 
-        self.cockpit_view.set_schemas(self.schemas)
+        if cockpit_built:
+            self.cockpit_view.set_schemas(self.schemas)
 
-        # Optimize view updates: update active view immediately; mark inactive views dirty for layout switch
+        # Only the visible layout is refreshed. force_all additionally refreshes
+        # every layout that has already been built (e.g. after a language
+        # change); layouts not built yet get the current data on construction.
+        active_layout = getattr(self, "_active_layout", LayoutMode.COCKPIT.value)
         if force_all:
-            self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
-            if hasattr(self.cockpit_view, "update_sash_color"):
-                self.cockpit_view.update_sash_color()
-            self.board_view.set_cases(filtered_cases)
-            self.table_view.set_schemas(self.schemas)
-            self.table_view.set_cases(filtered_cases)
-            self.analytics_view.set_cases(filtered_cases)
-            self._cockpit_dirty = False
-            self._board_dirty = False
-            self._table_dirty = False
-            self._analytics_dirty = False
+            targets = [key for key in LAYOUT_VALUES if self.is_view_built(key)]
+            if active_layout not in targets:
+                targets.append(active_layout)
         else:
-            if self.active_view == self.board_view:
-                self.board_view.set_cases(filtered_cases)
-                self._board_dirty = False
-                self._cockpit_dirty = True
-                self._table_dirty = True
-                self._analytics_dirty = True
-            elif self.active_view == self.table_view:
-                self.table_view.set_schemas(self.schemas)
-                self.table_view.set_cases(filtered_cases)
-                self._table_dirty = False
-                self._cockpit_dirty = True
-                self._board_dirty = True
-                self._analytics_dirty = True
-            elif self.active_view == self.analytics_view:
-                self.analytics_view.set_cases(filtered_cases)
-                self._analytics_dirty = False
-                self._cockpit_dirty = True
-                self._board_dirty = True
-                self._table_dirty = True
-            else:
-                self.cockpit_view.set_cases(filtered_cases, deep_results=deep_results)
-                if hasattr(self.cockpit_view, "update_sash_color"):
-                    self.cockpit_view.update_sash_color()
-                self._cockpit_dirty = False
-                self._board_dirty = True
-                self._table_dirty = True
-                self._analytics_dirty = True
+            targets = [active_layout]
+
+        for key in targets:
+            self._apply_cases_to_view(key, filtered_cases, deep_results)
 
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
         has_user_cases = len(user_cases) > 0
@@ -553,7 +613,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def switch_to_cockpit_view_for_case(self, case: Case):
         self.bring_to_foreground()
         self.active_case = case
-        if self.active_view != self.cockpit_view:
+        if not self._is_cockpit_active():
             self.switch_layout(get_layout_display(LayoutMode.COCKPIT.value))
         self.cockpit_view.on_select_case_from_list(case)
 
@@ -603,7 +663,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         ctk.set_appearance_mode(new_theme)
         self.apply_windows_theme(new_theme == "Dark")
         self.profile.ui_settings.theme = new_theme
-        if hasattr(self, "cockpit_view"):
+        if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.update_sash_color()
         self.refresh_views()
 
@@ -664,7 +724,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._set_scaled_min_max()
         if is_zoomed:
             self._maximize_window()
-        if hasattr(self, "table_view") and hasattr(self.table_view, "setup_treeview_style"):
+        if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.storage_service.save_profile(self.profile)
 
@@ -843,7 +903,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def on_closing(self):
         """Minimize to system tray instead of closing the application."""
         logger.info("Minimizing to system tray...")
-        if hasattr(self, "cockpit_view"):
+        if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
         self.storage_service.flush_all_saves()
@@ -863,7 +923,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def _on_quit_from_tray(self):
         """Fully quit the application from the system tray context menu."""
         def _quit():
-            if hasattr(self, "cockpit_view"):
+            if self.is_view_built(LayoutMode.COCKPIT.value):
                 self.cockpit_view.save_sash_widths()
             self.storage_service.save_profile(self.profile)
             self.storage_service.flush_all_saves()
@@ -874,7 +934,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def on_quit_app(self):
         """Fully quit the application via the in-app Beenden button."""
         logger.info("Quitting application...")
-        if hasattr(self, "cockpit_view"):
+        if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
         self.storage_service.flush_all_saves()

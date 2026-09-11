@@ -96,16 +96,36 @@ class CaseListWidget(ctk.CTkFrame):
         self.render_list()
 
     def _on_widget_configure(self, event=None):
-        w = self.winfo_width()
-        if w > 50:
-            target_wrap = max(160, w - 40)
-            if abs(target_wrap - self._last_wrap_width) > 6:
-                self._last_wrap_width = target_wrap
-                for lbl in self.wrap_labels:
-                    try:
-                        lbl.configure(wraplength=target_wrap)
-                    except Exception:
-                        pass
+        # Dragging the window edge fires this many times per second, and the
+        # apply step touches every wrapped label in the list (several per case).
+        # Coalescing into a single idle callback keeps one pass per resize burst
+        # instead of one per event.
+        if getattr(self, "_wrap_update_pending", False):
+            return
+        self._wrap_update_pending = True
+        try:
+            self.after_idle(self._apply_wrap_width)
+        except Exception:
+            self._wrap_update_pending = False
+            self._apply_wrap_width()
+
+    def _apply_wrap_width(self):
+        self._wrap_update_pending = False
+        try:
+            w = self.winfo_width()
+        except Exception:
+            return
+        if w <= 50:
+            return
+        target_wrap = max(160, w - 40)
+        if abs(target_wrap - self._last_wrap_width) <= 6:
+            return
+        self._last_wrap_width = target_wrap
+        for lbl in self.wrap_labels:
+            try:
+                lbl.configure(wraplength=target_wrap)
+            except Exception:
+                pass
 
     def _on_search_keyrelease(self, event=None):
         """Debounces the search so the case list is re-rendered once per typing pause."""

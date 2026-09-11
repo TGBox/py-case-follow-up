@@ -1,5 +1,6 @@
 from collections.abc import Callable
-from typing import Any
+from typing import Any, Literal, cast
+import tkinter as tk
 import customtkinter as ctk
 
 
@@ -582,3 +583,101 @@ def cancel_debounce(widget, key: str) -> None:
         except Exception:
             pass
     setattr(widget, attr, None)
+
+
+def create_highlighted_label(
+    parent: Any,
+    text: str,
+    query: str,
+    font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont,
+    text_color: str | tuple[str, str],
+    bg_color: str | tuple[str, str],
+    highlight_color: str | tuple[str, str] = ("#D97706", "#F59E0B"),
+    highlight_font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont | None = None,
+    wrap: Literal["none", "char", "word"] = "word",
+    on_click: Callable[[Any], None] | None = None,
+    scroll_frame: ctk.CTkScrollableFrame | None = None,
+    max_height_chars: int = 35,
+) -> tk.Text:
+    """Creates a seamless, borderless tk.Text widget with highlighted query occurrences.
+
+    Tags matching substrings with a prominent gold/yellow highlight color while preserving
+    smooth scrolling and click handling.
+    """
+    mode = ctk.get_appearance_mode().lower()
+
+    def _resolve(c: str | tuple[str, str]) -> str:
+        if isinstance(c, (tuple, list)):
+            return c[1] if mode == "dark" else c[0]
+        return c
+
+    res_bg = _resolve(bg_color)
+    res_text = _resolve(text_color)
+    res_hl = _resolve(highlight_color)
+
+    # Determine height based on length / wrapping
+    if wrap == "none" or ("\n" not in text and len(text) <= max_height_chars):
+        h = 1
+    else:
+        h = 2
+
+    txt = tk.Text(
+        parent,
+        height=h,
+        wrap=wrap,
+        relief="flat",
+        borderwidth=0,
+        highlightthickness=0,
+        padx=0,
+        pady=0,
+        bg=res_bg,
+        cursor="hand2" if on_click else "arrow",
+        takefocus=0,
+    )
+
+    if highlight_font is None:
+        if isinstance(font, ctk.CTkFont):
+            font_any: Any = font
+            family = font_any.cget("family") if hasattr(font_any, "cget") else getattr(font_any, "_family", "Segoe UI")
+            size = font_any.cget("size") if hasattr(font_any, "cget") else getattr(font_any, "_size", 11)
+            hl_f: Any = ctk.CTkFont(family=family, size=size, weight="bold")
+        elif isinstance(font, tuple) and len(font) >= 2:
+            hl_f = (font[0], font[1], "bold")
+        else:
+            hl_f = font
+    else:
+        hl_f = highlight_font
+
+    txt.tag_configure("normal", foreground=res_text, font=cast(Any, font))
+    txt.tag_configure("match", foreground=res_hl, font=cast(Any, hl_f))
+
+    q = query.strip()
+    if not q:
+        txt.insert("end", text, "normal")
+    else:
+        q_len = len(q)
+        lower_text = text.lower()
+        lower_q = q.lower()
+        pos = 0
+        while pos < len(text):
+            idx = lower_text.find(lower_q, pos)
+            if idx == -1:
+                txt.insert("end", text[pos:], "normal")
+                break
+            if idx > pos:
+                txt.insert("end", text[pos:idx], "normal")
+            txt.insert("end", text[idx:idx + q_len], "match")
+            pos = idx + q_len
+
+    txt.configure(state="disabled")
+
+    if on_click:
+        txt.bind("<Button-1>", on_click)
+        txt.tag_bind("normal", "<Button-1>", on_click)
+        txt.tag_bind("match", "<Button-1>", on_click)
+        txt.bind("<B1-Motion>", lambda e: "break")
+
+    if scroll_frame:
+        bind_mouse_wheel_to_canvas(txt, scroll_frame)
+
+    return txt

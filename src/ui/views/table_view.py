@@ -275,8 +275,39 @@ class TableView(ctk.CTkFrame):
         self.cases = cases
         self.render_rows()
 
-    def render_rows(self):
+    def _rows_signature(self) -> tuple:
+        """Everything the table currently displays, plus sort order and selection."""
+        return (
+            self.sort_column,
+            self.sort_reverse,
+            tuple(self.column_order),
+            self.selected_case.case_id if self.selected_case else None,
+            tuple(
+                (
+                    c.case_id,
+                    getattr(c.customer, "practice_name", "") if c.customer else "",
+                    bool(getattr(c.customer, "is_vip", False)) if c.customer else False,
+                    c.classification.title,
+                    c.workflow_status.current_actor,
+                    c.workflow_status.followup_at,
+                    round(c.classification.calculated_score, 1),
+                )
+                for c in self.cases
+            ),
+        )
+
+    def render_rows(self, force: bool = False):
+        # The style depends on theme and font scale, so it is refreshed even when
+        # the rows themselves are left untouched.
         self.setup_treeview_style()
+
+        # Deleting and re-inserting every row on each refresh was wasted work
+        # whenever the data had not changed - which is most refreshes.
+        signature = self._rows_signature()
+        if not force and signature == getattr(self, "_rows_signature_cache", None):
+            return
+        self._rows_signature_cache = signature
+
         # Clear existing items
         for item in self.tree.get_children():
             self.tree.delete(item)
@@ -371,7 +402,7 @@ class TableView(ctk.CTkFrame):
     def refresh_ui_labels(self):
         from services.i18n_service import tr
         self.configure_tree_columns()
-        self.render_rows()
+        self.render_rows(force=True)
         if self.selected_case:
             self.detail_title_label.configure(
                 text=tr("table.case_details_header", "📋 Falldetails: {id} - {practice} ({title})", id=self.selected_case.case_id, practice=self.selected_case.customer.practice_name, title=self.selected_case.classification.title)

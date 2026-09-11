@@ -181,6 +181,7 @@ class BoardView(ctk.CTkFrame):
         self.app_config = app_config
 
         self.cases: list[Case] = []
+        self._col_signatures: dict[str, list] = {}
         self.collapsed_states: dict[str, bool] = {
             "support": False,
             "dev": False,
@@ -214,6 +215,8 @@ class BoardView(ctk.CTkFrame):
 
         self.col_headers: dict[str, ctk.CTkLabel] = {}
         self.col_scrolls: dict[str, ctk.CTkScrollableFrame] = {}
+        # Columns are new, so every cached card signature is stale.
+        self._col_signatures: dict[str, list] = {}
 
         for idx, (col_key, col_title) in enumerate(cols_def):
             is_collapsed = self.collapsed_states.get(col_key, False)
@@ -297,6 +300,23 @@ class BoardView(ctk.CTkFrame):
         self.cases = cases
         self.refresh_board()
 
+    @staticmethod
+    def _card_signature(case: Case) -> tuple:
+        """Everything a Kanban card puts on screen. Two equal signatures mean the
+        rendered card would be pixel-identical, so it can be left alone."""
+        customer = case.customer
+        return (
+            case.case_id,
+            round(case.classification.calculated_score, 1),
+            case.classification.title,
+            case.workflow_status.current_actor,
+            case.workflow_status.is_completed,
+            case.workflow_status.followup_at,
+            getattr(case, "is_internal", False),
+            getattr(customer, "practice_name", "") if customer else "",
+            bool(getattr(customer, "is_vip", False)) if customer else False,
+        )
+
     def refresh_board(self):
         col_cases: dict[str, list[Case]] = {
             "support": [],
@@ -334,11 +354,21 @@ class BoardView(ctk.CTkFrame):
 
         for col_key, c_list in col_cases.items():
             if col_key in self.col_scrolls:
+                c_list_sorted = sorted(c_list, key=lambda x: x.classification.calculated_score, reverse=True)
+
+                # Rebuilding a column means destroying and recreating ~12 widgets
+                # per card. Skip it entirely when nothing this column displays has
+                # changed - that is the common case for a refresh triggered by a
+                # search keystroke, a theme toggle or the hourly scoring run.
+                signature = [self._card_signature(c) for c in c_list_sorted]
+                if self._col_signatures.get(col_key) == signature:
+                    continue
+                self._col_signatures[col_key] = signature
+
                 scroll = self.col_scrolls[col_key]
                 for child in scroll.winfo_children():
                     child.destroy()
 
-                c_list_sorted = sorted(c_list, key=lambda x: x.classification.calculated_score, reverse=True)
                 for c in c_list_sorted:
                     card = KanbanCardWidget(
                         scroll,

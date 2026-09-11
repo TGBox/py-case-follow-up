@@ -33,6 +33,8 @@ class EditTemplateDialog(BaseDialog):
             tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"),
             (w, h),
             min_size=(700, 600),
+
+            title_factory=lambda: tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"),
         )
 
         self.schema_vars: dict[str, ctk.BooleanVar] = {}
@@ -56,8 +58,8 @@ class EditTemplateDialog(BaseDialog):
         row1 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row1.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row1, text=tr("template_mgmt.id_lbl", "Vorlage-ID *:"), width=130, anchor="w").pack(side="left")
-        self.id_entry = ctk.CTkEntry(row1, placeholder_text=tr("template_mgmt.id_placeholder", "z. B. gitlab_dev_ticket"))
+        self.register_i18n(ctk.CTkLabel(row1, text=tr("template_mgmt.id_lbl", "Vorlage-ID *:"), width=130, anchor="w"), "template_mgmt.id_lbl", "Vorlage-ID *:").pack(side="left")
+        self.id_entry = self.register_i18n(ctk.CTkEntry(row1, placeholder_text=tr("template_mgmt.id_placeholder", "z. B. gitlab_dev_ticket")), "template_mgmt.id_placeholder", "z. B. gitlab_dev_ticket", attr="placeholder_text")
         if self.template:
             self.id_entry.insert(0, self.template.template_id)
             if not is_new:
@@ -67,8 +69,8 @@ class EditTemplateDialog(BaseDialog):
         row2 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row2.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row2, text=tr("template_mgmt.name_lbl", "Anzeigename *:"), width=130, anchor="w").pack(side="left")
-        self.name_entry = ctk.CTkEntry(row2, placeholder_text=tr("template_mgmt.name_placeholder", "z. B. GitLab / Dev-Ticket"))
+        self.register_i18n(ctk.CTkLabel(row2, text=tr("template_mgmt.name_lbl", "Anzeigename *:"), width=130, anchor="w"), "template_mgmt.name_lbl", "Anzeigename *:").pack(side="left")
+        self.name_entry = self.register_i18n(ctk.CTkEntry(row2, placeholder_text=tr("template_mgmt.name_placeholder", "z. B. GitLab / Dev-Ticket")), "template_mgmt.name_placeholder", "z. B. GitLab / Dev-Ticket", attr="placeholder_text")
         if self.template:
             self.name_entry.insert(0, self.template.display_name)
         self.name_entry.pack(side="left", fill="x", expand=True)
@@ -77,8 +79,8 @@ class EditTemplateDialog(BaseDialog):
         row3 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row3.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row3, text=tr("template_mgmt.desc_lbl", "Beschreibung:"), width=130, anchor="w").pack(side="left")
-        self.desc_entry = ctk.CTkEntry(row3, placeholder_text=tr("template_mgmt.desc_placeholder", "Kurze Beschreibung des Formats..."))
+        self.register_i18n(ctk.CTkLabel(row3, text=tr("template_mgmt.desc_lbl", "Beschreibung:"), width=130, anchor="w"), "template_mgmt.desc_lbl", "Beschreibung:").pack(side="left")
+        self.desc_entry = self.register_i18n(ctk.CTkEntry(row3, placeholder_text=tr("template_mgmt.desc_placeholder", "Kurze Beschreibung des Formats...")), "template_mgmt.desc_placeholder", "Kurze Beschreibung des Formats...", attr="placeholder_text")
         if self.template:
             self.desc_entry.insert(0, self.template.description)
         self.desc_entry.pack(side="left", fill="x", expand=True)
@@ -86,14 +88,14 @@ class EditTemplateDialog(BaseDialog):
         row4 = ctk.CTkFrame(scroll_frame, fg_color="transparent")
         row4.pack(fill="x", pady=4)
 
-        ctk.CTkLabel(row4, text=tr("template_mgmt.target_type_lbl", "Ziel-Aktion / Typ:"), width=130, anchor="w").pack(side="left")
+        self.register_i18n(ctk.CTkLabel(row4, text=tr("template_mgmt.target_type_lbl", "Ziel-Aktion / Typ:"), width=130, anchor="w"), "template_mgmt.target_type_lbl", "Ziel-Aktion / Typ:").pack(side="left")
         self.type_combo = ctk.CTkOptionMenu(row4, values=[TargetType.CLIPBOARD_TEXT.value, TargetType.FILE_EXPORT.value])
         if self.template:
             self.type_combo.set(self.template.target_type)
         self.type_combo.pack(side="left")
 
         # Applicable Schemas Checkboxes
-        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.applicable_schemas_lbl", "Zugeordnete Formular-Schemas:"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(10, 2))
+        self.register_i18n(ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.applicable_schemas_lbl", "Zugeordnete Formular-Schemas:"), font=ctk.CTkFont(weight="bold", size=12)), "template_mgmt.applicable_schemas_lbl", "Zugeordnete Formular-Schemas:").pack(anchor="w", pady=(10, 2))
         schemas_frame = ctk.CTkFrame(scroll_frame, fg_color=("gray90", "gray20"))
         schemas_frame.pack(fill="x", pady=(0, 10), padx=2)
 
@@ -104,7 +106,7 @@ class EditTemplateDialog(BaseDialog):
             cb.pack(anchor="w", padx=8, pady=4)
 
         # Required Fields Checkboxes
-        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.req_fields_lbl", "Erforderliche Pflichtfelder vor Export:"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
+        self.register_i18n(ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.req_fields_lbl", "Erforderliche Pflichtfelder vor Export:"), font=ctk.CTkFont(weight="bold", size=12)), "template_mgmt.req_fields_lbl", "Erforderliche Pflichtfelder vor Export:").pack(anchor="w", pady=(5, 2))
         fields_frame = ctk.CTkFrame(scroll_frame, fg_color=("gray90", "gray20"))
         fields_frame.pack(fill="x", pady=(0, 10), padx=2)
 
@@ -124,7 +126,7 @@ class EditTemplateDialog(BaseDialog):
             cb.pack(anchor="w", padx=8, pady=4)
 
         # Jinja2 Template Markup Editor
-        ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.jinja_lbl", "Jinja2 Template Text (Markdown / Text):"), font=ctk.CTkFont(weight="bold", size=12)).pack(anchor="w", pady=(5, 2))
+        self.register_i18n(ctk.CTkLabel(scroll_frame, text=tr("template_mgmt.jinja_lbl", "Jinja2 Template Text (Markdown / Text):"), font=ctk.CTkFont(weight="bold", size=12)), "template_mgmt.jinja_lbl", "Jinja2 Template Text (Markdown / Text):").pack(anchor="w", pady=(5, 2))
         self.template_textbox = ctk.CTkTextbox(scroll_frame, height=160, font=ctk.CTkFont(family="Consolas", size=12))
         self.template_textbox.pack(fill="x", pady=(0, 10))
         if self.template:
@@ -133,7 +135,7 @@ class EditTemplateDialog(BaseDialog):
         from services.i18n_service import tr
 
         # Live Preview Panel
-        preview_btn = ctk.CTkButton(scroll_frame, text=tr("template_editor.preview_btn", "👁 Live-Vorschau rendern"), command=self.render_preview, fg_color="dodgerblue")
+        preview_btn = self.register_i18n(ctk.CTkButton(scroll_frame, text=tr("template_editor.preview_btn", "👁 Live-Vorschau rendern"), command=self.render_preview, fg_color="dodgerblue"), "template_editor.preview_btn", "👁 Live-Vorschau rendern")
         preview_btn.pack(anchor="w", pady=4)
 
         self.preview_textbox = ctk.CTkTextbox(scroll_frame, height=120, font=ctk.CTkFont(family="Consolas", size=11))
@@ -144,8 +146,8 @@ class EditTemplateDialog(BaseDialog):
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        ctk.CTkButton(bottom_bar, text=tr("ui_buttons.save_template", "💾 Vorlage Speichern"), command=self.save, fg_color="forestgreen", width=160).pack(side="right", padx=5)
-        ctk.CTkButton(bottom_bar, text=tr("common.cancel", "Abbrechen"), command=self.destroy, fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), width=90).pack(side="left", padx=5)
+        self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("ui_buttons.save_template", "💾 Vorlage Speichern"), command=self.save, fg_color="forestgreen", width=160), "ui_buttons.save_template", "💾 Vorlage Speichern").pack(side="right", padx=5)
+        self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("common.cancel", "Abbrechen"), command=self.destroy, fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), width=90), "common.cancel", "Abbrechen").pack(side="left", padx=5)
 
     def render_preview(self):
         tmpl_str = self.template_textbox.get("1.0", "end-1c")
@@ -221,6 +223,8 @@ class TemplateManagerDialog(BaseDialog):
             tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"),
             (w, h),
             min_size=(880, 640),
+
+            title_factory=lambda: tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"),
         )
 
         self.create_widgets()
@@ -231,9 +235,9 @@ class TemplateManagerDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=50, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text=tr("template_mgmt.header", "📄 Export-Vorlagen-Verwaltung"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("template_mgmt.header", "📄 Export-Vorlagen-Verwaltung"), font=ctk.CTkFont(size=16, weight="bold")), "template_mgmt.header", "📄 Export-Vorlagen-Verwaltung").pack(side="left", padx=10)
 
-        btn_new = ctk.CTkButton(top_bar, text=tr("template_mgmt.new_template", "+ Neue Vorlage"), command=self.on_add_template, fg_color="forestgreen", width=140)
+        btn_new = self.register_i18n(ctk.CTkButton(top_bar, text=tr("template_mgmt.new_template", "+ Neue Vorlage"), command=self.on_add_template, fg_color="forestgreen", width=140), "template_mgmt.new_template", "+ Neue Vorlage")
         btn_new.pack(side="right", padx=5)
 
         self.btn_toggle_defaults = ctk.CTkButton(
@@ -278,7 +282,7 @@ class TemplateManagerDialog(BaseDialog):
         saved_templates = self.storage_service.load_templates()
 
         if not display_templates:
-            ctk.CTkLabel(self.scroll_frame, text=tr("template_mgmt.no_templates", "Keine Vorlagen vorhanden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.scroll_frame, text=tr("template_mgmt.no_templates", "Keine Vorlagen vorhanden."), text_color="gray"), "template_mgmt.no_templates", "Keine Vorlagen vorhanden.").pack(pady=20)
             return
 
         for tmpl in display_templates:
@@ -294,10 +298,10 @@ class TemplateManagerDialog(BaseDialog):
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             id_lbl.pack(side="left", padx=8)
 
-            btn_del = ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=80, fg_color="darkred", command=lambda t=tmpl: self.confirm_delete_template(t))
+            btn_del = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=80, fg_color="darkred", command=lambda t=tmpl: self.confirm_delete_template(t)), "common.delete", "🗑 Löschen")
             btn_del.pack(side="right", padx=4)
 
-            btn_edit = ctk.CTkButton(top_row, text=tr("common.edit", "✏ Bearbeiten"), width=100, command=lambda t=tmpl: self.on_edit_template(t))
+            btn_edit = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.edit", "✏ Bearbeiten"), width=100, command=lambda t=tmpl: self.on_edit_template(t)), "common.edit", "✏ Bearbeiten")
             btn_edit.pack(side="right", padx=4)
 
             is_already_saved = any(
@@ -306,9 +310,9 @@ class TemplateManagerDialog(BaseDialog):
             )
 
             if is_already_saved:
-                btn_adopt = ctk.CTkButton(top_row, text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), width=170, state="disabled", fg_color="gray40")
+                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), width=170, state="disabled", fg_color="gray40"), "template_mgmt.already_in_real_data", "✓ In Realdaten enthalten")
             else:
-                btn_adopt = ctk.CTkButton(top_row, text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), width=180, fg_color="dodgerblue", command=lambda t=tmpl: self.on_adopt_template(t))
+                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), width=180, fg_color="dodgerblue", command=lambda t=tmpl: self.on_adopt_template(t)), "template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen")
             btn_adopt.pack(side="right", padx=4)
 
             desc_txt = tmpl.description or "Keine Beschreibung"

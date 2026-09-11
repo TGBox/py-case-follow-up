@@ -70,14 +70,16 @@ class HotkeyRecorderDialog(BaseDialog):
             tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE),
             (w, h),
             resizable=False,
+
+            title_factory=lambda: tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE),
         )
 
 
-        ctk.CTkLabel(self, text=tr("hotkey_recorder.header", HOTKEY_RECORDER_HEADER), font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 5))
-        self.info_lbl = ctk.CTkLabel(self, text=tr("hotkey_recorder.info", HOTKEY_RECORDER_INFO), text_color=("gray30", "gray70"))
+        self.register_i18n(ctk.CTkLabel(self, text=tr("hotkey_recorder.header", HOTKEY_RECORDER_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "hotkey_recorder.header", HOTKEY_RECORDER_HEADER).pack(pady=(15, 5))
+        self.info_lbl = self.register_i18n(ctk.CTkLabel(self, text=tr("hotkey_recorder.info", HOTKEY_RECORDER_INFO), text_color=("gray30", "gray70")), "hotkey_recorder.info", HOTKEY_RECORDER_INFO)
         self.info_lbl.pack(pady=5)
 
-        cancel_btn = ctk.CTkButton(self, text=tr("hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL), command=self.destroy, fg_color="gray40", width=120)
+        cancel_btn = self.register_i18n(ctk.CTkButton(self, text=tr("hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL), command=self.destroy, fg_color="gray40", width=120), "hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL)
         cancel_btn.pack(pady=(10, 0))
 
         self.bind("<KeyPress>", self.on_key_press)
@@ -132,6 +134,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
             tr("profile.title", DIALOG_TITLES["profile_settings"]),
             (w, h),
             min_size=(920, 780),
+
+            title_factory=lambda: tr("profile.title", DIALOG_TITLES["profile_settings"]),
         )
 
         self._initial_font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
@@ -146,7 +150,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        self.top_header_lbl = ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold"))
+        self.top_header_lbl = self.register_i18n(ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")), "profile.header", "⚙ Profil & Anwendungseinstellungen")
         self.top_header_lbl.pack(side="left", padx=10)
 
         # Tabview
@@ -192,17 +196,17 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        self.close_btn = ctk.CTkButton(
+        self.close_btn = self.register_i18n(ctk.CTkButton(
             bottom_bar,
             text=tr("common.close", "Schließen"),
             command=self.on_close,
             fg_color="gray40",
             hover_color="gray50",
             width=120,
-        )
+        ), "common.close", "Schließen")
         self.close_btn.pack(side="right", padx=5)
 
-        self.save_btn = ctk.CTkButton(bottom_bar, text=tr("profile.save_btn", "💾 Einstellungen Speichern"), command=self.save_settings, fg_color="forestgreen", width=180)
+        self.save_btn = self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("profile.save_btn", "💾 Einstellungen Speichern"), command=self.save_settings, fg_color="forestgreen", width=180), "profile.save_btn", "💾 Einstellungen Speichern")
         self.save_btn.pack(side="right", padx=5)
 
         self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color="green")
@@ -231,13 +235,13 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         # =========================================================================
 
         # Section 1: Profil verwalten & wechseln
-        self.user_tab_hdr_lbl = ctk.CTkLabel(left_col, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_tab_hdr_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold")), "profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln")
         self.user_tab_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
         prof_frame = ctk.CTkFrame(left_col, fg_color="transparent")
         prof_frame.pack(anchor="w", pady=(0, 15))
 
-        self.active_prof_lbl = ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:"))
+        self.active_prof_lbl = self.register_i18n(ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:")), "profile.active_profile", "Aktives Profil:")
         self.active_prof_lbl.pack(side="left", padx=(0, 10))
 
         profiles_list = self.storage_service.list_profiles()
@@ -250,46 +254,46 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
         self.profile_combo.pack(side="left", padx=(0, 10))
 
-        self.btn_new_prof = ctk.CTkButton(
+        self.btn_new_prof = self.register_i18n(ctk.CTkButton(
             prof_frame,
             text=tr("profile.btn_new_profile", "➕ Neues Profil"),
             command=self.open_create_profile_dialog,
             fg_color="forestgreen",
             width=130,
-        )
+        ), "profile.btn_new_profile", "➕ Neues Profil")
         self.btn_new_prof.pack(side="left")
 
         # Section 2: Persönliche Angaben & Kontaktdaten
-        self.user_details_hdr_lbl = ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.user_details_hdr_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.user_info_header", "Benutzerinformationen (Aktives Profil)")
         self.user_details_hdr_lbl.pack(anchor="w", pady=(8, 4))
 
-        ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")).pack(anchor="w", pady=(4, 2))
-        self.user_name_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380)
+        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")), "profile.display_name", "Name / Anzeigename *:").pack(anchor="w", pady=(4, 2))
+        self.user_name_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380), "profile.name_placeholder", "Ihr Name", attr="placeholder_text")
         self.user_name_entry.insert(0, self.profile.user.name)
         self.user_name_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")).pack(anchor="w", pady=(4, 2))
-        self.user_dept_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380)
+        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")), "profile.dept", "Abteilung / Department *:").pack(anchor="w", pady=(4, 2))
+        self.user_dept_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380), "profile.dept_placeholder", "z. B. Support, Entwicklung, Technik", attr="placeholder_text")
         self.user_dept_entry.insert(0, self.profile.user.department)
         self.user_dept_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")).pack(anchor="w", pady=(4, 2))
-        self.user_ext_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380)
+        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")), "profile.ext", "Durchwahl / Extension:").pack(anchor="w", pady=(4, 2))
+        self.user_ext_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380), "profile.ext_placeholder", "z.B. 4012", attr="placeholder_text")
         self.user_ext_entry.insert(0, self.profile.user.extension)
         self.user_ext_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(4, 2))
-        self.user_email_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380)
+        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")), "profile.email", "E-Mail-Adresse:").pack(anchor="w", pady=(4, 2))
+        self.user_email_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380), "profile.email_placeholder", "beispiel@support.de", attr="placeholder_text")
         self.user_email_entry.insert(0, self.profile.user.email)
         self.user_email_entry.pack(anchor="w", pady=(0, 7))
 
-        ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(4, 2))
-        self.user_mobile_entry = ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380)
+        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")), "profile.mobile", "Mobiltelefon:").pack(anchor="w", pady=(4, 2))
+        self.user_mobile_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380), "profile.mobile_placeholder", "0170 / 1234567", attr="placeholder_text")
         self.user_mobile_entry.insert(0, self.profile.user.mobile)
         self.user_mobile_entry.pack(anchor="w", pady=(0, 7))
 
         # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
-        self.sig_lbl = ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
+        self.sig_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")), "profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")
         self.sig_lbl.pack(anchor="w", pady=(4, 2))
 
         self.user_sig_txt = ctk.CTkTextbox(
@@ -317,24 +321,24 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         sig_btn_frame = ctk.CTkFrame(left_col, fg_color="transparent")
         sig_btn_frame.pack(anchor="w", pady=(0, 8))
 
-        self.btn_save_sig = ctk.CTkButton(
+        self.btn_save_sig = self.register_i18n(ctk.CTkButton(
             sig_btn_frame,
             text=tr("profile.btn_export_signature", "💾 Signatur speichern..."),
             command=self.on_export_signature,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             width=185,
-        )
+        ), "profile.btn_export_signature", "💾 Signatur speichern...")
         self.btn_save_sig.pack(side="left", padx=(0, 10))
 
-        self.btn_load_sig = ctk.CTkButton(
+        self.btn_load_sig = self.register_i18n(ctk.CTkButton(
             sig_btn_frame,
             text=tr("profile.btn_import_signature", "📂 Signatur laden..."),
             command=self.on_import_signature,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             width=185,
-        )
+        ), "profile.btn_import_signature", "📂 Signatur laden...")
         self.btn_load_sig.pack(side="left")
 
         # =========================================================================
@@ -342,10 +346,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         # =========================================================================
 
         # Section 4: Erscheinungsbild & Layout
-        self.appearance_hdr_lbl = ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.appearance_hdr_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold")), "profile.appearance_layout", "Erscheinungsbild & Layout")
         self.appearance_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
-        self.lang_lbl = ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:"))
+        self.lang_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:")), "profile.language", "Sprache / Language:")
         self.lang_lbl.pack(anchor="w", pady=(5, 2))
         self.language_combo = ctk.CTkOptionMenu(
             right_col,
@@ -356,13 +360,13 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
         self.language_combo.pack(anchor="w", pady=(0, 12))
 
-        self.theme_lbl = ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):"))
+        self.theme_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):")), "profile.theme", "Farb-Thema (Theme):")
         self.theme_lbl.pack(anchor="w", pady=(5, 2))
         self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         self.theme_combo.pack(anchor="w", pady=(0, 12))
 
-        self.font_scale_lbl = ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:"))
+        self.font_scale_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:")), "profile.font_scale", "Schriftgröße / Skalierung:")
         self.font_scale_lbl.pack(anchor="w", pady=(5, 2))
         self.font_scale_combo = ctk.CTkOptionMenu(
             right_col,
@@ -373,7 +377,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
         self.font_scale_combo.pack(anchor="w", pady=(0, 12))
 
-        self.default_layout_lbl = ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:"))
+        self.default_layout_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:")), "profile.default_layout", "Standard-Layout beim Start:")
         self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
         self.layout_combo = ctk.CTkOptionMenu(
             right_col,
@@ -383,7 +387,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         self.layout_combo.pack(anchor="w", pady=(0, 12))
 
-        self.popup_target_lbl = ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
+        self.popup_target_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")), "profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")
         self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
         self.popup_target_combo = ctk.CTkOptionMenu(
             right_col,
@@ -394,20 +398,20 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
         self.popup_target_combo.pack(anchor="w", pady=(0, 15))
 
-        self.demo_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+        self.demo_switch = self.register_i18n(ctk.CTkSwitch(  # type: ignore[attr-defined]
             right_col,
             text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) einblenden")
-        )
+        ), "profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) einblenden")
         if self.profile.ui_settings.show_demo_data is True:
             self.demo_switch.select()
         else:
             self.demo_switch.deselect()
         self.demo_switch.pack(anchor="w", pady=(0, 12))
 
-        self.os_popup_switch = ctk.CTkSwitch(  # type: ignore[attr-defined]
+        self.os_popup_switch = self.register_i18n(ctk.CTkSwitch(  # type: ignore[attr-defined]
             right_col,
             text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (Toast) aktivieren")
-        )
+        ), "profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (Toast) aktivieren")
         if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
             self.os_popup_switch.select()
         else:
@@ -415,7 +419,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.os_popup_switch.pack(anchor="w", pady=(0, 15))
 
         # Column widths reset section
-        self.col_widths_hdr_lbl = ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold"))
+        self.col_widths_hdr_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)")
         self.col_widths_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
         widths = self.profile.ui_settings.column_widths
@@ -440,14 +444,14 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
         self.widths_label.pack(anchor="w", pady=(0, 10))
 
-        self.btn_reset_widths = ctk.CTkButton(
+        self.btn_reset_widths = self.register_i18n(ctk.CTkButton(
             right_col,
             text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
             command=self.on_reset_column_widths,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             width=380,
-        )
+        ), "profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen")
         self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
 
     def on_export_signature(self):
@@ -500,10 +504,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
 
     def open_create_profile_dialog(self):
         from services.i18n_service import tr
-        dialog = ctk.CTkInputDialog(
+        dialog = self.register_i18n(ctk.CTkInputDialog(
             text=tr("profile.input_new_user_text", "Geben Sie den Namen des neuen Mitarbeiters ein:"),
             title=tr("profile.input_new_user_title", "Neues Mitarbeiter-Profil anlegen"),
-        )
+        ), "profile.input_new_user_text", "Geben Sie den Namen des neuen Mitarbeiters ein:")
         name_input = dialog.get_input()
         if name_input and name_input.strip():
             new_name = name_input.strip()
@@ -575,8 +579,8 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
+        super().refresh_ui_labels()
         w, h = DIALOG_DIMENSIONS["profile_settings"]
-        self.title(tr("profile.title", DIALOG_TITLES["profile_settings"]))
         if hasattr(self, "top_header_lbl"):
             self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
         if hasattr(self, "save_btn"):
@@ -712,63 +716,63 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         self.paths_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
         # --- Sektion 1: Speicherorte & Dateipfade ---
-        ctk.CTkLabel(self.paths_scroll, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(5, 5))
+        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)").pack(anchor="w", pady=(5, 5))
 
         # Main Workspace Directory
-        ctk.CTkLabel(self.paths_scroll, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")).pack(anchor="w", pady=(5, 2))
+        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")), "profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:").pack(anchor="w", pady=(5, 2))
         ws_frame = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         ws_frame.pack(fill="x", pady=(0, 10))
 
-        self.ws_entry = ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner..."))
+        self.ws_entry = self.register_i18n(ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner...")), "profile.workspace_placeholder", "Pfad zum Datenordner...", attr="placeholder_text")
         self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
         self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
-        btn_browse_ws = ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=120)
+        btn_browse_ws = self.register_i18n(ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=120), "profile.browse_folder", "📁 Ordner wählen")
         btn_browse_ws.pack(side="right")
 
         # Custom Individual File Path Overrides
-        ctk.CTkLabel(self.paths_scroll, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")), "profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):").pack(anchor="w", pady=(10, 5))
 
         # Cases Path Override
         row_cases = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_cases.pack(fill="x", pady=2)
-        ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=160, anchor="w").pack(side="left")
-        self.path_cases_entry = ctk.CTkEntry(row_cases, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
+        self.register_i18n(ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=160, anchor="w"), "profile.cases_file", "Fälle (cases.json):").pack(side="left")
+        self.path_cases_entry = self.register_i18n(ctk.CTkEntry(row_cases, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
         if self.storage_service.config.custom_cases_path:
             self.path_cases_entry.insert(0, str(self.storage_service.config.custom_cases_path))
         self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
-        ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70).pack(side="right")
+        self.register_i18n(ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70), "profile.file_browse", "Datei...").pack(side="right")
 
         # Customers Path Override
         row_cust = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_cust.pack(fill="x", pady=2)
-        ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=160, anchor="w").pack(side="left")
-        self.path_cust_entry = ctk.CTkEntry(row_cust, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
+        self.register_i18n(ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=160, anchor="w"), "profile.cust_file", "Kunden (customers.json):").pack(side="left")
+        self.path_cust_entry = self.register_i18n(ctk.CTkEntry(row_cust, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
         if self.storage_service.config.custom_customers_path:
             self.path_cust_entry.insert(0, str(self.storage_service.config.custom_customers_path))
         self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
-        ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70).pack(side="right")
+        self.register_i18n(ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70), "profile.file_browse", "Datei...").pack(side="right")
 
         # Wiki DB Path Override
         row_wiki = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         row_wiki.pack(fill="x", pady=2)
-        ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=160, anchor="w").pack(side="left")
-        self.path_wiki_entry = ctk.CTkEntry(row_wiki, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner"))
+        self.register_i18n(ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=160, anchor="w"), "profile.wiki_file", "Wiki DB (sqlite):").pack(side="left")
+        self.path_wiki_entry = self.register_i18n(ctk.CTkEntry(row_wiki, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
         if self.storage_service.config.custom_wiki_db_path:
             self.path_wiki_entry.insert(0, str(self.storage_service.config.custom_wiki_db_path))
         self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
-        ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70).pack(side="right")
+        self.register_i18n(ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70), "profile.file_browse", "Datei...").pack(side="right")
 
         # Reset button
-        btn_reset_paths = ctk.CTkButton(self.paths_scroll, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240)
+        btn_reset_paths = self.register_i18n(ctk.CTkButton(self.paths_scroll, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240), "profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen")
         btn_reset_paths.pack(anchor="w", pady=(15, 20))
 
         # --- Sektion 2: Komplett-Datensicherung & ZIP-Archivierung (Datenexport / Import) ---
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             self.paths_scroll,
             text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
             font=ctk.CTkFont(size=14, weight="bold"),
-        ).pack(anchor="w", pady=(10, 5))
+        ), "profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung").pack(anchor="w", pady=(10, 5))
 
         desc_str = tr(
             "profile.backup_desc",
@@ -790,54 +794,54 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         exp_card.pack(fill="x", pady=(0, 15), padx=2)
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             exp_card,
             text=tr("profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren"),
             font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", padx=12, pady=(10, 2))
+        ), "profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren").pack(anchor="w", padx=12, pady=(10, 2))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             exp_card,
             text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
             anchor="w",
-        ).pack(anchor="w", padx=12, pady=(0, 10))
+        ), "profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.").pack(anchor="w", padx=12, pady=(0, 10))
 
-        btn_export = ctk.CTkButton(
+        btn_export = self.register_i18n(ctk.CTkButton(
             exp_card,
             text=tr("profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren..."),
             command=self.on_click_export_zip,
             fg_color="dodgerblue",
             width=240,
-        )
+        ), "profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren...")
         btn_export.pack(anchor="w", padx=12, pady=(0, 12))
 
         # Section 2.2: Import
         imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         imp_card.pack(fill="x", pady=(0, 15), padx=2)
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             imp_card,
             text=tr("profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren"),
             font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", padx=12, pady=(10, 2))
+        ), "profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren").pack(anchor="w", padx=12, pady=(10, 2))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             imp_card,
             text=tr("profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her."),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
             anchor="w",
-        ).pack(anchor="w", padx=12, pady=(0, 10))
+        ), "profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.").pack(anchor="w", padx=12, pady=(0, 10))
 
-        btn_import = ctk.CTkButton(
+        btn_import = self.register_i18n(ctk.CTkButton(
             imp_card,
             text=tr("profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren..."),
             command=self.on_click_import_zip,
             fg_color="forestgreen",
             width=240,
-        )
+        ), "profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren...")
         btn_import.pack(anchor="w", padx=12, pady=(0, 12))
 
     def on_browse_workspace(self):
@@ -864,37 +868,37 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
     def setup_wiki_tab(self):
         from services.i18n_service import tr
 
-        ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_title", "BookStack Server Konfiguration"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(10, 5))
+        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_title", "BookStack Server Konfiguration"), font=ctk.CTkFont(size=14, weight="bold")), "profile.wiki_title", "BookStack Server Konfiguration").pack(anchor="w", pady=(10, 5))
 
-        ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_url", "BookStack API URL:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_url_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api"))
+        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_url", "BookStack API URL:")), "profile.wiki_url", "BookStack API URL:").pack(anchor="w", pady=(5, 2))
+        self.wiki_url_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api")), "profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api", attr="placeholder_text")
         self.wiki_url_entry.insert(0, self.profile.wiki_settings.api_url)
         self.wiki_url_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_id", "API Token ID:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_token_id_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_id_placeholder", "Token ID"))
+        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_id", "API Token ID:")), "profile.wiki_token_id", "API Token ID:").pack(anchor="w", pady=(5, 2))
+        self.wiki_token_id_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_id_placeholder", "Token ID")), "profile.wiki_token_id_placeholder", "Token ID", attr="placeholder_text")
         self.wiki_token_id_entry.insert(0, self.profile.wiki_settings.token_id)
         self.wiki_token_id_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_secret", "API Token Secret:")).pack(anchor="w", pady=(5, 2))
-        self.wiki_token_secret_entry = ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_secret_placeholder", "Token Secret"), show="*")
+        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_secret", "API Token Secret:")), "profile.wiki_token_secret", "API Token Secret:").pack(anchor="w", pady=(5, 2))
+        self.wiki_token_secret_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_secret_placeholder", "Token Secret"), show="*"), "profile.wiki_token_secret_placeholder", "Token Secret", attr="placeholder_text")
         self.wiki_token_secret_entry.insert(0, self.profile.wiki_settings.token_secret)
         self.wiki_token_secret_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_sync_mode", "Synchronisations-Modus:")).pack(anchor="w", pady=(5, 2))
+        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_sync_mode", "Synchronisations-Modus:")), "profile.wiki_sync_mode", "Synchronisations-Modus:").pack(anchor="w", pady=(5, 2))
         self.sync_mode_combo = ctk.CTkOptionMenu(self.tab_wiki, values=[SyncMode.METADATA_ONLY.value, SyncMode.FULL_OFFLINE.value])
         self.sync_mode_combo.set(self.profile.wiki_settings.sync_mode)
         self.sync_mode_combo.pack(fill="x", pady=(0, 10))
 
         self.sync_startup_var = ctk.BooleanVar(value=self.profile.wiki_settings.sync_on_startup)
-        ctk.CTkCheckBox(self.tab_wiki, text=tr("profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren"), variable=self.sync_startup_var).pack(anchor="w", pady=5)
+        self.register_i18n(ctk.CTkCheckBox(self.tab_wiki, text=tr("profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren"), variable=self.sync_startup_var), "profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren").pack(anchor="w", pady=5)
 
     def setup_scoring_tab(self):
         from services.i18n_service import tr
         scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.app_shortcuts_hdr_lbl = ctk.CTkLabel(scroll, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold"))
+        self.app_shortcuts_hdr_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER)
         self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 5))
 
         self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
@@ -911,28 +915,28 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
             entry.pack(side="left", padx=(5, 5))
             self.shortcut_entries[attr_name] = entry
 
-            rec_btn = ctk.CTkButton(
+            rec_btn = self.register_i18n(ctk.CTkButton(
                 row,
                 text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
                 width=120,
                 fg_color=("gray75", "gray30"),
                 hover_color=("gray65", "gray40"),
                 command=lambda e=entry: self.open_hotkey_recorder(e)
-            )
+            ), "hotkey_recorder.button", HOTKEY_RECORDER_BUTTON)
             rec_btn.pack(side="left")
             self.rec_buttons.append(rec_btn)
 
             entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
         # --- Text-Makros (Snippets) Section ---
-        self.snippet_shortcuts_hdr_lbl = ctk.CTkLabel(scroll, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold"))
+        self.snippet_shortcuts_hdr_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER)
         self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(20, 5))
 
         self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
         all_snippets = self.snippet_service.get_all_snippets()
 
         if not all_snippets:
-            self.no_snippets_lbl = ctk.CTkLabel(scroll, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60")
+            self.no_snippets_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60"), "profile.no_snippets", LABEL_NO_SNIPPETS)
             self.no_snippets_lbl.pack(anchor="w", pady=2)
         else:
             for snip in all_snippets:
@@ -947,14 +951,14 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
                 s_entry.pack(side="left", padx=(5, 5))
                 self.snippet_shortcut_entries.append((snip, s_entry))
 
-                s_rec_btn = ctk.CTkButton(
+                s_rec_btn = self.register_i18n(ctk.CTkButton(
                     s_row,
                     text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
                     width=120,
                     fg_color=("gray75", "gray30"),
                     hover_color=("gray65", "gray40"),
                     command=lambda e=s_entry: self.open_hotkey_recorder(e)
-                )
+                ), "hotkey_recorder.button", HOTKEY_RECORDER_BUTTON)
                 s_rec_btn.pack(side="left")
                 self.rec_buttons.append(s_rec_btn)
 
@@ -966,11 +970,11 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
 
         # --- Prioritäts-Scoring Section ---
         from services.i18n_service import tr
-        ctk.CTkLabel(scroll, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w", pady=(15, 5))
+        self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")), "profile.scoring_points_title", "Prioritäts-Scoring Punkte").pack(anchor="w", pady=(15, 5))
 
         row4 = ctk.CTkFrame(scroll, fg_color="transparent")
         row4.pack(fill="x", pady=3)
-        ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")).pack(side="left")
+        self.register_i18n(ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")), "profile.vip_bonus_lbl", "VIP-Bonus (Punkte):").pack(side="left")
         self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
         self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
         self.vip_bonus_entry.pack(side="right")

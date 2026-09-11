@@ -18,6 +18,8 @@ class NewSchemaDialog(BaseDialog):
             tr("schema_builder.new_schema_title", "🆕 Neues Formular (Schema) erstellen"),
             (w, h),
             resizable=False,
+
+            title_factory=lambda: tr("schema_builder.new_schema_title", "🆕 Neues Formular (Schema) erstellen"),
         )
 
         self.on_schema_created = on_schema_created
@@ -25,18 +27,18 @@ class NewSchemaDialog(BaseDialog):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(main_frame, text=tr("schema_builder.define_new_schema", "Neues Formular-Schema definieren"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("schema_builder.define_new_schema", "Neues Formular-Schema definieren"), font=ctk.CTkFont(size=16, weight="bold")), "schema_builder.define_new_schema", "Neues Formular-Schema definieren").pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(main_frame, text=tr("schema_builder.display_name_lbl", "Anzeigename (Titel) *:")).pack(anchor="w", pady=(2, 0))
-        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.name_placeholder", "z. B. Abrechnung & Tarife"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("schema_builder.display_name_lbl", "Anzeigename (Titel) *:")), "schema_builder.display_name_lbl", "Anzeigename (Titel) *:").pack(anchor="w", pady=(2, 0))
+        self.name_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.name_placeholder", "z. B. Abrechnung & Tarife")), "schema_builder.name_placeholder", "z. B. Abrechnung & Tarife", attr="placeholder_text")
         self.name_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text=tr("schema_builder.schema_id_lbl", "Schema-ID (optional):")).pack(anchor="w", pady=(2, 0))
-        self.id_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.id_placeholder", "z. B. schema_abrechnung"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("schema_builder.schema_id_lbl", "Schema-ID (optional):")), "schema_builder.schema_id_lbl", "Schema-ID (optional):").pack(anchor="w", pady=(2, 0))
+        self.id_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.id_placeholder", "z. B. schema_abrechnung")), "schema_builder.id_placeholder", "z. B. schema_abrechnung", attr="placeholder_text")
         self.id_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text=tr("schema_builder.desc_lbl", "Beschreibung:")).pack(anchor="w", pady=(2, 0))
-        self.desc_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.desc_placeholder", "Optionale Beschreibung des Formulars"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("schema_builder.desc_lbl", "Beschreibung:")), "schema_builder.desc_lbl", "Beschreibung:").pack(anchor="w", pady=(2, 0))
+        self.desc_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("schema_builder.desc_placeholder", "Optionale Beschreibung des Formulars")), "schema_builder.desc_placeholder", "Optionale Beschreibung des Formulars", attr="placeholder_text")
         self.desc_entry.pack(fill="x", pady=(0, 10))
 
         self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color="red")
@@ -45,8 +47,8 @@ class NewSchemaDialog(BaseDialog):
         btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_row.pack(fill="x", pady=(10, 0))
 
-        ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100).pack(side="left")
-        ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=140).pack(side="right")
+        self.register_i18n(ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100), "common.cancel", "Abbrechen").pack(side="left")
+        self.register_i18n(ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=140), "ui_buttons.create", "Erstellen").pack(side="right")
         self.set_default_action(self.on_save)
 
     def on_save(self):
@@ -89,6 +91,8 @@ class SchemaBuilderDialog(BaseDialog):
             tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"),
             (w, h),
             min_size=(1080, 640),
+
+            title_factory=lambda: tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"),
         )
 
         self.schemas = schemas
@@ -110,7 +114,7 @@ class SchemaBuilderDialog(BaseDialog):
         top_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 15))
 
-        ctk.CTkLabel(top_frame, text=tr("schema_builder.select_form_lbl", "Formular auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
+        self.register_i18n(ctk.CTkLabel(top_frame, text=tr("schema_builder.select_form_lbl", "Formular auswählen:"), font=ctk.CTkFont(size=14, weight="bold")), "schema_builder.select_form_lbl", "Formular auswählen:").pack(side="left", padx=(0, 10))
 
         schema_names = [s.display_name for s in self.schemas] if self.schemas else ["Kein Formular"]
         self.schema_combo = ctk.CTkOptionMenu(
@@ -123,16 +127,16 @@ class SchemaBuilderDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        add_schema_btn = ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=125)
+        add_schema_btn = self.register_i18n(ctk.CTkButton(top_frame, text=tr("schema_builder.new_form", "+ Neues Formular"), command=self.open_new_schema_dialog, fg_color="forestgreen", width=125), "schema_builder.new_form", "+ Neues Formular")
         add_schema_btn.pack(side="left", padx=(0, 6))
 
-        self.adopt_schema_btn = ctk.CTkButton(
+        self.adopt_schema_btn = self.register_i18n(ctk.CTkButton(
             top_frame,
             text=tr("schema_builder.adopt_schema", "📥 Zu Realdaten übernehmen"),
             command=self.on_adopt_schema,
             fg_color="dodgerblue",
             width=190,
-        )
+        ), "schema_builder.adopt_schema", "📥 Zu Realdaten übernehmen")
         self.adopt_schema_btn.pack(side="left", padx=(0, 6))
 
         self.toggle_schema_btn = ctk.CTkButton(
@@ -145,13 +149,13 @@ class SchemaBuilderDialog(BaseDialog):
         )
         self.toggle_schema_btn.pack(side="left", padx=(0, 6))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.confirm_delete_schema, fg_color="red", hover_color="darkred", width=85)
+        del_schema_btn = self.register_i18n(ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.confirm_delete_schema, fg_color="red", hover_color="darkred", width=85), "common.delete", "🗑 Löschen")
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()
 
         # Fields List Frame
-        ctk.CTkLabel(main_frame, text=tr("schema_builder.fields_header", "Enthaltene Formularfelder:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 5))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("schema_builder.fields_header", "Enthaltene Formularfelder:"), font=ctk.CTkFont(weight="bold")), "schema_builder.fields_header", "Enthaltene Formularfelder:").pack(anchor="w", pady=(5, 5))
 
         self.fields_scroll = ctk.CTkScrollableFrame(
             main_frame,
@@ -173,51 +177,51 @@ class SchemaBuilderDialog(BaseDialog):
         )
         add_frame.pack(fill="x", pady=(0, 15), padx=5)
 
-        ctk.CTkLabel(add_frame, text=tr("schema_builder.add_field_header", "Neues Feld hinzufügen (V2 mit bedingter Logik):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", padx=10, pady=(5, 5))
+        self.register_i18n(ctk.CTkLabel(add_frame, text=tr("schema_builder.add_field_header", "Neues Feld hinzufügen (V2 mit bedingter Logik):"), font=ctk.CTkFont(weight="bold")), "schema_builder.add_field_header", "Neues Feld hinzufügen (V2 mit bedingter Logik):").pack(anchor="w", padx=10, pady=(5, 5))
 
         inputs_row = ctk.CTkFrame(add_frame, fg_color="transparent")
         inputs_row.pack(fill="x", padx=10, pady=(0, 4))
 
-        self.new_id_entry = ctk.CTkEntry(inputs_row, placeholder_text=tr("schema_builder.field_id_ph", "Feld-ID (z. B. reason_detail)"), width=160)
+        self.new_id_entry = self.register_i18n(ctk.CTkEntry(inputs_row, placeholder_text=tr("schema_builder.field_id_ph", "Feld-ID (z. B. reason_detail)"), width=160), "schema_builder.field_id_ph", "Feld-ID (z. B. reason_detail)", attr="placeholder_text")
         self.new_id_entry.pack(side="left", padx=(0, 8))
 
-        self.new_label_entry = ctk.CTkEntry(inputs_row, placeholder_text=tr("schema_builder.label_ph", "Beschriftung (Label)"), width=180)
+        self.new_label_entry = self.register_i18n(ctk.CTkEntry(inputs_row, placeholder_text=tr("schema_builder.label_ph", "Beschriftung (Label)"), width=180), "schema_builder.label_ph", "Beschriftung (Label)", attr="placeholder_text")
         self.new_label_entry.pack(side="left", padx=(0, 8))
 
         field_types = [t.value for t in FieldType]
         self.new_type_combo = ctk.CTkOptionMenu(inputs_row, values=field_types, width=110)
         self.new_type_combo.pack(side="left", padx=(0, 8))
 
-        self.new_req_chk = ctk.CTkCheckBox(inputs_row, text=tr("schema_builder.required_chk", "Pflicht"), width=65)
+        self.new_req_chk = self.register_i18n(ctk.CTkCheckBox(inputs_row, text=tr("schema_builder.required_chk", "Pflicht"), width=65), "schema_builder.required_chk", "Pflicht")
         self.new_req_chk.pack(side="left", padx=(0, 8))
 
-        add_btn = ctk.CTkButton(inputs_row, text=tr("schema_builder.add_btn", "+ Hinzufügen"), command=self.on_add_field, width=110)
+        add_btn = self.register_i18n(ctk.CTkButton(inputs_row, text=tr("schema_builder.add_btn", "+ Hinzufügen"), command=self.on_add_field, width=110), "schema_builder.add_btn", "+ Hinzufügen")
         add_btn.pack(side="right")
 
         # Row 2: V2 Conditional Logic & File Extension Inputs
         v2_row = ctk.CTkFrame(add_frame, fg_color="transparent")
         v2_row.pack(fill="x", padx=10, pady=(0, 8))
 
-        ctk.CTkLabel(v2_row, text=tr("schema_builder.conditional_logic_lbl", "↳ Bedingte Logik (If/Else):"), font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
+        self.register_i18n(ctk.CTkLabel(v2_row, text=tr("schema_builder.conditional_logic_lbl", "↳ Bedingte Logik (If/Else):"), font=ctk.CTkFont(size=11)), "schema_builder.conditional_logic_lbl", "↳ Bedingte Logik (If/Else):").pack(side="left", padx=(0, 4))
 
-        self.new_dep_id_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_id_placeholder", "Abhängig von Feld-ID"), width=140)
+        self.new_dep_id_entry = self.register_i18n(ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_id_placeholder", "Abhängig von Feld-ID"), width=140), "schema_builder.dep_id_placeholder", "Abhängig von Feld-ID", attr="placeholder_text")
         self.new_dep_id_entry.pack(side="left", padx=(0, 6))
 
-        self.new_dep_val_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_val_placeholder", "Bei Wert (z. B. Sonstiges)"), width=140)
+        self.new_dep_val_entry = self.register_i18n(ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.dep_val_placeholder", "Bei Wert (z. B. Sonstiges)"), width=140), "schema_builder.dep_val_placeholder", "Bei Wert (z. B. Sonstiges)", attr="placeholder_text")
         self.new_dep_val_entry.pack(side="left", padx=(0, 10))
 
-        ctk.CTkLabel(v2_row, text=tr("schema_builder.file_types_lbl", "↳ Dateitypen:"), font=ctk.CTkFont(size=11)).pack(side="left", padx=(0, 4))
-        self.new_exts_entry = ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.file_ext_placeholder", ".pdf, .log, .png"), width=140)
+        self.register_i18n(ctk.CTkLabel(v2_row, text=tr("schema_builder.file_types_lbl", "↳ Dateitypen:"), font=ctk.CTkFont(size=11)), "schema_builder.file_types_lbl", "↳ Dateitypen:").pack(side="left", padx=(0, 4))
+        self.new_exts_entry = self.register_i18n(ctk.CTkEntry(v2_row, placeholder_text=tr("schema_builder.file_ext_placeholder", ".pdf, .log, .png"), width=140), "schema_builder.file_ext_placeholder", ".pdf, .log, .png", attr="placeholder_text")
         self.new_exts_entry.pack(side="left")
 
         # Status & Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x")
 
-        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120)
+        close_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120), "common.close", "Schließen")
         close_btn.pack(side="left")
 
-        save_btn = ctk.CTkButton(btn_frame, text=tr("cockpit.save", "Änderungen Speichern"), command=self.on_save, width=180)
+        save_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("cockpit.save", "Änderungen Speichern"), command=self.on_save, width=180), "cockpit.save", "Änderungen Speichern")
         save_btn.pack(side="right")
 
     def _get_toggle_schemas_text(self) -> str:
@@ -353,13 +357,13 @@ class SchemaBuilderDialog(BaseDialog):
             lbl.pack(side="left", padx=10, expand=True, fill="x")
 
             # Actions: Up, Down, Toggle Required, Delete
-            up_btn = ctk.CTkButton(f_frame, text=tr("common.arrow_up", "▲"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "up"))
+            up_btn = self.register_i18n(ctk.CTkButton(f_frame, text=tr("common.arrow_up", "▲"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "up")), "common.arrow_up", "▲")
             up_btn.pack(side="left", padx=2)
 
-            down_btn = ctk.CTkButton(f_frame, text=tr("common.arrow_down", "▼"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "down"))
+            down_btn = self.register_i18n(ctk.CTkButton(f_frame, text=tr("common.arrow_down", "▼"), width=30, command=lambda fid=f.field_id: self.on_move(fid, "down")), "common.arrow_down", "▼")
             down_btn.pack(side="left", padx=2)
 
-            req_btn = ctk.CTkButton(f_frame, text=tr("schema_builder.toggle_required", "Pflicht +/-"), width=80, command=lambda fid=f.field_id: self.on_toggle(fid))
+            req_btn = self.register_i18n(ctk.CTkButton(f_frame, text=tr("schema_builder.toggle_required", "Pflicht +/-"), width=80, command=lambda fid=f.field_id: self.on_toggle(fid)), "schema_builder.toggle_required", "Pflicht +/-")
             req_btn.pack(side="left", padx=2)
 
             del_btn = ctk.CTkButton(f_frame, text="✕", width=30, fg_color="red", hover_color="darkred", command=lambda fid=f.field_id: self.on_delete(fid))

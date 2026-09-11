@@ -24,6 +24,8 @@ class FollowupFlyoutDialog(BaseDialog):
             DIALOG_TITLES["followup_flyout"],
             (w, h),
             min_size=(640, 480),
+
+            title_factory=lambda: DIALOG_TITLES["followup_flyout"],
         )
 
         self.create_widgets()
@@ -40,18 +42,18 @@ class FollowupFlyoutDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        header = ctk.CTkLabel(
+        header = self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("followup.due_header", "🔔 Fällige Wiedervorlagen ({count})", count=len(self.due_cases)),
             font=ctk.CTkFont(size=16, weight="bold")
-        )
+        ), "followup.due_header", "🔔 Fällige Wiedervorlagen ({count})", count=len(self.due_cases))
         header.pack(anchor="w", pady=(0, 10))
 
         scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
         scroll.pack(fill="both", expand=True, pady=(0, 10))
 
         if not self.due_cases:
-            ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=13)).pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=13)), "followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden.").pack(pady=20)
         else:
             for case in self.due_cases:
                 card = ctk.CTkFrame(scroll, fg_color=("gray85", "gray20"), corner_radius=6)
@@ -64,14 +66,14 @@ class FollowupFlyoutDialog(BaseDialog):
                 lbl_title = ctk.CTkLabel(top_row, text=title_str, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
                 lbl_title.pack(side="left", fill="x", expand=True)
 
-                btn_select = ctk.CTkButton(top_row, text=tr("common.open", "👁 Öffnen"), width=80, command=lambda c=case: self.select_case(c))
+                btn_select = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.open", "👁 Öffnen"), width=80, command=lambda c=case: self.select_case(c)), "common.open", "👁 Öffnen")
                 btn_select.pack(side="right")
 
                 info_str = tr("followup.due_card_info", "Kunde: {customer} | Fällig seit: {time}", customer=case.customer.practice_name, time=format_german_datetime(case.workflow_status.followup_at))
                 ctk.CTkLabel(card, text=info_str, font=ctk.CTkFont(size=11), text_color="darkorange", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
 
                 if case.workflow_status.followup_note:
-                    ctk.CTkLabel(card, text=tr("followup.note_prefix", "Notiz: {note}", note=case.workflow_status.followup_note), font=ctk.CTkFont(size=11), text_color=("gray30", "gray70"), anchor="w").pack(fill="x", padx=10, pady=(0, 6))
+                    self.register_i18n(ctk.CTkLabel(card, text=tr("followup.note_prefix", "Notiz: {note}", note=case.workflow_status.followup_note), font=ctk.CTkFont(size=11), text_color=("gray30", "gray70"), anchor="w"), "followup.note_prefix", "Notiz: {note}", note=case.workflow_status.followup_note).pack(fill="x", padx=10, pady=(0, 6))
 
                 # Action buttons frame (2 preset rows + the date/time field they act on)
                 act_frame = ctk.CTkFrame(card, fg_color="transparent")
@@ -87,28 +89,28 @@ class FollowupFlyoutDialog(BaseDialog):
                 act_row1 = ctk.CTkFrame(act_frame, fg_color="transparent")
                 act_row1.pack(fill="x", pady=(0, 2))
 
-                ctk.CTkButton(act_row1, text=tr("followup.preset_1h", "+ 1 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 1)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row1, text=tr("followup.preset_2h", "+ 2 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 2)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row1, text=tr("followup.preset_today_1630", "Heute 16:30"), width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_today_1630(p)).pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row1, text=tr("followup.preset_1h", "+ 1 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 1)), "followup.preset_1h", "+ 1 Std.").pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row1, text=tr("followup.preset_2h", "+ 2 Std."), width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.bump_hours(p, 2)), "followup.preset_2h", "+ 2 Std.").pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row1, text=tr("followup.preset_today_1630", "Heute 16:30"), width=110, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_today_1630(p)), "followup.preset_today_1630", "Heute 16:30").pack(side="left", padx=2)
 
-                ctk.CTkButton(act_row1, text=tr("cockpit.complete", "✓ Erledigt"), width=95, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)).pack(side="right", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row1, text=tr("cockpit.complete", "✓ Erledigt"), width=95, fg_color="forestgreen", command=lambda c=case: self.complete_followup(c)), "cockpit.complete", "✓ Erledigt").pack(side="right", padx=2)
 
                 # Row 2: Daily & Weekly shifts (Morgen 08:00, +1 Tag, +1 Woche)
                 act_row2 = ctk.CTkFrame(act_frame, fg_color="transparent")
                 act_row2.pack(fill="x", pady=(2, 0))
 
-                ctk.CTkButton(act_row2, text=tr("followup.preset_tomorrow_8am", "Morgen 08:00"), width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_tomorrow_8am(p)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row2, text=tr("followup.preset_1d", "+ 1 Tag"), width=90, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 1)).pack(side="left", padx=2)
-                ctk.CTkButton(act_row2, text=tr("followup.preset_1w", "+ 1 Woche"), width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 7)).pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row2, text=tr("followup.preset_tomorrow_8am", "Morgen 08:00"), width=120, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_tomorrow_8am(p)), "followup.preset_tomorrow_8am", "Morgen 08:00").pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row2, text=tr("followup.preset_1d", "+ 1 Tag"), width=90, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 1)), "followup.preset_1d", "+ 1 Tag").pack(side="left", padx=2)
+                self.register_i18n(ctk.CTkButton(act_row2, text=tr("followup.preset_1w", "+ 1 Woche"), width=105, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"), command=lambda p=picker: self.set_field_days(p, 7)), "followup.preset_1w", "+ 1 Woche").pack(side="left", padx=2)
 
                 # Row 3: the date/time field the presets above write into, plus the button
                 # that actually commits it as the case's new follow-up time.
                 picker_row.pack(fill="x", pady=(4, 0))
-                ctk.CTkLabel(picker_row, text=tr("followup.new_time_lbl", "🕒 Neue Zeit:"), font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=(0, 6))
+                self.register_i18n(ctk.CTkLabel(picker_row, text=tr("followup.new_time_lbl", "🕒 Neue Zeit:"), font=ctk.CTkFont(size=11, weight="bold")), "followup.new_time_lbl", "🕒 Neue Zeit:").pack(side="left", padx=(0, 6))
                 picker.pack(side="left", fill="x", expand=True, padx=(0, 6))
-                ctk.CTkButton(picker_row, text=tr("ui_buttons.apply", "✓ Übernehmen"), width=95, fg_color="forestgreen", hover_color="darkgreen", command=lambda c=case, p=picker: self.apply_new_time(c, p)).pack(side="right")
+                self.register_i18n(ctk.CTkButton(picker_row, text=tr("ui_buttons.apply", "✓ Übernehmen"), width=95, fg_color="forestgreen", hover_color="darkgreen", command=lambda c=case, p=picker: self.apply_new_time(c, p)), "ui_buttons.apply", "✓ Übernehmen").pack(side="right")
 
-        btn_close = ctk.CTkButton(main_frame, text=tr("common.close", "Schließen"), fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100)
+        btn_close = self.register_i18n(ctk.CTkButton(main_frame, text=tr("common.close", "Schließen"), fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100), "common.close", "Schließen")
         btn_close.pack(side="right")
 
     def select_case(self, case: Case):

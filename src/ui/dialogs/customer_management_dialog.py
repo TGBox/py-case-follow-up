@@ -21,6 +21,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             DIALOG_TITLES["customer_mgmt"],
             (w, h),
             min_size=(900, 600),
+
+            title_factory=lambda: DIALOG_TITLES["customer_mgmt"],
         )
 
         self.customers: list[Customer] = []
@@ -75,12 +77,12 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         # Card header
         header = ctk.CTkFrame(card, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(6, 2))
-        num_lbl = ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60")
+        num_lbl = self.register_i18n(ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60"), "customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx)
         num_lbl.pack(side="left")
 
         row_dict: dict[str, Any] = {"frame": card, "num_lbl": num_lbl}
 
-        remove_btn = ctk.CTkButton(
+        remove_btn = self.register_i18n(ctk.CTkButton(
             header,
             text=tr("customer_mgmt.remove_contact", "🗑 Entfernen"),
             width=80,
@@ -88,7 +90,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             fg_color="gray40",
             hover_color="darkred",
             command=lambda: self.remove_contact_row(row_dict),
-        )
+        ), "customer_mgmt.remove_contact", "🗑 Entfernen")
         remove_btn.pack(side="right")
 
         # Name & Role row
@@ -97,16 +99,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         left_r1 = ctk.CTkFrame(r1, fg_color="transparent")
         left_r1.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        ctk.CTkLabel(left_r1, text=tr("customer_mgmt.name_req", "Name *:")).pack(anchor="w", pady=(0, 1))
-        name_entry = ctk.CTkEntry(left_r1, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber"))
+        self.register_i18n(ctk.CTkLabel(left_r1, text=tr("customer_mgmt.name_req", "Name *:")), "customer_mgmt.name_req", "Name *:").pack(anchor="w", pady=(0, 1))
+        name_entry = self.register_i18n(ctk.CTkEntry(left_r1, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber")), "quick_customer.contact_placeholder", "z.B. Dr. Hans Weber", attr="placeholder_text")
         name_entry.insert(0, c_data.name)
         name_entry.pack(fill="x")
         row_dict["name_entry"] = name_entry
 
         right_r1 = ctk.CTkFrame(r1, fg_color="transparent")
         right_r1.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        ctk.CTkLabel(right_r1, text=tr("customer_mgmt.role_lbl", "Rolle / Funktion:")).pack(anchor="w", pady=(0, 1))
-        role_entry = ctk.CTkEntry(right_r1, placeholder_text=tr("customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung..."))
+        self.register_i18n(ctk.CTkLabel(right_r1, text=tr("customer_mgmt.role_lbl", "Rolle / Funktion:")), "customer_mgmt.role_lbl", "Rolle / Funktion:").pack(anchor="w", pady=(0, 1))
+        role_entry = self.register_i18n(ctk.CTkEntry(right_r1, placeholder_text=tr("customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung...")), "customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung...", attr="placeholder_text")
         role_entry.insert(0, c_data.role)
         role_entry.pack(fill="x")
         row_dict["role_entry"] = role_entry
@@ -117,16 +119,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         left_r2 = ctk.CTkFrame(r2, fg_color="transparent")
         left_r2.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        ctk.CTkLabel(left_r2, text=tr("customer_mgmt.email_lbl", "E-Mail:")).pack(anchor="w", pady=(0, 1))
-        email_entry = ctk.CTkEntry(left_r2, placeholder_text=tr("customer_mgmt.email_placeholder", "weber@praxis.de"))
+        self.register_i18n(ctk.CTkLabel(left_r2, text=tr("customer_mgmt.email_lbl", "E-Mail:")), "customer_mgmt.email_lbl", "E-Mail:").pack(anchor="w", pady=(0, 1))
+        email_entry = self.register_i18n(ctk.CTkEntry(left_r2, placeholder_text=tr("customer_mgmt.email_placeholder", "weber@praxis.de")), "customer_mgmt.email_placeholder", "weber@praxis.de", attr="placeholder_text")
         email_entry.insert(0, c_data.email)
         email_entry.pack(fill="x")
         row_dict["email_entry"] = email_entry
 
         right_r2 = ctk.CTkFrame(r2, fg_color="transparent")
         right_r2.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        ctk.CTkLabel(right_r2, text=tr("customer_mgmt.phone_lbl", "Telefon:")).pack(anchor="w", pady=(0, 1))
-        phone_entry = ctk.CTkEntry(right_r2, placeholder_text=tr("customer_mgmt.phone_placeholder", "030 / 1234567"))
+        self.register_i18n(ctk.CTkLabel(right_r2, text=tr("customer_mgmt.phone_lbl", "Telefon:")), "customer_mgmt.phone_lbl", "Telefon:").pack(anchor="w", pady=(0, 1))
+        phone_entry = self.register_i18n(ctk.CTkEntry(right_r2, placeholder_text=tr("customer_mgmt.phone_placeholder", "030 / 1234567")), "customer_mgmt.phone_placeholder", "030 / 1234567", attr="placeholder_text")
         phone_entry.insert(0, c_data.phone)
         phone_entry.pack(fill="x")
         row_dict["phone_entry"] = phone_entry
@@ -134,8 +136,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         # Note row
         r3 = ctk.CTkFrame(card, fg_color="transparent")
         r3.pack(fill="x", padx=10, pady=(0, 8))
-        ctk.CTkLabel(r3, text=tr("customer_mgmt.note_lbl", "Notiz:")).pack(anchor="w", pady=(0, 1))
-        note_entry = ctk.CTkEntry(r3, placeholder_text=tr("customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag"))
+        self.register_i18n(ctk.CTkLabel(r3, text=tr("customer_mgmt.note_lbl", "Notiz:")), "customer_mgmt.note_lbl", "Notiz:").pack(anchor="w", pady=(0, 1))
+        note_entry = self.register_i18n(ctk.CTkEntry(r3, placeholder_text=tr("customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag")), "customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag", attr="placeholder_text")
         note_entry.insert(0, c_data.note)
         note_entry.pack(fill="x")
         row_dict["note_entry"] = note_entry
@@ -218,7 +220,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             w.destroy()
 
         if not self.filtered_customers:
-            ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color="gray"), "customer_mgmt.no_practices", "Keine Praxen gefunden.").pack(pady=20)
             return
 
         for c in self.filtered_customers:

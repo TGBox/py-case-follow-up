@@ -28,6 +28,8 @@ class CasePrintDialog(BaseDialog):
             tr("case_print.dialog_title", "🖨 Fall-Akte Druck- & HTML Export: {case_id}", case_id=case.case_id),
             (w, h),
             min_size=(620, 500),
+
+            title_factory=lambda: tr("case_print.dialog_title", "🖨 Fall-Akte Druck- & HTML Export: {case_id}", case_id=case.case_id),
         )
 
         self.timeline_vars: list[tuple[ctk.BooleanVar, int]] = []
@@ -43,25 +45,25 @@ class CasePrintDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        ctk.CTkLabel(main_frame, text=tr("case_print.header", "🖨 Druckansicht für Fall {case_id} anpassen", case_id=self.case.case_id), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("case_print.header", "🖨 Druckansicht für Fall {case_id} anpassen", case_id=self.case.case_id), font=ctk.CTkFont(size=16, weight="bold")), "case_print.header", "🖨 Druckansicht für Fall {case_id} anpassen", case_id=self.case.case_id).pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(main_frame, text=tr("case_print.sub_header", "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:")).pack(anchor="w", pady=(0, 8))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("case_print.sub_header", "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:")), "case_print.sub_header", "Wählen Sie aus, welche Elemente im Druckbericht erscheinen sollen:").pack(anchor="w", pady=(0, 8))
 
         # Main options
         opts_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         opts_frame.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkCheckBox(opts_frame, text=tr("case_print.customer_data", "Praxis & Kundendaten"), variable=self.include_customer_var).pack(side="left", padx=(0, 12))
-        ctk.CTkCheckBox(opts_frame, text=tr("case_print.form_fields", "Formularfelder"), variable=self.include_fields_var).pack(side="left", padx=(0, 12))
-        ctk.CTkCheckBox(opts_frame, text=tr("case_print.attachments_end", "Bilder & Anhänge am Ende"), variable=self.include_attachments_var).pack(side="left")
+        self.register_i18n(ctk.CTkCheckBox(opts_frame, text=tr("case_print.customer_data", "Praxis & Kundendaten"), variable=self.include_customer_var), "case_print.customer_data", "Praxis & Kundendaten").pack(side="left", padx=(0, 12))
+        self.register_i18n(ctk.CTkCheckBox(opts_frame, text=tr("case_print.form_fields", "Formularfelder"), variable=self.include_fields_var), "case_print.form_fields", "Formularfelder").pack(side="left", padx=(0, 12))
+        self.register_i18n(ctk.CTkCheckBox(opts_frame, text=tr("case_print.attachments_end", "Bilder & Anhänge am Ende"), variable=self.include_attachments_var), "case_print.attachments_end", "Bilder & Anhänge am Ende").pack(side="left")
 
-        ctk.CTkLabel(main_frame, text=tr("case_print.timeline_lbl", "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(8, 4))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("case_print.timeline_lbl", "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):"), font=ctk.CTkFont(weight="bold")), "case_print.timeline_lbl", "Zeitleiste / Notizen-Verlauf (einzelne Einträge abwählen):").pack(anchor="w", pady=(8, 4))
 
         scroll = ctk.CTkScrollableFrame(main_frame, height=220)
         scroll.pack(fill="both", expand=True, pady=(0, 10))
 
         if not self.case.timeline:
-            ctk.CTkLabel(scroll, text=tr("case_print.no_timeline_notes", "Keine Notizen in der Zeitleiste.")).pack(pady=10)
+            self.register_i18n(ctk.CTkLabel(scroll, text=tr("case_print.no_timeline_notes", "Keine Notizen in der Zeitleiste.")), "case_print.no_timeline_notes", "Keine Notizen in der Zeitleiste.").pack(pady=10)
         else:
             for idx, entry in enumerate(self.case.timeline):
                 var = ctk.BooleanVar(value=True)
@@ -75,41 +77,41 @@ class CasePrintDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", side="bottom", pady=(5, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("common.cancel", "Abbrechen"),
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
             command=self.safe_destroy,
             width=90,
-        ).pack(side="left")
+        ), "common.cancel", "Abbrechen").pack(side="left")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("ui_buttons.print_pdf", "🖨 PDF-Bericht drucken"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.generate_and_print_pdf,
             width=175,
-        ).pack(side="right", padx=(6, 0))
+        ), "ui_buttons.print_pdf", "🖨 PDF-Bericht drucken").pack(side="right", padx=(6, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("case_print.html_report_btn", "🌐 HTML-Bericht"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
             command=self.generate_and_open_html,
             width=135,
-        ).pack(side="right", padx=(6, 0))
+        ), "case_print.html_report_btn", "🌐 HTML-Bericht").pack(side="right", padx=(6, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("case_print.save_btn", "💾 Speichern..."),
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_and_save_file,
             width=110,
-        ).pack(side="right")
+        ), "case_print.save_btn", "💾 Speichern...").pack(side="right")
 
     def safe_destroy(self):
         try:

@@ -22,6 +22,8 @@ class P2PDiffDialog(BaseDialog):
             DIALOG_TITLES["p2p_diff"],
             (w, h),
             min_size=(820, 620),
+
+            title_factory=lambda: DIALOG_TITLES["p2p_diff"],
         )
 
         self.colleagues = colleagues
@@ -46,7 +48,7 @@ class P2PDiffDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        ctk.CTkLabel(top_frame, text=tr("p2p.select_colleague", "Kollege auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=(0, 10))
+        self.register_i18n(ctk.CTkLabel(top_frame, text=tr("p2p.select_colleague", "Kollege auswählen:"), font=ctk.CTkFont(size=14, weight="bold")), "p2p.select_colleague", "Kollege auswählen:").pack(side="left", padx=(0, 10))
         colleague_names = [f"{c.name} (@{c.username})" for c in self.colleagues]
         self.colleague_combo = ctk.CTkOptionMenu(
             top_frame,
@@ -58,7 +60,7 @@ class P2PDiffDialog(BaseDialog):
             self.colleague_combo.set(f"{self.active_colleague.name} (@{self.active_colleague.username})")
         self.colleague_combo.pack(side="left", padx=(0, 10))
 
-        load_btn = ctk.CTkButton(top_frame, text=tr("p2p.reload_compare", "Neu Laden / Vergleichen"), command=self.load_and_compare, width=180)
+        load_btn = self.register_i18n(ctk.CTkButton(top_frame, text=tr("p2p.reload_compare", "Neu Laden / Vergleichen"), command=self.load_and_compare, width=180), "p2p.reload_compare", "Neu Laden / Vergleichen")
         load_btn.pack(side="left")
 
         # Status Banner
@@ -73,10 +75,10 @@ class P2PDiffDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x")
 
-        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120)
+        close_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120), "common.close", "Schließen")
         close_btn.pack(side="left")
 
-        import_btn = ctk.CTkButton(btn_frame, text=tr("p2p.import_selected", "Ausgewählte Fälle übernehmen"), command=self.on_import_selected, width=240)
+        import_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("p2p.import_selected", "Ausgewählte Fälle übernehmen"), command=self.on_import_selected, width=240), "p2p.import_selected", "Ausgewählte Fälle übernehmen")
         import_btn.pack(side="right")
 
     def on_colleague_selected(self, selected_str: str):
@@ -109,7 +111,7 @@ class P2PDiffDialog(BaseDialog):
         self.selected_vars.clear()
 
         if not items:
-            ctk.CTkLabel(self.diff_scroll, text=tr("p2p.no_diff_cases", "Keine abweichenden Fälle vorhanden.")).pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.diff_scroll, text=tr("p2p.no_diff_cases", "Keine abweichenden Fälle vorhanden.")), "p2p.no_diff_cases", "Keine abweichenden Fälle vorhanden.").pack(pady=20)
             return
 
         for idx, item in enumerate(items):

@@ -32,6 +32,8 @@ class ConvertSchemaDialog(BaseDialog):
             DIALOG_TITLES["convert_schema"],
             (w, h),
             resizable=False,
+
+            title_factory=lambda: DIALOG_TITLES["convert_schema"],
         )
 
         self.current_schema = next((s for s in schemas if s.schema_id == case.classification.schema_id), None)
@@ -46,9 +48,9 @@ class ConvertSchemaDialog(BaseDialog):
         from services.i18n_service import tr
 
         # Header
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             main_frame, text=tr("convert_schema.header", "🔄 Formular-Schema umwandeln"), font=ctk.CTkFont(size=16, weight="bold")
-        ).pack(anchor="w", pady=(0, 10))
+        ), "convert_schema.header", "🔄 Formular-Schema umwandeln").pack(anchor="w", pady=(0, 10))
 
         # Case info
         curr_schema_name = self.current_schema.display_name if self.current_schema else self.case.classification.schema_id
@@ -73,9 +75,9 @@ class ConvertSchemaDialog(BaseDialog):
         ).pack(fill="x", pady=(2, 0))
 
         # Target Schema selection
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             main_frame, text=tr("convert_schema.select_target", "Neues Ziel-Formular auswählen:"), font=ctk.CTkFont(size=13, weight="bold")
-        ).pack(anchor="w", pady=(4, 2))
+        ), "convert_schema.select_target", "Neues Ziel-Formular auswählen:").pack(anchor="w", pady=(4, 2))
 
         schema_options = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
         self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_options if schema_options else ["Keine Schemas"])
@@ -107,18 +109,18 @@ class ConvertSchemaDialog(BaseDialog):
         btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_row.pack(fill="x", side="bottom")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=110
-        ).pack(side="left")
+        ), "common.cancel", "Abbrechen").pack(side="left")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_row,
             text=tr("convert_schema.convert_btn", "Formular umwandeln"),
             fg_color="#2563eb",
             hover_color="#1d4ed8",
             command=self.on_convert,
             width=160,
-        ).pack(side="right")
+        ), "convert_schema.convert_btn", "Formular umwandeln").pack(side="right")
 
     def on_convert(self):
         from services.i18n_service import tr

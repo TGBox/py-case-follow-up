@@ -22,6 +22,8 @@ class CobraImportDialog(BaseDialog):
             DIALOG_TITLES["cobra_import"],
             (w, h),
             min_size=(760, 540),
+
+            title_factory=lambda: DIALOG_TITLES["cobra_import"],
         )
 
         self.file_path: str = ""
@@ -43,21 +45,21 @@ class CobraImportDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w")
-        ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."), font=ctk.CTkFont(size=11), text_color="gray").pack(anchor="w")
+        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent"), font=ctk.CTkFont(size=16, weight="bold")), "cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent").pack(anchor="w")
+        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."), font=ctk.CTkFont(size=11), text_color="gray"), "cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).").pack(anchor="w")
 
         file_box = ctk.CTkFrame(main_frame)
         file_box.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(file_box, text=tr("cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(8, 4))
+        self.register_i18n(ctk.CTkLabel(file_box, text=tr("cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:").pack(anchor="w", padx=10, pady=(8, 4))
 
         f_row = ctk.CTkFrame(file_box, fg_color="transparent")
         f_row.pack(fill="x", padx=10, pady=(0, 8))
 
-        self.file_entry = ctk.CTkEntry(f_row, placeholder_text=tr("cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)..."))
+        self.file_entry = self.register_i18n(ctk.CTkEntry(f_row, placeholder_text=tr("cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...")), "cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...", attr="placeholder_text")
         self.file_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
 
-        ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=130, command=self.on_browse_file).pack(side="right")
+        self.register_i18n(ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=130, command=self.on_browse_file), "cobra_import.browse_btn", "📁 Durchsuchen...").pack(side="right")
 
         # Scrollable Content Box for Mapping & Preview
         from utils.ui_utils import enable_auto_hiding_scrollbar
@@ -66,13 +68,13 @@ class CobraImportDialog(BaseDialog):
         enable_auto_hiding_scrollbar(self.content_scroll)
 
         # Section 2: Column Mapping
-        ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 6))
+        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):").pack(anchor="w", pady=(4, 6))
 
         self.map_grid = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
         self.map_grid.pack(fill="x", pady=(0, 10))
 
         # Section 3: Conflict Mode & Preview Summary
-        ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(8, 4))
+        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:").pack(anchor="w", pady=(8, 4))
 
         mode_options = [
             tr("cobra_import.mode_update", "Bestehende Praxen aktualisieren (Update)"),
@@ -87,7 +89,7 @@ class CobraImportDialog(BaseDialog):
         )
         self.mode_combo.pack(anchor="w", pady=(0, 8))
 
-        self.summary_lbl = ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus."), font=ctk.CTkFont(size=11), text_color="dodgerblue", anchor="w")
+        self.summary_lbl = self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus."), font=ctk.CTkFont(size=11), text_color="dodgerblue", anchor="w"), "cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus.")
         self.summary_lbl.pack(fill="x", pady=(0, 6))
 
         self.preview_box = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
@@ -97,17 +99,17 @@ class CobraImportDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", pady=(5, 0))
 
-        self.import_btn = ctk.CTkButton(
+        self.import_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("cobra_import.import_btn", "🐍 Praxen importieren"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_click_import,
             state="disabled",
-        )
+        ), "cobra_import.import_btn", "🐍 Praxen importieren")
         self.import_btn.pack(side="right", padx=(6, 0))
 
-        ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray50", command=self.destroy, width=90).pack(side="right")
+        self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray50", command=self.destroy, width=90), "common.cancel", "Abbrechen").pack(side="right")
 
     def on_browse_file(self):
         from services.i18n_service import tr

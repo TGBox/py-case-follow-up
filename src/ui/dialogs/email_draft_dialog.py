@@ -103,16 +103,21 @@ class EmailDraftDialog(BaseDialog):
                     })
 
         from services.i18n_service import tr
-        if case:
-            dialog_title = tr("email_draft.window_title_case", "{base_title} - Fall {case_id}", base_title=DIALOG_TITLES["email_draft"], case_id=case.case_id)
-        else:
-            dialog_title = tr("email_draft.window_title_new", "{base_title} (Neuer Entwurf)", base_title=DIALOG_TITLES["email_draft"])
+
+        def _window_title() -> str:
+            if case:
+                return tr("email_draft.window_title_case", "{base_title} - Fall {case_id}", base_title=DIALOG_TITLES["email_draft"], case_id=case.case_id)
+            return tr("email_draft.window_title_new", "{base_title} (Neuer Entwurf)", base_title=DIALOG_TITLES["email_draft"])
+
+        dialog_title = _window_title()
         w, h = DIALOG_DIMENSIONS["email_draft"]
         self.setup_window(
             parent,
             dialog_title,
             (w, h),
             min_size=(700, 520),
+
+            title_factory=_window_title,
         )
 
         sig = self.profile.user.email_signature if (self.profile and hasattr(self.profile, "user") and hasattr(self.profile.user, "email_signature")) else ""
@@ -155,12 +160,12 @@ class EmailDraftDialog(BaseDialog):
         from services.i18n_service import tr
 
         # Ollama Status Badge
-        self.ollama_status_badge = ctk.CTkLabel(
+        self.ollama_status_badge = self.register_i18n(ctk.CTkLabel(
             hdr_top_row,
             text=tr("email_draft.checking_ai", "Prüfe KI-Status..."),
             font=ctk.CTkFont(size=10, weight="bold"),
             text_color="gray",
-        )
+        ), "email_draft.checking_ai", "Prüfe KI-Status...")
         self.ollama_status_badge.pack(side="right")
 
         ctk.CTkLabel(
@@ -177,19 +182,19 @@ class EmailDraftDialog(BaseDialog):
         enable_auto_hiding_scrollbar(content_scroll)
 
         # Recipient Email Header & Row
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             content_scroll,
             text=tr("email_draft.recipient_lbl", "Empfänger (E-Mail):"),
             font=ctk.CTkFont(size=12, weight="bold")
-        ).pack(anchor="w", pady=(2, 1))
+        ), "email_draft.recipient_lbl", "Empfänger (E-Mail):").pack(anchor="w", pady=(2, 1))
 
         self.to_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         self.to_row.pack(fill="x", pady=(0, 4))
 
-        self.to_entry = ctk.CTkEntry(
+        self.to_entry = self.register_i18n(ctk.CTkEntry(
             self.to_row,
             placeholder_text=tr("email_draft.to_placeholder", "praxis@beispiel.de oder Name / Praxis eingeben...")
-        )
+        ), "email_draft.to_placeholder", "praxis@beispiel.de oder Name / Praxis eingeben...", attr="placeholder_text")
         if self.draft_data.get("to"):
             self.to_entry.insert(0, self.draft_data["to"])
         self.to_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
@@ -198,7 +203,7 @@ class EmailDraftDialog(BaseDialog):
         # in the To field Escape only closes the autocomplete list, never the draft.
         self.to_entry.bind("<Escape>", self._on_to_escape)
 
-        self.praxis_btn = ctk.CTkButton(
+        self.praxis_btn = self.register_i18n(ctk.CTkButton(
             self.to_row,
             text=tr("email_draft.practice_card_btn", "📇 Praxiskartei ▾"),
             width=135,
@@ -206,7 +211,7 @@ class EmailDraftDialog(BaseDialog):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.toggle_praxiskartei_dropdown,
-        )
+        ), "email_draft.practice_card_btn", "📇 Praxiskartei ▾")
         self.praxis_btn.pack(side="right")
 
         # Expandable Live Autocomplete / Suggestions Card
@@ -223,15 +228,15 @@ class EmailDraftDialog(BaseDialog):
         sug_hdr = ctk.CTkFrame(self.suggestions_frame, fg_color="transparent")
         sug_hdr.pack(fill="x", padx=8, pady=(6, 2))
 
-        self.suggestions_title = ctk.CTkLabel(
+        self.suggestions_title = self.register_i18n(ctk.CTkLabel(
             sug_hdr,
             text=tr("email_draft.suggestions_title", "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w",
-        )
+        ), "email_draft.suggestions_title", "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):")
         self.suggestions_title.pack(side="left", fill="x", expand=True)
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             sug_hdr,
             text=tr("email_draft.close_btn", "✕ Schließen"),
             width=70,
@@ -240,7 +245,7 @@ class EmailDraftDialog(BaseDialog):
             fg_color=("gray75", "gray35"),
             hover_color=("gray65", "gray45"),
             command=self.hide_suggestions,
-        ).pack(side="right")
+        ), "email_draft.close_btn", "✕ Schließen").pack(side="right")
 
         self.suggestions_scroll = ctk.CTkScrollableFrame(
             self.suggestions_frame,
@@ -250,8 +255,8 @@ class EmailDraftDialog(BaseDialog):
         self.suggestions_scroll.pack(fill="both", expand=True, padx=4, pady=(2, 6))
 
         # Subject
-        ctk.CTkLabel(content_scroll, text=tr("email_draft.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_draft.subject_placeholder", "Betreff eingeben..."))
+        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_draft.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")), "email_draft.subject_lbl", "Betreff:").pack(anchor="w", pady=(4, 1))
+        self.subject_entry = self.register_i18n(ctk.CTkEntry(content_scroll, placeholder_text=tr("email_draft.subject_placeholder", "Betreff eingeben...")), "email_draft.subject_placeholder", "Betreff eingeben...", attr="placeholder_text")
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
         self.subject_entry.pack(fill="x", pady=(0, 6))
@@ -260,10 +265,10 @@ class EmailDraftDialog(BaseDialog):
         body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         body_hdr_row.pack(fill="x", pady=(4, 1))
 
-        ctk.CTkLabel(body_hdr_row, text=tr("email_draft.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+        self.register_i18n(ctk.CTkLabel(body_hdr_row, text=tr("email_draft.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")), "email_draft.body_lbl", "E-Mail Nachrichtentext:").pack(side="left")
 
         if self.snippet_service:
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 body_hdr_row,
                 text=tr("email_draft.snippet_btn", "🧩 Textbaustein"),
                 width=110,
@@ -271,25 +276,25 @@ class EmailDraftDialog(BaseDialog):
                 fg_color="gray30",
                 hover_color="darkmagenta",
                 command=self.open_snippet_picker,
-            ).pack(side="right")
+            ), "email_draft.snippet_btn", "🧩 Textbaustein").pack(side="right")
 
         # Priority Custom Instruction Bar for Email KI
         ci_frame = ctk.CTkFrame(content_scroll, fg_color=("gray90", "gray20"), corner_radius=6)
         ci_frame.pack(fill="x", pady=(2, 4))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             ci_frame,
             text=tr("email_draft.custom_instruction", AI_LABEL_EMAIL_CUSTOM_INSTRUCTION),
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color=COLOR_TEXT_BLUE,
-        ).pack(side="left", padx=(10, 4), pady=4)
+        ), "email_draft.custom_instruction", AI_LABEL_EMAIL_CUSTOM_INSTRUCTION).pack(side="left", padx=(10, 4), pady=4)
 
-        self.custom_instruction_entry = ctk.CTkEntry(
+        self.custom_instruction_entry = self.register_i18n(ctk.CTkEntry(
             ci_frame,
             placeholder_text=tr("email_draft.custom_hint", AI_HINT_EMAIL_CUSTOM_INSTRUCTION),
             height=28,
             font=ctk.CTkFont(size=11),
-        )
+        ), "email_draft.custom_hint", AI_HINT_EMAIL_CUSTOM_INSTRUCTION, attr="placeholder_text")
         self.custom_instruction_entry.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
 
         # KI Buttons Row
@@ -311,7 +316,7 @@ class EmailDraftDialog(BaseDialog):
         self.ki_generate_btn.pack(side="left", padx=(0, 6))
 
         if self.case:
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 ki_row,
                 text=tr("email_draft.open_assistant_btn", AI_BTN_OPEN_ASSISTANT),
                 width=160,
@@ -319,7 +324,7 @@ class EmailDraftDialog(BaseDialog):
                 fg_color=COLOR_MUTED_GRAY,
                 hover_color=COLOR_MUTED_HOVER,
                 command=self._open_ai_assistant_dialog,
-            ).pack(side="left")
+            ), "email_draft.open_assistant_btn", AI_BTN_OPEN_ASSISTANT).pack(side="left")
 
         self.body_textbox = ctk.CTkTextbox(content_scroll, height=210)
         if self.draft_data.get("body"):
@@ -336,34 +341,34 @@ class EmailDraftDialog(BaseDialog):
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_box.pack(fill="x", pady=(4, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_box,
             text=tr("email_draft.open_mailto", "✉ In Standard-Mail-App öffnen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "email_draft.open_mailto", "✉ In Standard-Mail-App öffnen").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_box,
             text=tr("email_draft.transfer_outlook", "📬 In Outlook übertragen"),
             fg_color="royalblue",
             hover_color="blue",
             command=self.on_transfer_to_outlook,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "email_draft.transfer_outlook", "📬 In Outlook übertragen").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_box,
             text=tr("ui_buttons.copy_clipboard", "📋 In Zwischenablage kopieren"),
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.on_copy_text,
             height=32,
-        ).pack(side="left")
+        ), "ui_buttons.copy_clipboard", "📋 In Zwischenablage kopieren").pack(side="left")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_box,
             text=tr("common.cancel", "Abbrechen"),
             fg_color=("gray70", "gray40"),
@@ -371,7 +376,7 @@ class EmailDraftDialog(BaseDialog):
             command=self.destroy,
             width=90,
             height=32,
-        ).pack(side="right")
+        ), "common.cancel", "Abbrechen").pack(side="right")
 
     # --- Autocomplete & Praxiskartei Logic ---
 
@@ -412,12 +417,12 @@ class EmailDraftDialog(BaseDialog):
             self.suggestions_title.configure(text=tr("email_draft.suggestions_count", "🔍 {hint} ({count})", hint=query_hint, count=len(contacts)))
 
         if not contacts:
-            ctk.CTkLabel(
+            self.register_i18n(ctk.CTkLabel(
                 self.suggestions_scroll,
                 text=tr("email_draft.no_contacts_found", "Keine passenden Praxiskontakte gefunden."),
                 font=ctk.CTkFont(size=11),
                 text_color="gray"
-            ).pack(pady=10)
+            ), "email_draft.no_contacts_found", "Keine passenden Praxiskontakte gefunden.").pack(pady=10)
         else:
             for item in contacts[:20]:
                 card = ctk.CTkFrame(self.suggestions_scroll, fg_color=("gray80", "gray28"), corner_radius=6, cursor="hand2")
@@ -609,22 +614,22 @@ class EmailDraftDialog(BaseDialog):
         card = ctk.CTkFrame(self._overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=120)
         card.place(relx=0.5, rely=0.5, anchor="center")
 
-        self._overlay_msg_lbl = ctk.CTkLabel(
+        self._overlay_msg_lbl = self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("email_draft.ai_generating", "🤖 KI generiert E-Mail-Entwurf..."),
             font=ctk.CTkFont(size=14, weight="bold"),
-        )
+        ), "email_draft.ai_generating", "🤖 KI generiert E-Mail-Entwurf...")
         self._overlay_msg_lbl.pack(pady=(20, 10))
 
         self._overlay_progress = ctk.CTkProgressBar(card, width=280, mode="indeterminate", progress_color="#6366f1")
         self._overlay_progress.pack(pady=(0, 10))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("email_draft.ai_please_wait", "Bitte einen Moment gedulden — Modell generiert Antwort"),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
-        ).pack(pady=(0, 15))
+        ), "email_draft.ai_please_wait", "Bitte einen Moment gedulden — Modell generiert Antwort").pack(pady=(0, 15))
 
     def _show_overlay(self, message: str | None = None):
         from services.i18n_service import tr

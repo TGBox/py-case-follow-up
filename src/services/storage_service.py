@@ -1,17 +1,18 @@
 import json
 import logging
+import re
 import shutil
 import threading
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, date
 
 from config import AppConfig
 from models.case import Case
 from models.customer import Customer
-from models.profile import UserProfile, Colleague
+from models.profile import UserProfile, Colleague, BackupSettings
 from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
 from utils.datetime_utils import calculate_idle_days
@@ -328,23 +329,138 @@ class StorageService:
             self.save_archive(archive)
         return archived_count
 
-    def perform_daily_backup(self, date_str: str | None = None) -> Path | None:
-        """Performs daily backup of cases.json to backups/cases_YYYY-MM-DD.json."""
+    def prune_old_backups(
+        self,
+        reference_date: date | None = None,
+        settings: BackupSettings | None = None,
+    ) -> list[Path]:
+        """Prunes old backup files in backups/ according to grandfather-father-son retention rules.
+
+        Rules:
+        - Only files matching 'cases_YYYY-MM-DD.json' are evaluated.
+        - The newest backup file is never deleted under any circumstances (safety guard).
+        - Files within 'daily_days' are all kept.
+        - Files between 'daily_days' and weekly cutoff keep the latest backup per ISO calendar week.
+        - Files between weekly cutoff and monthly cutoff keep the latest backup per calendar month.
+        - Files older than monthly cutoff are deleted.
+        """
+        backups_dir = self.config.backups_dir
+        if not backups_dir.exists():
+            return []
+
+        if settings is None:
+            try:
+                profile = self.load_profile()
+                settings = profile.backup_settings
+            except Exception as e:
+                logger.warning(f"Could not load backup settings, using defaults: {e}")
+                settings = BackupSettings()
+
+        pattern = re.compile(r"^cases_(\d{4}-\d{2}-\d{2})\.json$")
+        backup_files: list[tuple[Path, date]] = []
+
+        for p in backups_dir.iterdir():
+            if not p.is_file():
+                continue
+            m = pattern.match(p.name)
+            if not m:
+                continue
+            date_str = m.group(1)
+            try:
+                d = date.fromisoformat(date_str)
+                backup_files.append((p, d))
+            except ValueError:
+                continue
+
+        if not backup_files:
+            return []
+
+        # Sort ascending by date
+        backup_files.sort(key=lambda item: item[1])
+
+        ref_date = reference_date if reference_date is not None else datetime.now().date()
+        daily_days = max(1, settings.daily_days)
+        weekly_weeks = max(0, settings.weekly_weeks)
+        monthly_months = max(0, settings.monthly_months)
+
+        weekly_cutoff_days = max(daily_days, weekly_weeks * 7)
+        monthly_cutoff_days = max(weekly_cutoff_days, monthly_months * 30)
+
+        # Unconditional safety: keep the single newest backup
+        newest_file, _ = backup_files[-1]
+        keep_paths: set[Path] = {newest_file}
+
+        weekly_buckets: dict[tuple[int, int], tuple[Path, date]] = {}
+        monthly_buckets: dict[tuple[int, int], tuple[Path, date]] = {}
+
+        for path, d in backup_files:
+            age_days = (ref_date - d).days
+
+            if age_days < daily_days:
+                # Daily tier: keep all
+                keep_paths.add(path)
+            elif age_days < weekly_cutoff_days:
+                # Weekly tier: group by (iso_year, iso_week), keep latest
+                iso_key = d.isocalendar()[:2]
+                if iso_key not in weekly_buckets or d > weekly_buckets[iso_key][1]:
+                    weekly_buckets[iso_key] = (path, d)
+            elif age_days < monthly_cutoff_days:
+                # Monthly tier: group by (year, month), keep latest
+                month_key = (d.year, d.month)
+                if month_key not in monthly_buckets or d > monthly_buckets[month_key][1]:
+                    monthly_buckets[month_key] = (path, d)
+            else:
+                # Older than monthly retention cutoff: eligible for deletion
+                pass
+
+        for p, _ in weekly_buckets.values():
+            keep_paths.add(p)
+
+        for p, _ in monthly_buckets.values():
+            keep_paths.add(p)
+
+        deleted_files: list[Path] = []
+        for path, _ in backup_files:
+            if path not in keep_paths:
+                try:
+                    path.unlink()
+                    deleted_files.append(path)
+                    logger.info(f"Pruned old backup: {path.name}")
+                except Exception as e:
+                    logger.warning(f"Failed to prune backup file {path}: {e}")
+
+        return deleted_files
+
+    def perform_daily_backup(self, date_str: str | None = None, settings: BackupSettings | None = None) -> Path | None:
+        """Performs daily backup of cases.json to backups/cases_YYYY-MM-DD.json and prunes old backups."""
         if not date_str:
             date_str = datetime.now().strftime("%Y-%m-%d")
 
         backup_filename = f"cases_{date_str}.json"
         backup_path = self.config.backups_dir / backup_filename
 
-        if backup_path.exists():
-            return backup_path
+        ref_date: date | None = None
+        try:
+            ref_date = date.fromisoformat(date_str)
+        except ValueError:
+            pass
 
-        cases = self.load_cases()
-        if cases:
-            atomic_save_json(backup_path, [c.to_dict() for c in cases])
-            logger.info(f"Created daily backup: {backup_path}")
-            return backup_path
-        return None
+        created_or_existing: Path | None = None
+        if backup_path.exists():
+            created_or_existing = backup_path
+        else:
+            cases = self.load_cases()
+            if cases:
+                atomic_save_json(backup_path, [c.to_dict() for c in cases])
+                logger.info(f"Created daily backup: {backup_path}")
+                created_or_existing = backup_path
+
+        try:
+            self.prune_old_backups(reference_date=ref_date, settings=settings)
+        except Exception as e:
+            logger.error(f"Error during backup pruning: {e}")
+
+        return created_or_existing
 
     # --- Customers ---
     def load_customers(self, use_cache: bool = True) -> list[Customer]:

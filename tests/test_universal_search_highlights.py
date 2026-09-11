@@ -311,6 +311,7 @@ def test_tag_management_dialog_tags_highlighting(tmp_path: Path):
         dialog.search_tag_entry.delete(0, "end")
         dialog.search_tag_entry.insert(0, "druck")
         dialog.render_tags_list()
+        dialog.update()
 
         rows = [w for w in dialog.tags_scroll.winfo_children() if isinstance(w, ctk.CTkFrame)]
         assert len(rows) == 1
@@ -319,6 +320,25 @@ def test_tag_management_dialog_tags_highlighting(tmp_path: Path):
         assert len(text_widgets) == 1
         content = text_widgets[0].get("1.0", "end - 1 chars")
         assert "Rezeptdruck" in content
+
+        del_buttons = [w for w in rows[0].winfo_children() if isinstance(w, ctk.CTkButton)]
+        assert len(del_buttons) == 1
+        assert del_buttons[0].winfo_width() == 90
+        assert del_buttons[0].winfo_x() > text_widgets[0].winfo_x()
+
+        # Check with very long tag to ensure delete button is never crushed or hidden
+        profile.available_tags.append("Ein extrem langer Tag-Name fuer spezielle Abrechnung und Druckvorgaenge")
+        dialog.search_tag_entry.delete(0, "end")
+        dialog.search_tag_entry.insert(0, "Druckvorgaenge")
+        dialog.render_tags_list()
+        dialog.update()
+
+        rows = [w for w in dialog.tags_scroll.winfo_children() if isinstance(w, ctk.CTkFrame)]
+        assert len(rows) == 1
+        del_buttons = [w for w in rows[0].winfo_children() if isinstance(w, ctk.CTkButton)]
+        assert len(del_buttons) == 1
+        assert del_buttons[0].winfo_width() == 90
+        assert del_buttons[0].winfo_x() > 0
 
         dialog.destroy()
     finally:
@@ -343,6 +363,7 @@ def test_tag_management_dialog_modules_highlighting(tmp_path: Path):
         dialog.search_mod_entry.delete(0, "end")
         dialog.search_mod_entry.insert(0, "kalender")
         dialog.render_modules_list()
+        dialog.update()
 
         rows = [w for w in dialog.modules_scroll.winfo_children() if isinstance(w, ctk.CTkFrame)]
         assert len(rows) == 1
@@ -351,6 +372,11 @@ def test_tag_management_dialog_modules_highlighting(tmp_path: Path):
         assert len(text_widgets) == 1
         content = text_widgets[0].get("1.0", "end - 1 chars")
         assert "Terminkalender" in content
+
+        del_buttons = [w for w in rows[0].winfo_children() if isinstance(w, ctk.CTkButton)]
+        assert len(del_buttons) == 1
+        assert del_buttons[0].winfo_width() == 90
+        assert del_buttons[0].winfo_x() > text_widgets[0].winfo_x()
 
         dialog.destroy()
     finally:
@@ -371,13 +397,21 @@ def test_module_tag_picker_popup_highlighting():
             on_apply=lambda tags: applied.append(tags)
         )
         popup.withdraw()
+        popup.update()
+
+        # Non-search state: CTkCheckBox with height 24
+        non_search_boxes = [w for w in popup.scroll_frame.winfo_children() if isinstance(w, ctk.CTkCheckBox)]
+        assert len(non_search_boxes) == 3
+        expected_height = non_search_boxes[0].winfo_height()
 
         popup.search_entry.delete(0, "end")
         popup.search_entry.insert(0, "druck")
         popup.render_tag_checkboxes()
+        popup.update()
 
         rows = [w for w in popup.scroll_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
         assert len(rows) == 1
+        assert rows[0].winfo_height() == expected_height
 
         text_widgets = [w for w in rows[0].winfo_children() if isinstance(w, tk.Text)]
         assert len(text_widgets) == 1

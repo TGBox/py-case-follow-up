@@ -153,6 +153,9 @@ class TagManagementDialog(BaseDialog):
                 row = ctk.CTkFrame(self.tags_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=2, padx=5)
 
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "🗑 Löschen")
+                del_btn.pack(side="right", padx=5, pady=3)
+
                 tag_text = f"🏷  {tag}"
                 if raw_query and query in tag.lower():
                     lbl = create_highlighted_label(
@@ -168,9 +171,6 @@ class TagManagementDialog(BaseDialog):
                 else:
                     lbl = ctk.CTkLabel(row, text=tag_text, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
                 lbl.pack(side="left", padx=10, expand=True, fill="x")
-
-                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "🗑 Löschen")
-                del_btn.pack(side="right", padx=5, pady=3)
 
                 bind_mouse_wheel_to_canvas(row, self.tags_scroll)
 
@@ -238,6 +238,9 @@ class TagManagementDialog(BaseDialog):
                 row = ctk.CTkFrame(self.modules_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=2, padx=5)
 
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "🗑 Löschen")
+                del_btn.pack(side="right", padx=5, pady=3)
+
                 mod_text = f"🧩  {mod}"
                 if raw_query and query in mod.lower():
                     lbl = create_highlighted_label(
@@ -253,9 +256,6 @@ class TagManagementDialog(BaseDialog):
                 else:
                     lbl = ctk.CTkLabel(row, text=mod_text, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
                 lbl.pack(side="left", padx=10, expand=True, fill="x")
-
-                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "🗑 Löschen")
-                del_btn.pack(side="right", padx=5, pady=3)
 
                 bind_mouse_wheel_to_canvas(row, self.modules_scroll)
 

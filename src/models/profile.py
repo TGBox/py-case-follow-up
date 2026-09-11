@@ -290,6 +290,36 @@ class AiSettings:
 
 
 @dataclass
+class BackupSettings:
+    daily_days: int = 7
+    weekly_weeks: int = 4
+    monthly_months: int = 6
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> BackupSettings:
+        try:
+            daily = max(1, int(data.get("daily_days", 7)))
+        except (ValueError, TypeError):
+            daily = 7
+        try:
+            weekly = max(0, int(data.get("weekly_weeks", 4)))
+        except (ValueError, TypeError):
+            weekly = 4
+        try:
+            monthly = max(0, int(data.get("monthly_months", 6)))
+        except (ValueError, TypeError):
+            monthly = 6
+        return cls(
+            daily_days=daily,
+            weekly_weeks=weekly,
+            monthly_months=monthly,
+        )
+
+
+@dataclass
 class UserProfile:
     user: UserInfo = field(default_factory=UserInfo)
     ui_settings: UISettings = field(default_factory=UISettings)
@@ -298,6 +328,7 @@ class UserProfile:
     scoring_matrix: ScoringMatrix = field(default_factory=ScoringMatrix)
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
     ai_settings: AiSettings = field(default_factory=AiSettings)
+    backup_settings: BackupSettings = field(default_factory=BackupSettings)
     available_tags: list[str] = field(default_factory=lambda: list(DEFAULT_TAGS))
     available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
@@ -310,6 +341,7 @@ class UserProfile:
             "scoring_matrix": self.scoring_matrix.to_dict(),
             "wiki_settings": self.wiki_settings.to_dict(),
             "ai_settings": self.ai_settings.to_dict(),
+            "backup_settings": self.backup_settings.to_dict(),
             "available_tags": self.available_tags,
             "available_module_tags": self.available_module_tags,
         }
@@ -328,6 +360,7 @@ class UserProfile:
             scoring_matrix=ScoringMatrix.from_dict(data.get("scoring_matrix", {})),
             wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
             ai_settings=AiSettings.from_dict(data.get("ai_settings", {})),
+            backup_settings=BackupSettings.from_dict(data.get("backup_settings", {})),
             available_tags=tags,
             available_module_tags=mod_tags,
         )

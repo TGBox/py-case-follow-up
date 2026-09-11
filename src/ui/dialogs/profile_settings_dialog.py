@@ -844,6 +844,88 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         ), "profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren...")
         btn_import.pack(anchor="w", padx=12, pady=(0, 12))
 
+        # --- Sektion 3: Automatische Backup-Aufbewahrung (Retention) ---
+        self.register_i18n(
+            ctk.CTkLabel(
+                self.paths_scroll,
+                text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ),
+            "profile.retention_title",
+            "🔄 Automatische Backup-Aufbewahrung (Retention)",
+        ).pack(anchor="w", pady=(15, 5))
+
+        self.register_i18n(
+            ctk.CTkLabel(
+                self.paths_scroll,
+                text=tr(
+                    "profile.retention_desc",
+                    "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
+                ),
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+                justify="left",
+                anchor="w",
+                wraplength=800,
+            ),
+            "profile.retention_desc",
+            "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
+        ).pack(anchor="w", pady=(0, 10))
+
+        retention_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        retention_card.pack(fill="x", pady=(0, 15), padx=2)
+
+        # Row 1: Daily days
+        row_daily = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_daily.pack(fill="x", padx=12, pady=(10, 4))
+        self.register_i18n(
+            ctk.CTkLabel(row_daily, text=tr("profile.retention_daily", "Tägliche Backups (Tage vollständig behalten):"), width=340, anchor="w"),
+            "profile.retention_daily",
+            "Tägliche Backups (Tage vollständig behalten):",
+        ).pack(side="left")
+        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=80)
+        self.retention_daily_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "daily_days", 7)))
+        self.retention_daily_entry.pack(side="left", padx=5)
+
+        # Row 2: Weekly weeks
+        row_weekly = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_weekly.pack(fill="x", padx=12, pady=4)
+        self.register_i18n(
+            ctk.CTkLabel(row_weekly, text=tr("profile.retention_weekly", "Wöchentliche Backups (Wochen je 1 Backup):"), width=340, anchor="w"),
+            "profile.retention_weekly",
+            "Wöchentliche Backups (Wochen je 1 Backup):",
+        ).pack(side="left")
+        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=80)
+        self.retention_weekly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "weekly_weeks", 4)))
+        self.retention_weekly_entry.pack(side="left", padx=5)
+
+        # Row 3: Monthly months
+        row_monthly = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_monthly.pack(fill="x", padx=12, pady=(4, 10))
+        self.register_i18n(
+            ctk.CTkLabel(row_monthly, text=tr("profile.retention_monthly", "Monatliche Backups (Monate je 1 Backup):"), width=340, anchor="w"),
+            "profile.retention_monthly",
+            "Monatliche Backups (Monate je 1 Backup):",
+        ).pack(side="left")
+        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=80)
+        self.retention_monthly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "monthly_months", 6)))
+        self.retention_monthly_entry.pack(side="left", padx=5)
+
+        # Row 4: Manual prune button
+        btn_prune = self.register_i18n(
+            ctk.CTkButton(
+                retention_card,
+                text=tr("profile.retention_prune_now_btn", "🧹 Jetzt alte Backups bereinigen"),
+                command=self.on_click_prune_backups,
+                fg_color="gray40",
+                hover_color="gray50",
+                width=240,
+            ),
+            "profile.retention_prune_now_btn",
+            "🧹 Jetzt alte Backups bereinigen",
+        )
+        btn_prune.pack(anchor="w", padx=12, pady=(0, 12))
+
     def on_browse_workspace(self):
         from tkinter import filedialog
         from services.i18n_service import tr
@@ -1102,12 +1184,53 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         except ValueError:
             pass
 
+        # Update Backup Retention Settings
+        if hasattr(self, "retention_daily_entry"):
+            try:
+                self.profile.backup_settings.daily_days = max(1, int(self.retention_daily_entry.get().strip()))
+            except ValueError:
+                pass
+        if hasattr(self, "retention_weekly_entry"):
+            try:
+                self.profile.backup_settings.weekly_weeks = max(0, int(self.retention_weekly_entry.get().strip()))
+            except ValueError:
+                pass
+        if hasattr(self, "retention_monthly_entry"):
+            try:
+                self.profile.backup_settings.monthly_months = max(0, int(self.retention_monthly_entry.get().strip()))
+            except ValueError:
+                pass
+
         self.storage_service.save_profile(self.profile)
         self.refresh_ui_labels()
         self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color="green")
 
         if self.on_profile_updated:
             self.on_profile_updated()
+
+    def on_click_prune_backups(self):
+        from services.i18n_service import tr
+        from models.profile import BackupSettings
+
+        try:
+            d = max(1, int(self.retention_daily_entry.get().strip())) if hasattr(self, "retention_daily_entry") else 7
+            w = max(0, int(self.retention_weekly_entry.get().strip())) if hasattr(self, "retention_weekly_entry") else 4
+            m = max(0, int(self.retention_monthly_entry.get().strip())) if hasattr(self, "retention_monthly_entry") else 6
+            active_settings = BackupSettings(daily_days=d, weekly_weeks=w, monthly_months=m)
+        except Exception:
+            active_settings = getattr(self.profile, "backup_settings", BackupSettings())
+
+        deleted = self.storage_service.prune_old_backups(settings=active_settings)
+        if deleted:
+            self.status_lbl.configure(
+                text=tr("profile.retention_pruned_count", "🧹 {count} veraltete Backup(s) bereinigt.", count=len(deleted)),
+                text_color="green",
+            )
+        else:
+            self.status_lbl.configure(
+                text=tr("profile.retention_pruned_none", "ℹ Keine veralteten Backups zum Bereinigen gefunden."),
+                text_color="gray70",
+            )
 
     def setup_backup_tab(self):
         """Integrated into setup_paths_tab; retained for backward compatibility."""

@@ -12,6 +12,7 @@ Code, keine Verhaltensaenderung.
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 import customtkinter as ctk
+from enums import LayoutMode
 from models.case import Case
 from models.customer import Customer
 from models.schema import QuestionSchema
@@ -41,6 +42,7 @@ class DialogLaunchersMixin:
     if TYPE_CHECKING:
         active_view: Any
         cockpit_view: Any
+        is_view_built: Any
         board_view: Any
         table_view: Any
         analytics_view: Any
@@ -237,7 +239,7 @@ class DialogLaunchersMixin:
         self._set_scaled_min_max()
         if is_zoomed:
             self._maximize_window()
-        if hasattr(self, "table_view") and hasattr(self.table_view, "setup_treeview_style"):
+        if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
         lang_code = getattr(self.profile.ui_settings, "language", "de")

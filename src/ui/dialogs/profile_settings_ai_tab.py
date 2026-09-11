@@ -674,7 +674,8 @@ class AiSettingsTabMixin:
             self.ai_model_entry.delete(0, "end")
             self.ai_model_entry.insert(0, selected_model)
         self.profile.ai_settings.model_name = selected_model
-        self.ollama_action_lbl.configure(text=f"Aktives Modell auf '{selected_model}' gesetzt.", text_color="dodgerblue")
+        from services.i18n_service import tr
+        self.ollama_action_lbl.configure(text=tr("profile.model_set_active", "Aktives Modell auf '{model}' gesetzt.", model=selected_model), text_color="dodgerblue")
 
     def on_create_pvs_model(self):
         from services.ai_service import AiService
@@ -703,7 +704,8 @@ class AiSettingsTabMixin:
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
-        self.ollama_action_lbl.configure(text=f"⏳ Lade Modell '{model}' in den Speicher...", text_color="orange")
+        from services.i18n_service import tr
+        self.ollama_action_lbl.configure(text=tr("profile.model_loading", "⏳ Lade Modell '{model}' in den Speicher...", model=model), text_color="orange")
         self.update_idletasks()
 
         def worker():
@@ -722,7 +724,8 @@ class AiSettingsTabMixin:
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
-        self.ollama_action_lbl.configure(text=f"⏳ Entlade Modell '{model}' aus dem Speicher...", text_color="orange")
+        from services.i18n_service import tr
+        self.ollama_action_lbl.configure(text=tr("profile.model_unloading", "⏳ Entlade Modell '{model}' aus dem Speicher...", model=model), text_color="orange")
         self.update_idletasks()
 
         def worker():

@@ -18,8 +18,7 @@ class I18nService:
 
     def __init__(self, locales_dir: Path | str | None = None) -> None:
         if locales_dir is None:
-            # Default: project_root/locales
-            self.locales_dir = Path(__file__).resolve().parent.parent.parent / "locales"
+            self.locales_dir = self._default_locales_dir()
         else:
             self.locales_dir = Path(locales_dir)
 
@@ -28,6 +27,23 @@ class I18nService:
         self._listeners: list[Callable[[str], None]] = []
 
         self.load_all_translations()
+
+    @staticmethod
+    def _default_locales_dir() -> Path:
+        """Locates the locales folder in a source checkout and in a frozen build.
+
+        In a PyInstaller bundle the modules live at the root of sys._MEIPASS, so
+        walking three parents up from this file lands outside the bundle and no
+        locale file is found - which silently pinned the packaged app to the
+        German in-code defaults.
+        """
+        import sys
+        if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+            bundled = Path(getattr(sys, "_MEIPASS", "")) / "locales"
+            if bundled.exists():
+                return bundled
+        # Source checkout: src/services/i18n_service.py -> project root / locales
+        return Path(__file__).resolve().parent.parent.parent / "locales"
 
     def load_all_translations(self) -> None:
         """Load all translation JSON files from locales_dir."""
@@ -68,7 +84,11 @@ class I18nService:
         self._listeners.clear()
 
     def _notify_listeners(self) -> None:
-        for callback in self._listeners:
+        # Iterate over a copy: a listener may unregister itself while being
+        # notified (a dialog that finds its window already destroyed does
+        # exactly that), and removing from the list being iterated would skip
+        # the next listener.
+        for callback in list(self._listeners):
             try:
                 callback(self._current_language)
             except Exception:

@@ -10,9 +10,12 @@ Subclasses call setup_window(...) right after super().__init__(parent) and
 otherwise build their widgets exactly as before.
 """
 
+import logging
 from collections.abc import Callable, Sequence
 
 import customtkinter as ctk
+
+logger = logging.getLogger("SupportCockpit")
 
 # Widget classes whose content counts as user input for the unsaved-changes guard.
 _TEXT_INPUT_CLASSES = {"CTkEntry", "CTkComboBox", "CTkOptionMenu", "CTkSwitch", "CTkCheckBox", "CTkSegmentedButton"}
@@ -65,6 +68,49 @@ class BaseDialog(ctk.CTkToplevel):
         if self.escape_closes:
             self.bind("<Escape>", self._on_escape)
         self.protocol("WM_DELETE_WINDOW", self.request_close)
+        self._register_language_listener()
+
+    # --- Language switching ---
+
+    def _register_language_listener(self) -> None:
+        """Subscribes to language changes if the subclass can relabel itself.
+
+        A dialog that defines refresh_ui_labels() is updated in place when the
+        language changes while it is open; dialogs without that method are simply
+        not subscribed. The listener is removed again in destroy(), so a closed
+        dialog never keeps the service alive or fires on dead widgets.
+        """
+        if not callable(getattr(self, "refresh_ui_labels", None)):
+            return
+        try:
+            from services.i18n_service import get_i18n
+            self._language_listener = self._on_language_changed
+            get_i18n().register_listener(self._language_listener)
+        except Exception as err:
+            logger.warning(f"Could not register language listener for {type(self).__name__}: {err}")
+
+    def _unregister_language_listener(self) -> None:
+        listener = getattr(self, "_language_listener", None)
+        if listener is None:
+            return
+        self._language_listener = None
+        try:
+            from services.i18n_service import get_i18n
+            get_i18n().unregister_listener(listener)
+        except Exception as err:
+            logger.warning(f"Could not unregister language listener for {type(self).__name__}: {err}")
+
+    def _on_language_changed(self, lang_code: str) -> None:
+        try:
+            if not self.winfo_exists():
+                self._unregister_language_listener()
+                return
+        except Exception:
+            return
+        try:
+            self.refresh_ui_labels()
+        except Exception as err:
+            logger.warning(f"refresh_ui_labels failed for {type(self).__name__}: {err}")
 
     # --- Keyboard ---
 
@@ -179,3 +225,9 @@ class BaseDialog(ctk.CTkToplevel):
         except Exception:
             pass
         self.destroy()
+
+    def destroy(self) -> None:
+        # Covers every close path, including dialogs that call destroy() directly
+        # instead of going through close_dialog().
+        self._unregister_language_listener()
+        super().destroy()

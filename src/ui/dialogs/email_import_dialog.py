@@ -104,7 +104,8 @@ class EmailImportDialog(BaseDialog):
 
         self.emails = OutlookIntegrationService.fetch_recent_emails(max_count=15)
         self.render_email_list()
-        self.status_lbl.configure(text=f"✓ {len(self.emails)} E-Mails aus Posteingang geladen.")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("email_import.loaded_count", "✓ {count} E-Mails aus Posteingang geladen.", count=len(self.emails)))
 
     def render_email_list(self):
         from services.i18n_service import tr
@@ -240,7 +241,8 @@ class EmailImportDialog(BaseDialog):
             author=self.author_name,
         )
         self.on_case_updated(case)
-        self.status_lbl.configure(text=f"✓ E-Mail erfolgreich an Fall [{case.case_id}] angehängt.")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("email_import.appended", "✓ E-Mail erfolgreich an Fall [{case_id}] angehängt.", case_id=case.case_id))
         self.ignore_mail(index)
 
     def create_new_case_from_mail(self, mail: dict[str, Any], index: int):
@@ -253,7 +255,8 @@ class EmailImportDialog(BaseDialog):
             default_author=self.author_name,
         )
         self.on_case_created(new_case)
-        self.status_lbl.configure(text=f"✓ Neuer Fall [{new_case.case_id}] aus E-Mail erstellt.")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("email_import.created_new_case", "✓ Neuer Fall [{case_id}] aus E-Mail erstellt.", case_id=new_case.case_id))
         self.ignore_mail(index)
 
     def ignore_mail(self, index: int):

@@ -227,6 +227,7 @@ class StorageService:
 
     def update_single_case(self, case: Case) -> None:
         """Updates or adds a single case in the cache and persists the cases file."""
+        case.invalidate_search_cache()
         cases = self.load_cases(use_cache=True)
         updated = False
         for idx, existing in enumerate(cases):

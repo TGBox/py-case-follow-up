@@ -1,123 +1,41 @@
 from typing import Any
+from collections.abc import Callable
 import customtkinter as ctk
 
-from ui.dialogs.base_dialog import BaseDialog
-from collections.abc import Callable
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 from models.profile import UserProfile
+from services.i18n_service import tr
 from services.storage_service import StorageService
-from enums import SyncMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
+from ui.dialogs.base_dialog import BaseDialog
 from ui.dialogs.profile_settings_ai_tab import AiSettingsTabMixin
-from constants import (
-    DIALOG_DIMENSIONS,
-    DIALOG_TITLES,
-    HOTKEY_RECORDER_TITLE,
-    HOTKEY_RECORDER_HEADER,
-    HOTKEY_RECORDER_INFO,
-    HOTKEY_RECORDER_CANCEL,
-    HOTKEY_RECORDER_DIMENSIONS,
-    HOTKEY_RECORDER_BUTTON,
-    HOTKEY_ACTION_LABELS,
-    STATUS_SHORTCUT_CONFLICT,
-    STATUS_SHORTCUT_CONFLICT_GENERIC,
-    COLOR_PANEL_BG,
-    COLOR_PANEL_BORDER,
-    LABEL_APP_SHORTCUTS_HEADER,
-    LABEL_SNIPPET_SHORTCUTS_HEADER,
-    LABEL_NO_SNIPPETS,
+from ui.dialogs.profile_settings_paths_tab import PathsSettingsTabMixin
+from ui.dialogs.profile_settings_shortcuts_tab import ShortcutsSettingsTabMixin, HotkeyRecorderDialog
+from ui.dialogs.profile_settings_ui_tab import (
+    UiSettingsTabMixin,
+    FONT_SCALE_OPTIONS,
+    get_font_scale_display,
+    get_font_scale_val_from_display,
 )
-
-FONT_SCALE_OPTIONS: list[tuple[float, str, str]] = [
-    (0.9, "profile.font_scale_90", "90% (Kompakt)"),
-    (1.0, "profile.font_scale_100", "100% (Standard)"),
-    (1.1, "profile.font_scale_110", "110% (Mittel)"),
-    (1.2, "profile.font_scale_120", "120% (Groß)"),
-    (1.3, "profile.font_scale_130", "130% (Sehr groß)"),
-]
+from ui.dialogs.profile_settings_user_tab import UserSettingsTabMixin
+from ui.dialogs.profile_settings_wiki_tab import WikiSettingsTabMixin
 
 
-def get_font_scale_display(scale: float) -> str:
-    from services.i18n_service import tr
-    for s, key, default in FONT_SCALE_OPTIONS:
-        if abs(s - scale) < 0.04:
-            return tr(key, default)
-    pct = round(scale * 100)
-    return f"{pct}%"
-
-
-def get_font_scale_val_from_display(display_text: str) -> float:
-    from services.i18n_service import tr
-    for s, key, default in FONT_SCALE_OPTIONS:
-        if display_text == tr(key, default) or display_text == default:
-            return s
-    try:
-        val = float(display_text.split("%")[0].strip()) / 100.0
-        if 0.7 <= val <= 2.0:
-            return val
-    except Exception:
-        pass
-    return 1.0
-
-
-class HotkeyRecorderDialog(BaseDialog):
-    """Interactive modal dialog to capture pressed hotkeys and key combinations."""
-    def __init__(self, parent, on_recorded: Callable[[str], None]):
-        super().__init__(parent)
-        self.on_recorded = on_recorded
-        from services.i18n_service import tr
-        w, h = HOTKEY_RECORDER_DIMENSIONS
-        self.setup_window(
-            parent,
-            tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE),
-            (w, h),
-            resizable=False,
-
-            title_factory=lambda: tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE),
-        )
-
-
-        self.register_i18n(ctk.CTkLabel(self, text=tr("hotkey_recorder.header", HOTKEY_RECORDER_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "hotkey_recorder.header", HOTKEY_RECORDER_HEADER).pack(pady=(15, 5))
-        self.info_lbl = self.register_i18n(ctk.CTkLabel(self, text=tr("hotkey_recorder.info", HOTKEY_RECORDER_INFO), text_color=("gray30", "gray70")), "hotkey_recorder.info", HOTKEY_RECORDER_INFO)
-        self.info_lbl.pack(pady=5)
-
-        cancel_btn = self.register_i18n(ctk.CTkButton(self, text=tr("hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL), command=self.destroy, fg_color="gray40", width=120), "hotkey_recorder.cancel", HOTKEY_RECORDER_CANCEL)
-        cancel_btn.pack(pady=(10, 0))
-
-        self.bind("<KeyPress>", self.on_key_press)
-        self.focus_set()
-
-    def on_key_press(self, event):
-        keysym = event.keysym
-        if keysym == "Escape":
-            self.destroy()
-            return
-
-        if keysym in ("Control_L", "Control_R", "Alt_L", "Alt_R", "Shift_L", "Shift_R", "Win_L", "Win_R"):
-            return
-
-        state = event.state
-        mods = []
-        if state & 0x0004:
-            mods.append("Control")
-        if state & 0x0001:
-            mods.append("Shift")
-        if state & 0x20000 or state & 0x0008 or keysym.startswith("Alt"):
-            mods.append("Alt")
-
-        key_name = keysym
-        if len(key_name) == 1:
-            key_name = key_name.lower()
-
-        if mods:
-            formatted = f"<{'--'.join(mods + [key_name])}>".replace("--", "-")
-        else:
-            formatted = f"<{key_name}>" if len(key_name) > 1 else key_name
-
-        self.on_recorded(formatted)
-        self.destroy()
-
-
-class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
-    def __init__(self, parent, profile: UserProfile, storage_service: StorageService, on_profile_updated: Callable[[], None] | None = None):
+class ProfileSettingsDialog(
+    UserSettingsTabMixin,
+    UiSettingsTabMixin,
+    ShortcutsSettingsTabMixin,
+    AiSettingsTabMixin,
+    WikiSettingsTabMixin,
+    PathsSettingsTabMixin,
+    BaseDialog,
+):
+    def __init__(
+        self,
+        parent,
+        profile: UserProfile,
+        storage_service: StorageService,
+        on_profile_updated: Callable[[], None] | None = None,
+    ):
         super().__init__(parent)
         self.profile = profile
         self.storage_service = storage_service
@@ -126,15 +44,12 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         from services.snippet_service import SnippetService
         self.snippet_service = getattr(parent, "snippet_service", None) or SnippetService(self.storage_service.config.workspace_dir)
 
-        from services.i18n_service import tr
-
         w, h = DIALOG_DIMENSIONS["profile_settings"]
         self.setup_window(
             parent,
             tr("profile.title", DIALOG_TITLES["profile_settings"]),
             (w, h),
             min_size=(920, 780),
-
             title_factory=lambda: tr("profile.title", DIALOG_TITLES["profile_settings"]),
         )
 
@@ -143,14 +58,16 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
 
         self.create_widgets()
 
-    def create_widgets(self):
-        from services.i18n_service import tr
-
+    def create_widgets(self) -> None:
         # Top Header
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        self.top_header_lbl = self.register_i18n(ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")), "profile.header", "⚙ Profil & Anwendungseinstellungen")
+        self.top_header_lbl = self.register_i18n(
+            ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")),
+            "profile.header",
+            "⚙ Profil & Anwendungseinstellungen",
+        )
         self.top_header_lbl.pack(side="left", padx=10)
 
         # Tabview
@@ -196,25 +113,37 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        self.close_btn = self.register_i18n(ctk.CTkButton(
-            bottom_bar,
-            text=tr("common.close", "Schließen"),
-            command=self.on_close,
-            fg_color="gray40",
-            hover_color="gray50",
-            width=120,
-        ), "common.close", "Schließen")
+        self.close_btn = self.register_i18n(
+            ctk.CTkButton(
+                bottom_bar,
+                text=tr("common.close", "Schließen"),
+                command=self.on_close,
+                fg_color="gray40",
+                hover_color="gray50",
+                width=120,
+            ),
+            "common.close",
+            "Schließen",
+        )
         self.close_btn.pack(side="right", padx=5)
 
-        self.save_btn = self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("profile.save_btn", "💾 Einstellungen Speichern"), command=self.save_settings, fg_color="forestgreen", width=180), "profile.save_btn", "💾 Einstellungen Speichern")
+        self.save_btn = self.register_i18n(
+            ctk.CTkButton(
+                bottom_bar,
+                text=tr("profile.save_btn", "💾 Einstellungen Speichern"),
+                command=self.save_settings,
+                fg_color="forestgreen",
+                width=180,
+            ),
+            "profile.save_btn",
+            "💾 Einstellungen Speichern",
+        )
         self.save_btn.pack(side="right", padx=5)
 
         self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color="green")
         self.status_lbl.pack(side="left", padx=5)
 
-    def setup_user_tab(self):
-        from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY
-
+    def setup_user_tab(self) -> None:
         self.user_scroll = ctk.CTkScrollableFrame(self.tab_user, fg_color="transparent")
         self.user_scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
@@ -230,357 +159,20 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
         right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
 
-        # =========================================================================
-        # LEFT COLUMN: Profil & Benutzerdaten inkl. E-Mail Signatur
-        # =========================================================================
+        self.setup_user_section(left_col)
+        self.setup_ui_section(right_col)
 
-        # Section 1: Profil verwalten & wechseln
-        self.user_tab_hdr_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold")), "profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln")
-        self.user_tab_hdr_lbl.pack(anchor="w", pady=(5, 5))
-
-        prof_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        prof_frame.pack(anchor="w", pady=(0, 15))
-
-        self.active_prof_lbl = self.register_i18n(ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:")), "profile.active_profile", "Aktives Profil:")
-        self.active_prof_lbl.pack(side="left", padx=(0, 10))
-
-        profiles_list = self.storage_service.list_profiles()
-        self.profile_combo = ctk.CTkOptionMenu(
-            prof_frame,
-            values=profiles_list,
-            command=self.on_switch_profile,
-            width=210,
-        )
-        self.profile_combo.set(self.profile.user.name if self.profile.user.name in profiles_list else profiles_list[0])
-        self.profile_combo.pack(side="left", padx=(0, 10))
-
-        self.btn_new_prof = self.register_i18n(ctk.CTkButton(
-            prof_frame,
-            text=tr("profile.btn_new_profile", "➕ Neues Profil"),
-            command=self.open_create_profile_dialog,
-            fg_color="forestgreen",
-            width=130,
-        ), "profile.btn_new_profile", "➕ Neues Profil")
-        self.btn_new_prof.pack(side="left")
-
-        # Section 2: Persönliche Angaben & Kontaktdaten
-        self.user_details_hdr_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.user_info_header", "Benutzerinformationen (Aktives Profil)")
-        self.user_details_hdr_lbl.pack(anchor="w", pady=(8, 4))
-
-        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")), "profile.display_name", "Name / Anzeigename *:").pack(anchor="w", pady=(4, 2))
-        self.user_name_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380), "profile.name_placeholder", "Ihr Name", attr="placeholder_text")
-        self.user_name_entry.insert(0, self.profile.user.name)
-        self.user_name_entry.pack(anchor="w", pady=(0, 7))
-
-        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")), "profile.dept", "Abteilung / Department *:").pack(anchor="w", pady=(4, 2))
-        self.user_dept_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380), "profile.dept_placeholder", "z. B. Support, Entwicklung, Technik", attr="placeholder_text")
-        self.user_dept_entry.insert(0, self.profile.user.department)
-        self.user_dept_entry.pack(anchor="w", pady=(0, 7))
-
-        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")), "profile.ext", "Durchwahl / Extension:").pack(anchor="w", pady=(4, 2))
-        self.user_ext_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380), "profile.ext_placeholder", "z.B. 4012", attr="placeholder_text")
-        self.user_ext_entry.insert(0, self.profile.user.extension)
-        self.user_ext_entry.pack(anchor="w", pady=(0, 7))
-
-        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")), "profile.email", "E-Mail-Adresse:").pack(anchor="w", pady=(4, 2))
-        self.user_email_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380), "profile.email_placeholder", "beispiel@support.de", attr="placeholder_text")
-        self.user_email_entry.insert(0, self.profile.user.email)
-        self.user_email_entry.pack(anchor="w", pady=(0, 7))
-
-        self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")), "profile.mobile", "Mobiltelefon:").pack(anchor="w", pady=(4, 2))
-        self.user_mobile_entry = self.register_i18n(ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380), "profile.mobile_placeholder", "0170 / 1234567", attr="placeholder_text")
-        self.user_mobile_entry.insert(0, self.profile.user.mobile)
-        self.user_mobile_entry.pack(anchor="w", pady=(0, 7))
-
-        # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
-        self.sig_lbl = self.register_i18n(ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")), "profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")
-        self.sig_lbl.pack(anchor="w", pady=(4, 2))
-
-        self.user_sig_txt = ctk.CTkTextbox(
-            left_col,
-            width=380,
-            height=95,
-            wrap="word",
-            corner_radius=6,
-            border_width=1,
-            border_color=("gray65", "gray35"),
-            fg_color=("#F8F9FA", "gray17"),
-        )
-        self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
-        self.user_sig_txt.pack(anchor="w", pady=(0, 6))
-
-        # Safe wrappers for backward compatibility with CTkEntry
-        orig_get = self.user_sig_txt.get
-        self.user_sig_txt.get = lambda index1="1.0", index2="end-1c": orig_get(index1, index2)  # type: ignore[assignment]
-        orig_del = self.user_sig_txt.delete
-        self.user_sig_txt.delete = lambda index1="1.0", index2="end": orig_del("1.0" if index1 in (0, "0") else index1, index2)  # type: ignore[assignment]
-        orig_ins = self.user_sig_txt.insert
-        self.user_sig_txt.insert = lambda index, text, *args: orig_ins("1.0" if index in (0, "0") else index, text, *args)  # type: ignore[assignment]
-        self.user_sig_entry: Any = self.user_sig_txt
-
-        sig_btn_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        sig_btn_frame.pack(anchor="w", pady=(0, 8))
-
-        self.btn_save_sig = self.register_i18n(ctk.CTkButton(
-            sig_btn_frame,
-            text=tr("profile.btn_export_signature", "💾 Signatur speichern..."),
-            command=self.on_export_signature,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
-            width=185,
-        ), "profile.btn_export_signature", "💾 Signatur speichern...")
-        self.btn_save_sig.pack(side="left", padx=(0, 10))
-
-        self.btn_load_sig = self.register_i18n(ctk.CTkButton(
-            sig_btn_frame,
-            text=tr("profile.btn_import_signature", "📂 Signatur laden..."),
-            command=self.on_import_signature,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
-            width=185,
-        ), "profile.btn_import_signature", "📂 Signatur laden...")
-        self.btn_load_sig.pack(side="left")
-
-        # =========================================================================
-        # RIGHT COLUMN: Erscheinungsbild, Layout & Benachrichtigungen
-        # =========================================================================
-
-        # Section 4: Erscheinungsbild & Layout
-        self.appearance_hdr_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold")), "profile.appearance_layout", "Erscheinungsbild & Layout")
-        self.appearance_hdr_lbl.pack(anchor="w", pady=(5, 5))
-
-        self.lang_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:")), "profile.language", "Sprache / Language:")
-        self.lang_lbl.pack(anchor="w", pady=(5, 2))
-        self.language_combo = ctk.CTkOptionMenu(
-            right_col,
-            values=list(SUPPORTED_LANGUAGES.values()),
-            width=380,
-        )
-        curr_lang = getattr(self.profile.ui_settings, "language", "de")
-        self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
-        self.language_combo.pack(anchor="w", pady=(0, 12))
-
-        self.theme_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):")), "profile.theme", "Farb-Thema (Theme):")
-        self.theme_lbl.pack(anchor="w", pady=(5, 2))
-        self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
-        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        self.theme_combo.pack(anchor="w", pady=(0, 12))
-
-        self.font_scale_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:")), "profile.font_scale", "Schriftgröße / Skalierung:")
-        self.font_scale_lbl.pack(anchor="w", pady=(5, 2))
-        self.font_scale_combo = ctk.CTkOptionMenu(
-            right_col,
-            values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS],
-            command=self.on_font_scale_preview,
-            width=380,
-        )
-        self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
-        self.font_scale_combo.pack(anchor="w", pady=(0, 12))
-
-        self.default_layout_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:")), "profile.default_layout", "Standard-Layout beim Start:")
-        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
-        self.layout_combo = ctk.CTkOptionMenu(
-            right_col,
-            values=list(LAYOUT_DISPLAY.values()),
-            width=380,
-        )
-        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(anchor="w", pady=(0, 12))
-
-        self.popup_target_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")), "profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")
-        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
-        self.popup_target_combo = ctk.CTkOptionMenu(
-            right_col,
-            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")],
-            width=380,
-        )
-        curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-        self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-        self.popup_target_combo.pack(anchor="w", pady=(0, 15))
-
-        self.demo_switch = self.register_i18n(ctk.CTkSwitch(  # type: ignore[attr-defined]
-            right_col,
-            text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) einblenden")
-        ), "profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) einblenden")
-        if self.profile.ui_settings.show_demo_data is True:
-            self.demo_switch.select()
-        else:
-            self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 12))
-
-        self.os_popup_switch = self.register_i18n(ctk.CTkSwitch(  # type: ignore[attr-defined]
-            right_col,
-            text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (Toast) aktivieren")
-        ), "profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (Toast) aktivieren")
-        if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
-            self.os_popup_switch.select()
-        else:
-            self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
-
-        # Column widths reset section
-        self.col_widths_hdr_lbl = self.register_i18n(ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)")
-        self.col_widths_hdr_lbl.pack(anchor="w", pady=(5, 5))
-
-        widths = self.profile.ui_settings.column_widths
-        def build_widths_str(w_dict: dict) -> str:
-            from services.i18n_service import tr
-            return tr(
-                "profile.widths_summary",
-                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
-                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
-                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
-                left=w_dict.get('cockpit_left', 300),
-                center=w_dict.get('cockpit_center', 420),
-                right=w_dict.get('cockpit_right', 320),
-                board=w_dict.get('board_column', 280),
-                id=w_dict.get('table_col_id', 120),
-                prac=w_dict.get('table_col_practice', 220),
-                title=w_dict.get('table_col_title', 280),
-                score=w_dict.get('table_col_score', 90),
-            )
-
-        w_str = build_widths_str(widths)
-        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
-        self.widths_label.pack(anchor="w", pady=(0, 10))
-
-        self.btn_reset_widths = self.register_i18n(ctk.CTkButton(
-            right_col,
-            text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
-            command=self.on_reset_column_widths,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
-            width=380,
-        ), "profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen")
-        self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
-
-    def on_export_signature(self):
-        from tkinter import filedialog
-        from services.i18n_service import tr
-        current_sig = self.user_sig_txt.get("1.0", "end-1c") if hasattr(self, "user_sig_txt") else ""
-        file_path = filedialog.asksaveasfilename(
-            title=tr("profile.title_save_sig", "Signatur in Datei speichern"),
-            defaultextension=".txt",
-            filetypes=[
-                ("Textdatei (*.txt)", "*.txt"),
-                ("HTML-Datei (*.html)", "*.html"),
-                ("Markdown (*.md)", "*.md"),
-                ("Alle Dateien (*.*)", "*.*"),
-            ],
-            initialfile="email_signature.txt",
-            parent=self,
-        )
-        if file_path:
-            try:
-                with open(file_path, "w", encoding="utf-8") as f:
-                    f.write(current_sig)
-                self.status_lbl.configure(text=tr("profile.sig_saved_success", "✅ Signatur erfolgreich gespeichert!"), text_color="green")
-            except Exception as e:
-                self.status_lbl.configure(text=f"⚠ Fehler beim Speichern der Signatur: {e}", text_color="red")
-
-    def on_import_signature(self):
-        from tkinter import filedialog
-        from services.i18n_service import tr
-        file_path = filedialog.askopenfilename(
-            title=tr("profile.title_load_sig", "Signatur aus Datei laden"),
-            filetypes=[
-                ("Text- & Web-Dateien (*.txt, *.html, *.md)", "*.txt *.html *.htm *.md"),
-                ("Textdatei (*.txt)", "*.txt"),
-                ("HTML-Datei (*.html, *.htm)", "*.html *.htm"),
-                ("Markdown (*.md)", "*.md"),
-                ("Alle Dateien (*.*)", "*.*"),
-            ],
-            parent=self,
-        )
-        if file_path:
-            try:
-                with open(file_path, encoding="utf-8") as f:
-                    content = f.read()
-                self.user_sig_txt.delete("1.0", "end")
-                self.user_sig_txt.insert("1.0", content)
-                self.status_lbl.configure(text=tr("profile.sig_loaded_success", "✅ Signatur geladen!"), text_color="green")
-            except Exception as e:
-                self.status_lbl.configure(text=f"⚠ Fehler beim Laden der Signatur: {e}", text_color="red")
-
-    def open_create_profile_dialog(self):
-        from services.i18n_service import tr
-        dialog = self.register_i18n(ctk.CTkInputDialog(
-            text=tr("profile.input_new_user_text", "Geben Sie den Namen des neuen Mitarbeiters ein:"),
-            title=tr("profile.input_new_user_title", "Neues Mitarbeiter-Profil anlegen"),
-        ), "profile.input_new_user_text", "Geben Sie den Namen des neuen Mitarbeiters ein:")
-        name_input = dialog.get_input()
-        if name_input and name_input.strip():
-            new_name = name_input.strip()
-            from models.profile import UserInfo, UserProfile
-            new_profile = UserProfile(user=UserInfo(name=new_name))
-            self.storage_service.save_profile(new_profile)
-
-            # Refresh list & switch
-            self.profile = new_profile
-            profiles_list = self.storage_service.list_profiles()
-            self.profile_combo.configure(values=profiles_list)
-            self.profile_combo.set(new_name)
-            self.reload_user_fields()
-            from services.i18n_service import tr
-            self.status_lbl.configure(text=tr("profile.created_and_activated", "Profil '{name}' angelegt und aktiviert!", name=new_name))
-            if self.on_profile_updated:
-                self.on_profile_updated()
-
-    def on_switch_profile(self, selected_name: str):
-        self.profile = self.storage_service.load_profile_by_name(selected_name)
-        self.storage_service.save_profile(self.profile)
-        self.reload_user_fields()
-        from services.i18n_service import tr
-        self.status_lbl.configure(text=tr("profile.switched_to", "Profil auf '{name}' gewechselt.", name=selected_name))
-        if self.on_profile_updated:
-            self.on_profile_updated()
-
-    def reload_user_fields(self):
-        self.user_name_entry.delete(0, "end")
-        self.user_name_entry.insert(0, self.profile.user.name)
-
-        self.user_dept_entry.delete(0, "end")
-        self.user_dept_entry.insert(0, self.profile.user.department)
-
-        self.user_ext_entry.delete(0, "end")
-        self.user_ext_entry.insert(0, self.profile.user.extension)
-
-        self.user_email_entry.delete(0, "end")
-        self.user_email_entry.insert(0, self.profile.user.email)
-
-        self.user_mobile_entry.delete(0, "end")
-        self.user_mobile_entry.insert(0, self.profile.user.mobile)
-
-        if hasattr(self, "user_sig_txt"):
-            self.user_sig_txt.delete("1.0", "end")
-            self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
-
-        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        if hasattr(self, "font_scale_combo"):
-            self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
-        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        if hasattr(self, "popup_target_combo"):
-            from services.i18n_service import tr
-            curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-            self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-
-    def on_font_scale_preview(self, val: str):
-        scale = get_font_scale_val_from_display(val)
-        ctk.set_widget_scaling(scale)
-
-    def on_close(self):
+    def on_close(self) -> None:
         if not getattr(self, "_saved", False):
             ctk.set_widget_scaling(getattr(self, "_initial_font_scale", 1.0))
         self.destroy()
 
-    def close_dialog(self):
+    def close_dialog(self) -> None:
         """Routes every close path (X button, Escape) through the font-scale reset."""
         self.on_close()
 
-    def refresh_ui_labels(self):
-        from services.i18n_service import tr
+    def refresh_ui_labels(self) -> None:
         super().refresh_ui_labels()
-        w, h = DIALOG_DIMENSIONS["profile_settings"]
         if hasattr(self, "top_header_lbl"):
             self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
         if hasattr(self, "save_btn"):
@@ -588,9 +180,7 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
         if hasattr(self, "close_btn"):
             self.close_btn.configure(text=tr("common.close", "Schließen"))
 
-        # Undocumented CTkTabview internal used to rename tab labels in place;
-        # guarded by the hasattr() checks - customtkinter's stubs don't
-        # declare it.
+        # Undocumented CTkTabview internal used to rename tab labels in place
         if hasattr(self, "tabview") and hasattr(self.tabview, "_segmented_button") and hasattr(self.tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
             btns = self.tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]
             new_tab_name_map = {}
@@ -603,603 +193,24 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
                     btns[new_txt] = btns.pop(orig_name)
             self._tab_name_map = new_tab_name_map
 
-        if hasattr(self, "popup_target_combo"):
-            curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-            opt_app = tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)")
-            opt_pri = tr("profile.popup_target_primary", "Hauptbildschirm")
-            self.popup_target_combo.configure(values=[opt_app, opt_pri])
-            self.popup_target_combo.set(opt_app if curr_target == "APP_SCREEN" else opt_pri)
-
-        if hasattr(self, "appearance_hdr_lbl"):
-            self.appearance_hdr_lbl.configure(text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"))
-        if hasattr(self, "lang_lbl"):
-            self.lang_lbl.configure(text=tr("profile.language", "Sprache / Language:"))
-        if hasattr(self, "theme_lbl"):
-            self.theme_lbl.configure(text=tr("profile.theme", "Farb-Thema (Theme):"))
-        if hasattr(self, "font_scale_lbl"):
-            self.font_scale_lbl.configure(text=tr("profile.font_scale", "Schriftgröße / Skalierung:"))
-        if hasattr(self, "font_scale_combo"):
-            curr_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
-            self.font_scale_combo.configure(values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS])
-            self.font_scale_combo.set(get_font_scale_display(curr_scale))
-        if hasattr(self, "default_layout_lbl"):
-            self.default_layout_lbl.configure(text=tr("profile.default_layout", "Standard-Layout beim Start:"))
-        if hasattr(self, "demo_switch"):
-            self.demo_switch.configure(text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"))
-        if hasattr(self, "os_popup_switch"):
-            self.os_popup_switch.configure(text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"))
-        if hasattr(self, "popup_target_lbl"):
-            self.popup_target_lbl.configure(text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
-        if hasattr(self, "col_widths_hdr_lbl"):
-            self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
-        if hasattr(self, "btn_reset_widths"):
-            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"))
-        if hasattr(self, "widths_label"):
-            widths = self.profile.ui_settings.column_widths
-            def build_widths_str(w_dict: dict) -> str:
-                return tr(
-                    "profile.widths_summary",
-                    "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
-                    "• Kanban-Board: Mindestspaltenbreite {board}px\n"
-                    "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
-                    left=w_dict.get('cockpit_left', 300),
-                    center=w_dict.get('cockpit_center', 420),
-                    right=w_dict.get('cockpit_right', 320),
-                    board=w_dict.get('board_column', 280),
-                    id=w_dict.get('table_col_id', 120),
-                    prac=w_dict.get('table_col_practice', 220),
-                    title=w_dict.get('table_col_title', 280),
-                    score=w_dict.get('table_col_score', 90),
-                )
-            self.widths_label.configure(text=build_widths_str(widths))
-
-        if hasattr(self, "user_tab_hdr_lbl"):
-            self.user_tab_hdr_lbl.configure(text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"))
-        if hasattr(self, "active_prof_lbl"):
-            self.active_prof_lbl.configure(text=tr("profile.active_profile", "Aktives Profil:"))
-        if hasattr(self, "btn_new_prof"):
-            self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
-        if hasattr(self, "user_details_hdr_lbl"):
-            self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
-        if hasattr(self, "sig_lbl"):
-            self.sig_lbl.configure(text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
-        if hasattr(self, "btn_save_sig"):
-            self.btn_save_sig.configure(text=tr("profile.btn_export_signature", "💾 Signatur speichern..."))
-        if hasattr(self, "btn_load_sig"):
-            self.btn_load_sig.configure(text=tr("profile.btn_import_signature", "📂 Signatur laden..."))
-
-        if hasattr(self, "app_shortcuts_hdr_lbl"):
-            self.app_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER))
-        if hasattr(self, "snippet_shortcuts_hdr_lbl"):
-            self.snippet_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER))
-        if hasattr(self, "no_snippets_lbl"):
-            self.no_snippets_lbl.configure(text=tr("profile.no_snippets", LABEL_NO_SNIPPETS))
-        if hasattr(self, "rec_buttons"):
-            for btn in self.rec_buttons:
-                btn.configure(text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON))
-
-    def setup_ui_tab(self):
-        """Integrated into setup_user_tab; retained for backward compatibility."""
-        pass
-
-    def on_reset_column_widths(self):
-        from services.i18n_service import tr
-
-        self.profile.ui_settings.reset_column_widths()
-        self.storage_service.save_profile(self.profile)
-        widths = self.profile.ui_settings.column_widths
-        def build_widths_str(w_dict: dict) -> str:
-            return tr(
-                "profile.widths_summary",
-                "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
-                "• Kanban-Board: Mindestspaltenbreite {board}px\n"
-                "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
-                left=w_dict.get('cockpit_left', 300),
-                center=w_dict.get('cockpit_center', 420),
-                right=w_dict.get('cockpit_right', 320),
-                board=w_dict.get('board_column', 280),
-                id=w_dict.get('table_col_id', 120),
-                prac=w_dict.get('table_col_practice', 220),
-                title=w_dict.get('table_col_title', 280),
-                score=w_dict.get('table_col_score', 90),
-            )
-
-        self.widths_label.configure(text=build_widths_str(widths))
-        self.status_lbl.configure(text=tr("profile.widths_reset_msg", "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!"))
-        if self.on_profile_updated:
-            self.on_profile_updated()
-
-    def setup_paths_tab(self):
-        from services.i18n_service import tr
-
-        self.paths_scroll = ctk.CTkScrollableFrame(self.tab_paths, fg_color="transparent")
-        self.paths_scroll.pack(fill="both", expand=True, padx=5, pady=5)
-
-        # --- Sektion 1: Speicherorte & Dateipfade ---
-        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")), "profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)").pack(anchor="w", pady=(5, 5))
-
-        # Main Workspace Directory
-        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")), "profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:").pack(anchor="w", pady=(5, 2))
-        ws_frame = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
-        ws_frame.pack(fill="x", pady=(0, 10))
-
-        self.ws_entry = self.register_i18n(ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner...")), "profile.workspace_placeholder", "Pfad zum Datenordner...", attr="placeholder_text")
-        self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
-        self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
-
-        btn_browse_ws = self.register_i18n(ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=120), "profile.browse_folder", "📁 Ordner wählen")
-        btn_browse_ws.pack(side="right")
-
-        # Custom Individual File Path Overrides
-        self.register_i18n(ctk.CTkLabel(self.paths_scroll, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")), "profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):").pack(anchor="w", pady=(10, 5))
-
-        # Cases Path Override
-        row_cases = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
-        row_cases.pack(fill="x", pady=2)
-        self.register_i18n(ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=160, anchor="w"), "profile.cases_file", "Fälle (cases.json):").pack(side="left")
-        self.path_cases_entry = self.register_i18n(ctk.CTkEntry(row_cases, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
-        if self.storage_service.config.custom_cases_path:
-            self.path_cases_entry.insert(0, str(self.storage_service.config.custom_cases_path))
-        self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70), "profile.file_browse", "Datei...").pack(side="right")
-
-        # Customers Path Override
-        row_cust = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
-        row_cust.pack(fill="x", pady=2)
-        self.register_i18n(ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=160, anchor="w"), "profile.cust_file", "Kunden (customers.json):").pack(side="left")
-        self.path_cust_entry = self.register_i18n(ctk.CTkEntry(row_cust, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
-        if self.storage_service.config.custom_customers_path:
-            self.path_cust_entry.insert(0, str(self.storage_service.config.custom_customers_path))
-        self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70), "profile.file_browse", "Datei...").pack(side="right")
-
-        # Wiki DB Path Override
-        row_wiki = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
-        row_wiki.pack(fill="x", pady=2)
-        self.register_i18n(ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=160, anchor="w"), "profile.wiki_file", "Wiki DB (sqlite):").pack(side="left")
-        self.path_wiki_entry = self.register_i18n(ctk.CTkEntry(row_wiki, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")), "profile.default_in_data", "Standard im Datenordner", attr="placeholder_text")
-        if self.storage_service.config.custom_wiki_db_path:
-            self.path_wiki_entry.insert(0, str(self.storage_service.config.custom_wiki_db_path))
-        self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70), "profile.file_browse", "Datei...").pack(side="right")
-
-        # Reset button
-        btn_reset_paths = self.register_i18n(ctk.CTkButton(self.paths_scroll, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240), "profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen")
-        btn_reset_paths.pack(anchor="w", pady=(15, 20))
-
-        # --- Sektion 2: Komplett-Datensicherung & ZIP-Archivierung (Datenexport / Import) ---
-        self.register_i18n(ctk.CTkLabel(
-            self.paths_scroll,
-            text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
-            font=ctk.CTkFont(size=14, weight="bold"),
-        ), "profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung").pack(anchor="w", pady=(10, 5))
-
-        desc_str = tr(
-            "profile.backup_desc",
-            "Exportieren Sie Ihren gesamten Datenbestand (alle Fälle, Kunden, Formulare, Exportvorlagen, Mitarbeiter "
-            "und gespeicherten Anhang-Ordner) in eine komprimierte ZIP-Datei. Diese kann zur Sicherung oder für "
-            "den Wechsel auf einen anderen Arbeitsplatz genutzt werden."
-        )
-        ctk.CTkLabel(
-            self.paths_scroll,
-            text=desc_str,
-            font=ctk.CTkFont(size=11),
-            text_color=("gray30", "gray80"),
-            justify="left",
-            anchor="w",
-            wraplength=800,
-        ).pack(anchor="w", pady=(0, 15))
-
-        # Section 2.1: Export
-        exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        exp_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        self.register_i18n(ctk.CTkLabel(
-            exp_card,
-            text=tr("profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren"),
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ), "profile.backup_exp_title", "1. Komplett-Datensatz als ZIP exportieren").pack(anchor="w", padx=12, pady=(10, 2))
-
-        self.register_i18n(ctk.CTkLabel(
-            exp_card,
-            text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
-            anchor="w",
-        ), "profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.").pack(anchor="w", padx=12, pady=(0, 10))
-
-        btn_export = self.register_i18n(ctk.CTkButton(
-            exp_card,
-            text=tr("profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren..."),
-            command=self.on_click_export_zip,
-            fg_color="dodgerblue",
-            width=240,
-        ), "profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren...")
-        btn_export.pack(anchor="w", padx=12, pady=(0, 12))
-
-        # Section 2.2: Import
-        imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        imp_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        self.register_i18n(ctk.CTkLabel(
-            imp_card,
-            text=tr("profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren"),
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ), "profile.backup_imp_title", "2. Datensicherung aus ZIP-Datei importieren").pack(anchor="w", padx=12, pady=(10, 2))
-
-        self.register_i18n(ctk.CTkLabel(
-            imp_card,
-            text=tr("profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her."),
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
-            anchor="w",
-        ), "profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.").pack(anchor="w", padx=12, pady=(0, 10))
-
-        btn_import = self.register_i18n(ctk.CTkButton(
-            imp_card,
-            text=tr("profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren..."),
-            command=self.on_click_import_zip,
-            fg_color="forestgreen",
-            width=240,
-        ), "profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren...")
-        btn_import.pack(anchor="w", padx=12, pady=(0, 12))
-
-        # --- Sektion 3: Automatische Backup-Aufbewahrung (Retention) ---
-        self.register_i18n(
-            ctk.CTkLabel(
-                self.paths_scroll,
-                text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
-                font=ctk.CTkFont(size=14, weight="bold"),
-            ),
-            "profile.retention_title",
-            "🔄 Automatische Backup-Aufbewahrung (Retention)",
-        ).pack(anchor="w", pady=(15, 5))
-
-        self.register_i18n(
-            ctk.CTkLabel(
-                self.paths_scroll,
-                text=tr(
-                    "profile.retention_desc",
-                    "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
-                ),
-                font=ctk.CTkFont(size=11),
-                text_color=("gray40", "gray70"),
-                justify="left",
-                anchor="w",
-                wraplength=800,
-            ),
-            "profile.retention_desc",
-            "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
-        ).pack(anchor="w", pady=(0, 10))
-
-        retention_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        retention_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        # Row 1: Daily days
-        row_daily = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_daily.pack(fill="x", padx=12, pady=(10, 4))
-        self.register_i18n(
-            ctk.CTkLabel(row_daily, text=tr("profile.retention_daily", "Tägliche Backups (Tage vollständig behalten):"), width=340, anchor="w"),
-            "profile.retention_daily",
-            "Tägliche Backups (Tage vollständig behalten):",
-        ).pack(side="left")
-        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=80)
-        self.retention_daily_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "daily_days", 7)))
-        self.retention_daily_entry.pack(side="left", padx=5)
-
-        # Row 2: Weekly weeks
-        row_weekly = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_weekly.pack(fill="x", padx=12, pady=4)
-        self.register_i18n(
-            ctk.CTkLabel(row_weekly, text=tr("profile.retention_weekly", "Wöchentliche Backups (Wochen je 1 Backup):"), width=340, anchor="w"),
-            "profile.retention_weekly",
-            "Wöchentliche Backups (Wochen je 1 Backup):",
-        ).pack(side="left")
-        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=80)
-        self.retention_weekly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "weekly_weeks", 4)))
-        self.retention_weekly_entry.pack(side="left", padx=5)
-
-        # Row 3: Monthly months
-        row_monthly = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_monthly.pack(fill="x", padx=12, pady=(4, 10))
-        self.register_i18n(
-            ctk.CTkLabel(row_monthly, text=tr("profile.retention_monthly", "Monatliche Backups (Monate je 1 Backup):"), width=340, anchor="w"),
-            "profile.retention_monthly",
-            "Monatliche Backups (Monate je 1 Backup):",
-        ).pack(side="left")
-        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=80)
-        self.retention_monthly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "monthly_months", 6)))
-        self.retention_monthly_entry.pack(side="left", padx=5)
-
-        # Row 4: Manual prune button
-        btn_prune = self.register_i18n(
-            ctk.CTkButton(
-                retention_card,
-                text=tr("profile.retention_prune_now_btn", "🧹 Jetzt alte Backups bereinigen"),
-                command=self.on_click_prune_backups,
-                fg_color="gray40",
-                hover_color="gray50",
-                width=240,
-            ),
-            "profile.retention_prune_now_btn",
-            "🧹 Jetzt alte Backups bereinigen",
-        )
-        btn_prune.pack(anchor="w", padx=12, pady=(0, 12))
-
-    def on_browse_workspace(self):
-        from tkinter import filedialog
-        from services.i18n_service import tr
-        chosen = filedialog.askdirectory(title=tr("profile.browse_folder_title", "Datenordner auswählen"), initialdir=self.ws_entry.get().strip() or None)
-        if chosen:
-            self.ws_entry.delete(0, "end")
-            self.ws_entry.insert(0, chosen)
-
-    def on_browse_file(self, entry_widget: ctk.CTkEntry, file_pattern: str):
-        from tkinter import filedialog
-        from services.i18n_service import tr
-        chosen = filedialog.askopenfilename(title=tr("profile.browse_file_title", "Datei auswählen"), filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
-        if chosen:
-            entry_widget.delete(0, "end")
-            entry_widget.insert(0, chosen)
-
-    def on_reset_paths(self):
-        self.path_cases_entry.delete(0, "end")
-        self.path_cust_entry.delete(0, "end")
-        self.path_wiki_entry.delete(0, "end")
-
-    def setup_wiki_tab(self):
-        from services.i18n_service import tr
-
-        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_title", "BookStack Server Konfiguration"), font=ctk.CTkFont(size=14, weight="bold")), "profile.wiki_title", "BookStack Server Konfiguration").pack(anchor="w", pady=(10, 5))
-
-        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_url", "BookStack API URL:")), "profile.wiki_url", "BookStack API URL:").pack(anchor="w", pady=(5, 2))
-        self.wiki_url_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api")), "profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api", attr="placeholder_text")
-        self.wiki_url_entry.insert(0, self.profile.wiki_settings.api_url)
-        self.wiki_url_entry.pack(fill="x", pady=(0, 10))
-
-        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_id", "API Token ID:")), "profile.wiki_token_id", "API Token ID:").pack(anchor="w", pady=(5, 2))
-        self.wiki_token_id_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_id_placeholder", "Token ID")), "profile.wiki_token_id_placeholder", "Token ID", attr="placeholder_text")
-        self.wiki_token_id_entry.insert(0, self.profile.wiki_settings.token_id)
-        self.wiki_token_id_entry.pack(fill="x", pady=(0, 10))
-
-        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_token_secret", "API Token Secret:")), "profile.wiki_token_secret", "API Token Secret:").pack(anchor="w", pady=(5, 2))
-        self.wiki_token_secret_entry = self.register_i18n(ctk.CTkEntry(self.tab_wiki, placeholder_text=tr("profile.wiki_token_secret_placeholder", "Token Secret"), show="*"), "profile.wiki_token_secret_placeholder", "Token Secret", attr="placeholder_text")
-        self.wiki_token_secret_entry.insert(0, self.profile.wiki_settings.token_secret)
-        self.wiki_token_secret_entry.pack(fill="x", pady=(0, 10))
-
-        self.register_i18n(ctk.CTkLabel(self.tab_wiki, text=tr("profile.wiki_sync_mode", "Synchronisations-Modus:")), "profile.wiki_sync_mode", "Synchronisations-Modus:").pack(anchor="w", pady=(5, 2))
-        self.sync_mode_combo = ctk.CTkOptionMenu(self.tab_wiki, values=[SyncMode.METADATA_ONLY.value, SyncMode.FULL_OFFLINE.value])
-        self.sync_mode_combo.set(self.profile.wiki_settings.sync_mode)
-        self.sync_mode_combo.pack(fill="x", pady=(0, 10))
-
-        self.sync_startup_var = ctk.BooleanVar(value=self.profile.wiki_settings.sync_on_startup)
-        self.register_i18n(ctk.CTkCheckBox(self.tab_wiki, text=tr("profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren"), variable=self.sync_startup_var), "profile.wiki_sync_startup", "Wiki-Inhalte beim Anwendungsstart synchronisieren").pack(anchor="w", pady=5)
-
-    def setup_scoring_tab(self):
-        from services.i18n_service import tr
-        scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, padx=5, pady=5)
-
-        self.app_shortcuts_hdr_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER)
-        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 5))
-
-        self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
-        self.rec_buttons: list[ctk.CTkButton] = []
-
-        for attr_name, label_text in HOTKEY_ACTION_LABELS:
-            row = ctk.CTkFrame(scroll, fg_color="transparent")
-            row.pack(fill="x", pady=2)
-            ctk.CTkLabel(row, text=label_text, width=180, anchor="w").pack(side="left")
-
-            val = getattr(self.profile.shortcuts, attr_name, "")
-            entry = ctk.CTkEntry(row, width=140)
-            entry.insert(0, val)
-            entry.pack(side="left", padx=(5, 5))
-            self.shortcut_entries[attr_name] = entry
-
-            rec_btn = self.register_i18n(ctk.CTkButton(
-                row,
-                text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                width=120,
-                fg_color=("gray75", "gray30"),
-                hover_color=("gray65", "gray40"),
-                command=lambda e=entry: self.open_hotkey_recorder(e)
-            ), "hotkey_recorder.button", HOTKEY_RECORDER_BUTTON)
-            rec_btn.pack(side="left")
-            self.rec_buttons.append(rec_btn)
-
-            entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
-
-        # --- Text-Makros (Snippets) Section ---
-        self.snippet_shortcuts_hdr_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")), "profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER)
-        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(20, 5))
-
-        self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
-        all_snippets = self.snippet_service.get_all_snippets()
-
-        if not all_snippets:
-            self.no_snippets_lbl = self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60"), "profile.no_snippets", LABEL_NO_SNIPPETS)
-            self.no_snippets_lbl.pack(anchor="w", pady=2)
-        else:
-            for snip in all_snippets:
-                s_row = ctk.CTkFrame(scroll, fg_color="transparent")
-                s_row.pack(fill="x", pady=2)
-
-                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:30]} ({snip.snippet_id}):", width=220, anchor="w")
-                title_lbl.pack(side="left")
-
-                s_entry = ctk.CTkEntry(s_row, width=140)
-                s_entry.insert(0, snip.shortcut or "")
-                s_entry.pack(side="left", padx=(5, 5))
-                self.snippet_shortcut_entries.append((snip, s_entry))
-
-                s_rec_btn = self.register_i18n(ctk.CTkButton(
-                    s_row,
-                    text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                    width=120,
-                    fg_color=("gray75", "gray30"),
-                    hover_color=("gray65", "gray40"),
-                    command=lambda e=s_entry: self.open_hotkey_recorder(e)
-                ), "hotkey_recorder.button", HOTKEY_RECORDER_BUTTON)
-                s_rec_btn.pack(side="left")
-                self.rec_buttons.append(s_rec_btn)
-
-                s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
-
-        # Conflict Warning Label
-        self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color="red", font=ctk.CTkFont(weight="bold"))
-        self.conflict_warn_lbl.pack(fill="x", pady=(5, 5))
-
-        # --- Prioritäts-Scoring Section ---
-        from services.i18n_service import tr
-        self.register_i18n(ctk.CTkLabel(scroll, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")), "profile.scoring_points_title", "Prioritäts-Scoring Punkte").pack(anchor="w", pady=(15, 5))
-
-        row4 = ctk.CTkFrame(scroll, fg_color="transparent")
-        row4.pack(fill="x", pady=3)
-        self.register_i18n(ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")), "profile.vip_bonus_lbl", "VIP-Bonus (Punkte):").pack(side="left")
-        self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
-        self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
-        self.vip_bonus_entry.pack(side="right")
-
-    def open_hotkey_recorder(self, target_entry: ctk.CTkEntry):
-        def on_recorded(key_str: str):
-            target_entry.delete(0, "end")
-            target_entry.insert(0, key_str)
-            self.validate_shortcut_conflicts()
-
-        HotkeyRecorderDialog(self, on_recorded)
-
-    def validate_shortcut_conflicts(self) -> bool:
-        keys = []
-        for entry in self.shortcut_entries.values():
-            val = entry.get().strip()
-            if val:
-                keys.append(val)
-        for _, entry in self.snippet_shortcut_entries:
-            val = entry.get().strip()
-            if val:
-                keys.append(val)
-
-        duplicates = set([k for k in keys if keys.count(k) > 1])
-        if duplicates:
-            dup_str = ", ".join(duplicates)
-            self.conflict_warn_lbl.configure(text=STATUS_SHORTCUT_CONFLICT.format(dup_str=dup_str))
-            return False
-        else:
-            self.conflict_warn_lbl.configure(text="")
-            return True
-
-    def save_settings(self):
-        from pathlib import Path
-        from services.i18n_service import tr
-        name = self.user_name_entry.get().strip()
-        if not name:
-            self.status_lbl.configure(text=tr("profile.username_empty", "⚠ Benutzername darf nicht leer sein!"), text_color="red")
+        self.refresh_user_tab_labels()
+        self.refresh_ui_tab_labels()
+        self.refresh_shortcuts_tab_labels()
+        self.refresh_wiki_tab_labels()
+
+    def save_settings(self) -> None:
+        if not self.save_user_settings():
             return
-
-        # Update User
-        self.profile.user.name = name
-        self.profile.user.department = self.user_dept_entry.get().strip() or "Support"
-        self.profile.user.extension = self.user_ext_entry.get().strip()
-        self.profile.user.email = self.user_email_entry.get().strip()
-        self.profile.user.mobile = self.user_mobile_entry.get().strip()
-        if hasattr(self, "user_sig_txt"):
-            self.profile.user.email_signature = self.user_sig_txt.get("1.0", "end-1c").strip()
-
-        # Update UI Settings & Reminders
-        if hasattr(self, "language_combo"):
-            lang_display = self.language_combo.get()
-            from services.i18n_service import LANGUAGE_DISPLAY_TO_CODE, get_i18n
-            lang_code = LANGUAGE_DISPLAY_TO_CODE.get(lang_display, "de")
-            self.profile.ui_settings.language = lang_code
-            get_i18n().current_language = lang_code
-
-        self.profile.ui_settings.theme = get_theme_val_from_display(self.theme_combo.get())
-        if hasattr(self, "font_scale_combo"):
-            chosen_scale = get_font_scale_val_from_display(self.font_scale_combo.get())
-            self.profile.ui_settings.font_scale = chosen_scale
-            ctk.set_widget_scaling(chosen_scale)
-            self._initial_font_scale = chosen_scale
-        self._saved = True
-        self.profile.ui_settings.default_layout = get_layout_val_from_display(self.layout_combo.get())
-        if hasattr(self, "demo_switch"):
-            self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
-        if hasattr(self, "os_popup_switch"):
-            self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
-        if hasattr(self, "popup_target_combo"):
-            val = self.popup_target_combo.get()
-            self.profile.ui_settings.popup_display_target = "PRIMARY_SCREEN" if "Hauptbildschirm" in val else "APP_SCREEN"
-
-        # Update Workspace & Custom File Paths
-        ws_path_str = self.ws_entry.get().strip()
-        if ws_path_str:
-            self.storage_service.config.workspace_dir = Path(ws_path_str)
-
-        cases_override = self.path_cases_entry.get().strip()
-        self.storage_service.config.custom_cases_path = Path(cases_override) if cases_override else None
-
-        cust_override = self.path_cust_entry.get().strip()
-        self.storage_service.config.custom_customers_path = Path(cust_override) if cust_override else None
-
-        wiki_override = self.path_wiki_entry.get().strip()
-        self.storage_service.config.custom_wiki_db_path = Path(wiki_override) if wiki_override else None
-
-        self.storage_service.config.ensure_directories()
-        self.storage_service.config.save_user_config()
-
-        # Update Wiki Settings
-        self.profile.wiki_settings.api_url = self.wiki_url_entry.get().strip()
-        self.profile.wiki_settings.token_id = self.wiki_token_id_entry.get().strip()
-        self.profile.wiki_settings.token_secret = self.wiki_token_secret_entry.get().strip()
-        self.profile.wiki_settings.sync_mode = self.sync_mode_combo.get()
-        self.profile.wiki_settings.sync_on_startup = self.sync_startup_var.get()
-
-        # Update AI Settings
-        provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"
-        self.profile.ai_settings.provider = provider_val
-        self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
-        self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
-        self.profile.ai_settings.gemini_api_key = self.gemini_key_entry.get().strip()
-        self.profile.ai_settings.gemini_model = self.gemini_model_combo.get()
-        self.profile.ai_settings.enable_anonymization = self.anonymize_chk_var.get()
-        self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
-        self.profile.ai_settings.use_modelfile_rules_for_gemini = self.gemini_modelfile_chk_var.get()
-        raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
-        self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
-
-        # Update Shortcuts & Snippet Macros with conflict validation
-        if not self.validate_shortcut_conflicts():
-            self.status_lbl.configure(text=STATUS_SHORTCUT_CONFLICT_GENERIC, text_color="red")
+        if not self.save_ui_settings():
             return
-
-        for attr_name, entry in self.shortcut_entries.items():
-            setattr(self.profile.shortcuts, attr_name, entry.get().strip())
-
-        for snip, entry in self.snippet_shortcut_entries:
-            snip.shortcut = entry.get().strip()
-            self.snippet_service.add_or_update_snippet(snip)
-
-        try:
-            self.profile.scoring_matrix.vip_bonus_points = int(self.vip_bonus_entry.get().strip())
-        except ValueError:
-            pass
-
-        # Update Backup Retention Settings
-        if hasattr(self, "retention_daily_entry"):
-            try:
-                self.profile.backup_settings.daily_days = max(1, int(self.retention_daily_entry.get().strip()))
-            except ValueError:
-                pass
-        if hasattr(self, "retention_weekly_entry"):
-            try:
-                self.profile.backup_settings.weekly_weeks = max(0, int(self.retention_weekly_entry.get().strip()))
-            except ValueError:
-                pass
-        if hasattr(self, "retention_monthly_entry"):
-            try:
-                self.profile.backup_settings.monthly_months = max(0, int(self.retention_monthly_entry.get().strip()))
-            except ValueError:
-                pass
+        if not self.save_paths_settings():
+            return
+        if not self.save_wiki_settings():
+            return
+        if not self.save_ai_settings():
+            return
+        if not self.save_shortcuts_settings():
+            return
 
         self.storage_service.save_profile(self.profile)
         self.refresh_ui_labels()
@@ -1207,107 +218,3 @@ class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
 
         if self.on_profile_updated:
             self.on_profile_updated()
-
-    def on_click_prune_backups(self):
-        from services.i18n_service import tr
-        from models.profile import BackupSettings
-
-        try:
-            d = max(1, int(self.retention_daily_entry.get().strip())) if hasattr(self, "retention_daily_entry") else 7
-            w = max(0, int(self.retention_weekly_entry.get().strip())) if hasattr(self, "retention_weekly_entry") else 4
-            m = max(0, int(self.retention_monthly_entry.get().strip())) if hasattr(self, "retention_monthly_entry") else 6
-            active_settings = BackupSettings(daily_days=d, weekly_weeks=w, monthly_months=m)
-        except Exception:
-            active_settings = getattr(self.profile, "backup_settings", BackupSettings())
-
-        deleted = self.storage_service.prune_old_backups(settings=active_settings)
-        if deleted:
-            self.status_lbl.configure(
-                text=tr("profile.retention_pruned_count", "🧹 {count} veraltete Backup(s) bereinigt.", count=len(deleted)),
-                text_color="green",
-            )
-        else:
-            self.status_lbl.configure(
-                text=tr("profile.retention_pruned_none", "ℹ Keine veralteten Backups zum Bereinigen gefunden."),
-                text_color="gray70",
-            )
-
-    def setup_backup_tab(self):
-        """Integrated into setup_paths_tab; retained for backward compatibility."""
-        pass
-
-    def on_click_export_zip(self):
-        from tkinter import filedialog
-        from pathlib import Path
-        from services.zip_backup_service import ZipBackupService
-        from services.i18n_service import tr
-
-        dest_file = filedialog.asksaveasfilename(
-            title=tr("profile.save_zip_title", "Datensicherung als ZIP speichern"),
-            defaultextension=".zip",
-            filetypes=[("ZIP-Archiv", "*.zip")],
-            initialfile="SupportCockpit_Backup.zip",
-            parent=self,
-        )
-        if not dest_file:
-            return
-
-        res = ZipBackupService.export_backup_zip(self.storage_service, Path(dest_file))
-        mb_size = res["total_bytes"] / (1024 * 1024)
-        self.status_lbl.configure(
-            text=tr(
-                "profile.zip_backup_success",
-                "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
-                file_count=res["file_count"],
-                mb_size=mb_size,
-            ),
-            text_color="green",
-        )
-
-    def on_click_import_zip(self):
-        from tkinter import filedialog
-        from pathlib import Path
-        from services.zip_backup_service import ZipBackupService
-        from services.i18n_service import tr
-        from ui.dialogs.zip_import_dialog import ZipImportPathDialog
-
-        zip_file = filedialog.askopenfilename(
-            title=tr("profile.select_zip_title", "Datensicherung (ZIP-Datei) auswählen"),
-            filetypes=[("ZIP-Archiv", "*.zip")],
-            parent=self,
-        )
-        if not zip_file:
-            return
-
-        zip_p = Path(zip_file)
-        default_data = self.storage_service.config.data_dir
-        default_att = self.storage_service.config.attachments_dir
-
-        def on_confirmed(target_data: Path, target_att: Path):
-            res = ZipBackupService.import_backup_zip(zip_p, target_data, target_att)
-
-            # Update paths in config
-            self.storage_service.config.custom_cases_path = target_data / "cases.json"
-            self.storage_service.config.custom_customers_path = target_data / "customers.json"
-            self.storage_service.config.ensure_directories()
-            self.storage_service.config.save_user_config()
-
-            self.status_lbl.configure(
-                text=tr(
-                    "profile.zip_import_success",
-                    "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
-                    data_files=res["extracted_data_files"],
-                    attachment_files=res["extracted_attachment_files"],
-                ),
-                text_color="green",
-            )
-            if self.on_profile_updated:
-                self.on_profile_updated()
-
-        ZipImportPathDialog(
-            self,
-            zip_file_path=zip_p,
-            default_data_dir=default_data,
-            default_attachments_dir=default_att,
-            on_import_confirmed=on_confirmed,
-        )

@@ -740,3 +740,18 @@ class AiSettingsTabMixin:
 
         import threading
         threading.Thread(target=worker, daemon=True).start()
+
+    def save_ai_settings(self) -> bool:
+        provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"
+        self.profile.ai_settings.provider = provider_val
+        self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
+        self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()
+        self.profile.ai_settings.gemini_api_key = self.gemini_key_entry.get().strip()
+        self.profile.ai_settings.gemini_model = self.gemini_model_combo.get()
+        self.profile.ai_settings.enable_anonymization = self.anonymize_chk_var.get()
+        self.profile.ai_settings.enable_ai = bool(self.ai_enable_chk.get())
+        self.profile.ai_settings.use_modelfile_rules_for_gemini = self.gemini_modelfile_chk_var.get()
+        raw_rules = self.ai_base_rules_txt.get("1.0", "end-1c").splitlines()
+        self.profile.ai_settings.base_rules = [r.strip() for r in raw_rules if r.strip()]
+        return True
+

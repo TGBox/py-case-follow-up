@@ -178,6 +178,30 @@ class Case:
     attachment_directory: str = ""
     timeline: list[TimelineEntry] = field(default_factory=list)
     is_demo_data: bool = False
+    _searchable_text: str | None = field(default=None, repr=False, compare=False)
+
+    def get_searchable_text(self) -> str:
+        """Returns lowercased fulltext search string, caching it on first compute."""
+        if self._searchable_text is None:
+            form_vals = [str(v) for v in self.form_data.values()] if isinstance(self.form_data, dict) else []
+            self._searchable_text = " ".join([
+                self.case_id,
+                self.classification.title,
+                " ".join(self.classification.tags),
+                self.customer.customer_id,
+                self.customer.practice_name,
+                self.customer.contact_person,
+                self.customer.phone,
+                self.workflow_status.followup_note,
+                " ".join(form_vals),
+                " ".join(t.note for t in self.timeline),
+                " ".join(t.author for t in self.timeline),
+            ]).lower()
+        return self._searchable_text
+
+    def invalidate_search_cache(self) -> None:
+        """Invalidates the cached searchable text."""
+        self._searchable_text = None
 
     @property
     def is_internal(self) -> bool:

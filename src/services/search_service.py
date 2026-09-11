@@ -144,21 +144,7 @@ class SearchService:
 
         # 8. Free text terms
         if query.free_text_terms:
-            form_vals = [str(v) for v in case.form_data.values()] if isinstance(case.form_data, dict) else []
-            searchable_text = " ".join([
-                case.case_id,
-                case.classification.title,
-                " ".join(case.classification.tags),
-                case.customer.customer_id,
-                case.customer.practice_name,
-                case.customer.contact_person,
-                case.customer.phone,
-                case.workflow_status.followup_note,
-                " ".join(form_vals),
-                " ".join(t.note for t in case.timeline),
-                " ".join(t.author for t in case.timeline),
-            ]).lower()
-
+            searchable_text = case.get_searchable_text()
             for term in query.free_text_terms:
                 if term.lower() not in searchable_text:
                     return False

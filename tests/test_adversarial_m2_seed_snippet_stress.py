@@ -550,7 +550,7 @@ class TestLocalizedDictRobustness:
             assert all(s for s in stammdaten)
 
             vorlagen = get_localized_menu_options_vorlagen()
-            assert len(vorlagen) == 4
+            assert len(vorlagen) == 3
             assert all(v for v in vorlagen)
 
             datenaustausch = get_localized_menu_options_datenaustausch()

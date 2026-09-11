@@ -43,6 +43,7 @@ class CockpitLayoutBuilderMixin:
         current_case: Any
         case_list_widget: Any
         on_paned_sash_released: Callable[..., Any]
+        _on_paned_configure: Callable[..., Any]
         on_select_case_from_list: Callable[..., Any]
         on_search_changed: Callable[..., Any]
         on_manage_module_tags: Callable[..., Any]
@@ -90,6 +91,7 @@ class CockpitLayoutBuilderMixin:
         )
         self.paned.pack(fill="both", expand=True, padx=2, pady=2)
         self.paned.bind("<ButtonRelease-1>", self.on_paned_sash_released)
+        self.paned.bind("<Configure>", self._on_paned_configure, add="+")
         return w_left, w_right
 
     def _build_left_pane(self):

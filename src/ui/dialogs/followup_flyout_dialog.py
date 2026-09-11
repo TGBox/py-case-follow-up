@@ -49,8 +49,9 @@ class FollowupFlyoutDialog(BaseDialog):
         ), "followup.due_header", "🔔 Fällige Wiedervorlagen ({count})", count=len(self.due_cases))
         header.pack(anchor="w", pady=(0, 10))
 
-        scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, pady=(0, 10))
+        self.scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
+        self.scroll.pack(fill="both", expand=True, pady=(0, 10))
+        scroll = self.scroll
 
         if not self.due_cases:
             self.register_i18n(ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=13)), "followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden.").pack(pady=20)
@@ -62,12 +63,13 @@ class FollowupFlyoutDialog(BaseDialog):
                 top_row = ctk.CTkFrame(card, fg_color="transparent")
                 top_row.pack(fill="x", padx=10, pady=(6, 2))
 
-                title_str = f"[{case.case_id}] {case.classification.title}"
-                lbl_title = ctk.CTkLabel(top_row, text=title_str, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
-                lbl_title.pack(side="left", fill="x", expand=True)
-
                 btn_select = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.open", "👁 Öffnen"), width=80, command=lambda c=case: self.select_case(c)), "common.open", "👁 Öffnen")
-                btn_select.pack(side="right")
+                btn_select.pack(side="right", padx=(8, 0))
+
+                title_str = f"[{case.case_id}] {case.classification.title}"
+                disp_title = self._truncate_title_to_two_lines(title_str)
+                lbl_title = ctk.CTkLabel(top_row, text=disp_title, font=ctk.CTkFont(size=13, weight="bold"), anchor="w", justify="left", wraplength=520)
+                lbl_title.pack(side="left", fill="x", expand=True)
 
                 info_str = tr("followup.due_card_info", "Kunde: {customer} | Fällig seit: {time}", customer=case.customer.practice_name, time=format_german_datetime(case.workflow_status.followup_at))
                 ctk.CTkLabel(card, text=info_str, font=ctk.CTkFont(size=11), text_color="darkorange", anchor="w").pack(fill="x", padx=10, pady=(0, 4))
@@ -83,7 +85,28 @@ class FollowupFlyoutDialog(BaseDialog):
                 # preset button commands below can already close over it), matching the
                 # layout of the general Wiedervorlage dialog.
                 picker_row = ctk.CTkFrame(act_frame, fg_color="transparent")
-                picker = DatePickerWidget(picker_row, include_time=True, width=150)
+                btn_apply = self.register_i18n(
+                    ctk.CTkButton(
+                        picker_row,
+                        text=tr("ui_buttons.apply", "✓ Übernehmen"),
+                        width=95,
+                        fg_color="forestgreen",
+                        hover_color="darkgreen",
+                        state="disabled",
+                        command=lambda c=case, p=None: None,
+                    ),
+                    "ui_buttons.apply",
+                    "✓ Übernehmen",
+                )
+                btn_apply.pack(side="right")
+
+                def make_on_change(btn=btn_apply):
+                    def _on_change(val: str):
+                        btn.configure(state="normal" if val.strip() else "disabled")
+                    return _on_change
+
+                picker = DatePickerWidget(picker_row, include_time=True, width=150, on_change=make_on_change(btn_apply))
+                btn_apply.configure(command=lambda c=case, p=picker: self.apply_new_time(c, p))
 
                 # Row 1: Short term shifts (+1h, +2h, Heute 16:30, Erledigt)
                 act_row1 = ctk.CTkFrame(act_frame, fg_color="transparent")
@@ -108,7 +131,6 @@ class FollowupFlyoutDialog(BaseDialog):
                 picker_row.pack(fill="x", pady=(4, 0))
                 self.register_i18n(ctk.CTkLabel(picker_row, text=tr("followup.new_time_lbl", "🕒 Neue Zeit:"), font=ctk.CTkFont(size=11, weight="bold")), "followup.new_time_lbl", "🕒 Neue Zeit:").pack(side="left", padx=(0, 6))
                 picker.pack(side="left", fill="x", expand=True, padx=(0, 6))
-                self.register_i18n(ctk.CTkButton(picker_row, text=tr("ui_buttons.apply", "✓ Übernehmen"), width=95, fg_color="forestgreen", hover_color="darkgreen", command=lambda c=case, p=picker: self.apply_new_time(c, p)), "ui_buttons.apply", "✓ Übernehmen").pack(side="right")
 
         btn_close = self.register_i18n(ctk.CTkButton(main_frame, text=tr("common.close", "Schließen"), fg_color=("gray70", "gray40"), hover_color=("gray60", "gray50"), command=self.safe_close, width=100), "common.close", "Schließen")
         btn_close.pack(side="right")
@@ -190,11 +212,30 @@ class FollowupFlyoutDialog(BaseDialog):
         new_dt = get_local_now() + timedelta(days=days)
         picker.set_date(f"{format_german_date(new_dt)} 09:00")
 
+    @staticmethod
+    def _truncate_title_to_two_lines(text: str, line_length: int = 55) -> str:
+        import textwrap
+        lines = textwrap.wrap(text, width=line_length)
+        if not lines:
+            return ""
+        if len(lines) <= 2:
+            return "\n".join(lines)
+        line2 = lines[1]
+        if len(line2) > line_length - 3:
+            line2 = line2[:line_length - 3] + "..."
+        else:
+            line2 = line2 + "..."
+        return f"{lines[0]}\n{line2}"
+
     def apply_new_time(self, case: Case, picker: DatePickerWidget):
-        iso_val = picker.get_iso()
-        if not iso_val:
+        from utils.datetime_utils import parse_flexible_followup_input
+        raw_val = picker.get()
+        if not raw_val:
             return
-        case.workflow_status.followup_at = format_german_datetime(iso_val)
+        dt = parse_flexible_followup_input(raw_val)
+        if not dt:
+            return
+        case.workflow_status.followup_at = format_german_datetime(dt)
         self._on_action_completed(case)
 
     def complete_followup(self, case: Case):

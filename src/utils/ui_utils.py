@@ -143,9 +143,25 @@ def patch_ctk_tabview() -> None:
     ctk.CTkTabview._ctk_resilience_patched = True  # pyright: ignore[reportAttributeAccessIssue]
 
 
+def patch_ctk_rendering() -> None:
+    """Configures CustomTkinter DrawEngine to use polygon shapes instead of font shapes.
+
+    On Windows, CustomTkinter defaults to `font_shapes` which rasterizes font glyphs for rounded
+    borders and corners. When moving windows between displays with differing DPI scales or resolutions,
+    font glyph scaling distorts outlines and borders of dropdowns and widgets. Setting
+    `DrawEngine.preferred_drawing_method = "polygon_shapes"` renders native vector polygons.
+    """
+    try:
+        from customtkinter.windows.widgets.core_rendering import DrawEngine
+        DrawEngine.preferred_drawing_method = "polygon_shapes"
+    except Exception:
+        pass
+
+
 # Automatically apply patches on import
 patch_ctk_scrollable_frame()
 patch_ctk_tabview()
+patch_ctk_rendering()
 
 
 

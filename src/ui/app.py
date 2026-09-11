@@ -72,6 +72,51 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         ctk.set_widget_scaling(font_scale)
 
         super().__init__()
+        # Immediately withdraw to prevent any brief flash of unrendered/half-configured layout
+        self.withdraw()
+
+        # Set Theme
+        theme_mode = self.profile.ui_settings.theme
+        ctk.set_appearance_mode(theme_mode)
+
+        # Configure Window
+        from services.i18n_service import tr
+        self.title(tr("app.window_title", APP_WINDOW_TITLE))
+        self.geometry("1440x880")
+        self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
+        self._set_scaled_min_max()
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
+
+        self.apply_windows_theme(theme_mode == "Dark")
+
+        # Startup Splash Screen Overlay (constructed immediately and placed over full window)
+        self.splash_overlay: ctk.CTkFrame | None = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
+        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+
+        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
+        splash_box.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
+        self.splash_title_lbl.pack(pady=(0, 8))
+        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
+        self.splash_msg_lbl.pack()
+
+        # Reveal the window now that splash overlay is covering it completely
+        self.deiconify()
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
+        self.splash_overlay.lift()
+        self.update()
+
+        self._initial_map_done = False
+        self.bind("<Map>", self._on_initial_window_mapped, add="+")
+        self.after(100, self._maximize_initial_window)
+        self.after(400, self._maximize_initial_window)
 
         self.customer_service = CustomerService(self.storage_service)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
@@ -85,27 +130,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.deep_search_service = DeepSearchService(self.app_config.workspace_dir)
         from services.snippet_service import SnippetService
         self.snippet_service = SnippetService(self.app_config.workspace_dir)
-
-        # Set Theme
-        theme_mode = self.profile.ui_settings.theme
-        ctk.set_appearance_mode(theme_mode)
-
-        # Configure Window directly in maximized mode
-        self.title(tr("app.window_title", APP_WINDOW_TITLE))
-        self.geometry("1440x880")
-        self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
-        self._set_scaled_min_max()
-        try:
-            self.state("zoomed")
-        except Exception:
-            pass
-
-        self._initial_map_done = False
-        self.bind("<Map>", self._on_initial_window_mapped, add="+")
-        self.after(100, self._maximize_initial_window)
-        self.after(400, self._maximize_initial_window)
-
-        self.apply_windows_theme(theme_mode == "Dark")
 
         # Load Working Data
         self.cases: list[Case] = []
@@ -129,22 +153,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.container_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Startup Splash Screen Overlay (prevents layout shifting on launch)
-        self.splash_overlay: ctk.CTkFrame | None = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
-        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
-
-        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
-        splash_box.place(relx=0.5, rely=0.5, anchor="center")
-
-        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
-        self.splash_title_lbl.pack(pady=(0, 8))
-        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
-        self.splash_msg_lbl.pack()
-
-        # Flush the splash to screen BEFORE the expensive view build below.
-        # Tk only paints once the event loop runs or is pumped explicitly, so
-        # without this the splash stayed invisible for exactly the period it is
-        # meant to cover and the window looked frozen.
+        # Ensure splash overlay stays on top while views are initialized
+        if self.splash_overlay:
+            self.splash_overlay.lift()
         self.update_idletasks()
 
         # Views are built on first use (see _get_view); only the layout the
@@ -296,12 +307,22 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
         self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
 
-        # Right side: User, Bell Badge & Theme Toggle
+        # Right side: User, Bell Badge, Help, Theme & Quit
         quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=90, fg_color="#8B0000", hover_color="#B22222")
         quit_btn.pack(side="right", padx=6, pady=4)
 
         theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
         theme_btn.pack(side="right", padx=4, pady=4)
+
+        self.help_btn = ctk.CTkButton(
+            menu_frame,
+            text=tr("common.help_btn", "❓ Hilfe"),
+            command=self.open_help_dialog,
+            width=85,
+            fg_color=("gray75", "gray30"),
+            hover_color=("gray65", "gray40"),
+        )
+        self.help_btn.pack(side="right", padx=4, pady=4)
 
         self.bell_btn = ctk.CTkButton(
             menu_frame,
@@ -312,15 +333,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             hover_color="darkred",
         )
         self.bell_btn.pack(side="right", padx=4, pady=4)
-
-        self.demo_toggle_btn = ctk.CTkButton(
-            menu_frame,
-            text=tr("menu.demo_on", "🧪 Beispieldaten: AN"),
-            command=self.toggle_demo_data,
-            width=135,
-            fg_color="darkblue",
-        )
-        self.demo_toggle_btn.pack(side="right", padx=4, pady=4)
 
         self.user_btn = ctk.CTkButton(
             menu_frame,
@@ -339,8 +351,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
         if choice.startswith("🏥"):
             self.open_customer_management_dialog()
-        elif choice.startswith("🐍"):
-            self.open_cobra_import_dialog()
         elif choice.startswith("👥"):
             self.open_colleague_management_dialog()
         elif choice.startswith("🧩"):
@@ -357,22 +367,20 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.open_template_manager_dialog()
         elif choice.startswith("📝"):
             self.open_snippet_management_dialog()
-        elif choice.startswith("🏷"):
-            self.open_tag_management_dialog(initial_tab="tags")
 
     def _on_datenaustausch_selected(self, choice: str):
         from services.i18n_service import tr
         self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
         if choice.startswith("📥"):
             self.open_email_import_dialog()
+        elif choice.startswith("🐍"):
+            self.open_cobra_import_dialog()
         elif choice.startswith("📤"):
             self.open_export_dialog(self.active_case)
         elif choice.startswith("📦"):
             self.open_zip_export_dialog()
         elif choice.startswith("🔄"):
             self.open_p2p_dialog()
-        elif choice.startswith("📖"):
-            self.open_help_dialog()
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
@@ -581,12 +589,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         else:
             show_demo = not has_user_cases
 
-        from services.i18n_service import tr
-        if self.__dict__.get("demo_toggle_btn"):
+        btn: Any = self.__dict__.get("demo_toggle_btn")
+        if btn is not None:
+            from services.i18n_service import tr
             if show_demo:
-                self.demo_toggle_btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color="darkblue")
+                btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color="darkblue")
             else:
-                self.demo_toggle_btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color="gray40")
+                btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color="gray40")
 
         self.check_due_followups()
 

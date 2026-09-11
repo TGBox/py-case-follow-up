@@ -152,8 +152,11 @@ def patch_ctk_rendering() -> None:
     `DrawEngine.preferred_drawing_method = "polygon_shapes"` renders native vector polygons.
     """
     try:
-        from customtkinter.windows.widgets.core_rendering import DrawEngine
-        DrawEngine.preferred_drawing_method = "polygon_shapes"
+        import importlib
+        core_rendering = importlib.import_module("customtkinter.windows.widgets.core_rendering")
+        draw_engine = getattr(core_rendering, "DrawEngine", None)
+        if draw_engine is not None:
+            draw_engine.preferred_drawing_method = "polygon_shapes"
     except Exception:
         pass
 

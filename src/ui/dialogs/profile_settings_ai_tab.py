@@ -75,6 +75,8 @@ class AiSettingsTabMixin:
         tab_ai: ctk.CTkFrame
         profile: Any
         storage_service: Any
+        # Provided by BaseDialog once mixed into ProfileSettingsDialog.
+        register_i18n: Callable[..., Any]
         winfo_exists: Callable[[], bool]
         after: Callable[..., Any]
         update_idletasks: Callable[[], None]

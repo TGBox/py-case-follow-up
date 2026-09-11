@@ -11,7 +11,8 @@ otherwise build their widgets exactly as before.
 """
 
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
+from typing import Any
 
 import customtkinter as ctk
 
@@ -226,7 +227,7 @@ class BaseDialog(ctk.CTkToplevel):
         """Takes a fresh reference snapshot, e.g. right after a successful save."""
         self._clean_snapshot = self._collect_input_snapshot()
 
-    def _iter_input_widgets(self, parent=None):
+    def _iter_input_widgets(self, parent: Any = None) -> Iterator[Any]:
         parent = parent if parent is not None else self
         try:
             children = parent.winfo_children()

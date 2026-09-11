@@ -28,14 +28,15 @@ SupportCockpit internationalization architecture:
 | 15 | Full E2E Verification & Hardening | Pass 100% E2E test suite + adversarial coverage hardening | M6 | Final Milestone |
 
 ## Milestones
+*(M4/M5 abgeschlossen am 2026-09-11. Restlücken siehe todo.txt: drei Widget-Texte sind f-Strings, die `tr()` nur einbetten, sowie zwei OptionMenu-Wertelisten - sie sind übersetzt, wechseln aber nicht live mit.)*
 | # | Name | Scope | Dependencies | Status |
 |---|------|-------|-------------|--------|
 | E2E | E2E Testing Track | Test infra, parity checker, AST scanner, dynamic switch tests, workflow tests, publish TEST_READY.md | none | DONE |
 | M1 | Locale Parity & Synchronization | locales/de.json, locales/en.json, locales/sv.json full parity and natural translations | none | DONE |
 | M2 | System, Constants & Enums Localization | src/constants.py, src/enums.py, src/utils/datetime_utils.py, seed & snippet services | M1 | DONE |
 | M3 | UI Views & Widgets String Extraction | src/ui/app.py, src/ui/views/, src/ui/widgets/ | M1 | DONE |
-| M4 | UI Dialogs String Extraction | src/ui/dialogs/ (all 18 dialog files) | M1 | PLANNED |
-| M5 | Dynamic Language Switching Integration | Event propagation, refresh_ui_labels across all views, widgets, and dialogs | M2, M3, M4 | PLANNED |
+| M4 | UI Dialogs String Extraction | src/ui/dialogs/ (all 26 dialog files) | M1 | DONE |
+| M5 | Dynamic Language Switching Integration | Event propagation, refresh_ui_labels across all views, widgets, and dialogs | M2, M3, M4 | DONE |
 | M6 | Final Milestone & Hardening | Pass 100% E2E test suite (Tiers 1-4) and adversarial hardening (Tier 5) | E2E, M5 | PLANNED |
 
 ## Interface Contracts
@@ -45,6 +46,13 @@ SupportCockpit internationalization architecture:
 - `I18nService.register_listener(callback: Callable[[str], None])`: Registers a callback invoked on language change.
 - `I18nService.set_language(lang: str)`: Updates active language and notifies all registered listeners.
 - `UIComponent.refresh_ui_labels()`: Refreshes all text/labels/options of the component and child widgets.
+
+### BaseDialog ↔ I18nService
+- `src/ui/dialogs/base_dialog.py` holds the shared window setup for all dialogs (title, geometry, centering, modality, Escape, Enter, unsaved-changes guard).
+- `BaseDialog.register_i18n(widget, key, default, attr="text", **fmt) -> widget`: Records which translation key produced a widget's text. Wrap it around the constructor; it returns the widget unchanged.
+- `BaseDialog.refresh_ui_labels()`: Generic implementation that re-applies every registered translation and re-evaluates the window title. Dialogs with their own dynamic content override it and call `super()`.
+- `BaseDialog.setup_window(..., title_factory=...)`: Optional callable re-evaluated on a language change so the window title follows the active language.
+- A dialog that has `refresh_ui_labels()` is registered with `I18nService` automatically on open and unregistered in `destroy()`.
 
 ### Constants ↔ UI Consumers
 - `DISPLAY_BOARD_COLUMN_NAMES: LocalizedDict`

@@ -2,7 +2,7 @@ import logging
 import sys
 import threading
 import ctypes
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 import customtkinter as ctk
 
 from config import AppConfig
@@ -38,6 +38,9 @@ from ui.views.table_view import TableView
 
 from ui.widgets.toast_notification import ToastNotification
 from ui.app_dialogs import DialogLaunchersMixin
+
+if TYPE_CHECKING:
+    from ui.views.analytics_view import AnalyticsView
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -400,7 +403,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     # --- Lazy view construction ---
 
-    def _build_view(self, layout_value: str):
+    def _build_view(self, layout_value: str) -> Any:
         """Creates one layout view. Called at most once per layout, on first use."""
         if layout_value == LayoutMode.BOARD.value:
             return BoardView(
@@ -446,7 +449,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             on_open_snippet_picker=self.open_snippet_picker_dialog,
         )
 
-    def _get_view(self, layout_value: str):
+    def _get_view(self, layout_value: str) -> Any:
         """Returns the view for a layout, building it on first access."""
         views = self.__dict__.setdefault("_views", {})
         view = views.get(layout_value)
@@ -470,35 +473,35 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         return cockpit is not None and self.active_view is cockpit
 
     @property
-    def cockpit_view(self):
+    def cockpit_view(self) -> CockpitView:
         return self._get_view(LayoutMode.COCKPIT.value)
 
     @cockpit_view.setter
-    def cockpit_view(self, view):
+    def cockpit_view(self, view: Any) -> None:
         self._set_view(LayoutMode.COCKPIT.value, view)
 
     @property
-    def board_view(self):
+    def board_view(self) -> BoardView:
         return self._get_view(LayoutMode.BOARD.value)
 
     @board_view.setter
-    def board_view(self, view):
+    def board_view(self, view: Any) -> None:
         self._set_view(LayoutMode.BOARD.value, view)
 
     @property
-    def table_view(self):
+    def table_view(self) -> TableView:
         return self._get_view(LayoutMode.TABLE.value)
 
     @table_view.setter
-    def table_view(self, view):
+    def table_view(self, view: Any) -> None:
         self._set_view(LayoutMode.TABLE.value, view)
 
     @property
-    def analytics_view(self):
+    def analytics_view(self) -> AnalyticsView:
         return self._get_view(LayoutMode.ANALYTICS.value)
 
     @analytics_view.setter
-    def analytics_view(self, view):
+    def analytics_view(self, view: Any) -> None:
         self._set_view(LayoutMode.ANALYTICS.value, view)
 
     def switch_layout(self, layout_name: str):
@@ -523,7 +526,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def _apply_cases_to_view(self, layout_value: str, cases: list[Case], deep_results: dict):
         """Pushes the current case selection into one layout's view."""
-        view = self._get_view(layout_value)
+        view: Any = self._get_view(layout_value)
         if layout_value == LayoutMode.BOARD.value:
             view.set_cases(cases)
         elif layout_value == LayoutMode.TABLE.value:

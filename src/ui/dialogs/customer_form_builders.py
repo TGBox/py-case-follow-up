@@ -12,13 +12,20 @@ passenden _build_*()-Methoden hier delegiert - reines Verschieben von Code,
 keine Verhaltensaenderung.
 """
 import customtkinter as ctk
-from typing import Any
+from typing import TYPE_CHECKING, Any
+from collections.abc import Callable
 
 class CustomerFormBuilderMixin:
     """Baut die Widgets von CustomerManagementDialog auf. Nur zusammen mit
     CustomerManagementDialog (bzw. einer Klasse mit denselben self.right_frame /
     self.save_current_customer / ... Attributen und Methoden) nutzbar.
     """
+
+    if TYPE_CHECKING:
+        # Provided by BaseDialog once mixed into CustomerManagementDialog.
+        # Declared, not defined: a real stub here would sit before BaseDialog in
+        # the MRO and shadow the actual implementation at runtime.
+        register_i18n: Callable[..., Any]
 
     def on_click_new_customer(self) -> None: ...
     def on_click_cobra_import(self) -> None: ...

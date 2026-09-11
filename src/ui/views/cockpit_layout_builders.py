@@ -231,6 +231,10 @@ class CockpitLayoutBuilderMixin:
         self.actor_combo = ctk.CTkOptionMenu(self.status_right_frame, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=130)
         self.actor_combo.pack(side="right", padx=2)
 
+        # Responsive layout: stack vertically when not enough horizontal space
+        self._info_row_horizontal = True
+        self.info_row.bind("<Configure>", self._on_info_row_configure, add="+")
+
     def _build_toolbar_row(self):
         # Row 3: Integrated Action Toolbar
         self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=("gray80", "gray25"), corner_radius=6)
@@ -280,6 +284,71 @@ class CockpitLayoutBuilderMixin:
         self.export_btn = self.more_actions_combo
         self.print_btn = self.more_actions_combo
         self.convert_schema_btn = self.more_actions_combo
+
+        # Responsive layout: re-arrange toolbar buttons when center pane is too narrow
+        self._toolbar_horizontal = True
+        # Minimum width (px) for all left toolbar buttons side-by-side
+        self._TOOLBAR_BREAK_WIDTH = 480
+        self.toolbar_row.bind("<Configure>", self._on_toolbar_row_configure, add="+")
+
+    # ------------------------------------------------------------------ #
+    # Responsive toolbar / info-row helpers                              #
+    # ------------------------------------------------------------------ #
+
+    def _on_toolbar_row_configure(self, event: Any) -> None:
+        """Re-pack toolbar buttons vertically when the row is too narrow."""
+        available = event.width
+        want_horizontal = available >= self._TOOLBAR_BREAK_WIDTH
+        if want_horizontal == self._toolbar_horizontal:
+            return
+        self._toolbar_horizontal = want_horizontal
+        if want_horizontal:
+            # Restore side-by-side layout
+            self.toolbar_left.pack_forget()
+            self.toolbar_right.pack_forget()
+            self.toolbar_left.pack(side="left", padx=4, pady=4)
+            self.toolbar_right.pack(side="right", padx=4, pady=4)
+            for btn in (self.email_btn, self.cal_btn, self.followup_btn, self.add_note_btn):
+                btn.pack_forget()
+                btn.pack(side="left", padx=3)
+            for w in (self.save_btn, self.more_actions_combo):
+                w.pack_forget()
+                w.pack(side="left", padx=3)
+        else:
+            # Stack everything top-to-bottom
+            self.toolbar_left.pack_forget()
+            self.toolbar_right.pack_forget()
+            self.toolbar_left.pack(side="top", fill="x", padx=4, pady=(4, 0))
+            self.toolbar_right.pack(side="top", fill="x", padx=4, pady=(0, 4))
+            for btn in (self.email_btn, self.cal_btn, self.followup_btn, self.add_note_btn):
+                btn.pack_forget()
+                btn.pack(side="top", fill="x", pady=1)
+            for w in (self.save_btn, self.more_actions_combo):
+                w.pack_forget()
+                w.pack(side="top", fill="x", pady=1)
+
+    def _on_info_row_configure(self, event: Any) -> None:
+        """Re-pack info-row status buttons vertically when the row is too narrow."""
+        available = event.width
+        # Combined minimum width for actor_combo(130) + complete_btn(90) + archive_btn(95) + paddings
+
+        _INFO_BREAK_WIDTH = 380
+        want_horizontal = available >= _INFO_BREAK_WIDTH
+        if want_horizontal == self._info_row_horizontal:
+            return
+        self._info_row_horizontal = want_horizontal
+        if want_horizontal:
+            self.status_right_frame.pack_forget()
+            self.status_right_frame.pack(side="right", anchor="e")
+            for w in (self.archive_btn, self.complete_btn, self.actor_combo):
+                w.pack_forget()
+                w.pack(side="right", padx=2)
+        else:
+            self.status_right_frame.pack_forget()
+            self.status_right_frame.pack(side="top", fill="x", pady=(2, 0))
+            for w in (self.actor_combo, self.complete_btn, self.archive_btn):
+                w.pack_forget()
+                w.pack(side="top", fill="x", pady=1, padx=2)
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr

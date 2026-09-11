@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from tkinter import filedialog
 from collections.abc import Callable
 from models.customer import Customer
@@ -6,7 +8,7 @@ from services.cobra_crm_import_service import CobraCrmImportService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class CobraImportDialog(ctk.CTkToplevel):
+class CobraImportDialog(BaseDialog):
     """Import wizard for Cobra CRM customer export files (.csv, .txt, .json)."""
 
     def __init__(self, parent, existing_customers: list[Customer], on_import_completed: Callable[[list[Customer]], None]):
@@ -15,15 +17,12 @@ class CobraImportDialog(ctk.CTkToplevel):
         self.on_import_completed = on_import_completed
 
         w, h = DIALOG_DIMENSIONS["cobra_import"]
-        self.title(DIALOG_TITLES["cobra_import"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(760, 540)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["cobra_import"],
+            (w, h),
+            min_size=(760, 540),
+        )
 
         self.file_path: str = ""
         self.raw_rows: list[dict[str, str]] = []

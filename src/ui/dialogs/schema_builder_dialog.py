@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.schema import QuestionSchema, SchemaField
 from enums import FieldType
@@ -6,16 +8,17 @@ from services.schema_service import SchemaService
 from constants import DIALOG_DIMENSIONS, COLOR_PANEL_BG, COLOR_PANEL_BORDER, COLOR_PANEL_ALT_BG
 
 
-class NewSchemaDialog(ctk.CTkToplevel):
+class NewSchemaDialog(BaseDialog):
     def __init__(self, parent, on_schema_created: Callable[[QuestionSchema], None]):
         super().__init__(parent)
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["new_schema"]
-        self.title(tr("schema_builder.new_schema_title", "🆕 Neues Formular (Schema) erstellen"))
-        self.geometry(f"{w}x{h}")
-        self.resizable(False, False)
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("schema_builder.new_schema_title", "🆕 Neues Formular (Schema) erstellen"),
+            (w, h),
+            resizable=False,
+        )
 
         self.on_schema_created = on_schema_created
 
@@ -44,6 +47,7 @@ class NewSchemaDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100).pack(side="left")
         ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=140).pack(side="right")
+        self.set_default_action(self.on_save)
 
     def on_save(self):
         from services.i18n_service import tr
@@ -69,7 +73,7 @@ class NewSchemaDialog(ctk.CTkToplevel):
         self.destroy()
 
 
-class SchemaBuilderDialog(ctk.CTkToplevel):
+class SchemaBuilderDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -80,11 +84,12 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         super().__init__(parent)
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["schema_builder"]
-        self.title(tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(1080, 640)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            tr("dialog_titles.schema_builder", "In-App Formular-Baukasten (Schemata verwalten)"),
+            (w, h),
+            min_size=(1080, 640),
+        )
 
         self.schemas = schemas
         self.schema_service = schema_service
@@ -93,7 +98,6 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         self.selected_schema = self.schemas[0] if self.schemas else None
         self.selected_field_id: str | None = None
 
-        self.grab_set()
         self.create_widgets()
         self.refresh_fields_list()
 
@@ -141,7 +145,7 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         )
         self.toggle_schema_btn.pack(side="left", padx=(0, 6))
 
-        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.on_delete_schema, fg_color="red", hover_color="darkred", width=85)
+        del_schema_btn = ctk.CTkButton(top_frame, text=tr("common.delete", "🗑 Löschen"), command=self.confirm_delete_schema, fg_color="red", hover_color="darkred", width=85)
         del_schema_btn.pack(side="right")
 
         self.refresh_schema_combo()
@@ -261,6 +265,23 @@ class SchemaBuilderDialog(ctk.CTkToplevel):
         self.selected_schema = new_schema
         self.refresh_schema_combo()
         self.refresh_fields_list()
+
+    def confirm_delete_schema(self):
+        """Asks before deleting a form, and explains why the last one is protected."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation, show_notice
+        if not self.selected_schema:
+            return
+        if len(self.schemas) <= 1:
+            show_notice(self, tr("confirm.schema_last_hint", "Das letzte verbleibende Formular kann nicht gelöscht werden."))
+            return
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_schema", "Formular „{name}“ wirklich löschen? Bereits erfasste Fälle behalten ihre Daten.", name=self.selected_schema.display_name),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_delete_schema()
 
     def on_delete_schema(self):
         if self.selected_schema and len(self.schemas) > 1:

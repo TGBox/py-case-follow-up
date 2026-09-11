@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.profile import Colleague
 from services.storage_service import StorageService
@@ -7,7 +9,7 @@ from constants import DEFAULT_DEPARTMENTS, DIALOG_DIMENSIONS, DIALOG_TITLES
 DEPARTMENTS = DEFAULT_DEPARTMENTS
 
 
-class ColleagueManagementDialog(ctk.CTkToplevel):
+class ColleagueManagementDialog(BaseDialog):
     """Modal dialog for managing reference employees / colleagues (CRUD)."""
 
     def __init__(
@@ -21,14 +23,12 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.on_colleagues_updated = on_colleagues_updated
 
         w, h = DIALOG_DIMENSIONS["colleague_mgmt"]
-        self.title(DIALOG_TITLES["colleague_mgmt"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(900, 600)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["colleague_mgmt"],
+            (w, h),
+            min_size=(900, 600),
+        )
 
         self.colleagues: list[Colleague] = []
         self.filtered_colleagues: list[Colleague] = []
@@ -145,7 +145,7 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
         self.delete_btn = ctk.CTkButton(
             action_bar,
             text=tr("common.delete", "🗑 Löschen"),
-            command=self.on_click_delete,
+            command=self.confirm_click_delete,
             fg_color="firebrick",
             hover_color="darkred",
             width=110,
@@ -289,6 +289,21 @@ class ColleagueManagementDialog(ctk.CTkToplevel):
 
         if self.on_colleagues_updated:
             self.on_colleagues_updated()
+
+    def confirm_click_delete(self):
+        """Asks before removing the selected colleague from the list."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        if not self.selected_colleague:
+            return
+        display_name = self.selected_colleague.name or self.selected_colleague.username
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_colleague", "„{name}“ wirklich aus der Mitarbeiterliste entfernen?", name=display_name),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_click_delete()
 
     def on_click_delete(self):
         if not self.selected_colleague:

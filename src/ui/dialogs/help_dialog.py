@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from constants import DIALOG_DIMENSIONS
 
 
@@ -547,21 +549,20 @@ Binden Sie das Support-Cockpit an externe Systeme an.
 ]
 
 
-class HelpDialog(ctk.CTkToplevel):
+class HelpDialog(BaseDialog):
     def __init__(self, parent):
         super().__init__(parent)
         from services.i18n_service import tr
 
         w, h = DIALOG_DIMENSIONS["help"]
-        self.title(tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(960, 600)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"),
+            (w, h),
+            min_size=(960, 600),
+        )
 
         # Make modal window
-        self.transient(parent)
-        self.grab_set()
 
         self.articles = self.get_localized_articles()
         self.filtered_articles = list(self.articles)

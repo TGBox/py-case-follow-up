@@ -90,7 +90,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
 
         self.search_entry = ctk.CTkEntry(tools_frame, placeholder_text=tr("dynamic_form.search_tags", "🔍 Programmbereich suchen..."))
         self.search_entry.pack(fill="x", pady=(0, 6))
-        self.search_entry.bind("<KeyRelease>", lambda e: self.render_tag_checkboxes())
+        self.search_entry.bind("<KeyRelease>", self._on_tag_search_keyrelease)
 
         btn_row = ctk.CTkFrame(tools_frame, fg_color="transparent")
         btn_row.pack(fill="x")
@@ -109,6 +109,11 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         ftr.pack(fill="x", padx=12, pady=(4, 10))
 
         ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "✓ Übernehmen & Schließen"), fg_color="forestgreen", command=self.apply_and_close).pack(side="right")
+
+    def _on_tag_search_keyrelease(self, event=None):
+        """Debounces the tag filter so the checkbox list is rebuilt once per typing pause."""
+        from utils.ui_utils import debounce
+        debounce(self, "tag_search", 180, self.render_tag_checkboxes)
 
     def render_tag_checkboxes(self):
         from services.i18n_service import tr

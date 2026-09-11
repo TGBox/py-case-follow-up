@@ -33,10 +33,12 @@ class WikiSyncService:
         self.config = config
         self.settings = wiki_settings or WikiSettings()
         self.db_path = self.config.wiki_db_path
+        self._fts5_available: bool | None = None
         self.init_db()
 
     def init_db(self) -> None:
         """Initializes SQLite database and FTS5 virtual table."""
+        self._fts5_available = None
         self.config.ensure_directories()
         if not self.db_path.exists():
             example_db = self.config.get_example_path("wiki_index.sqlite")
@@ -78,15 +80,25 @@ class WikiSyncService:
         conn.close()
 
     def is_fts5_available(self) -> bool:
+        """Reports whether the FTS5 index table is usable.
+
+        The result is cached per service instance: the table layout is fixed by
+        init_db() in __init__ and cannot change afterwards, while this method
+        used to be called once per synced wiki page and once per keystroke in
+        the wiki search - each call opening and closing its own connection.
+        """
+        if self._fts5_available is not None:
+            return self._fts5_available
+
         conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
         try:
-            cursor.execute("SELECT count(*) FROM wiki_fts")
-            conn.close()
-            return True
+            conn.execute("SELECT count(*) FROM wiki_fts")
+            self._fts5_available = True
         except Exception:
+            self._fts5_available = False
+        finally:
             conn.close()
-            return False
+        return self._fts5_available
 
     def sync_from_bookstack_async(
         self,
@@ -127,6 +139,7 @@ class WikiSyncService:
             "User-Agent": "SupportCockpit/1.0",
         }
 
+        conn = None
         try:
             pages_data = []
             if mock_client:
@@ -140,6 +153,8 @@ class WikiSyncService:
 
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
+            # Resolve once - the table layout cannot change during the run.
+            has_fts = self.is_fts5_available()
 
             for item in pages_data:
                 page_id = item.get("id")
@@ -179,7 +194,7 @@ class WikiSyncService:
                     VALUES (?, ?, ?, ?, ?, ?, ?)
                 """, (page_id, book_id, title, slug, url, updated_at, content))
 
-                if self.is_fts5_available():
+                if has_fts:
                     cursor.execute("DELETE FROM wiki_fts WHERE page_id = ?", (page_id,))
                     cursor.execute("""
                         INSERT INTO wiki_fts (page_id, title, content)
@@ -187,12 +202,24 @@ class WikiSyncService:
                     """, (page_id, title, content or title))
 
             conn.commit()
-            conn.close()
             return True, f"Successfully synced {len(pages_data)} pages."
 
         except Exception as e:
             logger.error(f"Wiki sync failed safely: {e}")
+            if conn is not None:
+                try:
+                    conn.rollback()
+                except Exception as rollback_err:
+                    logger.warning(f"Wiki sync rollback failed: {rollback_err}")
             return False, f"Wiki Sync Error: {e}"
+        finally:
+            # Without this, an aborted sync left an open transaction on the
+            # SQLite file and could lock out later reads.
+            if conn is not None:
+                try:
+                    conn.close()
+                except Exception as close_err:
+                    logger.warning(f"Could not close wiki db connection: {close_err}")
 
     def search(self, query: str) -> list[dict[str, Any]]:
         """Searches offline SQLite wiki database.
@@ -204,72 +231,77 @@ class WikiSyncService:
         cleaned_query = query.strip()
         api_url = normalize_url(self.settings.api_url)
         conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        results = []
+        try:
+            cursor = conn.cursor()
+            results = []
 
-        if self.is_fts5_available():
-            try:
-                # FTS5 Match query with plain snippet separator
-                fts_pattern = f'"{cleaned_query}"*'
-                cursor.execute("""
-                    SELECT p.page_id, p.title, p.url, snippet(wiki_fts, 2, '', '', '...', 15)
-                    FROM wiki_fts f
-                    JOIN wiki_pages p ON f.page_id = p.page_id
-                    WHERE wiki_fts MATCH ?
-                    LIMIT 20
-                """, (fts_pattern,))
-                rows = cursor.fetchall()
-                for row in rows:
-                    p_id, raw_title, raw_url, raw_snip = row[0], row[1], row[2], row[3]
+            if self.is_fts5_available():
+                try:
+                    # FTS5 Match query with plain snippet separator
+                    fts_pattern = f'"{cleaned_query}"*'
+                    cursor.execute("""
+                        SELECT p.page_id, p.title, p.url, snippet(wiki_fts, 2, '', '', '...', 15)
+                        FROM wiki_fts f
+                        JOIN wiki_pages p ON f.page_id = p.page_id
+                        WHERE wiki_fts MATCH ?
+                        LIMIT 20
+                    """, (fts_pattern,))
+                    rows = cursor.fetchall()
+                    for row in rows:
+                        p_id, raw_title, raw_url, raw_snip = row[0], row[1], row[2], row[3]
 
-                    # Sanitize URL if cached entry contains broken /pages/ format
-                    url = raw_url
-                    if not url or "/pages/" in url:
-                        url = f"{api_url}/link/{p_id}" if api_url else (url or "")
+                        # Sanitize URL if cached entry contains broken /pages/ format
+                        url = raw_url
+                        if not url or "/pages/" in url:
+                            url = f"{api_url}/link/{p_id}" if api_url else (url or "")
 
-                    results.append({
-                        "page_id": p_id,
-                        "title": clean_html_snippet(raw_title),
-                        "url": url,
-                        "snippet": clean_html_snippet(raw_snip or raw_title),
-                    })
-                conn.close()
-                return results
-            except Exception as fts_err:
-                logger.warning(f"FTS search failed, falling back to LIKE: {fts_err}")
+                        results.append({
+                            "page_id": p_id,
+                            "title": clean_html_snippet(raw_title),
+                            "url": url,
+                            "snippet": clean_html_snippet(raw_snip or raw_title),
+                        })
+                    return results
+                except Exception as fts_err:
+                    logger.warning(f"FTS search failed, falling back to LIKE: {fts_err}")
+                    results = []
 
-        # Fallback LIKE search
-        like_pattern = f"%{cleaned_query}%"
-        cursor.execute("""
-            SELECT page_id, title, url, content_markdown
-            FROM wiki_pages
-            WHERE title LIKE ? OR content_markdown LIKE ?
-            LIMIT 20
-        """, (like_pattern, like_pattern))
-        rows = cursor.fetchall()
-        for row in rows:
-            p_id, raw_title, raw_url, content_raw = row[0], row[1], row[2], row[3]
+            # Fallback LIKE search
+            like_pattern = f"%{cleaned_query}%"
+            cursor.execute("""
+                SELECT page_id, title, url, content_markdown
+                FROM wiki_pages
+                WHERE title LIKE ? OR content_markdown LIKE ?
+                LIMIT 20
+            """, (like_pattern, like_pattern))
+            rows = cursor.fetchall()
+            for row in rows:
+                p_id, raw_title, raw_url, content_raw = row[0], row[1], row[2], row[3]
 
-            url = raw_url
-            if not url or "/pages/" in url:
-                url = f"{api_url}/link/{p_id}" if api_url else (url or "")
+                url = raw_url
+                if not url or "/pages/" in url:
+                    url = f"{api_url}/link/{p_id}" if api_url else (url or "")
 
-            content_snippet = (content_raw or raw_title)[:120]
-            results.append({
-                "page_id": p_id,
-                "title": clean_html_snippet(raw_title),
-                "url": url,
-                "snippet": clean_html_snippet(content_snippet),
-            })
+                content_snippet = (content_raw or raw_title)[:120]
+                results.append({
+                    "page_id": p_id,
+                    "title": clean_html_snippet(raw_title),
+                    "url": url,
+                    "snippet": clean_html_snippet(content_snippet),
+                })
 
-        conn.close()
-        return results
+            return results
+        finally:
+            # Single close for both the FTS and the LIKE fallback path - the
+            # fallback query used to be able to leak the connection on error.
+            conn.close()
 
     def get_all_pages(self) -> list[dict[str, Any]]:
         """Returns all cached pages from offline SQLite wiki database as dicts."""
         if not Path(self.db_path).exists():
             return []
         api_url = normalize_url(self.settings.api_url)
+        conn = None
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
@@ -288,8 +320,10 @@ class WikiSyncService:
                     "snippet": clean_html_snippet((content_raw or raw_title)[:150]),
                     "content": content_raw or "",
                 })
-            conn.close()
             return results
         except Exception as e:
             logger.error(f"Failed to fetch wiki pages: {e}")
             return []
+        finally:
+            if conn is not None:
+                conn.close()

@@ -1,13 +1,14 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from tkinter import filedialog
 from pathlib import Path
 from collections.abc import Callable
 from services.zip_backup_service import ZipBackupService
-from utils.ui_utils import center_window
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class ZipImportPathDialog(ctk.CTkToplevel):
+class ZipImportPathDialog(BaseDialog):
     """Modal dialog to select target extraction destination paths before unpacking ZIP backup."""
 
     def __init__(
@@ -25,13 +26,13 @@ class ZipImportPathDialog(ctk.CTkToplevel):
         self.on_import_confirmed = on_import_confirmed
 
         w, h = DIALOG_DIMENSIONS["zip_import"]
-        self.title(DIALOG_TITLES["zip_import"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(760, 540)
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["zip_import"],
+            (w, h),
+            min_size=(760, 540),
+        )
 
-        self.transient(parent)
-        self.grab_set()
 
         # Inspect Zip Info
         self.zip_info = ZipBackupService.inspect_backup_zip(self.zip_file_path)

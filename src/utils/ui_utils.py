@@ -541,3 +541,44 @@ def enable_textbox_cursor_autoscroll(textbox: ctk.CTkTextbox) -> None:
     except Exception:
         pass
 
+
+
+def debounce(widget, key: str, delay_ms: int, callback: Callable[[], None]) -> None:
+    """Runs callback after delay_ms, cancelling an earlier pending call with the same key.
+
+    Used for keystroke handlers: without it every single key press in a search
+    field triggers a full filter + re-render of the case list (hundreds of
+    widgets), so typing a 10-character query rebuilt the list 10 times.
+    The pending after-id is stored on the widget itself, keyed per use site.
+    """
+    attr = f"_debounce_after_{key}"
+    pending = getattr(widget, attr, None)
+    if pending:
+        try:
+            widget.after_cancel(pending)
+        except Exception:
+            pass
+
+    def _run():
+        setattr(widget, attr, None)
+        callback()
+
+    try:
+        setattr(widget, attr, widget.after(delay_ms, _run))
+    except Exception:
+        # No usable Tk event loop (e.g. widget already destroyed) - run directly
+        # so behaviour never silently degrades to "nothing happens".
+        setattr(widget, attr, None)
+        callback()
+
+
+def cancel_debounce(widget, key: str) -> None:
+    """Cancels a pending debounced call, e.g. when a widget or dialog is destroyed."""
+    attr = f"_debounce_after_{key}"
+    pending = getattr(widget, attr, None)
+    if pending:
+        try:
+            widget.after_cancel(pending)
+        except Exception:
+            pass
+    setattr(widget, attr, None)

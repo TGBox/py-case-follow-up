@@ -140,6 +140,8 @@ class DeepSearchService:
 
         clean_query = query.strip()
         wiki_matches = self.search_wiki_cache(clean_query)
+        # Lowercase the wiki titles once instead of per case.
+        wiki_matches_lowered = [(w, w["title"].lower()) for w in wiki_matches]
 
         for case in cases:
             att_matches = self.search_case_attachments(case, clean_query)
@@ -149,8 +151,7 @@ class DeepSearchService:
             if wiki_matches:
                 module_name = str(case.form_data.get("module_name", "")).lower()
                 case_tags = [t.lower() for t in case.classification.tags]
-                for w in wiki_matches:
-                    w_title = w["title"].lower()
+                for w, w_title in wiki_matches_lowered:
                     if module_name and module_name in w_title:
                         related_wiki.append(w)
                     elif any(t in w_title for t in case_tags if len(t) > 2):

@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from pathlib import Path
 from tkinter import filedialog
 from collections.abc import Callable
@@ -9,7 +11,7 @@ from services.export_service import ExportService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class ExportDialog(ctk.CTkToplevel):
+class ExportDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -21,11 +23,12 @@ class ExportDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         w, h = DIALOG_DIMENSIONS["export"]
-        self.title(f"{DIALOG_TITLES['export']} — {case.case_id}")
-        self.geometry(f"{w}x{h}")
-        self.minsize(740, 660)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            f"{DIALOG_TITLES['export']} — {case.case_id}",
+            (w, h),
+            min_size=(740, 660),
+        )
 
         self.case = case
         self.templates = templates
@@ -43,7 +46,6 @@ class ExportDialog(ctk.CTkToplevel):
         self.in_place_entries: dict[str, ctk.CTkEntry] = {}
         self.force_export_var = ctk.BooleanVar(value=False)
 
-        self.grab_set()
         self.create_widgets()
         self.update_render_preview()
     def create_widgets(self):

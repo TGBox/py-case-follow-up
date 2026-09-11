@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.case import Case
 from models.profile import Colleague
@@ -8,7 +10,7 @@ from constants import DEFAULT_HANDOVER_CHANNELS, DIALOG_DIMENSIONS, DIALOG_TITLE
 HANDOVER_CHANNELS = DEFAULT_HANDOVER_CHANNELS
 
 
-class HandoverDialog(ctk.CTkToplevel):
+class HandoverDialog(BaseDialog):
     """Modal dialog for handing over case responsibility to a department/colleague."""
 
     def __init__(
@@ -31,13 +33,12 @@ class HandoverDialog(ctk.CTkToplevel):
         self.on_handover_confirmed = on_handover_confirmed
 
         w, h = DIALOG_DIMENSIONS["handover"]
-        self.title(f"{DIALOG_TITLES['handover']} (Fall {case.case_id})")
-        self.geometry(f"{w}x{h}")
-        self.minsize(520, 460)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            f"{DIALOG_TITLES['handover']} (Fall {case.case_id})",
+            (w, h),
+            min_size=(520, 460),
+        )
 
         self.create_widgets()
 

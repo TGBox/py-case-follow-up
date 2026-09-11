@@ -1,5 +1,7 @@
 from typing import Any
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
@@ -56,21 +58,20 @@ def get_font_scale_val_from_display(display_text: str) -> float:
     return 1.0
 
 
-class HotkeyRecorderDialog(ctk.CTkToplevel):
+class HotkeyRecorderDialog(BaseDialog):
     """Interactive modal dialog to capture pressed hotkeys and key combinations."""
     def __init__(self, parent, on_recorded: Callable[[str], None]):
         super().__init__(parent)
         self.on_recorded = on_recorded
         from services.i18n_service import tr
         w, h = HOTKEY_RECORDER_DIMENSIONS
-        self.title(tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE))
-        self.geometry(f"{w}x{h}")
-        self.resizable(False, False)
+        self.setup_window(
+            parent,
+            tr("hotkey_recorder.title", HOTKEY_RECORDER_TITLE),
+            (w, h),
+            resizable=False,
+        )
 
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-        self.transient(parent)
-        self.grab_set()
 
         ctk.CTkLabel(self, text=tr("hotkey_recorder.header", HOTKEY_RECORDER_HEADER), font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(15, 5))
         self.info_lbl = ctk.CTkLabel(self, text=tr("hotkey_recorder.info", HOTKEY_RECORDER_INFO), text_color=("gray30", "gray70"))
@@ -113,7 +114,7 @@ class HotkeyRecorderDialog(ctk.CTkToplevel):
         self.destroy()
 
 
-class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
+class ProfileSettingsDialog(AiSettingsTabMixin, BaseDialog):
     def __init__(self, parent, profile: UserProfile, storage_service: StorageService, on_profile_updated: Callable[[], None] | None = None):
         super().__init__(parent)
         self.profile = profile
@@ -126,18 +127,15 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         from services.i18n_service import tr
 
         w, h = DIALOG_DIMENSIONS["profile_settings"]
-        self.title(tr("profile.title", DIALOG_TITLES["profile_settings"]))
-        self.geometry(f"{w}x{h}")
-        self.minsize(920, 780)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("profile.title", DIALOG_TITLES["profile_settings"]),
+            (w, h),
+            min_size=(920, 780),
+        )
 
         self._initial_font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
         self._saved = False
-        self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         self.create_widgets()
 
@@ -570,6 +568,10 @@ class ProfileSettingsDialog(AiSettingsTabMixin, ctk.CTkToplevel):
         if not getattr(self, "_saved", False):
             ctk.set_widget_scaling(getattr(self, "_initial_font_scale", 1.0))
         self.destroy()
+
+    def close_dialog(self):
+        """Routes every close path (X button, Escape) through the font-scale reset."""
+        self.on_close()
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr

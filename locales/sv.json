@@ -397,6 +397,22 @@
     "phone_placeholder": "t.ex. 4012",
     "username_placeholder": "t.ex. mmoller"
   },
+  "confirm": {
+    "title": "Bekräfta",
+    "delete_title": "Bekräfta borttagning",
+    "unsaved_title": "Osparade uppgifter",
+    "unsaved_message": "Det finns osparade uppgifter. Vill du stänga och kasta dem?",
+    "discard": "Kasta",
+    "keep_editing": "Fortsätt redigera",
+    "yes_delete": "🗑 Ja, ta bort",
+    "delete_tag": "Vill du ta bort taggen ”{name}” permanent?",
+    "delete_module": "Vill du ta bort programområdet ”{name}” permanent?",
+    "delete_snippet": "Vill du ta bort textblocket ”{name}” permanent?",
+    "delete_colleague": "Vill du ta bort ”{name}” från personallistan?",
+    "delete_template": "Vill du ta bort exportmallen ”{name}” permanent?",
+    "delete_schema": "Vill du ta bort formuläret ”{name}”? Redan registrerade ärenden behåller sina data.",
+    "schema_last_hint": "Det sista kvarvarande formuläret kan inte tas bort."
+  },
   "common": {
     "all_files": "Alla filer",
     "at_time": "kl.",

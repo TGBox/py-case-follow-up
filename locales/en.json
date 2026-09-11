@@ -397,6 +397,22 @@
     "phone_placeholder": "e.g. 4012",
     "username_placeholder": "e.g. mmiller"
   },
+  "confirm": {
+    "title": "Please confirm",
+    "delete_title": "Confirm deletion",
+    "unsaved_title": "Unsaved input",
+    "unsaved_message": "There is unsaved input. Really close and discard it?",
+    "discard": "Discard",
+    "keep_editing": "Keep editing",
+    "yes_delete": "🗑 Yes, delete",
+    "delete_tag": "Permanently remove the tag “{name}”?",
+    "delete_module": "Permanently remove the program area “{name}”?",
+    "delete_snippet": "Permanently delete the text block “{name}”?",
+    "delete_colleague": "Really remove “{name}” from the staff list?",
+    "delete_template": "Permanently delete the export template “{name}”?",
+    "delete_schema": "Delete the form “{name}”? Cases already recorded keep their data.",
+    "schema_last_hint": "The last remaining form cannot be deleted."
+  },
   "common": {
     "all_files": "All Files",
     "at_time": "at",

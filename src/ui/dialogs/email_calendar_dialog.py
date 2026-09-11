@@ -1,5 +1,7 @@
 import os
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from tkinter import filedialog
 from typing import Any
 from models.case import Case
@@ -7,7 +9,7 @@ from services.calendar_email_service import CalendarEmailService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class EmailCalendarDialog(ctk.CTkToplevel):
+class EmailCalendarDialog(BaseDialog):
     """Preview dialog for E-mail drafts and iCalendar (.ics) export."""
 
     def __init__(
@@ -25,15 +27,12 @@ class EmailCalendarDialog(ctk.CTkToplevel):
         self.snippet_service = snippet_service
 
         w, h = DIALOG_DIMENSIONS["email_calendar"]
-        self.title(f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}")
-        self.geometry(f"{w}x{h}")
-        self.minsize(720, 540)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}",
+            (w, h),
+            min_size=(720, 540),
+        )
 
         self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name)
         self.create_widgets()

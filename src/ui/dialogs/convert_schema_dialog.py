@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
@@ -7,7 +9,7 @@ from utils.datetime_utils import now_iso
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class ConvertSchemaDialog(ctk.CTkToplevel):
+class ConvertSchemaDialog(BaseDialog):
     """Dialog to convert a case from its current form schema to another schema."""
 
     def __init__(
@@ -25,14 +27,12 @@ class ConvertSchemaDialog(ctk.CTkToplevel):
         self.on_schema_converted = on_schema_converted
 
         w, h = DIALOG_DIMENSIONS["convert_schema"]
-        self.title(DIALOG_TITLES["convert_schema"])
-        self.geometry(f"{w}x{h}")
-        self.resizable(False, False)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["convert_schema"],
+            (w, h),
+            resizable=False,
+        )
 
         self.current_schema = next((s for s in schemas if s.schema_id == case.classification.schema_id), None)
         self.other_schemas = [s for s in schemas if s.schema_id != case.classification.schema_id]

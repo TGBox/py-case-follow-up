@@ -1,11 +1,13 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.profile import Colleague
 from services.p2p_sync_service import P2PSyncService, CaseDiffItem
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class P2PDiffDialog(ctk.CTkToplevel):
+class P2PDiffDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -15,11 +17,12 @@ class P2PDiffDialog(ctk.CTkToplevel):
     ):
         super().__init__(parent)
         w, h = DIALOG_DIMENSIONS["p2p_diff"]
-        self.title(DIALOG_TITLES["p2p_diff"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(820, 620)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["p2p_diff"],
+            (w, h),
+            min_size=(820, 620),
+        )
 
         self.colleagues = colleagues
         self.p2p_service = p2p_service
@@ -29,7 +32,6 @@ class P2PDiffDialog(ctk.CTkToplevel):
         self.diff_items: list[CaseDiffItem] = []
         self.selected_vars: dict[str, ctk.BooleanVar] = {}
 
-        self.grab_set()
         self.create_widgets()
         if self.active_colleague:
             self.load_and_compare()

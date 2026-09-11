@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from datetime import datetime, timedelta
 from collections.abc import Callable
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
@@ -9,17 +11,18 @@ from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_germa
 from constants import DEFAULT_TAGS, DIALOG_DIMENSIONS
 
 
-class QuickAddCustomerDialog(ctk.CTkToplevel):
+class QuickAddCustomerDialog(BaseDialog):
     def __init__(self, parent, on_customer_created: Callable[[Customer], None]):
         super().__init__(parent)
         from services.i18n_service import tr
 
         w, h = DIALOG_DIMENSIONS["quick_customer"]
-        self.title(tr("dialog_titles.quick_customer", "🏥 Neue Praxis schnell anlegen"))
-        self.geometry(f"{w}x{h}")
-        self.resizable(False, False)
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("dialog_titles.quick_customer", "🏥 Neue Praxis schnell anlegen"),
+            (w, h),
+            resizable=False,
+        )
 
         self.on_customer_created = on_customer_created
 
@@ -51,6 +54,7 @@ class QuickAddCustomerDialog(ctk.CTkToplevel):
 
         ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100).pack(side="left")
         ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=120).pack(side="right")
+        self.set_default_action(self.on_save)
 
     def on_save(self):
         from services.i18n_service import tr
@@ -75,7 +79,7 @@ class QuickAddCustomerDialog(ctk.CTkToplevel):
         self.destroy()
 
 
-class NewCaseDialog(ctk.CTkToplevel):
+class NewCaseDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -91,11 +95,12 @@ class NewCaseDialog(ctk.CTkToplevel):
         from services.i18n_service import tr
 
         w, h = DIALOG_DIMENSIONS["new_case"]
-        self.title(tr("dialog_titles.new_case", "Neuen Support-Fall anlegen"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(700, 780)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
+        self.setup_window(
+            parent,
+            tr("dialog_titles.new_case", "Neuen Support-Fall anlegen"),
+            (w, h),
+            min_size=(700, 780),
+        )
 
         self.customers = list(customers)
         self.schemas = schemas
@@ -108,8 +113,9 @@ class NewCaseDialog(ctk.CTkToplevel):
         self.selected_tags_vars: dict[str, ctk.BooleanVar] = {}
         self.created_case: Case | None = None
 
-        self.grab_set()  # Modal
         self.create_widgets()
+        # Closing now asks before throwing away a half-filled case.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -450,4 +456,5 @@ class NewCaseDialog(ctk.CTkToplevel):
         )
 
         self.on_case_created(new_case)
+        self.mark_clean()
         self.destroy()

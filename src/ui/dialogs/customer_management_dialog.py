@@ -7,6 +7,7 @@ from models.customer import Customer, Contact
 from services.customer_service import CustomerService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 from ui.dialogs.customer_form_builders import CustomerFormBuilderMixin
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 
 class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
@@ -223,6 +224,9 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color="gray"), "customer_mgmt.no_practices", "Keine Praxen gefunden.").pack(pady=20)
             return
 
+        query = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+        q_lower = query.lower()
+
         for c in self.filtered_customers:
             is_selected = self.selected_customer and self.selected_customer.customer_id == c.customer_id
             fg_color = ("gray75", "gray30") if is_selected else ("gray85", "gray20")
@@ -248,27 +252,74 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             txt_box.pack(side="left", fill="x", expand=True, padx=(2, 6), pady=4)
             txt_box.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
-            name_lbl = ctk.CTkLabel(
-                txt_box,
-                text=c.practice_name,
-                font=ctk.CTkFont(size=12, weight="bold"),
-                anchor="w",
-                justify="left",
-                text_color=("black", "white"),
-            )
+            if q_lower and q_lower in c.practice_name.lower():
+                name_lbl = create_highlighted_label(
+                    txt_box,
+                    text=c.practice_name,
+                    query=query,
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=("black", "white"),
+                    bg_color=fg_color,
+                    highlight_color=("#D97706", "#F59E0B"),
+                    wrap="none",
+                    on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                name_lbl = ctk.CTkLabel(
+                    txt_box,
+                    text=c.practice_name,
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    anchor="w",
+                    justify="left",
+                    text_color=("black", "white"),
+                )
+                name_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
             name_lbl.pack(fill="x", anchor="w")
-            name_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
-            sub_lbl = ctk.CTkLabel(
-                txt_box,
-                text=f"(ID: {c.customer_id})",
-                font=ctk.CTkFont(size=11),
-                anchor="w",
-                justify="left",
-                text_color=("gray40", "gray70"),
-            )
+            if q_lower and q_lower in c.customer_id.lower():
+                sub_lbl = create_highlighted_label(
+                    txt_box,
+                    text=f"(ID: {c.customer_id})",
+                    query=query,
+                    font=ctk.CTkFont(size=11),
+                    text_color=("gray40", "gray70"),
+                    bg_color=fg_color,
+                    highlight_color=("#D97706", "#F59E0B"),
+                    wrap="none",
+                    on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                sub_lbl = ctk.CTkLabel(
+                    txt_box,
+                    text=f"(ID: {c.customer_id})",
+                    font=ctk.CTkFont(size=11),
+                    anchor="w",
+                    justify="left",
+                    text_color=("gray40", "gray70"),
+                )
+                sub_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
             sub_lbl.pack(fill="x", anchor="w")
-            sub_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
+
+            if q_lower:
+                match_summary = CustomerService.extract_customer_search_match_summary(c, query)
+                if match_summary:
+                    match_lbl = create_highlighted_label(
+                        txt_box,
+                        text=match_summary,
+                        query=query,
+                        font=ctk.CTkFont(size=10),
+                        text_color=("gray45", "gray65"),
+                        bg_color=fg_color,
+                        highlight_color=("#D97706", "#F59E0B"),
+                        wrap="word",
+                        on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
+                        scroll_frame=self.list_scroll,
+                    )
+                    match_lbl.pack(fill="x", anchor="w", pady=(1, 0))
+
+            bind_mouse_wheel_to_canvas(btn_frame, self.list_scroll)
 
     def select_customer(self, customer_id: str):
         from services.i18n_service import tr

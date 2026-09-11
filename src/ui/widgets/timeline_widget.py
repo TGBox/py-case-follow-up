@@ -2,6 +2,7 @@ import customtkinter as ctk
 from collections.abc import Callable
 from models.case import TimelineEntry
 from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
+from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
 from utils.datetime_utils import now_iso
 
 
@@ -104,7 +105,7 @@ class TimelineWidget(ctk.CTkFrame):
             return
 
         for entry in reversed(self.timeline_entries):
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"), corner_radius=6)
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER)
             card.pack(fill="x", pady=4, padx=4)
 
             top_row = ctk.CTkFrame(card, fg_color="transparent")

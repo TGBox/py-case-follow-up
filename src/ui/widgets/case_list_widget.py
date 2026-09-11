@@ -10,6 +10,8 @@ from constants import (
     COLOR_URGENCY_YELLOW,
     COLOR_URGENCY_GREEN,
     COLOR_WARNING_ORANGE,
+    COLOR_CARD_BG,
+    COLOR_CARD_BORDER,
 )
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 from services.search_service import parse_search_query, SearchService
@@ -22,8 +24,9 @@ class CaseListWidget(ctk.CTkFrame):
         on_case_selected: Callable[[Case], None],
         on_search_changed: Callable[[str], None],
         on_toggle_deep_search: Callable[[bool], None] | None = None,
+        **kwargs,
     ):
-        super().__init__(parent)
+        super().__init__(parent, **kwargs)
         self.on_case_selected = on_case_selected
         self.on_search_changed = on_search_changed
         self.on_toggle_deep_search = on_toggle_deep_search
@@ -202,9 +205,10 @@ class CaseListWidget(ctk.CTkFrame):
 
         for case in self.cases:
             is_selected = case.case_id == self.selected_case_id
-            row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
+            row_bg = ("gray80", "gray28") if is_selected else COLOR_CARD_BG
+            border_col = ("dodgerblue", "dodgerblue") if is_selected else COLOR_CARD_BORDER
 
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, cursor="hand2")
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, border_width=1, border_color=border_col, cursor="hand2")
             card.pack(fill="x", pady=4, padx=(4, 6))
             self._card_widgets[case.case_id] = card
 

@@ -232,12 +232,14 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 self.paned.configure(bg=sash_bg)
             except Exception:
                 pass
-            if hasattr(self, "right_tabview") and hasattr(self.right_tabview, "winfo_exists") and self.right_tabview.winfo_exists():
-                try:
-                    bg_color = "gray92" if not is_dark else "#2b2b2b"
-                    self.right_tabview.configure(bg_color)
-                except Exception:
-                    pass
+            target_bg = ("gray92", "#2b2b2b")
+            for attr in ("left_frame", "center_frame", "right_tabview"):
+                w = getattr(self, attr, None)
+                if w is not None and hasattr(w, "configure") and hasattr(w, "winfo_exists") and w.winfo_exists():
+                    try:
+                        w.configure(bg_color=target_bg)
+                    except Exception:
+                        pass
 
     def create_layout(self):
         w_left, w_right = self._build_paned_window()

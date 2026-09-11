@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import webbrowser
+from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
 from services.wiki_sync_service import WikiSyncService
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
@@ -79,8 +80,8 @@ class WikiWidget(ctk.CTkFrame):
             return
 
         for item in results:
-            card_bg = ("gray85", "gray20")
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=card_bg, corner_radius=6, cursor="hand2")
+            card_bg = COLOR_CARD_BG
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=card_bg, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER, cursor="hand2")
             card.pack(fill="x", pady=4, padx=4)
 
             url = item.get("url", "")

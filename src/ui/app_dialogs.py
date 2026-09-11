@@ -61,6 +61,7 @@ class DialogLaunchersMixin:
         deep_search_service: Any
         search_query: str
         refresh_views: Callable[..., Any]
+        apply_windows_theme: Callable[..., Any]
 
         # bring_to_foreground/switch_to_cockpit_view_for_case/on_language_changed/
         # load_all_data are implemented on the host (SupportCockpitApp in app.py),
@@ -233,6 +234,10 @@ class DialogLaunchersMixin:
             self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         self.cockpit_view.author_name = self.profile.user.name
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
+        if hasattr(self, "apply_windows_theme"):
+            self.apply_windows_theme(self.profile.ui_settings.theme == "Dark")
+        if self.is_view_built(LayoutMode.COCKPIT.value) and hasattr(self.cockpit_view, "update_sash_color"):
+            self.cockpit_view.update_sash_color()
         font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
         is_zoomed = (self.state() == "zoomed")
         ctk.set_widget_scaling(font_scale)

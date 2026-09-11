@@ -11,6 +11,8 @@ from constants import (
     COLOR_URGENCY_GREEN,
     COLOR_WARNING_ORANGE,
 )
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
+from services.search_service import parse_search_query, SearchService
 
 
 class CaseListWidget(ctk.CTkFrame):
@@ -194,6 +196,10 @@ class CaseListWidget(ctk.CTkFrame):
         current_wrap = max(160, (w - 40) if w > 50 else 250)
         self._last_wrap_width = current_wrap
 
+        query_str = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+        parsed_q = parse_search_query(query_str) if query_str else None
+        search_terms = parsed_q.free_text_terms if parsed_q else []
+
         for case in self.cases:
             is_selected = case.case_id == self.selected_case_id
             row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
@@ -224,9 +230,22 @@ class CaseListWidget(ctk.CTkFrame):
             dot.pack(side="left", padx=(0, 5))
             dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
+            if search_terms and any(t.lower() in case.case_id.lower() for t in search_terms):
+                case_id_lbl = create_highlighted_label(
+                    top_row,
+                    text=case.case_id,
+                    query=search_terms,
+                    font=ctk.CTkFont(weight="bold", size=13),
+                    text_color=("black", "white"),
+                    bg_color=row_bg,
+                    wrap="none",
+                    on_click=lambda e, c=case: self.select_case(c),
+                    scroll_frame=self.scroll_frame,
+                )
+            else:
+                case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
+                case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
             case_id_lbl.pack(side="left")
-            case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
             if case.workflow_status.is_completed:
                 done_lbl = ctk.CTkLabel(
@@ -254,35 +273,78 @@ class CaseListWidget(ctk.CTkFrame):
 
             disp_prac = practice_str if len(practice_str) <= 60 else practice_str[:57] + "..."
 
-            prac_lbl = ctk.CTkLabel(
-                card,
-                text=disp_prac,
-                anchor="w",
-                justify="left",
-                wraplength=current_wrap,
-                font=ctk.CTkFont(size=12, weight="bold"),
-                text_color=prac_color,
-            )
+            if search_terms and any(t.lower() in disp_prac.lower() for t in search_terms):
+                prac_lbl = create_highlighted_label(
+                    card,
+                    text=disp_prac,
+                    query=search_terms,
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=prac_color or ("black", "white"),
+                    bg_color=row_bg,
+                    wrap="word",
+                    on_click=lambda e, c=case: self.select_case(c),
+                    scroll_frame=self.scroll_frame,
+                )
+            else:
+                prac_lbl = ctk.CTkLabel(
+                    card,
+                    text=disp_prac,
+                    anchor="w",
+                    justify="left",
+                    wraplength=current_wrap,
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=prac_color,
+                )
+                prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(prac_lbl)
             prac_lbl.pack(fill="x", padx=12, pady=(0, 2))
-            prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-            self.wrap_labels.append(prac_lbl)
 
             # Title & Actor
             sub_str = f"{case.classification.title} | {tr('case_list.assigned_to', 'Zuständig:')} {get_actor_display(case.workflow_status.current_actor)}"
             disp_sub = sub_str if len(sub_str) <= 80 else sub_str[:77] + "..."
 
-            sub_lbl = ctk.CTkLabel(
-                card,
-                text=disp_sub,
-                anchor="w",
-                justify="left",
-                wraplength=current_wrap,
-                font=ctk.CTkFont(size=11),
-                text_color=("gray40", "gray70"),
-            )
+            if search_terms and any(t.lower() in disp_sub.lower() for t in search_terms):
+                sub_lbl = create_highlighted_label(
+                    card,
+                    text=disp_sub,
+                    query=search_terms,
+                    font=ctk.CTkFont(size=11),
+                    text_color=("gray40", "gray70"),
+                    bg_color=row_bg,
+                    wrap="word",
+                    on_click=lambda e, c=case: self.select_case(c),
+                    scroll_frame=self.scroll_frame,
+                )
+            else:
+                sub_lbl = ctk.CTkLabel(
+                    card,
+                    text=disp_sub,
+                    anchor="w",
+                    justify="left",
+                    wraplength=current_wrap,
+                    font=ctk.CTkFont(size=11),
+                    text_color=("gray40", "gray70"),
+                )
+                sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(sub_lbl)
             sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
-            sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-            self.wrap_labels.append(sub_lbl)
+
+            # Matches in timeline / tags / notes / form fields
+            if search_terms:
+                case_match_summary = SearchService.extract_case_search_match_summary(case, search_terms)
+                if case_match_summary:
+                    match_lbl = create_highlighted_label(
+                        card,
+                        text=case_match_summary,
+                        query=search_terms,
+                        font=ctk.CTkFont(size=10),
+                        text_color=("gray45", "gray65"),
+                        bg_color=row_bg,
+                        wrap="word",
+                        on_click=lambda e, c=case: self.select_case(c),
+                        scroll_frame=self.scroll_frame,
+                    )
+                    match_lbl.pack(fill="x", padx=12, pady=(0, 2))
 
             # Deep Search Match Badges
             if self.is_deep_search_active and case.case_id in self.deep_search_results:
@@ -293,34 +355,62 @@ class CaseListWidget(ctk.CTkFrame):
                 if att_m:
                     m0 = att_m[0]
                     att_text = f"📄 {m0['file_name']} ({tr('case_list.line_abbr', 'Z.')} {m0['line_number']}): \"{m0['snippet'][:35]}...\""
-                    att_lbl = ctk.CTkLabel(
-                        card,
-                        text=att_text,
-                        anchor="w",
-                        justify="left",
-                        wraplength=current_wrap,
-                        font=ctk.CTkFont(size=10, weight="bold"),
-                        text_color="plum",
-                    )
+                    if search_terms and any(t.lower() in att_text.lower() for t in search_terms):
+                        att_lbl = create_highlighted_label(
+                            card,
+                            text=att_text,
+                            query=search_terms,
+                            font=ctk.CTkFont(size=10, weight="bold"),
+                            text_color="plum",
+                            bg_color=row_bg,
+                            wrap="word",
+                            on_click=lambda e, c=case: self.select_case(c),
+                            scroll_frame=self.scroll_frame,
+                        )
+                    else:
+                        att_lbl = ctk.CTkLabel(
+                            card,
+                            text=att_text,
+                            anchor="w",
+                            justify="left",
+                            wraplength=current_wrap,
+                            font=ctk.CTkFont(size=10, weight="bold"),
+                            text_color="plum",
+                        )
+                        att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                        self.wrap_labels.append(att_lbl)
                     att_lbl.pack(fill="x", padx=12, pady=(0, 2))
-                    att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                    self.wrap_labels.append(att_lbl)
 
                 if wiki_m:
                     w0 = wiki_m[0]
                     wiki_text = f"📖 {w0['title']} (Score: {w0['score']:.0f}): \"{w0['snippet'][:35]}...\""
-                    wiki_lbl = ctk.CTkLabel(
-                        card,
-                        text=wiki_text,
-                        anchor="w",
-                        justify="left",
-                        wraplength=current_wrap,
-                        font=ctk.CTkFont(size=10, weight="bold"),
-                        text_color="orchid",
-                    )
+                    if search_terms and any(t.lower() in wiki_text.lower() for t in search_terms):
+                        wiki_lbl = create_highlighted_label(
+                            card,
+                            text=wiki_text,
+                            query=search_terms,
+                            font=ctk.CTkFont(size=10, weight="bold"),
+                            text_color="orchid",
+                            bg_color=row_bg,
+                            wrap="word",
+                            on_click=lambda e, c=case: self.select_case(c),
+                            scroll_frame=self.scroll_frame,
+                        )
+                    else:
+                        wiki_lbl = ctk.CTkLabel(
+                            card,
+                            text=wiki_text,
+                            anchor="w",
+                            justify="left",
+                            wraplength=current_wrap,
+                            font=ctk.CTkFont(size=10, weight="bold"),
+                            text_color="orchid",
+                        )
+                        wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                        self.wrap_labels.append(wiki_lbl)
                     wiki_lbl.pack(fill="x", padx=12, pady=(0, 2))
-                    wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                    self.wrap_labels.append(wiki_lbl)
+
+            bind_mouse_wheel_to_canvas(card, self.scroll_frame)
 
             if case.workflow_status.followup_at:
                 from utils.datetime_utils import format_german_date_with_relative, format_german_time
@@ -434,7 +524,6 @@ class CaseListWidget(ctk.CTkFrame):
 
             CTkTooltip(card, text_or_func=lambda c=case: build_tooltip(c), delay_ms=400)
 
-        from utils.ui_utils import bind_mouse_wheel_to_canvas
         bind_mouse_wheel_to_canvas(self.scroll_frame)
 
     def select_case(self, case: Case):

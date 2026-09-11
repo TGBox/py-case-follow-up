@@ -5,6 +5,7 @@ from collections.abc import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
 from constants import DIALOG_DIMENSIONS
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 
 class SnippetPickerDialog(BaseDialog):
@@ -129,17 +130,45 @@ class SnippetPickerDialog(BaseDialog):
             hdr_row.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
             title_text = f"{snip.title} ⌨ {snip.shortcut}" if snip.shortcut else snip.title
-            title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+            if query and query.strip() and query.strip().lower() in title_text.lower():
+                title_lbl = create_highlighted_label(
+                    hdr_row,
+                    text=title_text,
+                    query=query.strip(),
+                    font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=("black", "white"),
+                    bg_color=bg,
+                    wrap="none",
+                    on_click=lambda e, s=snip: self.select_snippet(s),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+                title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
             title_lbl.pack(side="left", fill="x", expand=True)
-            title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
             cat_lbl = ctk.CTkLabel(hdr_row, text=snip.category, font=ctk.CTkFont(size=10), text_color="dodgerblue")
             cat_lbl.pack(side="right")
 
             preview_str = snip.content.replace("\n", " ")[:60] + "..." if len(snip.content) > 60 else snip.content.replace("\n", " ")
-            body_lbl = ctk.CTkLabel(card, text=preview_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), anchor="w")
+            if query and query.strip() and query.strip().lower() in preview_str.lower():
+                body_lbl = create_highlighted_label(
+                    card,
+                    text=preview_str,
+                    query=query.strip(),
+                    font=ctk.CTkFont(size=11),
+                    text_color=("gray40", "gray70"),
+                    bg_color=bg,
+                    wrap="word",
+                    on_click=lambda e, s=snip: self.select_snippet(s),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                body_lbl = ctk.CTkLabel(card, text=preview_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), anchor="w")
+                body_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
             body_lbl.pack(fill="x", padx=8, pady=(0, 6))
-            body_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
+
+            bind_mouse_wheel_to_canvas(card, self.list_scroll)
 
     def select_snippet(self, snippet: Snippet):
         self.selected_snippet = snippet

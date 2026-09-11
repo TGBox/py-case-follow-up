@@ -5,6 +5,7 @@ from collections.abc import Callable
 from models.profile import Colleague
 from services.storage_service import StorageService
 from constants import DEFAULT_DEPARTMENTS, DIALOG_DIMENSIONS, DIALOG_TITLES
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 DEPARTMENTS = DEFAULT_DEPARTMENTS
 
@@ -187,6 +188,8 @@ class ColleagueManagementDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("colleague_mgmt.no_entries", "Keine Einträge gefunden."), text_color="gray"), "colleague_mgmt.no_entries", "Keine Einträge gefunden.").pack(pady=20)
             return
 
+        raw_query = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+
         for col in self.filtered_colleagues:
             is_sel = self.selected_colleague and self.selected_colleague.username == col.username
             bg = ("gray75", "gray35") if is_sel else ("gray85", "gray20")
@@ -195,16 +198,70 @@ class ColleagueManagementDialog(BaseDialog):
             card.pack(fill="x", pady=3, padx=2)
             card.bind("<Button-1>", lambda e, c=col: self.select_colleague(c))
 
-            lbl_name = ctk.CTkLabel(card, text=f"{col.name} ({col.username})", font=ctk.CTkFont(weight="bold", size=12), anchor="w")
+            name_text = f"{col.name} ({col.username})"
+            if raw_query and raw_query.lower() in name_text.lower():
+                lbl_name = create_highlighted_label(
+                    card,
+                    text=name_text,
+                    query=raw_query,
+                    font=ctk.CTkFont(weight="bold", size=12),
+                    text_color=("black", "white") if is_sel else ("gray10", "gray90"),
+                    bg_color=bg,
+                    wrap="none",
+                    on_click=lambda e, c=col: self.select_colleague(c),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                lbl_name = ctk.CTkLabel(card, text=name_text, font=ctk.CTkFont(weight="bold", size=12), anchor="w")
+                lbl_name.bind("<Button-1>", lambda e, c=col: self.select_colleague(c))
             lbl_name.pack(fill="x", padx=8, pady=(5, 1))
-            lbl_name.bind("<Button-1>", lambda e, c=col: self.select_colleague(c))
 
             sub_txt = f"🏢 {col.department}"
             if col.extension:
                 sub_txt += f" | 📞 {col.extension}"
-            lbl_sub = ctk.CTkLabel(card, text=sub_txt, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70"), anchor="w")
+            if raw_query and raw_query.lower() in sub_txt.lower():
+                lbl_sub = create_highlighted_label(
+                    card,
+                    text=sub_txt,
+                    query=raw_query,
+                    font=ctk.CTkFont(size=10),
+                    text_color=("gray40", "gray70"),
+                    bg_color=bg,
+                    wrap="none",
+                    on_click=lambda e, c=col: self.select_colleague(c),
+                    scroll_frame=self.list_scroll,
+                )
+            else:
+                lbl_sub = ctk.CTkLabel(card, text=sub_txt, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70"), anchor="w")
+                lbl_sub.bind("<Button-1>", lambda e, c=col: self.select_colleague(c))
             lbl_sub.pack(fill="x", padx=8, pady=(0, 5))
-            lbl_sub.bind("<Button-1>", lambda e, c=col: self.select_colleague(c))
+
+            if raw_query and raw_query.lower() in col.notes.lower() and raw_query.lower() not in name_text.lower() and raw_query.lower() not in sub_txt.lower():
+                matched_words = [w.strip(",;:()[]{}<>\"'\t\r\n") for w in col.notes.split() if raw_query.lower() in w.lower()]
+                seen_words: set[str] = set()
+                uniq_words: list[str] = []
+                for w in matched_words:
+                    if w.lower() not in seen_words:
+                        seen_words.add(w.lower())
+                        uniq_words.append(w)
+                if uniq_words:
+                    notes_summary = ", ".join(uniq_words[:3])
+                    if len(uniq_words) > 3 or len(notes_summary) > 45:
+                        notes_summary = notes_summary[:45] + "..."
+                    notes_lbl = create_highlighted_label(
+                        card,
+                        text=f"📝 {notes_summary}",
+                        query=raw_query,
+                        font=ctk.CTkFont(size=10),
+                        text_color=("gray45", "gray65"),
+                        bg_color=bg,
+                        wrap="word",
+                        on_click=lambda e, c=col: self.select_colleague(c),
+                        scroll_frame=self.list_scroll,
+                    )
+                    notes_lbl.pack(fill="x", padx=8, pady=(0, 4))
+
+            bind_mouse_wheel_to_canvas(card, self.list_scroll)
 
     def on_search_changed(self, event=None):
         self.filter_and_render_list()

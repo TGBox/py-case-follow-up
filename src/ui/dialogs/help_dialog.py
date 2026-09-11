@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from ui.dialogs.base_dialog import BaseDialog
 from constants import DIALOG_DIMENSIONS
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 
 # Article order for the navigation list. The texts themselves live in
@@ -181,19 +182,83 @@ class HelpDialog(BaseDialog):
             return
 
         active_id = self.active_article["id"] if self.active_article else None
+        query = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+        query_lower = query.lower()
+
         for art in self.filtered_articles:
             is_active = art["id"] == active_id
             fg_color = ("gray75", "gray30") if is_active else ("gray85", "gray20")
-            btn = ctk.CTkButton(
-                self.nav_scroll,
-                text=art["title"],
-                anchor="w",
-                fg_color=fg_color,
-                hover_color=("gray70", "gray35"),
-                text_color=("black", "white") if is_active else ("gray10", "gray90"),
-                command=lambda a_id=art["id"]: self.select_article(a_id)
-            )
-            btn.pack(fill="x", pady=3, padx=2)
+
+            if not query:
+                btn = ctk.CTkButton(
+                    self.nav_scroll,
+                    text=art["title"],
+                    anchor="w",
+                    fg_color=fg_color,
+                    hover_color=("gray70", "gray35"),
+                    text_color=("black", "white") if is_active else ("gray10", "gray90"),
+                    command=lambda a_id=art["id"]: self.select_article(a_id)
+                )
+                btn.pack(fill="x", pady=3, padx=2)
+            else:
+                card = ctk.CTkFrame(self.nav_scroll, fg_color=fg_color, corner_radius=6, cursor="hand2")
+                card.pack(fill="x", pady=3, padx=2)
+
+                def on_enter(e, c=card):
+                    c.configure(fg_color=("gray70", "gray35"))
+
+                def on_leave(e, c=card, col=fg_color):
+                    c.configure(fg_color=col)
+
+                card.bind("<Enter>", on_enter)
+                card.bind("<Leave>", on_leave)
+
+                def on_click(e=None, a_id=art["id"]):
+                    self.select_article(a_id)
+
+                card.bind("<Button-1>", on_click)
+
+                content_lower = art.get("content", "").lower()
+                idx = content_lower.find(query_lower) if query_lower else -1
+                has_content_match = idx != -1 and query_lower not in art["title"].lower()
+
+                title_lbl = create_highlighted_label(
+                    card,
+                    text=art["title"],
+                    query=query,
+                    font=ctk.CTkFont(size=12, weight="bold" if is_active else "normal"),
+                    text_color=("black", "white") if is_active else ("gray10", "gray90"),
+                    bg_color=fg_color,
+                    wrap="none",
+                    on_click=on_click,
+                    scroll_frame=self.nav_scroll,
+                )
+                title_lbl.pack(fill="x", padx=8, pady=(4, 2) if has_content_match else (6, 6))
+
+                if has_content_match:
+                    raw_content = art.get("content", "")
+                    start = max(0, idx - 20)
+                    end = min(len(raw_content), idx + len(query) + 30)
+                    snippet = raw_content[start:end].replace("\n", " ").strip()
+                    if start > 0:
+                        snippet = f"...{snippet}"
+                    if end < len(raw_content):
+                        snippet = f"{snippet}..."
+
+                    snip_lbl = create_highlighted_label(
+                        card,
+                        text=snippet,
+                        query=query,
+                        font=ctk.CTkFont(size=11),
+                        text_color=("gray40", "gray70"),
+                        bg_color=fg_color,
+                        wrap="none",
+                        on_click=on_click,
+                        scroll_frame=self.nav_scroll,
+                    )
+                    snip_lbl.pack(fill="x", padx=8, pady=(0, 4))
+
+                bind_mouse_wheel_to_canvas(card, self.nav_scroll)
 
     def select_article(self, article_id: str):
         article = next((a for a in self.articles if a["id"] == article_id), None)

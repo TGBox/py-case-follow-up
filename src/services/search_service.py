@@ -169,3 +169,93 @@ class SearchService:
     def filter_cases(cls, cases: list[Case], query_str: str, now: datetime | None = None) -> list[Case]:
         query = parse_search_query(query_str)
         return [c for c in cases if cls.matches_query(c, query, now)]
+
+    @staticmethod
+    def extract_case_search_match_summary(
+        case: Case,
+        terms: list[str],
+        max_matches: int = 3,
+        max_chars: int = 50,
+    ) -> str | None:
+        """Extracts matching words from non-primary case fields (timeline notes, follow-up note, form fields, tags, contacts)."""
+        valid_terms = [t.strip().lower() for t in terms if t and t.strip()]
+        if not valid_terms:
+            return None
+
+        # Primary fields already rendered in card
+        primary_text = " ".join([
+            case.case_id,
+            case.customer.practice_name,
+            case.classification.title,
+            case.workflow_status.current_actor or "",
+        ]).lower()
+
+        fields_to_check: list[str] = []
+        if case.classification.tags:
+            fields_to_check.extend(case.classification.tags)
+        if case.workflow_status.followup_note:
+            fields_to_check.append(case.workflow_status.followup_note)
+        if case.customer.contact_person:
+            fields_to_check.append(case.customer.contact_person)
+        if case.customer.phone:
+            fields_to_check.append(case.customer.phone)
+        if case.customer.email:
+            fields_to_check.append(case.customer.email)
+        if isinstance(case.form_data, dict):
+            for v in case.form_data.values():
+                if v:
+                    fields_to_check.append(str(v))
+        for t in case.timeline:
+            if t.note:
+                fields_to_check.append(t.note)
+            if t.author:
+                fields_to_check.append(t.author)
+
+        unique_matches: list[str] = []
+        seen: set[str] = set()
+        has_more_matches = False
+        strip_chars = ",;:()[]{}<>\"'\t\r\n"
+
+        for field_text in fields_to_check:
+            words = field_text.split()
+            for w in words:
+                clean_w = w.strip(strip_chars)
+                if not clean_w:
+                    continue
+                w_low = clean_w.lower()
+                # Check if this word matches any term
+                if any(term in w_low for term in valid_terms):
+                    # Check if this word already exists in primary card labels
+                    if w_low in primary_text:
+                        continue
+                    if w_low in seen:
+                        continue
+                    seen.add(w_low)
+                    if len(unique_matches) < max_matches:
+                        unique_matches.append(clean_w)
+                    else:
+                        has_more_matches = True
+
+        if not unique_matches:
+            return None
+
+        result_parts: list[str] = []
+        current_len = 0
+        truncated = has_more_matches
+
+        for i, word in enumerate(unique_matches):
+            add_len = len(word) + (2 if i > 0 else 0)
+            if current_len + add_len > max_chars:
+                if i == 0:
+                    result_parts.append(word[: max(1, max_chars - 3)])
+                    truncated = True
+                else:
+                    truncated = True
+                break
+            result_parts.append(word)
+            current_len += add_len
+
+        summary = ", ".join(result_parts)
+        if truncated:
+            summary += "..."
+        return summary

@@ -1,12 +1,14 @@
 import threading
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from typing import Any
 from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.profile import UserProfile
 from services.ai_service import AiService
 from utils.datetime_utils import now_iso
-from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
+from utils.ui_utils import enable_auto_hiding_scrollbar
 
 
 from constants import (
@@ -36,7 +38,7 @@ from constants import (
 )
 
 
-class AiAssistantDialog(ctk.CTkToplevel):
+class AiAssistantDialog(BaseDialog):
     """Dialog providing AI & NLP Support capabilities (Case Summaries, Solution Cards, and Email Reply Drafting)."""
 
     def __init__(
@@ -73,17 +75,13 @@ class AiAssistantDialog(ctk.CTkToplevel):
             enable_anonymization=enable_anon,
         )
 
-        self.title(f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]")
         w, h = DIALOG_DIMENSIONS["ai_assistant"]
-        self.geometry(f"{w}x{h}")
-        self.minsize(720, 480)
-        center_window(self, w, h)
-
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except Exception:
-            pass
+        self.setup_window(
+            parent,
+            f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]",
+            (w, h),
+            min_size=(720, 480),
+        )
 
         self.create_widgets()
         self.create_loading_overlay()

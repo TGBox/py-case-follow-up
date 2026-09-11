@@ -1,11 +1,13 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
 from constants import DIALOG_DIMENSIONS
 
 
-class SnippetPickerDialog(ctk.CTkToplevel):
+class SnippetPickerDialog(BaseDialog):
     """Modal dialog for searching and picking a text snippet to insert into text fields."""
 
     def __init__(
@@ -21,15 +23,12 @@ class SnippetPickerDialog(ctk.CTkToplevel):
 
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["snippet_picker"]
-        self.title(tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(680, 480)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"),
+            (w, h),
+            min_size=(680, 480),
+        )
 
         self.create_widgets()
         self.refresh_snippet_list()

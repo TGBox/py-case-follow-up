@@ -397,6 +397,22 @@
     "phone_placeholder": "z. B. 4012",
     "username_placeholder": "z. B. mmueller"
   },
+  "confirm": {
+    "title": "Bitte bestätigen",
+    "delete_title": "Löschen bestätigen",
+    "unsaved_title": "Ungespeicherte Eingaben",
+    "unsaved_message": "Es gibt ungespeicherte Eingaben. Wirklich schließen und verwerfen?",
+    "discard": "Verwerfen",
+    "keep_editing": "Weiter bearbeiten",
+    "yes_delete": "🗑 Ja, löschen",
+    "delete_tag": "Tag „{name}“ wirklich dauerhaft entfernen?",
+    "delete_module": "Programmbereich „{name}“ wirklich dauerhaft entfernen?",
+    "delete_snippet": "Textbaustein „{name}“ wirklich dauerhaft löschen?",
+    "delete_colleague": "„{name}“ wirklich aus der Mitarbeiterliste entfernen?",
+    "delete_template": "Export-Vorlage „{name}“ wirklich dauerhaft löschen?",
+    "delete_schema": "Formular „{name}“ wirklich löschen? Bereits erfasste Fälle behalten ihre Daten.",
+    "schema_last_hint": "Das letzte verbleibende Formular kann nicht gelöscht werden."
+  },
   "common": {
     "all_files": "Alle Dateien",
     "at_time": "um",

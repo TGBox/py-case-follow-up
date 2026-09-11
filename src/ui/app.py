@@ -727,12 +727,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.storage_service.save_cases(self.cases)
             self.after(0, self.refresh_views)
             # Reschedule in 3600 seconds
-            timer = threading.Timer(3600, update_timer)
-            timer.daemon = True
-            timer.start()
+            self._start_scoring_timer(update_timer)
 
-        timer = threading.Timer(3600, update_timer)
+        self._start_scoring_timer(update_timer)
+
+    def _start_scoring_timer(self, target):
+        """Starts the hourly scoring timer, keeping a reference so it can be cancelled on quit."""
+        timer = threading.Timer(3600, target)
         timer.daemon = True
+        self._scoring_timer = timer
         timer.start()
 
     def open_zip_export_dialog(self):
@@ -880,6 +883,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def destroy(self):
         from services.i18n_service import get_i18n
+        # Stop the hourly scoring timer first: if it fires during shutdown it
+        # calls self.after() on an already destroyed root and raises TclError.
+        timer = getattr(self, "_scoring_timer", None)
+        if timer is not None:
+            try:
+                timer.cancel()
+            except Exception as timer_err:
+                logger.warning(f"Could not cancel scoring timer: {timer_err}")
+            self._scoring_timer = None
         try:
             get_i18n().unregister_listener(self.on_language_changed)
         except Exception:

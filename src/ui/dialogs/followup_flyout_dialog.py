@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from datetime import timedelta
 from collections.abc import Callable
 from models.case import Case
@@ -7,7 +9,7 @@ from utils.datetime_utils import format_german_datetime, parse_followup_datetime
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class FollowupFlyoutDialog(ctk.CTkToplevel):
+class FollowupFlyoutDialog(BaseDialog):
     """Flyout list showing all due followups & deadlines with quick actions (+1 Tag, +1 Woche)."""
 
     def __init__(self, parent, due_cases: list[Case], on_case_selected: Callable[[Case], None], on_refresh: Callable[[], None]):
@@ -17,15 +19,12 @@ class FollowupFlyoutDialog(ctk.CTkToplevel):
         self.on_refresh = on_refresh
 
         w, h = DIALOG_DIMENSIONS["followup_flyout"]
-        self.title(DIALOG_TITLES["followup_flyout"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(640, 480)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["followup_flyout"],
+            (w, h),
+            min_size=(640, 480),
+        )
 
         self.create_widgets()
 

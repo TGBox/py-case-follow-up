@@ -1,11 +1,13 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, STATUS_MESSAGES, LABEL_SNIPPET_SHORTCUT_FIELD, HOTKEY_RECORDER_BUTTON
 
 
-class SnippetManagementDialog(ctk.CTkToplevel):
+class SnippetManagementDialog(BaseDialog):
     """Management dialog for adding, editing, and removing text snippets."""
 
     def __init__(self, parent, snippet_service: SnippetService, on_snippets_updated: Callable[[], None] | None = None):
@@ -15,15 +17,12 @@ class SnippetManagementDialog(ctk.CTkToplevel):
         self.selected_snippet: Snippet | None = None
 
         w, h = DIALOG_DIMENSIONS["snippet_mgmt"]
-        self.title(DIALOG_TITLES["snippet_mgmt"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(720, 500)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["snippet_mgmt"],
+            (w, h),
+            min_size=(720, 500),
+        )
 
         self.create_widgets()
         self.refresh_list()
@@ -120,7 +119,7 @@ class SnippetManagementDialog(ctk.CTkToplevel):
             text=tr("common.delete", "🗑 Löschen"),
             fg_color="crimson",
             hover_color="darkred",
-            command=self.on_click_delete,
+            command=self.confirm_click_delete,
             state="disabled",
         )
         self.delete_btn.pack(side="left")
@@ -247,6 +246,20 @@ class SnippetManagementDialog(ctk.CTkToplevel):
 
         if self.on_snippets_updated:
             self.on_snippets_updated()
+
+    def confirm_click_delete(self):
+        """Asks before deleting the selected text block."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        if not self.selected_snippet:
+            return
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_snippet", "Textbaustein „{name}“ wirklich dauerhaft löschen?", name=self.selected_snippet.title),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_click_delete()
 
     def on_click_delete(self):
         if self.selected_snippet:

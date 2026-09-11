@@ -1,4 +1,6 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from typing import Any
 from collections.abc import Callable
 from models.customer import Customer, Contact
@@ -7,21 +9,19 @@ from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 from ui.dialogs.customer_form_builders import CustomerFormBuilderMixin
 
 
-class CustomerManagementDialog(CustomerFormBuilderMixin, ctk.CTkToplevel):
+class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
     def __init__(self, parent, customer_service: CustomerService, on_customers_updated: Callable[[], None] | None = None):
         super().__init__(parent)
         self.customer_service = customer_service
         self.on_customers_updated = on_customers_updated
 
         w, h = DIALOG_DIMENSIONS["customer_mgmt"]
-        self.title(DIALOG_TITLES["customer_mgmt"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(900, 600)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["customer_mgmt"],
+            (w, h),
+            min_size=(900, 600),
+        )
 
         self.customers: list[Customer] = []
         self.filtered_customers: list[Customer] = []

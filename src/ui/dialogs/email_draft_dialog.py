@@ -6,11 +6,13 @@ from pathlib import Path
 from typing import Any
 from collections.abc import Callable
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from models.case import Case
 from models.customer import Customer
 from services.ai_service import AiService
 from services.calendar_email_service import CalendarEmailService, format_german_salutation
-from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
+from utils.ui_utils import enable_auto_hiding_scrollbar
 from constants import (
     DIALOG_DIMENSIONS,
     DIALOG_TITLES,
@@ -30,7 +32,7 @@ from constants import (
 )
 
 
-class EmailDraftDialog(ctk.CTkToplevel):
+class EmailDraftDialog(BaseDialog):
     """Standalone dialog for preparing and dispatching support emails with integrated AI text generation."""
 
     def __init__(
@@ -105,24 +107,22 @@ class EmailDraftDialog(ctk.CTkToplevel):
             dialog_title = tr("email_draft.window_title_case", "{base_title} - Fall {case_id}", base_title=DIALOG_TITLES["email_draft"], case_id=case.case_id)
         else:
             dialog_title = tr("email_draft.window_title_new", "{base_title} (Neuer Entwurf)", base_title=DIALOG_TITLES["email_draft"])
-        self.title(dialog_title)
         w, h = DIALOG_DIMENSIONS["email_draft"]
-        self.geometry(f"{w}x{h}")
-        self.minsize(700, 520)
-
-        center_window(self, w, h)
-
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except Exception:
-            pass
+        self.setup_window(
+            parent,
+            dialog_title,
+            (w, h),
+            min_size=(700, 520),
+        )
 
         sig = self.profile.user.email_signature if (self.profile and hasattr(self.profile, "user") and hasattr(self.profile.user, "email_signature")) else ""
         self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name, customers=self.customers, signature=sig)
         self.create_widgets()
         self._create_loading_overlay()
         self._update_ollama_status_async()
+        # A written draft is the most painful thing to lose, so Escape and the
+        # X button ask before discarding it.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -194,7 +194,9 @@ class EmailDraftDialog(ctk.CTkToplevel):
             self.to_entry.insert(0, self.draft_data["to"])
         self.to_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
         self.to_entry.bind("<KeyRelease>", self._on_to_keyrelease)
-        self.to_entry.bind("<Escape>", lambda e: self.hide_suggestions())
+        # "break" keeps Escape from bubbling up to the dialog's close binding:
+        # in the To field Escape only closes the autocomplete list, never the draft.
+        self.to_entry.bind("<Escape>", self._on_to_escape)
 
         self.praxis_btn = ctk.CTkButton(
             self.to_row,
@@ -372,6 +374,10 @@ class EmailDraftDialog(ctk.CTkToplevel):
         ).pack(side="right")
 
     # --- Autocomplete & Praxiskartei Logic ---
+
+    def _on_to_escape(self, event=None):
+        self.hide_suggestions()
+        return "break"
 
     def _on_to_keyrelease(self, event=None):
         if event and event.keysym == "Escape":

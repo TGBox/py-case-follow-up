@@ -1,13 +1,15 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from typing import Any
 from collections.abc import Callable
 from models.case import Case
 from services.outlook_integration_service import OutlookIntegrationService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, DIALOG_HEADERS
-from utils.ui_utils import center_window, enable_auto_hiding_scrollbar
+from utils.ui_utils import enable_auto_hiding_scrollbar
 
 
-class EmailImportDialog(ctk.CTkToplevel):
+class EmailImportDialog(BaseDialog):
     """Dialog for inspecting incoming Outlook / IMAP emails and converting them into cases or timeline entries."""
 
     def __init__(
@@ -24,17 +26,13 @@ class EmailImportDialog(ctk.CTkToplevel):
         self.on_case_updated = on_case_updated
         self.author_name = author_name
 
-        self.title(DIALOG_TITLES["email_import"])
         w, h = DIALOG_DIMENSIONS["email_import"]
-        self.geometry(f"{w}x{h}")
-        self.minsize(750, 500)
-        center_window(self, w, h)
-
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except Exception:
-            pass
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["email_import"],
+            (w, h),
+            min_size=(750, 500),
+        )
 
         self.emails: list[dict[str, Any]] = []
         self.create_widgets()

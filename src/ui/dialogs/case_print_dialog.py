@@ -2,6 +2,8 @@ import base64
 import tempfile
 import webbrowser
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from pathlib import Path
 from tkinter import filedialog
 from typing import Any
@@ -11,7 +13,7 @@ from utils.datetime_utils import format_german_datetime
 from constants import DIALOG_DIMENSIONS
 
 
-class CasePrintDialog(ctk.CTkToplevel):
+class CasePrintDialog(BaseDialog):
     """Print preview and HTML report generator dialog allowing selective unchecking of timeline entries and fields."""
 
     def __init__(self, parent, case: Case, attachment_service: Any | None = None):
@@ -21,18 +23,12 @@ class CasePrintDialog(ctk.CTkToplevel):
 
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["print_report"]
-        self.title(tr("case_print.dialog_title", "🖨 Fall-Akte Druck- & HTML Export: {case_id}", case_id=case.case_id))
-        self.geometry(f"{w}x{h}")
-        self.minsize(620, 500)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except Exception:
-            pass
+        self.setup_window(
+            parent,
+            tr("case_print.dialog_title", "🖨 Fall-Akte Druck- & HTML Export: {case_id}", case_id=case.case_id),
+            (w, h),
+            min_size=(620, 500),
+        )
 
         self.timeline_vars: list[tuple[ctk.BooleanVar, int]] = []
         self.include_customer_var = ctk.BooleanVar(value=True)

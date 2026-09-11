@@ -44,7 +44,7 @@ class CaseListWidget(ctk.CTkFrame):
             search_frame, placeholder_text=tr("cockpit.search_placeholder", "🔍 Suche / Token (z. B. vip:true status:open)...")
         )
         self.search_entry.pack(fill="x", expand=True)
-        self.search_entry.bind("<KeyRelease>", lambda e: self.on_search_changed(self.search_entry.get()))
+        self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
         # Quick Filter Buttons Bar
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -106,6 +106,11 @@ class CaseListWidget(ctk.CTkFrame):
                         lbl.configure(wraplength=target_wrap)
                     except Exception:
                         pass
+
+    def _on_search_keyrelease(self, event=None):
+        """Debounces the search so the case list is re-rendered once per typing pause."""
+        from utils.ui_utils import debounce
+        debounce(self, "case_search", 220, lambda: self.on_search_changed(self.search_entry.get()))
 
     def toggle_deep_search(self):
         self.is_deep_search_active = not self.is_deep_search_active

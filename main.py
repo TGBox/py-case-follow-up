@@ -8,11 +8,10 @@ src_dir = Path(__file__).parent.resolve() / "src"
 if str(src_dir) not in sys.path:
     sys.path.insert(0, str(src_dir))
 
-import tkinter
-import traceback
-from types import TracebackType
+import tkinter  # noqa: E402 - sys.path must be extended before src/ imports
+import traceback  # noqa: E402 - sys.path must be extended before src/ imports
 
-from utils.ui_utils import patch_ctk_scrollable_frame
+from utils.ui_utils import patch_ctk_scrollable_frame  # noqa: E402 - sys.path must be extended before src/ imports
 
 patch_ctk_scrollable_frame()
 
@@ -61,16 +60,16 @@ def _report_tkinter_exception(*args) -> None:
         _seen_exceptions.add(err_key)
         print("\n=================== [TKINTER CALLBACK EXCEPTION] ===================", file=sys.stderr)
         print(tb_str.strip(), file=sys.stderr)
-        print(f"--> Ausführlicher Log gespeichert in: logs/tkinter_error.log", file=sys.stderr)
+        print("--> Ausführlicher Log gespeichert in: logs/tkinter_error.log", file=sys.stderr)
         print("====================================================================\n", file=sys.stderr)
         sys.stderr.flush()
 
 
 tkinter.Tk.report_callback_exception = _report_tkinter_exception
 
-from config import AppConfig
-from services.storage_service import StorageService
-from services.seed_service import SeedService
+from config import AppConfig  # noqa: E402 - sys.path must be extended before src/ imports
+from services.storage_service import StorageService  # noqa: E402 - sys.path must be extended before src/ imports
+from services.seed_service import SeedService  # noqa: E402 - sys.path must be extended before src/ imports
 
 
 def parse_args():
@@ -108,7 +107,7 @@ def main():
         sys.exit(0)
 
     if args.demo:
-        print(f"[*] Starting Support Cockpit in DEMO mode...")
+        print("[*] Starting Support Cockpit in DEMO mode...")
         seed_service = SeedService(storage)
         seed_service.run_seed(force=True)
 

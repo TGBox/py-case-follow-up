@@ -97,8 +97,11 @@ def safe_read_json(
                 shutil.copy2(example_path, target_path)
                 with open(target_path, encoding="utf-8") as f:
                     return json.load(f)
-            except Exception:
-                pass
+            except Exception as fallback_err:
+                # Both the user file AND the example template failed - without this
+                # log line the user silently starts with empty data and there is no
+                # trace in the log explaining why.
+                logger.error(f"Fallback from example template {example_path} failed for {target_path}: {fallback_err}")
 
         default_val = default_factory() if default_factory else []
         atomic_save_json(target_path, default_val)
@@ -284,19 +287,31 @@ class StorageService:
         archived_count = 0
         remaining_cases = []
 
+        # Index the archive by case_id once instead of rebuilding the whole
+        # archive list per archived case (that was O(archived x archive size)
+        # and runs on every app start).
+        archive_by_id: dict[str, Case] = {}
+        archive_order: list[str] = []
+        for existing in archive:
+            if existing.case_id not in archive_by_id:
+                archive_order.append(existing.case_id)
+            archive_by_id[existing.case_id] = existing
+
         for c in cases:
             if c.workflow_status.is_completed:
                 idle_days = calculate_idle_days(c.updated_at)
                 if idle_days >= threshold_days:
                     c.workflow_status.is_archived = True
-                    archive = [existing for existing in archive if existing.case_id != c.case_id]
-                    archive.append(c)
+                    if c.case_id not in archive_by_id:
+                        archive_order.append(c.case_id)
+                    archive_by_id[c.case_id] = c
                     archived_count += 1
                     logger.info(f"Auto-archived case {c.case_id} (idle {idle_days:.1f} days)")
                     continue
             remaining_cases.append(c)
 
         if archived_count > 0:
+            archive = [archive_by_id[cid] for cid in archive_order]
             self.save_cases(remaining_cases)
             self.save_archive(archive)
         return archived_count
@@ -366,8 +381,8 @@ class StorageService:
                     name = data.get("user", {}).get("name")
                     if name and name not in profiles:
                         profiles.append(name)
-                except Exception:
-                    pass
+                except Exception as profile_err:
+                    logger.warning(f"Skipping unreadable profile file {f}: {profile_err}")
         return profiles
 
     def load_profile(self, use_cache: bool = True) -> UserProfile:

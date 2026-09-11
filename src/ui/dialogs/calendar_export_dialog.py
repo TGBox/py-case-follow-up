@@ -1,6 +1,8 @@
 import os
 import tempfile
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from pathlib import Path
 from tkinter import filedialog
 from models.case import Case
@@ -8,7 +10,7 @@ from services.calendar_email_service import CalendarEmailService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class CalendarExportDialog(ctk.CTkToplevel):
+class CalendarExportDialog(BaseDialog):
     """Standalone dialog for generating, previewing, and exporting iCalendar (.ics) entries."""
 
     def __init__(
@@ -23,18 +25,12 @@ class CalendarExportDialog(ctk.CTkToplevel):
 
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["calendar_export"]
-        self.title(f"{DIALOG_TITLES['calendar_export']} - {tr('common.case', 'Fall')} {case.case_id}")
-        self.geometry(f"{w}x{h}")
-        self.minsize(580, 440)
-
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        try:
-            self.transient(parent)
-            self.grab_set()
-        except Exception:
-            pass
+        self.setup_window(
+            parent,
+            f"{DIALOG_TITLES['calendar_export']} - {tr('common.case', 'Fall')} {case.case_id}",
+            (w, h),
+            min_size=(580, 440),
+        )
 
         self.create_widgets()
 

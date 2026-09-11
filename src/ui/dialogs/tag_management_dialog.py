@@ -1,11 +1,13 @@
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 
 
-class TagManagementDialog(ctk.CTkToplevel):
+class TagManagementDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -21,15 +23,12 @@ class TagManagementDialog(ctk.CTkToplevel):
         self.initial_tab = initial_tab
 
         w, h = DIALOG_DIMENSIONS["tag_mgmt"]
-        self.title(DIALOG_TITLES["tag_mgmt"])
-        self.geometry(f"{w}x{h}")
-        self.minsize(580, 520)
-        from utils.ui_utils import center_window
-
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            DIALOG_TITLES["tag_mgmt"],
+            (w, h),
+            min_size=(580, 520),
+        )
 
         self.create_widgets()
         if initial_tab == "modules":
@@ -151,7 +150,7 @@ class TagManagementDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(row, text=f"🏷  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.on_delete_tag(t))
+                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.tags_scroll)
@@ -177,11 +176,24 @@ class TagManagementDialog(ctk.CTkToplevel):
         if self.on_tags_updated:
             self.on_tags_updated()
 
+    def confirm_delete_tag(self, tag_name: str):
+        """Asks before removing the tag - this deletion cannot be undone."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_tag", "Tag „{name}“ wirklich dauerhaft entfernen?", name=tag_name),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_delete_tag(tag_name)
+
     def on_delete_tag(self, tag_name: str):
+        from services.i18n_service import tr
         if tag_name in self.profile.available_tags:
             self.profile.available_tags.remove(tag_name)
             self.storage_service.save_profile(self.profile)
-            self.status_lbl.configure(text=f"✅ Tag '{tag_name}' gelöscht.", text_color="green")
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_deleted", "✅ Tag '{name}' gelöscht.", name=tag_name), text_color="green")
             self.render_tags_list()
             if self.on_tags_updated:
                 self.on_tags_updated()
@@ -205,7 +217,7 @@ class TagManagementDialog(ctk.CTkToplevel):
 
                 ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.on_delete_module(m))
+                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m))
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.modules_scroll)
@@ -230,11 +242,24 @@ class TagManagementDialog(ctk.CTkToplevel):
         if self.on_tags_updated:
             self.on_tags_updated()
 
+    def confirm_delete_module(self, mod_name: str):
+        """Asks before removing the program area - this deletion cannot be undone."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_module", "Programmbereich „{name}“ wirklich dauerhaft entfernen?", name=mod_name),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_delete_module(mod_name)
+
     def on_delete_module(self, mod_name: str):
+        from services.i18n_service import tr
         if mod_name in self.profile.available_module_tags:
             self.profile.available_module_tags.remove(mod_name)
             self.storage_service.save_profile(self.profile)
-            self.status_lbl.configure(text=f"✅ Programmbereich '{mod_name}' gelöscht.", text_color="green")
+            self.status_lbl.configure(text=tr("tag_mgmt.module_deleted", "✅ Programmbereich '{name}' gelöscht.", name=mod_name), text_color="green")
             self.render_modules_list()
             if self.on_tags_updated:
                 self.on_tags_updated()

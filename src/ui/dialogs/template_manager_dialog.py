@@ -1,5 +1,7 @@
 from collections.abc import Callable
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema
 from models.case import Case
@@ -9,7 +11,7 @@ from services.storage_service import StorageService
 from constants import DIALOG_DIMENSIONS, COLOR_PANEL_BG, COLOR_PANEL_BORDER
 
 
-class EditTemplateDialog(ctk.CTkToplevel):
+class EditTemplateDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -26,14 +28,12 @@ class EditTemplateDialog(ctk.CTkToplevel):
 
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["edit_template"]
-        self.title(tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(700, 600)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("template_mgmt.edit_title", "📄 Export-Vorlage bearbeiten") if template else tr("template_mgmt.new_title", "📄 Neue Export-Vorlage erstellen"),
+            (w, h),
+            min_size=(700, 600),
+        )
 
         self.schema_vars: dict[str, ctk.BooleanVar] = {}
         self.field_vars: dict[str, ctk.BooleanVar] = {}
@@ -197,7 +197,7 @@ class EditTemplateDialog(ctk.CTkToplevel):
         self.destroy()
 
 
-class TemplateManagerDialog(ctk.CTkToplevel):
+class TemplateManagerDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -216,14 +216,12 @@ class TemplateManagerDialog(ctk.CTkToplevel):
 
         w, h = DIALOG_DIMENSIONS["template_mgmt"]
         from services.i18n_service import tr
-        self.title(tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"))
-        self.geometry(f"{w}x{h}")
-        self.minsize(880, 640)
-        from utils.ui_utils import center_window
-        center_window(self, w, h)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"),
+            (w, h),
+            min_size=(880, 640),
+        )
 
         self.create_widgets()
 
@@ -296,7 +294,7 @@ class TemplateManagerDialog(ctk.CTkToplevel):
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
             id_lbl.pack(side="left", padx=8)
 
-            btn_del = ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=80, fg_color="darkred", command=lambda t=tmpl: self.on_delete_template(t))
+            btn_del = ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=80, fg_color="darkred", command=lambda t=tmpl: self.confirm_delete_template(t))
             btn_del.pack(side="right", padx=4)
 
             btn_edit = ctk.CTkButton(top_row, text=tr("common.edit", "✏ Bearbeiten"), width=100, command=lambda t=tmpl: self.on_edit_template(t))
@@ -337,6 +335,18 @@ class TemplateManagerDialog(ctk.CTkToplevel):
 
     def on_edit_template(self, tmpl: ExportTemplate):
         EditTemplateDialog(self, tmpl, self.schemas, self.export_service, self.save_template)
+
+    def confirm_delete_template(self, tmpl: ExportTemplate):
+        """Asks before deleting the export template."""
+        from services.i18n_service import tr
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        if ask_confirmation(
+            self,
+            tr("confirm.delete_template", "Export-Vorlage „{name}“ wirklich dauerhaft löschen?", name=tmpl.display_name),
+            title=tr("confirm.delete_title", "Löschen bestätigen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+        ):
+            self.on_delete_template(tmpl)
 
     def on_delete_template(self, tmpl: ExportTemplate):
         self.templates = [t for t in self.templates if t.template_id != tmpl.template_id]

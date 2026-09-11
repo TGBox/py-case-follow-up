@@ -28,7 +28,7 @@ class WikiWidget(ctk.CTkFrame):
 
         self.search_entry = ctk.CTkEntry(search_frame, placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
         self.search_entry.pack(fill="x", expand=True)
-        self.search_entry.bind("<KeyRelease>", lambda e: self.on_search())
+        self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
         # Status
         self.status_label = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), anchor="w")
@@ -53,6 +53,11 @@ class WikiWidget(ctk.CTkFrame):
 
     def focus_search(self):
         self.search_entry.focus_set()
+
+    def _on_search_keyrelease(self, event=None):
+        """Debounces the SQLite wiki search instead of querying on every key press."""
+        from utils.ui_utils import debounce
+        debounce(self, "wiki_search", 250, self.on_search)
 
     def on_search(self):
         from services.i18n_service import tr

@@ -1,14 +1,15 @@
 from utils.datetime_utils import format_german_datetime
 import customtkinter as ctk
+
+from ui.dialogs.base_dialog import BaseDialog
 from datetime import timedelta
 from collections.abc import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
 from utils.datetime_utils import format_german_date, parse_followup_datetime, get_local_now
-from utils.ui_utils import center_window
 
 
-class FollowupDialog(ctk.CTkToplevel):
+class FollowupDialog(BaseDialog):
     def __init__(
         self,
         parent,
@@ -20,13 +21,12 @@ class FollowupDialog(ctk.CTkToplevel):
         self.on_followup_set = on_followup_set
 
         from services.i18n_service import tr
-        self.title(tr("dialog_titles.followup", "🔔 Wiedervorlage & Nachfrage-Erinnerung"))
-        self.geometry("500x385")
-        self.minsize(460, 350)
-        center_window(self, 500, 385)
-
-        self.transient(parent)
-        self.grab_set()
+        self.setup_window(
+            parent,
+            tr("dialog_titles.followup", "🔔 Wiedervorlage & Nachfrage-Erinnerung"),
+            (500, 385),
+            min_size=(460, 350),
+        )
 
         self.create_widgets()
 

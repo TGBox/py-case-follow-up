@@ -104,19 +104,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
         self.splash_msg_lbl.pack()
 
-        # Reveal the window now that splash overlay is covering it completely
-        self.deiconify()
-        try:
-            self.state("zoomed")
-        except Exception:
-            pass
-        self.splash_overlay.lift()
-        self.update()
-
+        # Window stays withdrawn until the full layout is built and the splash
+        # overlay has been painted — preventing any flash of un-rendered content.
+        # (deiconify happens after switch_layout() below)
         self._initial_map_done = False
         self.bind("<Map>", self._on_initial_window_mapped, add="+")
-        self.after(100, self._maximize_initial_window)
-        self.after(400, self._maximize_initial_window)
 
         self.customer_service = CustomerService(self.storage_service)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
@@ -195,9 +187,19 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.schedule_hourly_scoring()
         self.after(FOLLOWUP_CHECK_INITIAL_DELAY_MS, self.check_due_followups)
 
-        # Hide splash screen smoothly after initial layout pass
-        self.update_idletasks()
-        self.after(250, self._hide_splash_screen)
+        # All layout is built — now reveal the window with the splash already on top,
+        # then hide the splash shortly after. This prevents any flash of UI content.
+        if self.splash_overlay:
+            self.splash_overlay.lift()
+        self.update_idletasks()  # ensure splash is painted before window appears
+        self.deiconify()
+        try:
+            self.state("zoomed")
+        except Exception:
+            pass
+        self.after(100, self._maximize_initial_window)
+        self.after(400, self._maximize_initial_window)
+        self.after(300, self._hide_splash_screen)
 
     def _on_window_configure(self, event=None):
         try:

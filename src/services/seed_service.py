@@ -357,10 +357,10 @@ class SeedService:
         templates = self.create_seed_templates()
         cases = self.create_seed_cases()
 
-        self.storage.save_customers(customers)
-        self.storage.save_schemas(schemas)
-        self.storage.save_templates(templates)
-        self.storage.save_cases(cases)
+        self.storage.save_customers(customers, sync=True)
+        self.storage.save_schemas(schemas, sync=True)
+        self.storage.save_templates(templates, sync=True)
+        self.storage.save_cases(cases, sync=True)
 
         # Profile & Colleagues
         profile = UserProfile(
@@ -368,7 +368,7 @@ class SeedService:
             ui_settings=UISettings(theme="SYSTEM", default_layout=LayoutMode.COCKPIT),
             wiki_settings=WikiSettings(api_url="https://wiki.intern.software.de", sync_mode=SyncMode.METADATA_ONLY),
         )
-        self.storage.save_profile(profile)
+        self.storage.save_profile(profile, sync=True)
 
         colleagues = [
             Colleague(
@@ -383,7 +383,7 @@ class SeedService:
                 absence_reason="",
             )
         ]
-        self.storage.save_colleagues(colleagues)
+        self.storage.save_colleagues(colleagues, sync=True)
 
         self.create_seed_wiki_db()
         self.storage.flush_all_saves()

@@ -117,11 +117,13 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
 
     def render_tag_checkboxes(self):
         from services.i18n_service import tr
+        from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
         for w in self.scroll_frame.winfo_children():
             w.destroy()
 
-        query = self.search_entry.get().strip().lower()
+        raw_query = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+        query = raw_query.lower()
         filtered = [t for t in self.available_tags if query in t.lower()] if query else self.available_tags
 
         if not filtered:
@@ -137,14 +139,51 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                     else:
                         self.selected_tags.discard(t)
 
-                chk = ctk.CTkCheckBox(
-                    self.scroll_frame,
-                    text=tag,
-                    variable=bvar,
-                    command=make_chk_cb,
-                    font=ctk.CTkFont(size=12),
-                )
-                chk.pack(anchor="w", pady=4, padx=5)
+                if raw_query and query in tag.lower():
+                    row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", cursor="hand2")
+                    row.pack(fill="x", pady=2, padx=5)
+
+                    def toggle_cb(e=None, t=tag, v=bvar):
+                        new_val = not v.get()
+                        v.set(new_val)
+                        if new_val:
+                            self.selected_tags.add(t)
+                        else:
+                            self.selected_tags.discard(t)
+
+                    chk = ctk.CTkCheckBox(
+                        row,
+                        text="",
+                        variable=bvar,
+                        command=make_chk_cb,
+                        width=24,
+                    )
+                    chk.pack(side="left", padx=(0, 6))
+
+                    lbl = create_highlighted_label(
+                        row,
+                        text=tag,
+                        query=raw_query,
+                        font=ctk.CTkFont(size=12),
+                        text_color=("gray10", "gray90"),
+                        bg_color="transparent",
+                        wrap="none",
+                        on_click=toggle_cb,
+                        scroll_frame=self.scroll_frame,
+                    )
+                    lbl.pack(side="left", fill="x", expand=True)
+
+                    row.bind("<Button-1>", toggle_cb)
+                    bind_mouse_wheel_to_canvas(row, self.scroll_frame)
+                else:
+                    chk = ctk.CTkCheckBox(
+                        self.scroll_frame,
+                        text=tag,
+                        variable=bvar,
+                        command=make_chk_cb,
+                        font=ctk.CTkFont(size=12),
+                    )
+                    chk.pack(anchor="w", pady=4, padx=5)
 
         canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
         if canvas:

@@ -5,6 +5,7 @@ from collections.abc import Callable
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
 
 class TagManagementDialog(BaseDialog):
@@ -138,7 +139,8 @@ class TagManagementDialog(BaseDialog):
         for w in self.tags_scroll.winfo_children():
             w.destroy()
 
-        query = self.search_tag_entry.get().strip().lower()
+        raw_query = self.search_tag_entry.get().strip() if hasattr(self, "search_tag_entry") else ""
+        query = raw_query.lower()
         tags = [t for t in self.profile.available_tags if query in t.lower()] if query else self.profile.available_tags
 
         from services.i18n_service import tr
@@ -147,13 +149,30 @@ class TagManagementDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(self.tags_scroll, text=tr("tag_mgmt.no_tags", "Keine Tags gefunden."), text_color="gray"), "tag_mgmt.no_tags", "Keine Tags gefunden.").pack(pady=20)
         else:
             for idx, tag in enumerate(tags):
-                row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+                row_bg = ("gray90", "gray20") if idx % 2 == 0 else "transparent"
+                row = ctk.CTkFrame(self.tags_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=2, padx=5)
 
-                ctk.CTkLabel(row, text=f"🏷  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+                tag_text = f"🏷  {tag}"
+                if raw_query and query in tag.lower():
+                    lbl = create_highlighted_label(
+                        row,
+                        text=tag_text,
+                        query=raw_query,
+                        font=ctk.CTkFont(size=13, weight="bold"),
+                        text_color=("gray10", "gray90"),
+                        bg_color=row_bg,
+                        wrap="none",
+                        scroll_frame=self.tags_scroll,
+                    )
+                else:
+                    lbl = ctk.CTkLabel(row, text=tag_text, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
+                lbl.pack(side="left", padx=10, expand=True, fill="x")
 
                 del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "🗑 Löschen")
                 del_btn.pack(side="right", padx=5, pady=3)
+
+                bind_mouse_wheel_to_canvas(row, self.tags_scroll)
 
         self._reset_scroll_to_top(self.tags_scroll)
 
@@ -207,20 +226,38 @@ class TagManagementDialog(BaseDialog):
         for w in self.modules_scroll.winfo_children():
             w.destroy()
 
-        query = self.search_mod_entry.get().strip().lower()
+        raw_query = self.search_mod_entry.get().strip() if hasattr(self, "search_mod_entry") else ""
+        query = raw_query.lower()
         mods = [m for m in self.profile.available_module_tags if query in m.lower()] if query else self.profile.available_module_tags
 
         if not mods:
             self.register_i18n(ctk.CTkLabel(self.modules_scroll, text=tr("tag_mgmt.no_modules", "Keine Programmbereiche gefunden."), text_color="gray"), "tag_mgmt.no_modules", "Keine Programmbereiche gefunden.").pack(pady=20)
         else:
             for idx, mod in enumerate(mods):
-                row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
+                row_bg = ("gray90", "gray20") if idx % 2 == 0 else "transparent"
+                row = ctk.CTkFrame(self.modules_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=2, padx=5)
 
-                ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
+                mod_text = f"🧩  {mod}"
+                if raw_query and query in mod.lower():
+                    lbl = create_highlighted_label(
+                        row,
+                        text=mod_text,
+                        query=raw_query,
+                        font=ctk.CTkFont(size=13, weight="bold"),
+                        text_color=("gray10", "gray90"),
+                        bg_color=row_bg,
+                        wrap="none",
+                        scroll_frame=self.modules_scroll,
+                    )
+                else:
+                    lbl = ctk.CTkLabel(row, text=mod_text, font=ctk.CTkFont(size=13, weight="bold"), anchor="w")
+                lbl.pack(side="left", padx=10, expand=True, fill="x")
 
                 del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "🗑 Löschen")
                 del_btn.pack(side="right", padx=5, pady=3)
+
+                bind_mouse_wheel_to_canvas(row, self.modules_scroll)
 
         self._reset_scroll_to_top(self.modules_scroll)
 

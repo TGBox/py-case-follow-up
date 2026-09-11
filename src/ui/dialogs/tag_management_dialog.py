@@ -28,6 +28,8 @@ class TagManagementDialog(BaseDialog):
             DIALOG_TITLES["tag_mgmt"],
             (w, h),
             min_size=(580, 520),
+
+            title_factory=lambda: DIALOG_TITLES["tag_mgmt"],
         )
 
         self.create_widgets()
@@ -46,7 +48,7 @@ class TagManagementDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(top_bar, text=tr("tag_mgmt.header", "🏷 System-Tags & Programmbereiche"), font=ctk.CTkFont(size=16, weight="bold")).pack(side="left", padx=10)
+        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("tag_mgmt.header", "🏷 System-Tags & Programmbereiche"), font=ctk.CTkFont(size=16, weight="bold")), "tag_mgmt.header", "🏷 System-Tags & Programmbereiche").pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=15, pady=(5, 10))
@@ -58,7 +60,7 @@ class TagManagementDialog(BaseDialog):
         self.status_lbl = ctk.CTkLabel(btn_frame, text="", text_color="green")
         self.status_lbl.pack(side="left")
 
-        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), command=self.destroy, width=120)
+        close_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), command=self.destroy, width=120), "common.close", "Schließen")
         close_btn.pack(side="right")
 
         # Tabview (Fills remaining space above footer)
@@ -73,17 +75,17 @@ class TagManagementDialog(BaseDialog):
         add_box1 = ctk.CTkFrame(tab_tags)
         add_box1.pack(fill="x", pady=5, padx=5)
 
-        self.search_tag_entry = ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen..."))
+        self.search_tag_entry = self.register_i18n(ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...")), "tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...", attr="placeholder_text")
         self.search_tag_entry.pack(fill="x", padx=10, pady=(8, 4))
         self.search_tag_entry.bind("<KeyRelease>", lambda e: self.render_tags_list())
 
         add_row1 = ctk.CTkFrame(add_box1, fg_color="transparent")
         add_row1.pack(fill="x", padx=10, pady=(4, 8))
 
-        self.new_tag_entry = ctk.CTkEntry(add_row1, placeholder_text=tr("tag_mgmt.new_tag_placeholder", "Neuen Tag erstellen (z. B. Schnittstelle)..."))
+        self.new_tag_entry = self.register_i18n(ctk.CTkEntry(add_row1, placeholder_text=tr("tag_mgmt.new_tag_placeholder", "Neuen Tag erstellen (z. B. Schnittstelle)...")), "tag_mgmt.new_tag_placeholder", "Neuen Tag erstellen (z. B. Schnittstelle)...", attr="placeholder_text")
         self.new_tag_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        add_btn1 = ctk.CTkButton(add_row1, text=tr("tag_mgmt.add_tag_btn", "+ Tag Hinzufügen"), command=self.on_add_tag, fg_color="forestgreen", width=140)
+        add_btn1 = self.register_i18n(ctk.CTkButton(add_row1, text=tr("tag_mgmt.add_tag_btn", "+ Tag Hinzufügen"), command=self.on_add_tag, fg_color="forestgreen", width=140), "tag_mgmt.add_tag_btn", "+ Tag Hinzufügen")
         add_btn1.pack(side="right")
 
         self.tags_scroll = ctk.CTkScrollableFrame(tab_tags)
@@ -95,17 +97,17 @@ class TagManagementDialog(BaseDialog):
         add_box2 = ctk.CTkFrame(tab_modules)
         add_box2.pack(fill="x", pady=5, padx=5)
 
-        self.search_mod_entry = ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen..."))
+        self.search_mod_entry = self.register_i18n(ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...")), "tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...", attr="placeholder_text")
         self.search_mod_entry.pack(fill="x", padx=10, pady=(8, 4))
         self.search_mod_entry.bind("<KeyRelease>", lambda e: self.render_modules_list())
 
         add_row2 = ctk.CTkFrame(add_box2, fg_color="transparent")
         add_row2.pack(fill="x", padx=10, pady=(4, 8))
 
-        self.new_mod_entry = ctk.CTkEntry(add_row2, placeholder_text=tr("tag_mgmt.new_module_placeholder", "Neuen Programmbereich erstellen (z. B. Rezeptdruck)..."))
+        self.new_mod_entry = self.register_i18n(ctk.CTkEntry(add_row2, placeholder_text=tr("tag_mgmt.new_module_placeholder", "Neuen Programmbereich erstellen (z. B. Rezeptdruck)...")), "tag_mgmt.new_module_placeholder", "Neuen Programmbereich erstellen (z. B. Rezeptdruck)...", attr="placeholder_text")
         self.new_mod_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
 
-        add_btn2 = ctk.CTkButton(add_row2, text=tr("tag_mgmt.add_module_btn", "+ Bereich Hinzufügen"), command=self.on_add_module, fg_color="dodgerblue", width=160)
+        add_btn2 = self.register_i18n(ctk.CTkButton(add_row2, text=tr("tag_mgmt.add_module_btn", "+ Bereich Hinzufügen"), command=self.on_add_module, fg_color="dodgerblue", width=160), "tag_mgmt.add_module_btn", "+ Bereich Hinzufügen")
         add_btn2.pack(side="right")
 
         self.modules_scroll = ctk.CTkScrollableFrame(tab_modules)
@@ -142,7 +144,7 @@ class TagManagementDialog(BaseDialog):
         from services.i18n_service import tr
 
         if not tags:
-            ctk.CTkLabel(self.tags_scroll, text=tr("tag_mgmt.no_tags", "Keine Tags gefunden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.tags_scroll, text=tr("tag_mgmt.no_tags", "Keine Tags gefunden."), text_color="gray"), "tag_mgmt.no_tags", "Keine Tags gefunden.").pack(pady=20)
         else:
             for idx, tag in enumerate(tags):
                 row = ctk.CTkFrame(self.tags_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
@@ -150,7 +152,7 @@ class TagManagementDialog(BaseDialog):
 
                 ctk.CTkLabel(row, text=f"🏷  {tag}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t))
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "🗑 Löschen")
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.tags_scroll)
@@ -209,7 +211,7 @@ class TagManagementDialog(BaseDialog):
         mods = [m for m in self.profile.available_module_tags if query in m.lower()] if query else self.profile.available_module_tags
 
         if not mods:
-            ctk.CTkLabel(self.modules_scroll, text=tr("tag_mgmt.no_modules", "Keine Programmbereiche gefunden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.modules_scroll, text=tr("tag_mgmt.no_modules", "Keine Programmbereiche gefunden."), text_color="gray"), "tag_mgmt.no_modules", "Keine Programmbereiche gefunden.").pack(pady=20)
         else:
             for idx, mod in enumerate(mods):
                 row = ctk.CTkFrame(self.modules_scroll, fg_color=("gray90", "gray20") if idx % 2 == 0 else "transparent")
@@ -217,7 +219,7 @@ class TagManagementDialog(BaseDialog):
 
                 ctk.CTkLabel(row, text=f"🧩  {mod}", font=ctk.CTkFont(size=13, weight="bold"), anchor="w").pack(side="left", padx=10, expand=True, fill="x")
 
-                del_btn = ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m))
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color="red", hover_color="darkred", width=90, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "🗑 Löschen")
                 del_btn.pack(side="right", padx=5, pady=3)
 
         self._reset_scroll_to_top(self.modules_scroll)

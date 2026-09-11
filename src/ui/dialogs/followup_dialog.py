@@ -26,6 +26,8 @@ class FollowupDialog(BaseDialog):
             tr("dialog_titles.followup", "🔔 Wiedervorlage & Nachfrage-Erinnerung"),
             (500, 385),
             min_size=(460, 350),
+
+            title_factory=lambda: tr("dialog_titles.followup", "🔔 Wiedervorlage & Nachfrage-Erinnerung"),
         )
 
         self.create_widgets()
@@ -36,21 +38,21 @@ class FollowupDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=40, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(8, 4))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             top_bar,
             text=tr("followup.header", "🔔 Wiedervorlage einplanen: {case_id}", case_id=self.case.case_id),
             font=ctk.CTkFont(size=14, weight="bold")
-        ).pack(side="left", padx=10)
+        ), "followup.header", "🔔 Wiedervorlage einplanen: {case_id}", case_id=self.case.case_id).pack(side="left", padx=10)
 
         main_frame = ctk.CTkFrame(self)
         main_frame.pack(fill="both", expand=True, padx=12, pady=(0, 10))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("followup.presets_lbl", "⚡ Schnellauswahl / Presets:"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
-        ).pack(fill="x", padx=12, pady=(8, 3))
+        ), "followup.presets_lbl", "⚡ Schnellauswahl / Presets:").pack(fill="x", padx=12, pady=(8, 3))
 
         # Quick Preset Buttons Grid (Uniform sizes for all pill buttons)
         preset_grid = ctk.CTkFrame(main_frame, fg_color="transparent")
@@ -98,12 +100,12 @@ class FollowupDialog(BaseDialog):
             btn.grid(row=1, column=col_idx, padx=2, pady=2, sticky="ew")
 
         # Custom Date Entry using DatePickerWidget
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("followup.date_lbl", "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
-        ).pack(fill="x", padx=12, pady=(6, 2))
+        ), "followup.date_lbl", "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(fill="x", padx=12, pady=(6, 2))
 
         init_date = ""
         if self.case.workflow_status.followup_at:
@@ -112,23 +114,23 @@ class FollowupDialog(BaseDialog):
             target_dt = get_local_now() + timedelta(days=2)
             init_date = format_german_date(target_dt) + " 09:00"
 
-        self.date_picker = DatePickerWidget(
+        self.date_picker = self.register_i18n(DatePickerWidget(
             main_frame,
             placeholder_text=tr("date_picker.placeholder_datetime", "TT.MM.JJJJ 09:00"),
             include_time=True,
             initial_value=init_date,
             width=260,
-        )
+        ), "date_picker.placeholder_datetime", "TT.MM.JJJJ 09:00", attr="placeholder_text")
         self.date_picker.pack(fill="x", padx=12, pady=(0, 6))
 
         # Note entry
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("followup.note_lbl", "📝 Notiz / Nachfrage-Grund (Optional):"),
             font=ctk.CTkFont(size=11, weight="bold"),
             anchor="w"
-        ).pack(fill="x", padx=12, pady=(4, 2))
-        self.note_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("followup.note_placeholder", "z. B. Beim Entwickler nach dem Stand fragen..."))
+        ), "followup.note_lbl", "📝 Notiz / Nachfrage-Grund (Optional):").pack(fill="x", padx=12, pady=(4, 2))
+        self.note_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("followup.note_placeholder", "z. B. Beim Entwickler nach dem Stand fragen...")), "followup.note_placeholder", "z. B. Beim Entwickler nach dem Stand fragen...", attr="placeholder_text")
         if self.case.workflow_status.followup_note:
             self.note_entry.insert(0, self.case.workflow_status.followup_note)
         self.note_entry.pack(fill="x", padx=12, pady=(0, 8))
@@ -137,35 +139,35 @@ class FollowupDialog(BaseDialog):
         bottom_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         bottom_frame.pack(fill="x", padx=12, pady=(4, 8), side="bottom")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             bottom_frame,
             text=tr("followup.save_btn", "💾 Wiedervorlage Speichern"),
             command=self.on_save,
             fg_color="forestgreen",
             height=30,
             width=180
-        ).pack(side="right", padx=(4, 0))
+        ), "followup.save_btn", "💾 Wiedervorlage Speichern").pack(side="right", padx=(4, 0))
 
         from services.i18n_service import tr
 
         if self.case.workflow_status.followup_at:
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 bottom_frame,
                 text=tr("ui_buttons.clear", "❌ Entfernen"),
                 command=self.on_clear,
                 fg_color="darkred",
                 height=30,
                 width=100
-            ).pack(side="right", padx=4)
+            ), "ui_buttons.clear", "❌ Entfernen").pack(side="right", padx=4)
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             bottom_frame,
             text=tr("common.cancel", "Abbrechen"),
             command=self.safe_destroy,
             fg_color=("gray70", "gray40"),
             height=30,
             width=85
-        ).pack(side="left", padx=(0, 4))
+        ), "common.cancel", "Abbrechen").pack(side="left", padx=(0, 4))
 
     def set_preset_hours(self, hours: int):
         # If the field below already shows a date/time, add the increment on top of it

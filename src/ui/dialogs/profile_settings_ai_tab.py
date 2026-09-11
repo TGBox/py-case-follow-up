@@ -86,17 +86,17 @@ class AiSettingsTabMixin:
 
         from services.i18n_service import tr
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             self.tab_ai,
             text=tr("profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)"),
             font=ctk.CTkFont(size=14, weight="bold"),
-        ).pack(anchor="w", pady=(10, 5))
+        ), "profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)").pack(anchor="w", pady=(10, 5))
 
         # --- Provider Selection Row ---
         provider_frame = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
         provider_frame.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(provider_frame, text=tr("profile.ai_provider_label", "KI-Anbieter wählen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 10))
+        self.register_i18n(ctk.CTkLabel(provider_frame, text=tr("profile.ai_provider_label", "KI-Anbieter wählen:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.ai_provider_label", "KI-Anbieter wählen:").pack(side="left", padx=(0, 10))
 
         current_provider = getattr(self.profile.ai_settings, "provider", "OLLAMA").upper()
         self.ai_provider_seg = ctk.CTkSegmentedButton(  # type: ignore[attr-defined]
@@ -108,12 +108,12 @@ class AiSettingsTabMixin:
         self.ai_provider_seg.pack(side="left", padx=(0, 15))
 
         self.anonymize_chk_var = ctk.BooleanVar(value=getattr(self.profile.ai_settings, "enable_anonymization", True))
-        self.anonymize_chk = ctk.CTkCheckBox(
+        self.anonymize_chk = self.register_i18n(ctk.CTkCheckBox(
             provider_frame,
             text=tr("profile.anonymize_toggle", "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)"),
             variable=self.anonymize_chk_var,
             font=ctk.CTkFont(size=11, weight="bold"),
-        )
+        ), "profile.anonymize_toggle", "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)")
         self.anonymize_chk.pack(side="left")
 
         # --- Gemini Card (Shown when Gemini selected) ---
@@ -122,13 +122,13 @@ class AiSettingsTabMixin:
         gemini_top_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
         gemini_top_row.pack(fill="x", padx=12, pady=(10, 5))
 
-        ctk.CTkLabel(gemini_top_row, text=tr("profile.gemini_key_lbl", "🔑 Google Gemini API Key:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
-        self.gemini_key_entry = ctk.CTkEntry(
+        self.register_i18n(ctk.CTkLabel(gemini_top_row, text=tr("profile.gemini_key_lbl", "🔑 Google Gemini API Key:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.gemini_key_lbl", "🔑 Google Gemini API Key:").pack(side="left", padx=(0, 8))
+        self.gemini_key_entry = self.register_i18n(ctk.CTkEntry(
             gemini_top_row,
             placeholder_text=tr("profile.gemini_key_placeholder", "AIzaSy..."),
             show="*",
             width=280,
-        )
+        ), "profile.gemini_key_placeholder", "AIzaSy...", attr="placeholder_text")
         self.gemini_key_entry.insert(0, getattr(self.profile.ai_settings, "gemini_api_key", ""))
         self.gemini_key_entry.pack(side="left", padx=(0, 8))
 
@@ -153,7 +153,7 @@ class AiSettingsTabMixin:
         gemini_model_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
         gemini_model_row.pack(fill="x", padx=12, pady=(0, 10))
 
-        ctk.CTkLabel(gemini_model_row, text=tr("profile.gemini_select_model", "Gemini Modell wählen:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 8))
+        self.register_i18n(ctk.CTkLabel(gemini_model_row, text=tr("profile.gemini_select_model", "Gemini Modell wählen:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.gemini_select_model", "Gemini Modell wählen:").pack(side="left", padx=(0, 8))
         self.gemini_model_combo = ctk.CTkOptionMenu(
             gemini_model_row,
             values=AVAILABLE_GEMINI_MODELS,
@@ -175,13 +175,13 @@ class AiSettingsTabMixin:
 
         import tkinter as tk
         self.gemini_modelfile_chk_var = tk.BooleanVar(value=getattr(self.profile.ai_settings, "use_modelfile_rules_for_gemini", False))
-        self.gemini_modelfile_chk = ctk.CTkCheckBox(
+        self.gemini_modelfile_chk = self.register_i18n(ctk.CTkCheckBox(
             gemini_rules_row,
             text=tr("profile.gemini_modelfile_rules", "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)"),
             variable=self.gemini_modelfile_chk_var,
             command=self.on_toggle_gemini_modelfile_rules,
             font=ctk.CTkFont(size=11, weight="bold"),
-        )
+        ), "profile.gemini_modelfile_rules", "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)")
         self.gemini_modelfile_chk.pack(side="left")
 
         # Top Ollama Management Card
@@ -192,20 +192,20 @@ class AiSettingsTabMixin:
         status_row = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
         status_row.pack(fill="x", padx=12, pady=(10, 5))
 
-        self.ollama_status_lbl = ctk.CTkLabel(
+        self.ollama_status_lbl = self.register_i18n(ctk.CTkLabel(
             status_row,
             text=tr("profile.checking_ollama", "🔍 Prüfe Ollama-Status..."),
             font=ctk.CTkFont(size=12, weight="bold"),
-        )
+        ), "profile.checking_ollama", "🔍 Prüfe Ollama-Status...")
         self.ollama_status_lbl.pack(side="left")
 
-        self.btn_refresh_ollama = ctk.CTkButton(
+        self.btn_refresh_ollama = self.register_i18n(ctk.CTkButton(
             status_row,
             text=tr("profile.scan_ollama_btn", "🔄 Status & Modelle scannen"),
             command=self.scan_ollama_status,
             width=180,
             fg_color="gray30",
-        )
+        ), "profile.scan_ollama_btn", "🔄 Status & Modelle scannen")
         self.btn_refresh_ollama.pack(side="right")
 
         # Download / Offline Frame (shown if offline)

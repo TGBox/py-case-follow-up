@@ -92,6 +92,8 @@ class HelpDialog(BaseDialog):
             tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"),
             (w, h),
             min_size=(960, 600),
+
+            title_factory=lambda: tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"),
         )
 
         # Make modal window
@@ -110,7 +112,7 @@ class HelpDialog(BaseDialog):
     def refresh_ui_labels(self):
         """Reloads the articles in the newly selected language and redraws."""
         from services.i18n_service import tr
-        self.title(tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"))
+        super().refresh_ui_labels()
         if hasattr(self, "header_lbl"):
             self.header_lbl.configure(text=tr("help_dialog.header", "📖 Handbuch & Hilfe"))
         if hasattr(self, "nav_title_lbl"):
@@ -135,10 +137,10 @@ class HelpDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=50, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        self.header_lbl = ctk.CTkLabel(top_bar, text=tr("help_dialog.header", "📖 Handbuch & Hilfe"), font=ctk.CTkFont(size=16, weight="bold"))
+        self.header_lbl = self.register_i18n(ctk.CTkLabel(top_bar, text=tr("help_dialog.header", "📖 Handbuch & Hilfe"), font=ctk.CTkFont(size=16, weight="bold")), "help_dialog.header", "📖 Handbuch & Hilfe")
         self.header_lbl.pack(side="left", padx=10)
 
-        self.search_entry = ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=320)
+        self.search_entry = self.register_i18n(ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=320), "help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen...", attr="placeholder_text")
         self.search_entry.pack(side="right", padx=10)
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
 
@@ -150,7 +152,7 @@ class HelpDialog(BaseDialog):
         left_frame.pack(side="left", fill="y", padx=(0, 5), pady=0)
         left_frame.pack_propagate(False)
 
-        self.nav_title_lbl = ctk.CTkLabel(left_frame, text=tr("help_dialog.nav_title", "Themenübersicht"), font=ctk.CTkFont(size=13, weight="bold"))
+        self.nav_title_lbl = self.register_i18n(ctk.CTkLabel(left_frame, text=tr("help_dialog.nav_title", "Themenübersicht"), font=ctk.CTkFont(size=13, weight="bold")), "help_dialog.nav_title", "Themenübersicht")
         self.nav_title_lbl.pack(anchor="w", padx=10, pady=(10, 5))
 
         self.nav_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
@@ -175,7 +177,7 @@ class HelpDialog(BaseDialog):
             w.destroy()
 
         if not self.filtered_articles:
-            ctk.CTkLabel(self.nav_scroll, text=tr("help_dialog.no_topics", "Keine Themen gefunden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.nav_scroll, text=tr("help_dialog.no_topics", "Keine Themen gefunden."), text_color="gray"), "help_dialog.no_topics", "Keine Themen gefunden.").pack(pady=20)
             return
 
         active_id = self.active_article["id"] if self.active_article else None

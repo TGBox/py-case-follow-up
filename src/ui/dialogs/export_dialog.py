@@ -28,6 +28,8 @@ class ExportDialog(BaseDialog):
             f"{DIALOG_TITLES['export']} — {case.case_id}",
             (w, h),
             min_size=(740, 660),
+
+            title_factory=lambda: f"{DIALOG_TITLES['export']} — {case.case_id}",
         )
 
         self.case = case
@@ -62,7 +64,7 @@ class ExportDialog(BaseDialog):
         tpl_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         tpl_frame.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(tpl_frame, text=tr("export_dialog.select_template", "Vorlage auswählen:"), font=ctk.CTkFont(weight="bold")).pack(side="left", padx=(0, 10))
+        self.register_i18n(ctk.CTkLabel(tpl_frame, text=tr("export_dialog.select_template", "Vorlage auswählen:"), font=ctk.CTkFont(weight="bold")), "export_dialog.select_template", "Vorlage auswählen:").pack(side="left", padx=(0, 10))
 
         tpl_names = [t.display_name for t in self.templates]
         self.tpl_combo = ctk.CTkOptionMenu(
@@ -75,14 +77,14 @@ class ExportDialog(BaseDialog):
             self.tpl_combo.set(self.active_template.display_name)
         self.tpl_combo.pack(side="left")
 
-        btn_manage = ctk.CTkButton(
+        btn_manage = self.register_i18n(ctk.CTkButton(
             tpl_frame,
             text=tr("export_dialog.manage_templates_btn", "🛠 Vorlagen verwalten"),
             command=self.on_open_template_manager,
             width=150,
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
-        )
+        ), "export_dialog.manage_templates_btn", "🛠 Vorlagen verwalten")
         btn_manage.pack(side="right", padx=(5, 0))
 
         # In-Place Completion Frame
@@ -90,16 +92,16 @@ class ExportDialog(BaseDialog):
         self.inplace_frame.pack(fill="x", pady=(0, 10), padx=5)
 
         # Force Export Checkbox
-        self.force_chk = ctk.CTkCheckBox(
+        self.force_chk = self.register_i18n(ctk.CTkCheckBox(
             main_frame,
             text=tr("export_dialog.force_export_chk", "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)"),
             variable=self.force_export_var,
             command=self.update_render_preview,
-        )
+        ), "export_dialog.force_export_chk", "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)")
         self.force_chk.pack(anchor="w", pady=(5, 10))
 
         # Rendered Output Preview Box
-        ctk.CTkLabel(main_frame, text=tr("export_dialog.preview_header", "Vorschau des exportierten Textes:"), font=ctk.CTkFont(weight="bold")).pack(anchor="w", pady=(5, 2))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("export_dialog.preview_header", "Vorschau des exportierten Textes:"), font=ctk.CTkFont(weight="bold")), "export_dialog.preview_header", "Vorschau des exportierten Textes:").pack(anchor="w", pady=(5, 2))
         self.preview_textbox = ctk.CTkTextbox(main_frame, width=640, height=260)
         self.preview_textbox.pack(fill="both", expand=True, pady=(0, 15))
 
@@ -111,13 +113,13 @@ class ExportDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x")
 
-        close_btn = ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120)
+        close_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.close", "Schließen"), fg_color="gray", command=self.destroy, width=120), "common.close", "Schließen")
         close_btn.pack(side="left")
 
-        save_file_btn = ctk.CTkButton(btn_frame, text=tr("export_dialog.save_file_btn", "In Datei speichern..."), command=self.on_save_file, width=160)
+        save_file_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("export_dialog.save_file_btn", "In Datei speichern..."), command=self.on_save_file, width=160), "export_dialog.save_file_btn", "In Datei speichern...")
         save_file_btn.pack(side="right", padx=(10, 0))
 
-        copy_btn = ctk.CTkButton(btn_frame, text=tr("export_dialog.copy_btn", "In Zwischenablage kopieren"), command=self.on_copy_clipboard, width=200)
+        copy_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("export_dialog.copy_btn", "In Zwischenablage kopieren"), command=self.on_copy_clipboard, width=200), "export_dialog.copy_btn", "In Zwischenablage kopieren")
         copy_btn.pack(side="right")
 
     def on_template_selected(self, selected_name: str):
@@ -147,9 +149,9 @@ class ExportDialog(BaseDialog):
                 missing_fields.append(fid)
 
         if missing_fields:
-            ctk.CTkLabel(
+            self.register_i18n(ctk.CTkLabel(
                 self.inplace_frame, text=tr("export.missing_fields_hdr", "⚠ Fehlende Pflichtfelder direkt ergänzen:"), font=ctk.CTkFont(weight="bold"), text_color="orange"
-            ).pack(anchor="w", padx=10, pady=(5, 5))
+            ), "export.missing_fields_hdr", "⚠ Fehlende Pflichtfelder direkt ergänzen:").pack(anchor="w", padx=10, pady=(5, 5))
 
             for fid in missing_fields:
                 f_row = ctk.CTkFrame(self.inplace_frame, fg_color="transparent")

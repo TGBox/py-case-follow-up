@@ -22,6 +22,8 @@ class QuickAddCustomerDialog(BaseDialog):
             tr("dialog_titles.quick_customer", "🏥 Neue Praxis schnell anlegen"),
             (w, h),
             resizable=False,
+
+            title_factory=lambda: tr("dialog_titles.quick_customer", "🏥 Neue Praxis schnell anlegen"),
         )
 
         self.on_customer_created = on_customer_created
@@ -29,22 +31,22 @@ class QuickAddCustomerDialog(BaseDialog):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(main_frame, text=tr("quick_customer.header", "Neue Praxis anlegen"), font=ctk.CTkFont(size=16, weight="bold")).pack(anchor="w", pady=(0, 10))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("quick_customer.header", "Neue Praxis anlegen"), font=ctk.CTkFont(size=16, weight="bold")), "quick_customer.header", "Neue Praxis anlegen").pack(anchor="w", pady=(0, 10))
 
-        ctk.CTkLabel(main_frame, text=tr("quick_customer.practice_name", "Praxisname *:")).pack(anchor="w", pady=(2, 0))
-        self.name_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.practice_name_placeholder", "z.B. Praxis Dr. Weber"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("quick_customer.practice_name", "Praxisname *:")), "quick_customer.practice_name", "Praxisname *:").pack(anchor="w", pady=(2, 0))
+        self.name_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.practice_name_placeholder", "z.B. Praxis Dr. Weber")), "quick_customer.practice_name_placeholder", "z.B. Praxis Dr. Weber", attr="placeholder_text")
         self.name_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text=tr("quick_customer.contact_person", "Ansprechpartner:")).pack(anchor="w", pady=(2, 0))
-        self.contact_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("quick_customer.contact_person", "Ansprechpartner:")), "quick_customer.contact_person", "Ansprechpartner:").pack(anchor="w", pady=(2, 0))
+        self.contact_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber")), "quick_customer.contact_placeholder", "z.B. Dr. Hans Weber", attr="placeholder_text")
         self.contact_entry.pack(fill="x", pady=(0, 8))
 
-        ctk.CTkLabel(main_frame, text=tr("quick_customer.phone", "Telefon:")).pack(anchor="w", pady=(2, 0))
-        self.phone_entry = ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.phone_placeholder", "030 / 123456"))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("quick_customer.phone", "Telefon:")), "quick_customer.phone", "Telefon:").pack(anchor="w", pady=(2, 0))
+        self.phone_entry = self.register_i18n(ctk.CTkEntry(main_frame, placeholder_text=tr("quick_customer.phone_placeholder", "030 / 123456")), "quick_customer.phone_placeholder", "030 / 123456", attr="placeholder_text")
         self.phone_entry.pack(fill="x", pady=(0, 8))
 
         self.vip_var = ctk.BooleanVar(value=False)
-        ctk.CTkCheckBox(main_frame, text=tr("quick_customer.is_vip", "⭐ VIP-Praxis"), variable=self.vip_var).pack(anchor="w", pady=5)
+        self.register_i18n(ctk.CTkCheckBox(main_frame, text=tr("quick_customer.is_vip", "⭐ VIP-Praxis"), variable=self.vip_var), "quick_customer.is_vip", "⭐ VIP-Praxis").pack(anchor="w", pady=5)
 
         self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color="red")
         self.err_lbl.pack(anchor="w", pady=2)
@@ -52,8 +54,8 @@ class QuickAddCustomerDialog(BaseDialog):
         btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_row.pack(fill="x", pady=(10, 0))
 
-        ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100).pack(side="left")
-        ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=120).pack(side="right")
+        self.register_i18n(ctk.CTkButton(btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=100), "common.cancel", "Abbrechen").pack(side="left")
+        self.register_i18n(ctk.CTkButton(btn_row, text=tr("ui_buttons.create", "Erstellen"), fg_color="forestgreen", command=self.on_save, width=120), "ui_buttons.create", "Erstellen").pack(side="right")
         self.set_default_action(self.on_save)
 
     def on_save(self):
@@ -100,6 +102,8 @@ class NewCaseDialog(BaseDialog):
             tr("dialog_titles.new_case", "Neuen Support-Fall anlegen"),
             (w, h),
             min_size=(700, 780),
+
+            title_factory=lambda: tr("dialog_titles.new_case", "Neuen Support-Fall anlegen"),
         )
 
         self.customers = list(customers)
@@ -127,10 +131,10 @@ class NewCaseDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(side="bottom", fill="x", pady=(8, 0))
 
-        cancel_btn = ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=120)
+        cancel_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=120), "common.cancel", "Abbrechen")
         cancel_btn.pack(side="left")
 
-        save_btn = ctk.CTkButton(btn_frame, text=tr("new_case_dialog.create_btn", "Fall anlegen"), command=self.on_save, width=160, fg_color="#2563eb", hover_color="#1d4ed8")
+        save_btn = self.register_i18n(ctk.CTkButton(btn_frame, text=tr("new_case_dialog.create_btn", "Fall anlegen"), command=self.on_save, width=160, fg_color="#2563eb", hover_color="#1d4ed8"), "new_case_dialog.create_btn", "Fall anlegen")
         save_btn.pack(side="right")
 
         # Error label pinned right above bottom buttons
@@ -144,22 +148,22 @@ class NewCaseDialog(BaseDialog):
         enable_auto_hiding_scrollbar(form_scroll)
 
         # Header
-        title_label = ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.header", "Neuen Support-Fall erfassen"), font=ctk.CTkFont(size=18, weight="bold"))
+        title_label = self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.header", "Neuen Support-Fall erfassen"), font=ctk.CTkFont(size=18, weight="bold")), "new_case_dialog.header", "Neuen Support-Fall erfassen")
         title_label.pack(anchor="w", pady=(0, 8))
 
         # Internal Task Checkbox
         self.is_internal_var = ctk.BooleanVar(value=False)
-        self.chk_internal = ctk.CTkCheckBox(
+        self.chk_internal = self.register_i18n(ctk.CTkCheckBox(
             form_scroll,
             text=tr("new_case_dialog.is_internal", "🏢 Interner Vorgang (ohne Kundenelement)"),
             variable=self.is_internal_var,
             command=self.on_toggle_internal,
             font=ctk.CTkFont(size=12, weight="bold"),
-        )
+        ), "new_case_dialog.is_internal", "🏢 Interner Vorgang (ohne Kundenelement)")
         self.chk_internal.pack(anchor="w", pady=(0, 8))
 
         # Customer selection row
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.customer", "Kunde / Praxis:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.customer", "Kunde / Praxis:"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.customer", "Kunde / Praxis:").pack(anchor="w", pady=(4, 1))
 
         cust_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
         cust_row.pack(fill="x", pady=(0, 6))
@@ -169,33 +173,33 @@ class NewCaseDialog(BaseDialog):
         self.customer_combo = SearchableCombobox(cust_row, values=initial_cust_names, width=380)
         self.customer_combo.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
-        self.add_cust_btn = ctk.CTkButton(cust_row, text=tr("new_case_dialog.add_practice_btn", "+ Neue Praxis"), command=self.open_quick_add_customer, fg_color="forestgreen", width=120)
+        self.add_cust_btn = self.register_i18n(ctk.CTkButton(cust_row, text=tr("new_case_dialog.add_practice_btn", "+ Neue Praxis"), command=self.open_quick_add_customer, fg_color="forestgreen", width=120), "new_case_dialog.add_practice_btn", "+ Neue Praxis")
         self.add_cust_btn.pack(side="right")
 
         self.refresh_customer_combo()
 
         # Case Title
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.title_label", "Titel / Kurzbeschreibung:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
-        self.title_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("new_case_dialog.title_placeholder", "z. B. Zuzahlungsdatei lässt sich nicht erzeugen"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.title_label", "Titel / Kurzbeschreibung:"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.title_label", "Titel / Kurzbeschreibung:").pack(anchor="w", pady=(4, 1))
+        self.title_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("new_case_dialog.title_placeholder", "z. B. Zuzahlungsdatei lässt sich nicht erzeugen")), "new_case_dialog.title_placeholder", "z. B. Zuzahlungsdatei lässt sich nicht erzeugen", attr="placeholder_text")
         self.title_entry.pack(fill="x", pady=(0, 6))
 
         # After picking a practice the cursor jumps straight into the title field
         self.customer_combo.set_next_focus_widget(self.title_entry)
 
         # Creation Date (defaulting to current time)
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.created_at", "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.created_at", "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.created_at", "Erstellungsdatum / Vorgangsbeginn (TT.MM.JJJJ HH:MM):").pack(anchor="w", pady=(4, 1))
         from ui.widgets.date_picker import DatePickerWidget
-        self.created_at_picker = DatePickerWidget(
+        self.created_at_picker = self.register_i18n(DatePickerWidget(
             form_scroll,
             placeholder_text=tr("date_picker.placeholder_datetime_example", "z. B. 25.08.2026 09:30"),
             include_time=True,
             initial_value=format_german_datetime(now_iso()),
             width=380,
-        )
+        ), "date_picker.placeholder_datetime_example", "z. B. 25.08.2026 09:30", attr="placeholder_text")
         self.created_at_picker.pack(fill="x", pady=(0, 6))
 
         # Schema selection
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.schema", "Formular-Schema:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.schema", "Formular-Schema:"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.schema", "Formular-Schema:").pack(anchor="w", pady=(4, 1))
         schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
         self.schema_combo = ctk.CTkOptionMenu(form_scroll, values=schema_names if schema_names else ["Standard"])
         quick_opt = next((name for name in schema_names if "schema_quick" in name or "Schnellerfassung" in name), None)
@@ -204,7 +208,7 @@ class NewCaseDialog(BaseDialog):
         self.schema_combo.pack(fill="x", pady=(0, 6))
 
         # Tags Selection
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.tags", "Tags / Stichworte zuweisen:"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.tags", "Tags / Stichworte zuweisen:"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.tags", "Tags / Stichworte zuweisen:").pack(anchor="w", pady=(4, 1))
 
         self.tags_frame = ctk.CTkFrame(form_scroll, fg_color="transparent")
         self.tags_frame.pack(fill="x", pady=(0, 6))
@@ -212,16 +216,16 @@ class NewCaseDialog(BaseDialog):
         self.render_tags_checkboxes()
 
         # Callback deadline (optional)
-        ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.deadline", "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")).pack(anchor="w", pady=(4, 1))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("new_case_dialog.deadline", "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.deadline", "Rückruf-Deadline (optional, TT.MM.JJJJ HH:MM):").pack(anchor="w", pady=(4, 1))
         from ui.widgets.date_picker import DatePickerWidget
-        self.deadline_picker = DatePickerWidget(form_scroll, placeholder_text=tr("date_picker.placeholder_deadline_example", "z. B. 23.08.2026 16:00"), include_time=True, width=380)
+        self.deadline_picker = self.register_i18n(DatePickerWidget(form_scroll, placeholder_text=tr("date_picker.placeholder_deadline_example", "z. B. 23.08.2026 16:00"), include_time=True, width=380), "date_picker.placeholder_deadline_example", "z. B. 23.08.2026 16:00", attr="placeholder_text")
         self.deadline_picker.pack(fill="x", pady=(0, 6))
 
         # Initial Timeline Note & Channel Selection
         note_hdr_row = ctk.CTkFrame(form_scroll, fg_color="transparent")
         note_hdr_row.pack(fill="x", pady=(4, 1))
 
-        ctk.CTkLabel(note_hdr_row, text=tr("new_case_dialog.initial_note", "Initiale Notiz / Eingangskanal:"), font=ctk.CTkFont(size=13, weight="bold")).pack(side="left")
+        self.register_i18n(ctk.CTkLabel(note_hdr_row, text=tr("new_case_dialog.initial_note", "Initiale Notiz / Eingangskanal:"), font=ctk.CTkFont(size=13, weight="bold")), "new_case_dialog.initial_note", "Initiale Notiz / Eingangskanal:").pack(side="left")
 
         from enums import CHANNEL_DISPLAY, get_channel_display
         channel_names = [get_channel_display(c) for c in CHANNEL_DISPLAY]
@@ -279,7 +283,7 @@ class NewCaseDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        add_tag_btn = ctk.CTkButton(
+        add_tag_btn = self.register_i18n(ctk.CTkButton(
             grid_frame,
             text=tr("new_case.add_tag", "+ Tag"),
             height=28,
@@ -288,7 +292,7 @@ class NewCaseDialog(BaseDialog):
             fg_color=("gray75", "gray35"),
             hover_color=("gray65", "gray45"),
             command=self.open_quick_add_tag,
-        )
+        ), "new_case.add_tag", "+ Tag")
         add_tag_btn.grid(row=r, column=c, padx=3, pady=2, sticky="ew")
 
     def toggle_tag(self, tag_name: str):
@@ -299,7 +303,7 @@ class NewCaseDialog(BaseDialog):
 
     def open_quick_add_tag(self):
         from services.i18n_service import tr
-        dialog = ctk.CTkInputDialog(text=tr("new_case.tag_input_prompt", "Geben Sie den Namen des neuen Tags ein:"), title=tr("new_case.tag_input_title", "Neuen Tag hinzufügen"))
+        dialog = self.register_i18n(ctk.CTkInputDialog(text=tr("new_case.tag_input_prompt", "Geben Sie den Namen des neuen Tags ein:"), title=tr("new_case.tag_input_title", "Neuen Tag hinzufügen")), "new_case.tag_input_prompt", "Geben Sie den Namen des neuen Tags ein:")
         new_tag = dialog.get_input()
         if new_tag and new_tag.strip():
             tag_name = new_tag.strip()

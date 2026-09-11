@@ -28,6 +28,8 @@ class SnippetPickerDialog(BaseDialog):
             tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"),
             (w, h),
             min_size=(680, 480),
+
+            title_factory=lambda: tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"),
         )
 
         self.create_widgets()
@@ -43,9 +45,9 @@ class SnippetPickerDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        self.search_entry = ctk.CTkEntry(
+        self.search_entry = self.register_i18n(ctk.CTkEntry(
             hdr_frame, placeholder_text=tr("snippet_picker.search", "🔍 Textbaustein suchen..."), width=320
-        )
+        ), "snippet_picker.search", "🔍 Textbaustein suchen...", attr="placeholder_text")
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
         self.search_entry.bind("<KeyRelease>", lambda e: self.refresh_snippet_list())
 
@@ -74,7 +76,7 @@ class SnippetPickerDialog(BaseDialog):
         preview_box = ctk.CTkFrame(content_frame)
         preview_box.grid(row=0, column=1, sticky="nsew")
 
-        ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", padx=10, pady=(10, 4))
+        self.register_i18n(ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=12, weight="bold")), "snippet_picker.preview", "Vorschau des Textbausteins:").pack(anchor="w", padx=10, pady=(10, 4))
 
         self.preview_textbox = ctk.CTkTextbox(preview_box)
         self.preview_textbox.pack(fill="both", expand=True, padx=10, pady=(0, 10))
@@ -83,23 +85,23 @@ class SnippetPickerDialog(BaseDialog):
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_frame.pack(fill="x", pady=(5, 0))
 
-        self.insert_btn = ctk.CTkButton(
+        self.insert_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_click_insert,
             state="disabled",
-        )
+        ), "snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen")
         self.insert_btn.pack(side="right", padx=(6, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("common.cancel", "Abbrechen"),
             fg_color="gray50",
             command=self.destroy,
             width=90,
-        ).pack(side="right")
+        ), "common.cancel", "Abbrechen").pack(side="right")
 
     def refresh_snippet_list(self):
         from services.i18n_service import tr
@@ -111,7 +113,7 @@ class SnippetPickerDialog(BaseDialog):
             widget.destroy()
 
         if not snippets:
-            ctk.CTkLabel(self.list_scroll, text=tr("snippet_picker.no_snippets", "Keine Textbausteine gefunden.")).pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("snippet_picker.no_snippets", "Keine Textbausteine gefunden.")), "snippet_picker.no_snippets", "Keine Textbausteine gefunden.").pack(pady=20)
             return
 
         for snip in snippets:

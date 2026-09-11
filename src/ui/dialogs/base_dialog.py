@@ -39,9 +39,15 @@ class BaseDialog(ctk.CTkToplevel):
         resizable: bool = True,
         modal: bool = True,
         center: bool = True,
+        title_factory: Callable[[], str] | None = None,
     ) -> None:
-        """Applies the standard window setup. Call once, directly after super().__init__()."""
+        """Applies the standard window setup. Call once, directly after super().__init__().
+
+        title_factory re-evaluates the title expression on a language change; without
+        it the window keeps the title it was opened with.
+        """
         width, height = size[0], size[1]
+        self._title_factory = title_factory
         self.title(title)
         self.geometry(f"{width}x{height}")
 
@@ -111,6 +117,70 @@ class BaseDialog(ctk.CTkToplevel):
             self.refresh_ui_labels()
         except Exception as err:
             logger.warning(f"refresh_ui_labels failed for {type(self).__name__}: {err}")
+
+    # --- Translatable widgets ---
+
+    def register_i18n(self, widget, key: str, default: str = "", attr: str = "text", **fmt):
+        """Remembers which translation key produced a widget's text.
+
+        Wrapping a widget at creation time is what makes the generic
+        refresh_ui_labels() below possible - the finished widget itself carries
+        only the translated string, with no way back to its key.
+        Returns the widget, so the call can wrap the constructor in place.
+        """
+        registry = getattr(self, "_i18n_widgets", None)
+        if registry is None:
+            registry = self._i18n_widgets = []
+        # Rows in list views are destroyed and rebuilt constantly; drop dead
+        # entries now and then so the registry cannot grow without bound.
+        if len(registry) > 400:
+            self._prune_i18n_widgets()
+            registry = self._i18n_widgets
+        registry.append((widget, attr, key, default, fmt))
+        return widget
+
+    def _prune_i18n_widgets(self) -> None:
+        registry = getattr(self, "_i18n_widgets", None)
+        if not registry:
+            return
+        alive = []
+        for entry in registry:
+            try:
+                if entry[0].winfo_exists():
+                    alive.append(entry)
+            except Exception:
+                continue
+        self._i18n_widgets = alive
+
+    def refresh_ui_labels(self) -> None:
+        """Re-applies every registered translation in the current language.
+
+        Subclasses with dynamically built content (list rows) override this,
+        call super() and then re-render their lists.
+        """
+        from services.i18n_service import tr
+
+        factory = getattr(self, "_title_factory", None)
+        if factory is not None:
+            try:
+                self.title(factory())
+            except Exception as err:
+                logger.warning(f"Could not refresh title of {type(self).__name__}: {err}")
+
+        registry = getattr(self, "_i18n_widgets", None)
+        if not registry:
+            return
+        alive = []
+        for entry in registry:
+            widget, attr, key, default, fmt = entry
+            try:
+                if not widget.winfo_exists():
+                    continue
+                widget.configure(**{attr: tr(key, default, **fmt)})
+                alive.append(entry)
+            except Exception:
+                continue
+        self._i18n_widgets = alive
 
     # --- Keyboard ---
 

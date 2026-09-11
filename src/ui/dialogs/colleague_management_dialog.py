@@ -28,6 +28,8 @@ class ColleagueManagementDialog(BaseDialog):
             DIALOG_TITLES["colleague_mgmt"],
             (w, h),
             min_size=(900, 600),
+
+            title_factory=lambda: DIALOG_TITLES["colleague_mgmt"],
         )
 
         self.colleagues: list[Colleague] = []
@@ -47,19 +49,19 @@ class ColleagueManagementDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
         top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             top_bar,
             text=tr("colleague_mgmt.header", "👥 Mitarbeiter- & Kollegeneinträge"),
             font=ctk.CTkFont(size=16, weight="bold"),
-        ).pack(side="left", padx=10)
+        ), "colleague_mgmt.header", "👥 Mitarbeiter- & Kollegeneinträge").pack(side="left", padx=10)
 
-        new_btn = ctk.CTkButton(
+        new_btn = self.register_i18n(ctk.CTkButton(
             top_bar,
             text=tr("colleague_mgmt.new_colleague_btn", "+ Neuen Mitarbeiter anlegen"),
             command=self.on_click_new_colleague,
             fg_color="forestgreen",
             width=180,
-        )
+        ), "colleague_mgmt.new_colleague_btn", "+ Neuen Mitarbeiter anlegen")
         new_btn.pack(side="right", padx=10)
 
         # Body Frame
@@ -71,9 +73,9 @@ class ColleagueManagementDialog(BaseDialog):
         left_frame.pack(side="left", fill="y", padx=(0, 5), pady=0)
         left_frame.pack_propagate(False)
 
-        self.search_entry = ctk.CTkEntry(
+        self.search_entry = self.register_i18n(ctk.CTkEntry(
             left_frame, placeholder_text=tr("colleague_mgmt.search_placeholder", "🔍 Name, Kürzel, Abteilung...")
-        )
+        ), "colleague_mgmt.search_placeholder", "🔍 Name, Kürzel, Abteilung...", attr="placeholder_text")
         self.search_entry.pack(fill="x", padx=10, pady=(10, 5))
         self.search_entry.bind("<KeyRelease>", self.on_search_changed)
 
@@ -84,55 +86,55 @@ class ColleagueManagementDialog(BaseDialog):
         right_frame = ctk.CTkFrame(body_frame)
         right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0), pady=0)
 
-        self.form_header_lbl = ctk.CTkLabel(
+        self.form_header_lbl = self.register_i18n(ctk.CTkLabel(
             right_frame,
             text=tr("colleague_mgmt.details_header", "Mitarbeiterdetails"),
             font=ctk.CTkFont(size=14, weight="bold"),
             anchor="w",
-        )
+        ), "colleague_mgmt.details_header", "Mitarbeiterdetails")
         self.form_header_lbl.pack(fill="x", padx=15, pady=(12, 8))
 
         form_scroll = ctk.CTkScrollableFrame(right_frame, fg_color="transparent")
         form_scroll.pack(fill="both", expand=True, padx=10, pady=(0, 10))
 
         # Fields
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.username", "Kürzel / Username *:")).pack(anchor="w", pady=(4, 2))
-        self.username_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.username_placeholder", "z. B. mmueller"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.username", "Kürzel / Username *:")), "colleague_mgmt.username", "Kürzel / Username *:").pack(anchor="w", pady=(4, 2))
+        self.username_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.username_placeholder", "z. B. mmueller")), "colleague_mgmt.username_placeholder", "z. B. mmueller", attr="placeholder_text")
         self.username_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.name", "Name / Anzeigename *:")).pack(anchor="w", pady=(4, 2))
-        self.name_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.name_placeholder", "z. B. Max Müller"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.name", "Name / Anzeigename *:")), "colleague_mgmt.name", "Name / Anzeigename *:").pack(anchor="w", pady=(4, 2))
+        self.name_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.name_placeholder", "z. B. Max Müller")), "colleague_mgmt.name_placeholder", "z. B. Max Müller", attr="placeholder_text")
         self.name_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.department", "Abteilung / Department:")).pack(anchor="w", pady=(4, 2))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.department", "Abteilung / Department:")), "colleague_mgmt.department", "Abteilung / Department:").pack(anchor="w", pady=(4, 2))
         self.dept_combo = ctk.CTkOptionMenu(form_scroll, values=departments)
         self.dept_combo.set(departments[0])
         self.dept_combo.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.phone", "Durchwahl / Telefon:")).pack(anchor="w", pady=(4, 2))
-        self.ext_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.phone_placeholder", "z. B. 4012"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.phone", "Durchwahl / Telefon:")), "colleague_mgmt.phone", "Durchwahl / Telefon:").pack(anchor="w", pady=(4, 2))
+        self.ext_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.phone_placeholder", "z. B. 4012")), "colleague_mgmt.phone_placeholder", "z. B. 4012", attr="placeholder_text")
         self.ext_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.email", "E-Mail-Adresse:")).pack(anchor="w", pady=(4, 2))
-        self.email_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.email_placeholder", "z. B. m.mueller@praxis.de"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.email", "E-Mail-Adresse:")), "colleague_mgmt.email", "E-Mail-Adresse:").pack(anchor="w", pady=(4, 2))
+        self.email_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.email_placeholder", "z. B. m.mueller@praxis.de")), "colleague_mgmt.email_placeholder", "z. B. m.mueller@praxis.de", attr="placeholder_text")
         self.email_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.mobile", "Mobiltelefon:")).pack(anchor="w", pady=(4, 2))
-        self.mobile_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.mobile_placeholder", "z. B. 0170 1234567"))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.mobile", "Mobiltelefon:")), "colleague_mgmt.mobile", "Mobiltelefon:").pack(anchor="w", pady=(4, 2))
+        self.mobile_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.mobile_placeholder", "z. B. 0170 1234567")), "colleague_mgmt.mobile_placeholder", "z. B. 0170 1234567", attr="placeholder_text")
         self.mobile_entry.pack(fill="x", pady=(0, 10))
 
-        ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.notes", "Aufgabengebiet / Notizen:")).pack(anchor="w", pady=(4, 2))
-        self.notes_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.notes_placeholder", "z. B. Zuständig für PVS-Schnittstellen..."))
+        self.register_i18n(ctk.CTkLabel(form_scroll, text=tr("colleague_mgmt.notes", "Aufgabengebiet / Notizen:")), "colleague_mgmt.notes", "Aufgabengebiet / Notizen:").pack(anchor="w", pady=(4, 2))
+        self.notes_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.notes_placeholder", "z. B. Zuständig für PVS-Schnittstellen...")), "colleague_mgmt.notes_placeholder", "z. B. Zuständig für PVS-Schnittstellen...", attr="placeholder_text")
         self.notes_entry.pack(fill="x", pady=(0, 10))
 
         # Absence / Vacation settings
         self.is_absent_var = ctk.BooleanVar(value=False)
-        self.chk_absent = ctk.CTkCheckBox(
+        self.chk_absent = self.register_i18n(ctk.CTkCheckBox(
             form_scroll, text=tr("colleague_mgmt.absent_chk", "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)"), variable=self.is_absent_var
-        )
+        ), "colleague_mgmt.absent_chk", "⚠ Kollege ist aktuell abwesend (Urlaub / Krankheit)")
         self.chk_absent.pack(anchor="w", pady=(5, 5))
 
-        self.absence_reason_entry = ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.absence_reason_placeholder", "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)..."))
+        self.absence_reason_entry = self.register_i18n(ctk.CTkEntry(form_scroll, placeholder_text=tr("colleague_mgmt.absence_reason_placeholder", "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...")), "colleague_mgmt.absence_reason_placeholder", "Abwesenheitsgrund (z. B. Urlaub bis 30.08.)...", attr="placeholder_text")
         self.absence_reason_entry.pack(fill="x", pady=(0, 15))
 
         self.err_lbl = ctk.CTkLabel(form_scroll, text="", text_color="red", anchor="w")
@@ -142,7 +144,7 @@ class ColleagueManagementDialog(BaseDialog):
         action_bar = ctk.CTkFrame(right_frame, height=45, fg_color="transparent")
         action_bar.pack(fill="x", side="bottom", padx=15, pady=10)
 
-        self.delete_btn = ctk.CTkButton(
+        self.delete_btn = self.register_i18n(ctk.CTkButton(
             action_bar,
             text=tr("common.delete", "🗑 Löschen"),
             command=self.confirm_click_delete,
@@ -150,17 +152,17 @@ class ColleagueManagementDialog(BaseDialog):
             hover_color="darkred",
             width=110,
             state="disabled",
-        )
+        ), "common.delete", "🗑 Löschen")
         self.delete_btn.pack(side="left")
 
-        self.save_btn = ctk.CTkButton(
+        self.save_btn = self.register_i18n(ctk.CTkButton(
             action_bar,
             text=tr("cockpit.save", "💾 Speichern"),
             command=self.on_click_save,
             fg_color="forestgreen",
             hover_color="darkgreen",
             width=140,
-        )
+        ), "cockpit.save", "💾 Speichern")
         self.save_btn.pack(side="right")
 
     def load_colleagues(self):
@@ -182,7 +184,7 @@ class ColleagueManagementDialog(BaseDialog):
 
         from services.i18n_service import tr
         if not self.filtered_colleagues:
-            ctk.CTkLabel(self.list_scroll, text=tr("colleague_mgmt.no_entries", "Keine Einträge gefunden."), text_color="gray").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("colleague_mgmt.no_entries", "Keine Einträge gefunden."), text_color="gray"), "colleague_mgmt.no_entries", "Keine Einträge gefunden.").pack(pady=20)
             return
 
         for col in self.filtered_colleagues:

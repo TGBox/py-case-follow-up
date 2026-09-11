@@ -32,6 +32,8 @@ class EmailCalendarDialog(BaseDialog):
             f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}",
             (w, h),
             min_size=(720, 540),
+
+            title_factory=lambda: f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}",
         )
 
         self.draft_data = self.service.generate_email_draft(self.case, user_name=self.user_name)
@@ -47,20 +49,20 @@ class EmailCalendarDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("email_calendar.header", "✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {case_id})", case_id=self.case.case_id),
             font=ctk.CTkFont(size=16, weight="bold"),
-        ).pack(anchor="w")
+        ), "email_calendar.header", "✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {case_id})", case_id=self.case.case_id).pack(anchor="w")
 
         practice_name = self.case.customer.practice_name if self.case.customer else tr("common.unknown_practice", "Unbekannte Praxis")
         deadline_str = self.case.formatted_deadline or tr("common.no_deadline_set", "Keine Deadline gesetzt")
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("email_calendar.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str),
             font=ctk.CTkFont(size=11),
             text_color="gray",
-        ).pack(anchor="w")
+        ), "email_calendar.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str).pack(anchor="w")
 
         # Scrollable Content Box
         from utils.ui_utils import enable_auto_hiding_scrollbar
@@ -69,15 +71,15 @@ class EmailCalendarDialog(BaseDialog):
         enable_auto_hiding_scrollbar(content_scroll)
 
         # Recipient Email
-        ctk.CTkLabel(content_scroll, text=tr("email_calendar.recipient_lbl", "Empfänger (E-Mail):"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
-        self.to_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.to_placeholder", "praxis@beispiel.de..."))
+        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.recipient_lbl", "Empfänger (E-Mail):"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.recipient_lbl", "Empfänger (E-Mail):").pack(anchor="w", pady=(2, 1))
+        self.to_entry = self.register_i18n(ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.to_placeholder", "praxis@beispiel.de...")), "email_calendar.to_placeholder", "praxis@beispiel.de...", attr="placeholder_text")
         if self.draft_data.get("to"):
             self.to_entry.insert(0, self.draft_data["to"])
         self.to_entry.pack(fill="x", pady=(0, 8))
 
         # Subject
-        ctk.CTkLabel(content_scroll, text=tr("email_calendar.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")).pack(anchor="w", pady=(2, 1))
-        self.subject_entry = ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.subject_placeholder", "Betreff eingeben..."))
+        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.subject_lbl", "Betreff:").pack(anchor="w", pady=(2, 1))
+        self.subject_entry = self.register_i18n(ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.subject_placeholder", "Betreff eingeben...")), "email_calendar.subject_placeholder", "Betreff eingeben...", attr="placeholder_text")
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
         self.subject_entry.pack(fill="x", pady=(0, 8))
@@ -86,17 +88,17 @@ class EmailCalendarDialog(BaseDialog):
         body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
         body_hdr_row.pack(fill="x", pady=(2, 1))
 
-        ctk.CTkLabel(body_hdr_row, text=tr("email_calendar.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")).pack(side="left")
+        self.register_i18n(ctk.CTkLabel(body_hdr_row, text=tr("email_calendar.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.body_lbl", "E-Mail Nachrichtentext:").pack(side="left")
 
         if self.snippet_service:
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 body_hdr_row,
                 text=tr("email_calendar.snippet_btn", "🧩 Textbaustein"),
                 width=110,
                 fg_color="gray30",
                 hover_color="darkmagenta",
                 command=self.open_snippet_picker,
-            ).pack(side="right")
+            ), "email_calendar.snippet_btn", "🧩 Textbaustein").pack(side="right")
 
         self.body_textbox = ctk.CTkTextbox(content_scroll, height=200)
         if self.draft_data.get("body"):
@@ -117,47 +119,47 @@ class EmailCalendarDialog(BaseDialog):
         row1_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
         row1_btns.pack(fill="x", pady=(0, 6))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             row1_btns,
             text=tr("email_calendar.open_mailto", "✉ Im Mail-Client öffnen"),
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.on_open_mailto,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "email_calendar.open_mailto", "✉ Im Mail-Client öffnen").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             row1_btns,
             text=tr("ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren"),
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_copy_text,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren").pack(side="left", padx=(0, 8))
 
         # Row 2: Calendar Actions & Close
         row2_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
         row2_btns.pack(fill="x", pady=(2, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen"),
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.on_open_ics,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("email_calendar.save_ics", "💾 .ics Datei speichern..."),
             fg_color="gray30",
             hover_color="gray40",
             command=self.on_save_ics,
             height=32,
-        ).pack(side="left", padx=(0, 8))
+        ), "email_calendar.save_ics", "💾 .ics Datei speichern...").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("common.close", "Schließen"),
             fg_color="gray50",
@@ -165,7 +167,7 @@ class EmailCalendarDialog(BaseDialog):
             command=self.destroy,
             width=100,
             height=32,
-        ).pack(side="right")
+        ), "common.close", "Schließen").pack(side="right")
 
     def open_snippet_picker(self):
         if self.snippet_service:

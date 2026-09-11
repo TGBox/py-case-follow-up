@@ -81,6 +81,8 @@ class AiAssistantDialog(BaseDialog):
             f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]",
             (w, h),
             min_size=(720, 480),
+
+            title_factory=lambda: f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]",
         )
 
         self.create_widgets()
@@ -97,11 +99,11 @@ class AiAssistantDialog(BaseDialog):
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         hdr_frame.pack(fill="x", pady=(0, 6))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("ai_assistant.header", "🤖 KI-Assistent für Fall [{case_id}]", case_id=self.case.case_id),
             font=ctk.CTkFont(size=16, weight="bold"),
-        ).pack(side="left")
+        ), "ai_assistant.header", "🤖 KI-Assistent für Fall [{case_id}]", case_id=self.case.case_id).pack(side="left")
 
         # Global AI Toggle Switch
         self.ai_toggle_switch = ctk.CTkSwitch(
@@ -116,12 +118,12 @@ class AiAssistantDialog(BaseDialog):
             self.ai_toggle_switch.deselect()
         self.ai_toggle_switch.pack(side="right", padx=(0, 10))
 
-        self.status_badge = ctk.CTkLabel(
+        self.status_badge = self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("ai_assistant.checking_status", "Prüfe Status..."),
             font=ctk.CTkFont(size=11, weight="bold"),
             text_color=COLOR_TEXT_GRAY,
-        )
+        ), "ai_assistant.checking_status", "Prüfe Status...")
         self.status_badge.pack(side="right", padx=(0, 10))
 
         # Priority Custom Instruction Bar
@@ -164,7 +166,7 @@ class AiAssistantDialog(BaseDialog):
         self.status_lbl = ctk.CTkLabel(footer, text="", font=ctk.CTkFont(size=11), text_color=COLOR_TEXT_BLUE)
         self.status_lbl.pack(side="left")
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             footer,
             text=tr("common.close", "Schließen"),
             width=100,
@@ -172,7 +174,7 @@ class AiAssistantDialog(BaseDialog):
             fg_color=COLOR_MUTED_GRAY,
             hover_color=COLOR_MUTED_HOVER,
             command=self.destroy,
-        ).pack(side="right")
+        ), "common.close", "Schließen").pack(side="right")
 
     def create_loading_overlay(self):
         """Creates a smooth, semi-transparent loading spinner overlay frame."""
@@ -182,22 +184,22 @@ class AiAssistantDialog(BaseDialog):
         card = ctk.CTkFrame(self.overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=140)
         card.place(relx=0.5, rely=0.5, anchor="center")
 
-        self.overlay_msg_lbl = ctk.CTkLabel(
+        self.overlay_msg_lbl = self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("ai_assistant.loading_overlay_msg", "🤖 KI verarbeitet Anfrage..."),
             font=ctk.CTkFont(size=14, weight="bold"),
-        )
+        ), "ai_assistant.loading_overlay_msg", "🤖 KI verarbeitet Anfrage...")
         self.overlay_msg_lbl.pack(pady=(20, 10))
 
         self.overlay_progress = ctk.CTkProgressBar(card, width=280, mode="indeterminate", progress_color="dodgerblue")
         self.overlay_progress.pack(pady=(0, 10))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort"),
             font=ctk.CTkFont(size=11),
             text_color=("gray40", "gray70"),
-        ).pack(pady=(0, 15))
+        ), "ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort").pack(pady=(0, 15))
 
     def _show_overlay(self, message: str = "🤖 KI verarbeitet Anfrage..."):
         self.overlay_msg_lbl.configure(text=message)
@@ -344,7 +346,7 @@ class AiAssistantDialog(BaseDialog):
         btn_bar = ctk.CTkFrame(self.tab_summary, fg_color="transparent")
         from services.i18n_service import tr
 
-        self.btn_gen_summary = ctk.CTkButton(
+        self.btn_gen_summary = self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.regen_summary", "🔄 Zusammenfassung neu generieren"),
             width=210,
@@ -352,10 +354,10 @@ class AiAssistantDialog(BaseDialog):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_summary,
-        )
+        ), "ai_assistant.regen_summary", "🔄 Zusammenfassung neu generieren")
         self.btn_gen_summary.pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren"),
             width=190,
@@ -363,9 +365,9 @@ class AiAssistantDialog(BaseDialog):
             fg_color="dodgerblue",
             hover_color="deepskyblue",
             command=self.copy_summary,
-        ).pack(side="left", padx=(0, 8))
+        ), "ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren").pack(side="left", padx=(0, 8))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.append_timeline", "📌 In Fall-Zeitleiste einfügen"),
             width=190,
@@ -373,7 +375,7 @@ class AiAssistantDialog(BaseDialog):
             fg_color="forestgreen",
             hover_color="darkgreen",
             command=self.append_summary_to_timeline,
-        ).pack(side="left")
+        ), "ai_assistant.append_timeline", "📌 In Fall-Zeitleiste einfügen").pack(side="left")
 
         self.summary_textbox = ctk.CTkTextbox(self.tab_summary)
         self.summary_textbox.pack(fill="both", expand=True, pady=(4, 0))
@@ -440,13 +442,13 @@ class AiAssistantDialog(BaseDialog):
         hdr_bar = ctk.CTkFrame(self.tab_solutions, fg_color="transparent")
         hdr_bar.pack(fill="x", pady=(4, 6))
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             hdr_bar,
             text=tr("ai_assistant.solutions_header", "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:"),
             font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(side="left")
+        ), "ai_assistant.solutions_header", "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:").pack(side="left")
 
-        self.btn_gen_solutions = ctk.CTkButton(
+        self.btn_gen_solutions = self.register_i18n(ctk.CTkButton(
             hdr_bar,
             text=tr("ai_assistant.regen_solutions", "🔄 Lösungssuche erneut ausführen"),
             width=210,
@@ -454,7 +456,7 @@ class AiAssistantDialog(BaseDialog):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.load_solutions,
-        )
+        ), "ai_assistant.regen_solutions", "🔄 Lösungssuche erneut ausführen")
         self.btn_gen_solutions.pack(side="right")
 
         self.solutions_scroll = ctk.CTkScrollableFrame(self.tab_solutions, fg_color="transparent")
@@ -484,12 +486,12 @@ class AiAssistantDialog(BaseDialog):
                     anchor="w",
                 ).pack(side="left")
 
-                ctk.CTkLabel(
+                self.register_i18n(ctk.CTkLabel(
                     top_r,
                     text=tr("ai_assistant.relevance_info", "Relevanz: {conf} ({source})", conf=sol.get('confidence', '80%'), source=sol.get('source', '')),
                     font=ctk.CTkFont(size=10, weight="bold"),
                     text_color="dodgerblue",
-                ).pack(side="right")
+                ), "ai_assistant.relevance_info", "Relevanz: {conf} ({source})", conf=sol.get('confidence', '80%'), source=sol.get('source', '')).pack(side="right")
 
                 ctk.CTkLabel(
                     card,
@@ -508,7 +510,7 @@ class AiAssistantDialog(BaseDialog):
         hdr_bar = ctk.CTkFrame(self.tab_response, fg_color="transparent")
         hdr_bar.pack(fill="x", pady=(4, 6))
 
-        self.btn_gen_draft = ctk.CTkButton(
+        self.btn_gen_draft = self.register_i18n(ctk.CTkButton(
             hdr_bar,
             text=tr("ai_assistant.regen_draft", "🔄 Antwort-Entwurf generieren"),
             width=210,
@@ -516,11 +518,11 @@ class AiAssistantDialog(BaseDialog):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.generate_draft,
-        )
+        ), "ai_assistant.regen_draft", "🔄 Antwort-Entwurf generieren")
         self.btn_gen_draft.pack(side="left", padx=(0, 8))
 
         if self.on_open_email_draft:
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 hdr_bar,
                 text=tr("ai_assistant.open_email_draft", "✉ In E-Mail-Entwurf öffnen"),
                 width=190,
@@ -528,7 +530,7 @@ class AiAssistantDialog(BaseDialog):
                 fg_color="royalblue",
                 hover_color="blue",
                 command=self.open_in_email_draft,
-            ).pack(side="left")
+            ), "ai_assistant.open_email_draft", "✉ In E-Mail-Entwurf öffnen").pack(side="left")
 
         self.draft_textbox = ctk.CTkTextbox(self.tab_response)
         self.draft_textbox.pack(fill="both", expand=True, pady=(4, 0))

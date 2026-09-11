@@ -32,6 +32,8 @@ class EmailImportDialog(BaseDialog):
             DIALOG_TITLES["email_import"],
             (w, h),
             min_size=(750, 500),
+
+            title_factory=lambda: DIALOG_TITLES["email_import"],
         )
 
         self.emails: list[dict[str, Any]] = []
@@ -54,7 +56,7 @@ class EmailImportDialog(BaseDialog):
 
         from services.i18n_service import tr
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             hdr_frame,
             text=tr("email_import.refresh_btn", "🔄 Posteingang aktualisieren"),
             width=170,
@@ -62,16 +64,16 @@ class EmailImportDialog(BaseDialog):
             fg_color=("gray75", "gray30"),
             hover_color=("gray65", "gray40"),
             command=self.refresh_emails,
-        ).pack(side="right")
+        ), "email_import.refresh_btn", "🔄 Posteingang aktualisieren").pack(side="right")
 
         # Info label
-        self.info_lbl = ctk.CTkLabel(
+        self.info_lbl = self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("email_import.info_msg", "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen."),
             font=ctk.CTkFont(size=11),
             text_color="gray",
             anchor="w",
-        )
+        ), "email_import.info_msg", "Eingehende E-Mails aus Microsoft Outlook / Posteingang werden automatisch mit bestehenden Fällen abgeglichen.")
         self.info_lbl.pack(fill="x", pady=(0, 6))
 
         # Status alert label
@@ -87,7 +89,7 @@ class EmailImportDialog(BaseDialog):
         footer_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
         footer_frame.pack(fill="x", pady=(4, 0))
 
-        ctk.CTkButton(
+        self.register_i18n(ctk.CTkButton(
             footer_frame,
             text=tr("common.close", "Schließen"),
             width=100,
@@ -95,7 +97,7 @@ class EmailImportDialog(BaseDialog):
             fg_color=("gray70", "gray40"),
             hover_color=("gray60", "gray50"),
             command=self.destroy,
-        ).pack(side="right")
+        ), "common.close", "Schließen").pack(side="right")
 
     def refresh_emails(self):
         from services.i18n_service import tr
@@ -113,12 +115,12 @@ class EmailImportDialog(BaseDialog):
             widget.destroy()
 
         if not self.emails:
-            ctk.CTkLabel(
+            self.register_i18n(ctk.CTkLabel(
                 self.scroll_frame,
                 text=tr("email_import.no_emails", "Keine neuen E-Mails im Posteingang gefunden."),
                 font=ctk.CTkFont(size=13),
                 text_color="gray",
-            ).pack(pady=40)
+            ), "email_import.no_emails", "Keine neuen E-Mails im Posteingang gefunden.").pack(pady=40)
             return
 
         for idx, mail in enumerate(self.emails):
@@ -155,13 +157,13 @@ class EmailImportDialog(BaseDialog):
                 ).pack(side="right")
 
             # Subject line
-            ctk.CTkLabel(
+            self.register_i18n(ctk.CTkLabel(
                 card,
                 text=tr("email_import.subject_prefix", "Betreff: {subj}", subj=subj),
                 font=ctk.CTkFont(size=12, weight="bold"),
                 text_color=("gray20", "gray90"),
                 anchor="w",
-            ).pack(fill="x", padx=10, pady=(2, 2))
+            ), "email_import.subject_prefix", "Betreff: {subj}", subj=subj).pack(fill="x", padx=10, pady=(2, 2))
 
             # Auto-Match badge
             match_row = ctk.CTkFrame(card, fg_color="transparent")
@@ -203,25 +205,25 @@ class EmailImportDialog(BaseDialog):
             act_row.pack(fill="x", padx=10, pady=(2, 8))
 
             if matched_case:
-                ctk.CTkButton(
+                self.register_i18n(ctk.CTkButton(
                     act_row,
                     text=tr("email_import.append_btn", "📌 An Fall [{case_id}] anhängen", case_id=matched_case.case_id),
                     fg_color="darkgreen",
                     hover_color="forestgreen",
                     height=28,
                     command=lambda m=mail, c=matched_case, i=idx: self.append_to_case(m, c, i),
-                ).pack(side="left", padx=(0, 6))
+                ), "email_import.append_btn", "📌 An Fall [{case_id}] anhängen", case_id=matched_case.case_id).pack(side="left", padx=(0, 6))
 
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 act_row,
                 text=tr("email_import.create_new_case", "➕ Als neuen Fall anlegen"),
                 fg_color="dodgerblue",
                 hover_color="deepskyblue",
                 height=28,
                 command=lambda m=mail, i=idx: self.create_new_case_from_mail(m, i),
-            ).pack(side="left", padx=(0, 6))
+            ), "email_import.create_new_case", "➕ Als neuen Fall anlegen").pack(side="left", padx=(0, 6))
 
-            ctk.CTkButton(
+            self.register_i18n(ctk.CTkButton(
                 act_row,
                 text=tr("email_import.ignore", "🗑 Ignorieren"),
                 fg_color=("gray75", "gray35"),
@@ -229,7 +231,7 @@ class EmailImportDialog(BaseDialog):
                 width=80,
                 height=28,
                 command=lambda i=idx: self.ignore_mail(i),
-            ).pack(side="right")
+            ), "email_import.ignore", "🗑 Ignorieren").pack(side="right")
 
     def append_to_case(self, mail: dict[str, Any], case: Case, index: int):
         OutlookIntegrationService.append_outlook_email_to_case_timeline(

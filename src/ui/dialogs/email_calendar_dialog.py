@@ -199,9 +199,10 @@ class EmailCalendarDialog(BaseDialog):
         self.status_lbl.configure(text=tr("email_calendar.text_copied", "✓ E-Mail Text wurde in die Zwischenablage kopiert."), text_color="lightgreen")
 
     def on_open_ics(self):
+        from services.i18n_service import tr
         ics_path = self.service.generate_ics_file(self.case, user_name=self.user_name)
         self.service.open_ics_file(ics_path)
-        self.status_lbl.configure(text=f"✓ Kalendereintrag (.ics) geöffnet: {ics_path.name}", text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.ics_opened", "✓ Kalendereintrag (.ics) geöffnet: {name}", name=ics_path.name), text_color="lightgreen")
 
     def on_save_ics(self):
         from services.i18n_service import tr
@@ -217,4 +218,4 @@ class EmailCalendarDialog(BaseDialog):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        self.status_lbl.configure(text=f"✓ .ics Kalenderdatei gespeichert unter: {os.path.basename(file_path)}", text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.ics_saved", "✓ .ics Kalenderdatei gespeichert unter: {name}", name=os.path.basename(file_path)), text_color="lightgreen")

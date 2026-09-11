@@ -226,7 +226,8 @@ class ExportDialog(BaseDialog):
         if file_path:
             with open(file_path, "w", encoding="utf-8") as f:
                 f.write(text)
-            self.status_label.configure(text=f"💾 Datei gespeichert: {Path(file_path).name}", text_color="green")
+            from services.i18n_service import tr
+            self.status_label.configure(text=tr("export_dialog.file_saved", "💾 Datei gespeichert: {name}", name=Path(file_path).name), text_color="green")
 
     def on_open_template_manager(self):
         from ui.dialogs.template_manager_dialog import TemplateManagerDialog

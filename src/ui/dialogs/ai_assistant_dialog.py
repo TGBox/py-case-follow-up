@@ -230,7 +230,8 @@ class AiAssistantDialog(BaseDialog):
                 if not isinstance(res, Exception):
                     on_success(res)
                 else:
-                    self.status_lbl.configure(text=f"⚠ Fehler bei KI-Generierung: {res}", text_color="red")
+                    from services.i18n_service import tr
+                    self.status_lbl.configure(text=tr("ai_assistant.error_generation", "⚠ Fehler bei KI-Generierung: {error}", error=res), text_color="red")
 
             try:
                 self.after(0, ui_callback)
@@ -405,7 +406,8 @@ class AiAssistantDialog(BaseDialog):
             has_ci = bool(self.get_custom_instruction())
             ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
             info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
-            self.status_lbl.configure(text=f"✓ Zusammenfassung erfolgreich generiert{info}.", text_color="dodgerblue")
+            from services.i18n_service import tr
+            self.status_lbl.configure(text=tr("ai_assistant.summary_generated", "✓ Zusammenfassung erfolgreich generiert{info}.", info=info), text_color="dodgerblue")
 
         self._run_async(worker, on_success, "🤖 KI generiert Zusammenfassung... Bitte warten")
 
@@ -551,7 +553,8 @@ class AiAssistantDialog(BaseDialog):
             has_ci = bool(self.get_custom_instruction())
             ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
             info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
-            self.status_lbl.configure(text=f"✓ E-Mail-Antwort-Entwurf generiert{info}.", text_color="dodgerblue")
+            from services.i18n_service import tr
+            self.status_lbl.configure(text=tr("ai_assistant.reply_generated", "✓ E-Mail-Antwort-Entwurf generiert{info}.", info=info), text_color="dodgerblue")
 
         self._run_async(worker, on_success, "✉ KI generiert E-Mail-Antwort... Bitte warten")
 

@@ -75,9 +75,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         # Card header
         header = ctk.CTkFrame(card, fg_color="transparent")
         header.pack(fill="x", padx=10, pady=(6, 2))
-        ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60").pack(side="left")
+        num_lbl = ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60")
+        num_lbl.pack(side="left")
 
-        row_dict: dict[str, Any] = {"frame": card}
+        row_dict: dict[str, Any] = {"frame": card, "num_lbl": num_lbl}
 
         remove_btn = ctk.CTkButton(
             header,
@@ -156,12 +157,11 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             self.contact_rows.remove(row_dict)
 
         # Update contact headers
+        from services.i18n_service import tr
         for idx, r in enumerate(self.contact_rows, 1):
-            for child in r["frame"].winfo_children():
-                if isinstance(child, ctk.CTkFrame):
-                    for sub in child.winfo_children():
-                        if isinstance(sub, ctk.CTkLabel) and sub.cget("text").startswith("Kontakt #"):
-                            sub.configure(text=f"Kontakt #{idx}")
+            num_lbl = r.get("num_lbl")
+            if num_lbl is not None:
+                num_lbl.configure(text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=idx))
 
     def load_customers(self):
         self.customers = self.customer_service.get_all_customers()
@@ -269,12 +269,13 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             sub_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
     def select_customer(self, customer_id: str):
+        from services.i18n_service import tr
         c = self.customer_service.get_customer_by_id(customer_id)
         if not c:
             return
 
         self.selected_customer = c
-        self.form_title_lbl.configure(text=f"Praxis bearbeiten: {c.practice_name}")
+        self.form_title_lbl.configure(text=tr("customer_mgmt.edit_practice", "Praxis bearbeiten: {name}", name=c.practice_name))
 
         self.cust_id_entry.configure(state="normal")
         self.cust_id_entry.delete(0, "end")

@@ -137,7 +137,8 @@ class HandoverDialog(BaseDialog):
                 if c.name == name_part:
                     if c.is_absent:
                         reason = f" ({c.absence_reason})" if c.absence_reason else ""
-                        self.absence_warn_lbl.configure(text=f"⚠ ACHTUNG: {c.name} ist aktuell abwesend{reason}!", text_color="darkorange")
+                        from services.i18n_service import tr
+                        self.absence_warn_lbl.configure(text=tr("handover_dialog.absence_warning", "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!", name=c.name, reason=reason), text_color="darkorange")
                     break
 
             col = next((c for c in self.colleagues if c.name == name_part), None)

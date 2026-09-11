@@ -908,7 +908,8 @@
     "preview_header": "Vorschau des exportierten Textes:",
     "save_file_btn": "In Datei speichern...",
     "select_template": "Vorlage auswählen:",
-    "window_title": "{base_title} — {case_id}"
+    "window_title": "{base_title} — {case_id}",
+    "file_saved": "💾 Datei gespeichert: {name}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
@@ -1244,7 +1245,8 @@
     "status_identical": "[IDENTISCH]",
     "status_local_newer": "[LOKAL NEUER]",
     "status_new": "[NEU]",
-    "status_remote_newer": "[KOLLEGE NEUER]"
+    "status_remote_newer": "[KOLLEGE NEUER]",
+    "timestamps": "Fremd: {remote} | Lokal: {local}"
   },
   "profile": {
     "active_profile": "Aktives Profil:",
@@ -1398,7 +1400,9 @@
     "shortcuts_app_header": "⚡ App-Aktionen Tastenkürzel (Hotkeys)",
     "shortcuts_snippet_header": "📝 Textbaustein-Makros (Snippet Shortcuts)",
     "no_snippets": "Keine Textbausteine vorhanden.",
-    "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px"
+    "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
+    "zip_backup_success": "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
+    "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt."
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",

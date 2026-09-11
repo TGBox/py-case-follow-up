@@ -196,7 +196,8 @@ class SnippetManagementDialog(BaseDialog):
             self.shortcut_entry.insert(0, snip.shortcut)
 
         self.delete_btn.configure(state="normal")
-        self.status_lbl.configure(text=f"Ausgewählt: {snip.snippet_id}", text_color="dodgerblue")
+        from services.i18n_service import tr
+        self.status_lbl.configure(text=tr("snippet_mgmt.selected_status", "Ausgewählt: {id}", id=snip.snippet_id), text_color="dodgerblue")
         self.refresh_list()
 
     def on_click_new(self):

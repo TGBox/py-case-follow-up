@@ -908,7 +908,8 @@
     "preview_header": "Förhandsgranskning av exporterad text:",
     "save_file_btn": "Spara till fil...",
     "select_template": "Välj mall:",
-    "window_title": "{base_title} — {case_id}"
+    "window_title": "{base_title} — {case_id}",
+    "file_saved": "💾 Filen sparad: {name}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Utvecklarärende för programfel, krascher och gränssnittsproblem.",
@@ -1244,7 +1245,8 @@
     "status_identical": "[IDENTISK]",
     "status_local_newer": "[LOKAL NYARE]",
     "status_new": "[NY]",
-    "status_remote_newer": "[KOLLEGA NYARE]"
+    "status_remote_newer": "[KOLLEGA NYARE]",
+    "timestamps": "Extern: {remote} | Lokal: {local}"
   },
   "profile": {
     "active_profile": "Aktiv profil:",
@@ -1398,7 +1400,9 @@
     "shortcuts_app_header": "⚡ App-åtgärder tangentbordsgenvägar (Hotkeys)",
     "shortcuts_snippet_header": "📝 Textavsnittsmakron (Snippet-genvägar)",
     "no_snippets": "Inga textavsnitt tillgängliga.",
-    "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px"
+    "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px",
+    "zip_backup_success": "✅ ZIP-säkerhetskopia skapad: {file_count} filer ({mb_size:.2f} MB)",
+    "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade."
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",

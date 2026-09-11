@@ -5,6 +5,7 @@ from pathlib import Path
 from tkinter import filedialog
 from PIL import Image  # type: ignore
 from models.case import Case
+from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
 from services.attachment_service import AttachmentService
 
 
@@ -92,7 +93,7 @@ class AttachmentWidget(ctk.CTkFrame):
             return
 
         for f in files:
-            f_frame = ctk.CTkFrame(self.scroll_frame, fg_color=("gray85", "gray20"))
+            f_frame = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER)
             f_frame.pack(fill="x", pady=2, padx=2)
 
             is_img = f.suffix.lower() in (".png", ".jpg", ".jpeg", ".bmp", ".gif")

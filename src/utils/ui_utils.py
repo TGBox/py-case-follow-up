@@ -4,6 +4,108 @@ import tkinter as tk
 import customtkinter as ctk
 
 
+def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
+    """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
+    canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
+    scrollbar = getattr(scroll_frame, "_scrollbar", None)
+
+    if not canvas or not scrollbar:
+        return
+
+    # Fix CustomTkinter grid placement: ensure canvas starts at row 0 with rowspan 2 so canvas isn't pushed down to row 1 (y=218)
+    try:
+        master = canvas.master
+        canvas.grid_configure(row=0, rowspan=2, sticky="nsew")
+        if hasattr(scrollbar, "grid_info"):
+            scrollbar.grid_configure(row=0, column=1, rowspan=2, sticky="ns")
+        if hasattr(master, "rowconfigure"):
+            master.rowconfigure(0, weight=1)
+            master.rowconfigure(1, weight=1)
+            master.columnconfigure(0, weight=1)
+    except Exception:
+        pass
+
+    _updating = False
+    _scheduled = False
+    _last_visible = None
+
+    def update_scrollbar_visibility(*_args):
+        nonlocal _scheduled
+        if _updating or _scheduled:
+            return
+        _scheduled = True
+
+        def _do_update():
+            nonlocal _updating, _scheduled, _last_visible
+            _scheduled = False
+            if _updating:
+                return
+            try:
+                if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
+                    return
+                _updating = True
+                orientation = getattr(scroll_frame, "_orientation", "vertical")
+                bbox = canvas.bbox("all")
+
+                if orientation == "horizontal":
+                    canvas_dim = canvas.winfo_width()
+                    content_dim = (bbox[2] - bbox[0]) if bbox else 0
+                else:
+                    canvas_dim = canvas.winfo_height()
+                    content_dim = (bbox[3] - bbox[1]) if bbox else 0
+
+                if canvas_dim <= 1:
+                    return
+
+                should_show = content_dim > (canvas_dim + 2)
+                if should_show == _last_visible:
+                    return
+                _last_visible = should_show
+
+                if not should_show:
+                    try:
+                        if orientation == "horizontal":
+                            canvas.xview_moveto(0.0)
+                        else:
+                            canvas.yview_moveto(0.0)
+                    except Exception:
+                        pass
+                    if hasattr(scrollbar, "grid_remove"):
+                        scrollbar.grid_remove()
+                    elif hasattr(scrollbar, "pack_forget"):
+                        scrollbar.pack_forget()
+                else:
+                    if hasattr(scrollbar, "grid"):
+                        if orientation == "horizontal":
+                            scrollbar.grid(row=1, column=0, columnspan=2, sticky="ew")
+                        else:
+                            scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
+                    elif hasattr(scrollbar, "pack"):
+                        if orientation == "horizontal":
+                            scrollbar.pack(side="bottom", fill="x")
+                        else:
+                            scrollbar.pack(side="right", fill="y")
+            except Exception:
+                pass
+            finally:
+                _updating = False
+
+        try:
+            scroll_frame.after_idle(_do_update)
+        except Exception:
+            _do_update()
+
+    canvas.bind("<Configure>", update_scrollbar_visibility, add="+")
+    scroll_frame.bind("<Configure>", update_scrollbar_visibility, add="+")
+    scroll_frame.bind("<Map>", update_scrollbar_visibility, add="+")
+    try:
+        scroll_frame.after(50, update_scrollbar_visibility)
+        scroll_frame.after(150, update_scrollbar_visibility)
+        scroll_frame.after(350, update_scrollbar_visibility)
+    except Exception:
+        pass
+
+
 def patch_ctk_scrollable_frame() -> None:
     """Fixes CustomTkinter event callback signature mismatches (e.g. Python 3.14/Windows Tcl events).
 
@@ -95,6 +197,7 @@ def patch_ctk_scrollable_frame() -> None:
                 self.bind("<Configure>", lambda *a, **kw: canvas.configure(scrollregion=canvas.bbox("all")))
                 # Re-bind <Configure> on the parent canvas with a resilient handler
                 canvas.bind("<Configure>", lambda *a, **kw: self._fit_frame_dimensions_to_canvas(*a, **kw))
+            enable_auto_hiding_scrollbar(self)
         except Exception:
             pass
 
@@ -341,89 +444,6 @@ def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkSc
 
     _apply_recursive(container_or_widget)
 
-
-def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
-    """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
-    canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
-    scrollbar = getattr(scroll_frame, "_scrollbar", None)
-
-    if not canvas or not scrollbar:
-        return
-
-    # Fix CustomTkinter grid placement: ensure canvas starts at row 0 with rowspan 2 so canvas isn't pushed down to row 1 (y=218)
-    try:
-        master = canvas.master
-        canvas.grid_configure(row=0, rowspan=2, sticky="nsew")
-        if hasattr(scrollbar, "grid_info"):
-            scrollbar.grid_configure(row=0, column=1, rowspan=2, sticky="ns")
-        if hasattr(master, "rowconfigure"):
-            master.rowconfigure(0, weight=1)
-            master.rowconfigure(1, weight=1)
-            master.columnconfigure(0, weight=1)
-    except Exception:
-        pass
-
-    _updating = False
-    _scheduled = False
-    _last_visible = None
-
-    def update_scrollbar_visibility(*_args):
-        nonlocal _scheduled
-        if _updating or _scheduled:
-            return
-        _scheduled = True
-
-        def _do_update():
-            nonlocal _updating, _scheduled, _last_visible
-            _scheduled = False
-            if _updating:
-                return
-            try:
-                if not scroll_frame.winfo_exists() or not canvas.winfo_exists():
-                    return
-                _updating = True
-                canvas_h = canvas.winfo_height()
-                bbox = canvas.bbox("all")
-                content_h = (bbox[3] - bbox[1]) if bbox else 0
-
-                if canvas_h <= 1:
-                    return
-
-                should_show = content_h > (canvas_h + 2)
-                if should_show == _last_visible:
-                    return
-                _last_visible = should_show
-
-                if not should_show:
-                    try:
-                        canvas.yview_moveto(0.0)
-                    except Exception:
-                        pass
-                    if hasattr(scrollbar, "grid_remove"):
-                        scrollbar.grid_remove()
-                    elif hasattr(scrollbar, "pack_forget"):
-                        scrollbar.pack_forget()
-                else:
-                    if hasattr(scrollbar, "grid"):
-                        scrollbar.grid(row=0, column=1, rowspan=2, sticky="ns")
-                    elif hasattr(scrollbar, "pack"):
-                        scrollbar.pack(side="right", fill="y")
-            except Exception:
-                pass
-            finally:
-                _updating = False
-
-        try:
-            scroll_frame.after_idle(_do_update)
-        except Exception:
-            _do_update()
-
-    canvas.bind("<Configure>", update_scrollbar_visibility, add="+")
-    scroll_frame.bind("<Configure>", update_scrollbar_visibility, add="+")
-    try:
-        scroll_frame.after(100, update_scrollbar_visibility)
-    except Exception:
-        pass
 
 
 class AutoScrollableFrame(ctk.CTkScrollableFrame):

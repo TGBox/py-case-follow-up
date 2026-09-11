@@ -104,23 +104,36 @@ class ShortcutsSettingsTabMixin:
         scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=5, pady=5)
 
+        # 2-Column Side-by-Side Container
+        cols_container = ctk.CTkFrame(scroll, fg_color="transparent")
+        cols_container.pack(fill="both", expand=True, padx=5, pady=5)
+        cols_container.columnconfigure(0, weight=1, uniform="shortcuts_cols")
+        cols_container.columnconfigure(1, weight=1, uniform="shortcuts_cols")
+
+        left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
+
+        right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
+
+        # --- Left Column: App-Aktionen Tastenkürzel ---
         self.app_shortcuts_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(scroll, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(left_col, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.shortcuts_app_header",
             LABEL_APP_SHORTCUTS_HEADER,
         )
-        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 8))
 
         self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
         self.rec_buttons: list[ctk.CTkButton] = []
 
         for attr_name, label_text in HOTKEY_ACTION_LABELS:
-            row = ctk.CTkFrame(scroll, fg_color="transparent")
+            row = ctk.CTkFrame(left_col, fg_color="transparent")
             row.pack(fill="x", pady=2)
-            ctk.CTkLabel(row, text=label_text, width=180, anchor="w").pack(side="left")
+            ctk.CTkLabel(row, text=label_text, width=170, anchor="w").pack(side="left")
 
             val = getattr(self.profile.shortcuts, attr_name, "")
-            entry = ctk.CTkEntry(row, width=140)
+            entry = ctk.CTkEntry(row, width=125)
             entry.insert(0, val)
             entry.pack(side="left", padx=(5, 5))
             self.shortcut_entries[attr_name] = entry
@@ -129,9 +142,10 @@ class ShortcutsSettingsTabMixin:
                 ctk.CTkButton(
                     row,
                     text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                    width=120,
-                    fg_color=("gray75", "gray30"),
-                    hover_color=("gray65", "gray40"),
+                    width=110,
+                    fg_color=("gray45", "gray35"),
+                    hover_color=("gray35", "gray45"),
+                    text_color="white",
                     command=lambda e=entry: self.open_hotkey_recorder(e),
                 ),
                 "hotkey_recorder.button",
@@ -142,33 +156,33 @@ class ShortcutsSettingsTabMixin:
 
             entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
-        # --- Text-Makros (Snippets) Section ---
+        # --- Right Column: Textbaustein-Makros (Snippets) ---
         self.snippet_shortcuts_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(scroll, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(right_col, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.shortcuts_snippet_header",
             LABEL_SNIPPET_SHORTCUTS_HEADER,
         )
-        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(20, 5))
+        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 8))
 
         self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
         all_snippets = self.snippet_service.get_all_snippets()
 
         if not all_snippets:
             self.no_snippets_lbl = self.register_i18n(
-                ctk.CTkLabel(scroll, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60"),
+                ctk.CTkLabel(right_col, text=tr("profile.no_snippets", LABEL_NO_SNIPPETS), text_color="gray60"),
                 "profile.no_snippets",
                 LABEL_NO_SNIPPETS,
             )
             self.no_snippets_lbl.pack(anchor="w", pady=2)
         else:
             for snip in all_snippets:
-                s_row = ctk.CTkFrame(scroll, fg_color="transparent")
+                s_row = ctk.CTkFrame(right_col, fg_color="transparent")
                 s_row.pack(fill="x", pady=2)
 
-                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:30]} ({snip.snippet_id}):", width=220, anchor="w")
+                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:24]} ({snip.snippet_id}):", width=190, anchor="w")
                 title_lbl.pack(side="left")
 
-                s_entry = ctk.CTkEntry(s_row, width=140)
+                s_entry = ctk.CTkEntry(s_row, width=110)
                 s_entry.insert(0, snip.shortcut or "")
                 s_entry.pack(side="left", padx=(5, 5))
                 self.snippet_shortcut_entries.append((snip, s_entry))
@@ -177,9 +191,10 @@ class ShortcutsSettingsTabMixin:
                     ctk.CTkButton(
                         s_row,
                         text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                        width=120,
-                        fg_color=("gray75", "gray30"),
-                        hover_color=("gray65", "gray40"),
+                        width=110,
+                        fg_color=("gray45", "gray35"),
+                        hover_color=("gray35", "gray45"),
+                        text_color="white",
                         command=lambda e=s_entry: self.open_hotkey_recorder(e),
                     ),
                     "hotkey_recorder.button",
@@ -190,18 +205,15 @@ class ShortcutsSettingsTabMixin:
 
                 s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
-        # Conflict Warning Label
-        self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color="red", font=ctk.CTkFont(weight="bold"))
-        self.conflict_warn_lbl.pack(fill="x", pady=(5, 5))
-
-        # --- Prioritäts-Scoring Section ---
-        self.register_i18n(
-            ctk.CTkLabel(scroll, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")),
+        # --- Right Column: Prioritäts-Scoring Section direkt unter Snippets ---
+        self.scoring_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.scoring_points_title",
             "Prioritäts-Scoring Punkte",
-        ).pack(anchor="w", pady=(15, 5))
+        )
+        self.scoring_hdr_lbl.pack(anchor="w", pady=(20, 8))
 
-        row4 = ctk.CTkFrame(scroll, fg_color="transparent")
+        row4 = ctk.CTkFrame(right_col, fg_color="transparent")
         row4.pack(fill="x", pady=3)
         self.register_i18n(
             ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")),
@@ -210,7 +222,11 @@ class ShortcutsSettingsTabMixin:
         ).pack(side="left")
         self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
         self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
-        self.vip_bonus_entry.pack(side="right")
+        self.vip_bonus_entry.pack(side="left", padx=(10, 0))
+
+        # Conflict Warning Label at the bottom across full width
+        self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color="red", font=ctk.CTkFont(weight="bold"))
+        self.conflict_warn_lbl.pack(fill="x", pady=(10, 5))
 
     def setup_shortcuts_tab(self) -> None:
         """Alias for setup_scoring_tab."""
@@ -267,6 +283,8 @@ class ShortcutsSettingsTabMixin:
             self.app_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER))
         if hasattr(self, "snippet_shortcuts_hdr_lbl"):
             self.snippet_shortcuts_hdr_lbl.configure(text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER))
+        if hasattr(self, "scoring_hdr_lbl"):
+            self.scoring_hdr_lbl.configure(text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"))
         if hasattr(self, "no_snippets_lbl"):
             self.no_snippets_lbl.configure(text=tr("profile.no_snippets", LABEL_NO_SNIPPETS))
         if hasattr(self, "rec_buttons"):

@@ -3,6 +3,7 @@ from typing import Any
 from collections.abc import Callable
 from models.case import Case
 from enums import Actor, get_actor_display
+from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
 from utils.datetime_utils import format_german_datetime
 
 
@@ -19,7 +20,7 @@ class KanbanCardWidget(ctk.CTkFrame):
         on_toggle_complete: Callable[[Case], None],
         on_change_actor: Callable[[Case], None],
     ):
-        super().__init__(parent, corner_radius=8, fg_color=("gray85", "gray20"))
+        super().__init__(parent, corner_radius=8, fg_color=COLOR_CARD_BG, border_width=1, border_color=COLOR_CARD_BORDER)
         self.case = case
         self.on_select_case = on_select_case
         self.on_switch_to_cockpit = on_switch_to_cockpit

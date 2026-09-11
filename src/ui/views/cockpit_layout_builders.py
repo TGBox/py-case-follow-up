@@ -101,11 +101,12 @@ class CockpitLayoutBuilderMixin:
             on_case_selected=self.on_select_case_from_list,
             on_search_changed=self.on_search_changed,
             on_toggle_deep_search=lambda active: self.on_search_changed(self.left_frame.search_entry.get()),
+            bg_color=("gray92", "#2b2b2b"),
         )
 
     def _build_center_pane(self):
         # 2. Center Pane: Case Details & Dynamic Form
-        self.center_frame = ctk.CTkFrame(self.paned)
+        self.center_frame = ctk.CTkFrame(self.paned, bg_color=("gray92", "#2b2b2b"))
 
         # Unified Cockpit Header Card Frame
         self.header_card = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=8)

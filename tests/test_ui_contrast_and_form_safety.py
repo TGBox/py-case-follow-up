@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock
 import customtkinter as ctk
 import pytest
@@ -233,9 +233,9 @@ def test_analytics_high_contrast_styling(dummy_app):
     view = AnalyticsView(dummy_app)
     view.set_cases([Case(case_id="C-1", classification=MagicMock(), customer=MagicMock(), workflow_status=MagicMock())])
 
-    # Check that COLOR_PANEL_BG is ("#d4d4d8", "gray20")
-    assert COLOR_PANEL_BG == ("#d4d4d8", "gray20")
-    assert COLOR_PANEL_BORDER == ("#b0b0b5", "gray30")
+    # Check that COLOR_PANEL_BG is ("#ffffff", "gray23")
+    assert COLOR_PANEL_BG == ("#ffffff", "gray23")
+    assert COLOR_PANEL_BORDER == ("gray75", "gray38")
 
     # Verify cards in scroll_frame have border_width 1 and COLOR_PANEL_BG
     found_cards = [w for w in view.scroll_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
@@ -369,3 +369,62 @@ def test_urgency_and_warning_tokens_wcag_aa_contrast():
     assert contrast(COLOR_URGENCY_YELLOW[1], dark_panel) >= 4.5
     assert contrast(COLOR_URGENCY_GREEN[1], dark_panel) >= 4.5
     assert contrast(COLOR_WARNING_ORANGE[1], dark_panel) >= 4.5
+
+
+def test_cockpit_view_panes_light_mode_background(dummy_app):
+    from ui.views.cockpit_view import CockpitView
+    ctk.set_appearance_mode("Dark")
+    dummy_app.update_idletasks()
+
+    cv = CockpitView(dummy_app, "Test", MagicMock(), MagicMock(), MagicMock())
+    dummy_app.update_idletasks()
+
+    # Switch to Light mode
+    ctk.set_appearance_mode("Light")
+    cv.update_sash_color()
+    dummy_app.update_idletasks()
+
+    assert cv.paned.cget("bg") == "#ebebeb"
+    assert cast(Any, cv.left_frame)._canvas.cget("bg") == "gray92"
+    assert cast(Any, cv.center_frame)._canvas.cget("bg") == "gray92"
+    assert cast(Any, cv.right_tabview)._canvas.cget("bg") == "gray92"
+
+    # Switch back to Dark mode
+    ctk.set_appearance_mode("Dark")
+    cv.update_sash_color()
+    dummy_app.update_idletasks()
+
+    assert cv.paned.cget("bg") == "#2b2b2b"
+    assert cast(Any, cv.left_frame)._canvas.cget("bg") == "#2b2b2b"
+    assert cast(Any, cv.center_frame)._canvas.cget("bg") == "#2b2b2b"
+    assert cast(Any, cv.right_tabview)._canvas.cget("bg") == "#2b2b2b"
+
+    cv.destroy()
+
+
+def test_card_contrast_and_borders_across_views(dummy_app):
+    from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
+    from ui.views.board_view import KanbanCardWidget
+    from ui.widgets.timeline_widget import TimelineWidget
+    from models.case import Case, TimelineEntry
+
+    # 1. KanbanCardWidget
+    case_mock = Case(case_id="T-1", classification=MagicMock(calculated_score=50.0, title="Title"), customer=MagicMock(is_vip=False, practice_name="Praxis"), workflow_status=MagicMock(current_actor="support", followup_at=None, is_completed=False))
+    k_card = KanbanCardWidget(dummy_app, case_mock, MagicMock(), MagicMock(), MagicMock(), MagicMock(), MagicMock())
+    assert k_card.cget("border_width") == 1
+    assert k_card.cget("border_color") == COLOR_CARD_BORDER
+    assert k_card.cget("fg_color") == COLOR_CARD_BG
+    k_card.destroy()
+
+    # 2. TimelineWidget
+    tl = TimelineWidget(dummy_app, "Author", MagicMock())
+    tl.load_timeline([TimelineEntry(timestamp="2026-09-11T12:00:00", author="Tester", channel="phone_inbound", note="Test Note")])
+    found_cards = [w for w in tl.scroll_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
+    assert len(found_cards) >= 1
+    tl_card = found_cards[0]
+    assert tl_card.cget("border_width") == 1
+    assert tl_card.cget("border_color") == COLOR_CARD_BORDER
+    assert tl_card.cget("fg_color") == COLOR_CARD_BG
+    tl.destroy()
+
+

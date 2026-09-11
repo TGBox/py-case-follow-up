@@ -334,10 +334,15 @@ COLOR_DANGER_HOVER = "darkred"
 COLOR_MUTED_GRAY = ("gray75", "gray30")
 COLOR_MUTED_HOVER = ("gray65", "gray40")
 COLOR_SASH_DARK = "#2b2b2b"
-COLOR_SASH_LIGHT = "#d0d0d0"
-COLOR_PANEL_BG = ("#d4d4d8", "gray20")
-COLOR_PANEL_BORDER = ("#b0b0b5", "gray30")
-COLOR_PANEL_ALT_BG = ("#c8c8cd", "gray25")
+COLOR_SASH_LIGHT = "#ebebeb"
+COLOR_PANEL_BG = ("#ffffff", "gray23")
+COLOR_PANEL_BORDER = ("gray75", "gray38")
+COLOR_PANEL_ALT_BG = ("#f4f4f5", "gray26")
+
+COLOR_CARD_BG = ("#ffffff", "gray23")
+COLOR_CARD_BORDER = ("gray75", "gray38")
+COLOR_CARD_HOVER = ("#f3f4f6", "gray28")
+COLOR_CARD_SELECTED = ("#e0e7ff", "gray30")
 
 # --- Additional AI UI Labels & Instructions ---
 AI_OFFLINE_DESC = (

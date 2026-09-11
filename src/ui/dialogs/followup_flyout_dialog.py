@@ -6,7 +6,7 @@ from collections.abc import Callable
 from models.case import Case
 from ui.widgets.date_picker import DatePickerWidget
 from utils.datetime_utils import format_german_datetime, parse_followup_datetime, get_local_now, format_german_date
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import DIALOG_DIMENSIONS, DIALOG_TITLES, COLOR_CARD_BG, COLOR_CARD_BORDER
 
 
 class FollowupFlyoutDialog(BaseDialog):
@@ -57,7 +57,7 @@ class FollowupFlyoutDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=13)), "followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden.").pack(pady=20)
         else:
             for case in self.due_cases:
-                card = ctk.CTkFrame(scroll, fg_color=("gray85", "gray20"), corner_radius=6)
+                card = ctk.CTkFrame(scroll, fg_color=COLOR_CARD_BG, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER)
                 card.pack(fill="x", pady=5, padx=2)
 
                 top_row = ctk.CTkFrame(card, fg_color="transparent")

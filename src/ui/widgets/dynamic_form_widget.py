@@ -141,7 +141,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
 
                 if raw_query and query in tag.lower():
                     row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", cursor="hand2")
-                    row.pack(fill="x", pady=2, padx=5)
+                    row.pack(fill="x", pady=4, padx=5)
 
                     def toggle_cb(e=None, t=tag, v=bvar):
                         new_val = not v.get()
@@ -158,7 +158,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         command=make_chk_cb,
                         width=24,
                     )
-                    chk.pack(side="left", padx=(0, 6))
+                    chk.pack(side="left", padx=0)
 
                     lbl = create_highlighted_label(
                         row,

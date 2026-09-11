@@ -241,7 +241,7 @@ def parse_followup_datetime(val: str | datetime | None) -> datetime | None:
             return val.replace(tzinfo=get_local_now().tzinfo)
         return val
 
-    s = str(val).strip()
+    s = val.strip()
     if not s:
         return None
 
@@ -268,6 +268,56 @@ def parse_followup_datetime(val: str | datetime | None) -> datetime | None:
             continue
 
     return None
+
+
+def parse_flexible_followup_input(input_str: str) -> datetime | None:
+    """Parses user input from date/time fields.
+    - If both date and time are provided: uses both.
+    - If only date is provided: supplements current time of day.
+    - If only time is provided: supplements current date with that time.
+    Returns timezone-aware datetime or None if unparseable.
+    """
+    if not input_str or not input_str.strip():
+        return None
+
+    s = input_str.strip()
+    s = re.sub(r"\s*\(.*?\)", "", s).strip()
+    s = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", s, flags=re.IGNORECASE).strip()
+
+    now = get_local_now()
+
+    # 1. Check if only time was entered (e.g. "14:30", "14:30:00", "8:00")
+    time_match = re.match(r"^([0-1]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?$", s)
+    if time_match:
+        hour = int(time_match.group(1))
+        minute = int(time_match.group(2))
+        second = int(time_match.group(3)) if time_match.group(3) else 0
+        return now.replace(hour=hour, minute=minute, second=second, microsecond=0)
+
+    # 2. Check if full date+time or only date:
+    has_time_part = bool(re.search(r"[T\s]\d{1,2}:\d{2}", s))
+    if has_time_part:
+        dt = parse_followup_datetime(s)
+        if dt:
+            return dt
+
+    # 3. Check if only date was entered (e.g. "24.12.2026", "24.12.26", "2026-12-24")
+    for fmt in ("%d.%m.%Y", "%d.%m.%y", "%Y-%m-%d"):
+        try:
+            parsed_d = datetime.strptime(s, fmt).date()
+            return now.replace(
+                year=parsed_d.year,
+                month=parsed_d.month,
+                day=parsed_d.day,
+                hour=now.hour,
+                minute=now.minute,
+                second=now.second,
+                microsecond=0,
+            )
+        except ValueError:
+            continue
+
+    return parse_followup_datetime(s)
 
 
 # Generic and modern aliases

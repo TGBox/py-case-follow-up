@@ -100,11 +100,101 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             self.paned.sash_place(0, w_left, 0)
             self.paned.sash_place(1, max(w_left + 150, total_w - w_right), 0)
+            self._last_paned_width = total_w
         except Exception as e:
             logger.warning(f"Could not restore sash positions: {e}")
 
     def on_paned_sash_released(self, event=None):
         self.save_sash_widths()
+
+    def _on_paned_configure(self, event=None):
+        if getattr(self, "_in_paned_configure", False):
+            return
+        if event is not None and getattr(event, "widget", None) != self.paned:
+            return
+
+        try:
+            if not hasattr(self, "paned") or not self.paned.winfo_exists():
+                return
+            new_total_w = self.paned.winfo_width() if event is None else event.width
+            if new_total_w <= 100:
+                return
+
+            last_w = getattr(self, "_last_paned_width", None)
+            if last_w is None or last_w <= 100:
+                self._last_paned_width = new_total_w
+                return
+
+            delta_w = new_total_w - last_w
+            if delta_w == 0:
+                return
+
+            try:
+                sash0 = self.paned.sash_coord(0)
+                sash1 = self.paned.sash_coord(1)
+            except Exception:
+                self._last_paned_width = new_total_w
+                return
+
+            if not sash0 or not sash1 or len(sash0) == 0 or len(sash1) == 0:
+                self._last_paned_width = new_total_w
+                return
+
+            w_left = sash0[0]
+            w_right = last_w - sash1[0]
+            w_mid = sash1[0] - sash0[0]
+
+            if w_left <= 0 or w_right <= 0 or w_mid <= 0:
+                self._last_paned_width = new_total_w
+                return
+
+            # Primary adjustment on middle column; outer columns adjust by 25% of middle change
+            # delta_mid = (2/3) * delta_w
+            # delta_left = 0.25 * delta_mid = (1/6) * delta_w
+            # delta_right = delta_w - delta_mid - delta_left = (1/6) * delta_w
+            delta_mid = round(delta_w * (2.0 / 3.0))
+            delta_left = round(delta_mid * 0.25)
+            delta_right = delta_w - delta_mid - delta_left
+
+            new_left = w_left + delta_left
+            new_mid = w_mid + delta_mid
+            new_right = w_right + delta_right
+
+            min_left = 50
+            min_right = 50
+            min_mid = 100
+
+            if new_left < min_left:
+                diff = min_left - new_left
+                new_left = min_left
+                new_mid -= diff
+
+            if new_right < min_right:
+                diff = min_right - new_right
+                new_right = min_right
+                new_mid -= diff
+
+            if new_mid < min_mid:
+                new_mid = min_mid
+                avail = max(0, new_total_w - min_mid)
+                new_left = max(30, avail // 2)
+                new_right = max(30, new_total_w - min_mid - new_left)
+
+            new_sash0 = new_left
+            new_sash1 = max(new_sash0 + 50, new_total_w - new_right)
+
+            self._in_paned_configure = True
+            try:
+                self.paned.sash_place(0, new_sash0, 0)
+                self.paned.sash_place(1, new_sash1, 0)
+                self._last_paned_width = new_total_w
+                if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
+                    self.profile.ui_settings.column_widths["cockpit_left"] = new_sash0
+                    self.profile.ui_settings.column_widths["cockpit_right"] = new_total_w - new_sash1
+            finally:
+                self._in_paned_configure = False
+        except Exception as e:
+            logger.warning(f"Error adjusting paned columns on resize: {e}")
 
     def save_sash_widths(self):
         try:
@@ -113,6 +203,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             total_w = self.paned.winfo_width()
             if total_w <= 100:
                 return
+
+            self._last_paned_width = total_w
 
             sash0 = self.paned.sash_coord(0)
             sash1 = self.paned.sash_coord(1)

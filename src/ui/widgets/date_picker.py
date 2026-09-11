@@ -466,10 +466,12 @@ class DatePickerWidget(ctk.CTkFrame):
         include_time: bool = True,
         initial_value: str = "",
         width: int = 240,
+        on_change: Callable[[str], None] | None = None,
         **kwargs,
     ):
         super().__init__(parent, fg_color="transparent", **kwargs)
         self.include_time = include_time
+        self.on_change = on_change
         from services.i18n_service import tr
 
         ph = placeholder_text if placeholder_text is not None else (
@@ -478,6 +480,7 @@ class DatePickerWidget(ctk.CTkFrame):
 
         self.entry = ctk.CTkEntry(self, placeholder_text=ph, width=width)
         self.entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.entry.bind("<KeyRelease>", self._on_key_release, add="+")
 
         if initial_value:
             if "." in initial_value:
@@ -491,6 +494,10 @@ class DatePickerWidget(ctk.CTkFrame):
         )
         self.cal_btn.pack(side="right")
 
+    def _on_key_release(self, event=None):
+        if self.on_change:
+            self.on_change(self.get())
+
     def open_calendar(self):
         curr_val = self.get()
         CalendarDialog(
@@ -503,6 +510,8 @@ class DatePickerWidget(ctk.CTkFrame):
     def set_date(self, date_str: str):
         self.entry.delete(0, "end")
         self.entry.insert(0, date_str)
+        if self.on_change:
+            self.on_change(self.get())
 
     def get(self) -> str:
         return self.entry.get().strip()

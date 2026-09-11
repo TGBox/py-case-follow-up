@@ -11,9 +11,10 @@ if str(src_dir) not in sys.path:
 import tkinter  # noqa: E402 - sys.path must be extended before src/ imports
 import traceback  # noqa: E402 - sys.path must be extended before src/ imports
 
-from utils.ui_utils import patch_ctk_scrollable_frame  # noqa: E402 - sys.path must be extended before src/ imports
+from utils.ui_utils import patch_ctk_scrollable_frame, patch_ctk_rendering  # noqa: E402 - sys.path must be extended before src/ imports
 
 patch_ctk_scrollable_frame()
+patch_ctk_rendering()
 
 
 

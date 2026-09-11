@@ -291,3 +291,103 @@ def test_help_dialog_search_highlighting():
         dialog.destroy()
     finally:
         root.destroy()
+
+
+def test_tag_management_dialog_tags_highlighting(tmp_path: Path):
+    from ui.dialogs.tag_management_dialog import TagManagementDialog
+    from services.storage_service import StorageService, AppConfig
+    from models.profile import UserProfile
+
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        config = AppConfig(workspace_dir=tmp_path)
+        storage = StorageService(config)
+        profile = UserProfile(available_tags=["Dringend", "Rezeptdruck", "Installation"])
+
+        dialog = TagManagementDialog(root, profile=profile, storage_service=storage, initial_tab="tags")
+        dialog.withdraw()
+
+        dialog.search_tag_entry.delete(0, "end")
+        dialog.search_tag_entry.insert(0, "druck")
+        dialog.render_tags_list()
+
+        rows = [w for w in dialog.tags_scroll.winfo_children() if isinstance(w, ctk.CTkFrame)]
+        assert len(rows) == 1
+
+        text_widgets = [w for w in rows[0].winfo_children() if isinstance(w, tk.Text)]
+        assert len(text_widgets) == 1
+        content = text_widgets[0].get("1.0", "end - 1 chars")
+        assert "Rezeptdruck" in content
+
+        dialog.destroy()
+    finally:
+        root.destroy()
+
+
+def test_tag_management_dialog_modules_highlighting(tmp_path: Path):
+    from ui.dialogs.tag_management_dialog import TagManagementDialog
+    from services.storage_service import StorageService, AppConfig
+    from models.profile import UserProfile
+
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        config = AppConfig(workspace_dir=tmp_path)
+        storage = StorageService(config)
+        profile = UserProfile(available_module_tags=["Abrechnung", "Terminkalender", "Schnittstelle"])
+
+        dialog = TagManagementDialog(root, profile=profile, storage_service=storage, initial_tab="modules")
+        dialog.withdraw()
+
+        dialog.search_mod_entry.delete(0, "end")
+        dialog.search_mod_entry.insert(0, "kalender")
+        dialog.render_modules_list()
+
+        rows = [w for w in dialog.modules_scroll.winfo_children() if isinstance(w, ctk.CTkFrame)]
+        assert len(rows) == 1
+
+        text_widgets = [w for w in rows[0].winfo_children() if isinstance(w, tk.Text)]
+        assert len(text_widgets) == 1
+        content = text_widgets[0].get("1.0", "end - 1 chars")
+        assert "Terminkalender" in content
+
+        dialog.destroy()
+    finally:
+        root.destroy()
+
+
+def test_module_tag_picker_popup_highlighting():
+    from ui.widgets.dynamic_form_widget import ModuleTagPickerPopup
+
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        applied: list[list[str]] = []
+        popup = ModuleTagPickerPopup(
+            root,
+            available_tags=["Abrechnung", "Rezeptdruck", "Dokumentation"],
+            selected_tags=[],
+            on_apply=lambda tags: applied.append(tags)
+        )
+        popup.withdraw()
+
+        popup.search_entry.delete(0, "end")
+        popup.search_entry.insert(0, "druck")
+        popup.render_tag_checkboxes()
+
+        rows = [w for w in popup.scroll_frame.winfo_children() if isinstance(w, ctk.CTkFrame)]
+        assert len(rows) == 1
+
+        text_widgets = [w for w in rows[0].winfo_children() if isinstance(w, tk.Text)]
+        assert len(text_widgets) == 1
+        assert text_widgets[0].get("1.0", "end - 1 chars") == "Rezeptdruck"
+
+        # Check clicking the label toggles selection
+        text_widgets[0].event_generate("<Button-1>", x=5, y=5)
+        assert "Rezeptdruck" in popup.selected_tags
+
+        popup.destroy()
+    finally:
+        root.destroy()
+

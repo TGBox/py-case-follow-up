@@ -612,6 +612,17 @@ def create_highlighted_label(
         return c
 
     res_bg = _resolve(bg_color)
+    if res_bg == "transparent":
+        p_fg = None
+        if hasattr(parent, "cget"):
+            try:
+                p_fg = parent.cget("fg_color")
+            except Exception:
+                pass
+        if p_fg and p_fg != "transparent":
+            res_bg = _resolve(p_fg)
+        else:
+            res_bg = "#2b2b2b" if mode == "dark" else "#ebebeb"
     res_text = _resolve(text_color)
     res_hl = _resolve(highlight_color)
 

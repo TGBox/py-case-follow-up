@@ -57,7 +57,19 @@ class ExportDialog(BaseDialog):
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Header
-        header = ctk.CTkLabel(main_frame, text=f"{tr('export_dialog.export_for', 'Export für Fall')} {self.case.case_id}", font=ctk.CTkFont(size=18, weight="bold"))
+        # One key with a placeholder instead of a tr() glued into an f-string:
+        # only then can register_i18n rebuild the whole sentence on a language
+        # change - and only then can a translator move the case number.
+        header = self.register_i18n(
+            ctk.CTkLabel(
+                main_frame,
+                text=tr("export_dialog.export_for_case", "Export für Fall {case_id}", case_id=self.case.case_id),
+                font=ctk.CTkFont(size=18, weight="bold"),
+            ),
+            "export_dialog.export_for_case",
+            "Export für Fall {case_id}",
+            case_id=self.case.case_id,
+        )
         header.pack(anchor="w", pady=(0, 10))
 
         # Template Selection Dropdown

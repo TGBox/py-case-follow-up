@@ -192,6 +192,7 @@ class ProfileSettingsDialog(
         self.refresh_ui_tab_labels()
         self.refresh_shortcuts_tab_labels()
         self.refresh_wiki_tab_labels()
+        self.refresh_ai_tab_labels()
 
     def save_settings(self) -> None:
         if not self.save_user_settings():

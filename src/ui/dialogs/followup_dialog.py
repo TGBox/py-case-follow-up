@@ -31,6 +31,8 @@ class FollowupDialog(BaseDialog):
         )
 
         self.create_widgets()
+        # Closing now asks before throwing away a typed follow-up note.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr

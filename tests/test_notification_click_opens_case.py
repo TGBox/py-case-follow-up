@@ -195,6 +195,9 @@ class AppStub(ctk.CTk):
         self.cockpit_view = _CockpitStub()
         self.active_case = None
         self.foregrounded = 0
+        self.profile = type(
+            "P", (), {"reminder_settings": type("R", (), {"os_popup_enabled": False})()}
+        )()
 
     def bring_to_foreground(self):
         self.foregrounded += 1

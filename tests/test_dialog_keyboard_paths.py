@@ -11,6 +11,8 @@ handler that closes despite unsaved input, Enter firing inside a note field)
 without pretending to exercise the X11 input path.
 """
 
+import inspect
+
 import customtkinter as ctk
 import pytest
 
@@ -222,3 +224,94 @@ def test_closing_unregisters_the_language_listener(root):
 
     dialog.destroy()
     assert listener not in get_i18n()._listeners
+
+
+# --- Unsaved-changes guard across the form dialogs ---
+
+GUARDED_FORM_DIALOGS = [
+    "customer_management_dialog",
+    "colleague_management_dialog",
+    "snippet_management_dialog",
+    "template_manager_dialog",
+    "schema_builder_dialog",
+    "followup_dialog",
+    "handover_dialog",
+    "new_case_dialog",
+    "email_draft_dialog",
+]
+
+
+def test_every_form_dialog_arms_the_unsaved_guard():
+    """A form dialog that forgets the guard discards typed input without asking."""
+    import importlib
+
+    missing = []
+    for module_name in GUARDED_FORM_DIALOGS:
+        module = importlib.import_module(f"ui.dialogs.{module_name}")
+        source = inspect.getsource(module)
+        if "enable_unsaved_guard()" not in source:
+            missing.append(module_name)
+
+    assert not missing, f"Dialoge ohne Unsaved-Guard: {missing}"
+
+
+def _customer_dialog(root, tmp_path):
+    from config import AppConfig
+    from models.customer import Contact, Customer
+    from services.customer_service import CustomerService
+    from services.storage_service import StorageService
+    from ui.dialogs.customer_management_dialog import CustomerManagementDialog
+
+    service = CustomerService(StorageService(AppConfig(workspace_dir=tmp_path)))
+    for i in (1, 2):
+        service.save_customer(
+            Customer(
+                customer_id=f"K-{i}",
+                practice_name=f"Praxis {i}",
+                city=f"Ort {i}",
+                contacts=[Contact(name=f"Kontakt {i}")],
+            )
+        )
+    dialog = CustomerManagementDialog(root, customer_service=service)
+    dialog.update()
+    return dialog
+
+
+def test_switching_records_in_a_list_form_dialog_is_not_unsaved_input(root, tmp_path):
+    """Without mark_clean() on selection change the dialog asks on every close."""
+    dialog = _customer_dialog(root, tmp_path)
+
+    assert dialog.is_dirty() is False, "frisch geoeffneter Dialog gilt schon als geaendert"
+
+    dialog.select_customer("K-1")
+    dialog.update()
+    assert dialog.is_dirty() is False, "Auswahl eines Datensatzes gilt faelschlich als Eingabe"
+
+    dialog.select_customer("K-2")
+    dialog.update()
+    assert dialog.is_dirty() is False, "Wechsel zwischen Datensaetzen gilt faelschlich als Eingabe"
+
+
+def test_real_typing_is_still_detected_and_cleared_by_saving(root, tmp_path):
+    dialog = _customer_dialog(root, tmp_path)
+    dialog.select_customer("K-1")
+    dialog.update()
+
+    dialog.name_entry.insert("end", " geaendert")
+    assert dialog.is_dirty() is True, "echte Eingabe wird nicht erkannt"
+
+    dialog.save_current_customer()
+    dialog.update()
+    assert dialog.is_dirty() is False, "nach dem Speichern wird weiterhin nachgefragt"
+
+
+def test_starting_a_new_record_clears_the_guard(root, tmp_path):
+    dialog = _customer_dialog(root, tmp_path)
+    dialog.select_customer("K-1")
+    dialog.update()
+    dialog.name_entry.insert("end", "X")
+    assert dialog.is_dirty() is True
+
+    dialog.on_click_new_customer()
+    dialog.update()
+    assert dialog.is_dirty() is False, "leeres Formular gilt faelschlich als Eingabe"

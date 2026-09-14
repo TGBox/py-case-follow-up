@@ -41,6 +41,8 @@ class EditTemplateDialog(BaseDialog):
         self.field_vars: dict[str, ctk.BooleanVar] = {}
 
         self.create_widgets(is_new=template is None)
+        # Closing now asks before throwing away an edited export template.
+        self.enable_unsaved_guard()
 
     def create_widgets(self, is_new: bool = False):
         from services.i18n_service import tr

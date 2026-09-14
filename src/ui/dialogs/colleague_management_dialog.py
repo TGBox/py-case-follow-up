@@ -39,6 +39,8 @@ class ColleagueManagementDialog(BaseDialog):
 
         self.create_widgets()
         self.load_colleagues()
+        # Closing now asks before throwing away an edited colleague.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -317,6 +319,10 @@ class ColleagueManagementDialog(BaseDialog):
             self.delete_btn.configure(state="disabled")
 
         self.filter_and_render_list()
+        # The form now mirrors the selected colleague (or is empty for a new
+        # one), so this is the clean baseline. Saving ends here too, which makes
+        # the post-save state clean as well.
+        self.mark_clean()
 
     def on_click_new_colleague(self):
         self.select_colleague(None)

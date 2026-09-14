@@ -43,6 +43,8 @@ class HandoverDialog(BaseDialog):
         )
 
         self.create_widgets()
+        # Closing now asks before throwing away a typed handover note.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -54,18 +56,36 @@ class HandoverDialog(BaseDialog):
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
         # Header
-        ctk.CTkLabel(
-            main_frame,
-            text=f"👤 {tr('handover_dialog.header', 'Zuständigkeit für')} {self.case.case_id} {tr('handover_dialog.header_suffix', 'übergeben')}",
-            font=ctk.CTkFont(size=16, weight="bold"),
+        self.register_i18n(
+            ctk.CTkLabel(
+                main_frame,
+                text=tr("handover_dialog.header_full", "👤 Zuständigkeit für {case_id} übergeben", case_id=self.case.case_id),
+                font=ctk.CTkFont(size=16, weight="bold"),
+            ),
+            "handover_dialog.header_full",
+            "👤 Zuständigkeit für {case_id} übergeben",
+            case_id=self.case.case_id,
         ).pack(anchor="w", pady=(0, 5))
 
         curr_actor = get_actor_display(self.case.workflow_status.current_actor)
-        ctk.CTkLabel(
-            main_frame,
-            text=f"{tr('handover_dialog.curr_actor', 'Aktuelle Zuständigkeit:')} {curr_actor} | {tr('handover_dialog.customer', 'Kunde:')} {self.case.customer.practice_name}",
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
+        self.register_i18n(
+            ctk.CTkLabel(
+                main_frame,
+                text=tr(
+                    "handover_dialog.current_line",
+                    "Aktuelle Zuständigkeit: {actor} | Kunde: {customer}",
+                    actor=curr_actor,
+                    customer=self.case.customer.practice_name,
+                ),
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+            ),
+            "handover_dialog.current_line",
+            "Aktuelle Zuständigkeit: {actor} | Kunde: {customer}",
+            # The actor name is translated itself, so it has to be re-evaluated
+            # on every language change - a fixed string would stay German.
+            actor=lambda: get_actor_display(self.case.workflow_status.current_actor),
+            customer=self.case.customer.practice_name,
         ).pack(anchor="w", pady=(0, 15))
 
         # 1. New Actor Dropdown

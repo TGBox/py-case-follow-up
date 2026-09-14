@@ -19,6 +19,30 @@ patch_ctk_rendering()
 
 
 _seen_exceptions: set[str] = set()
+_crash_log_dir_override: Path | None = None
+
+
+def set_crash_log_dir(path: Path | str) -> None:
+    """Points the crash log at the resolved workspace, once the config is known."""
+    global _crash_log_dir_override
+    _crash_log_dir_override = Path(path)
+
+
+def _crash_log_dir() -> Path:
+    """Absolute directory for the crash log.
+
+    A bare Path("logs") resolves against the current working directory, which
+    for a packaged .exe is wherever the shortcut happened to point - frequently
+    somewhere unwritable, where the write fails and the crash log silently
+    disappears. That is exactly the situation in which the log matters most.
+    """
+    if _crash_log_dir_override is not None:
+        return _crash_log_dir_override
+    try:
+        from config import get_default_workspace_dir
+        return get_default_workspace_dir() / "logs"
+    except Exception:
+        return Path(__file__).resolve().parent / "logs"
 
 
 def _report_tkinter_exception(*args) -> None:
@@ -40,8 +64,8 @@ def _report_tkinter_exception(*args) -> None:
 
     # 1. Log to file with immediate sync to disk
     try:
-        log_dir = Path("logs")
-        log_dir.mkdir(exist_ok=True)
+        log_dir = _crash_log_dir()
+        log_dir.mkdir(parents=True, exist_ok=True)
         with open(log_dir / "tkinter_error.log", "a", encoding="utf-8") as f:
             f.write(f"\n--- [Exception] ---\n{tb_str}\n")
             f.flush()
@@ -59,11 +83,21 @@ def _report_tkinter_exception(*args) -> None:
 
     if err_key not in _seen_exceptions:
         _seen_exceptions.add(err_key)
-        print("\n=================== [TKINTER CALLBACK EXCEPTION] ===================", file=sys.stderr)
-        print(tb_str.strip(), file=sys.stderr)
-        print("--> Ausführlicher Log gespeichert in: logs/tkinter_error.log", file=sys.stderr)
-        print("====================================================================\n", file=sys.stderr)
-        sys.stderr.flush()
+        # A windowed PyInstaller build (console=False) has sys.stderr AND
+        # sys.stdout set to None. print() tolerates that silently, but the
+        # flush() below used to raise AttributeError *inside* the error
+        # reporter, so in the packaged app every Tk callback exception turned
+        # into a second, misleading crash.
+        stream = sys.stderr if sys.stderr is not None else sys.stdout
+        if stream is not None:
+            try:
+                print("\n=================== [TKINTER CALLBACK EXCEPTION] ===================", file=stream)
+                print(tb_str.strip(), file=stream)
+                print(f"--> Ausführlicher Log gespeichert in: {_crash_log_dir() / 'tkinter_error.log'}", file=stream)
+                print("====================================================================\n", file=stream)
+                stream.flush()
+            except Exception:
+                pass
 
 
 tkinter.Tk.report_callback_exception = _report_tkinter_exception
@@ -98,6 +132,7 @@ def main():
     args = parse_args()
 
     config = AppConfig.load_user_config(cli_workspace=args.workspace)
+    set_crash_log_dir(config.workspace_dir / "logs")
     storage = StorageService(config)
 
     if args.seed:

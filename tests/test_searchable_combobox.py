@@ -298,3 +298,86 @@ def test_restore_parent_focus_leaves_an_intact_grab_alone(app, monkeypatch):
     combo._restore_parent_focus(app, app, None)
 
     assert grabs == []
+
+
+# --- Searching hidden practice fields with highlighted results ---
+
+import tkinter as tk  # noqa: E402
+
+
+def _text_widgets(node) -> list[tk.Text]:
+    found = [node] if isinstance(node, tk.Text) else []
+    for child in node.winfo_children():
+        found.extend(_text_widgets(child))
+    return found
+
+
+def _match_count(widget: tk.Text) -> int:
+    return len(widget.tag_ranges("match")) // 2
+
+
+def test_search_index_finds_values_by_hidden_fields(app):
+    """A practice must be findable by data that is not shown in its label."""
+    combo = SearchableCombobox(
+        app,
+        values=["Praxis Welz (00109)", "Praxis Zeglin (00062)"],
+        search_index={
+            "Praxis Welz (00109)": "Katrin Schmidt katrin@ergotherapie-nwm.de Travemünde 41569",
+            "Praxis Zeglin (00062)": "Uwe Zeglin Inhaber 04502889881",
+        },
+    )
+    assert combo._filtered("katrin") == ["Praxis Welz (00109)"]
+    assert combo._filtered("travemünde") == ["Praxis Welz (00109)"]
+    assert combo._filtered("41569") == ["Praxis Welz (00109)"]
+    assert combo._filtered("04502889881") == ["Praxis Zeglin (00062)"]
+    # The display string itself still matches as before
+    assert combo._filtered("praxis") == ["Praxis Welz (00109)", "Praxis Zeglin (00062)"]
+    # And an empty query returns everything untouched
+    assert combo._filtered("") == combo._values
+
+
+def test_hidden_field_hit_is_rendered_highlighted_with_a_reason(app):
+    combo = SearchableCombobox(
+        app,
+        values=["Praxis Welz (00109)"],
+        search_index={"Praxis Welz (00109)": "Katrin Schmidt Travemünde"},
+        summary_provider=lambda value, query: "Katrin Schmidt",
+    )
+    combo.open_popover()
+    combo.search_entry.insert(0, "katrin")
+    combo._on_search_changed()
+
+    texts = []
+    for child in combo.options_scroll.winfo_children():
+        texts.extend(_text_widgets(child))
+
+    contents = [t.get("1.0", "end - 1 chars") for t in texts]
+    assert "Praxis Welz (00109)" in contents, "the practice row is missing"
+    assert any("Katrin Schmidt" in c for c in contents), "the match is not explained"
+    assert sum(_match_count(t) for t in texts) > 0, "nothing was highlighted"
+
+
+def test_plain_combobox_keeps_button_rendering(app):
+    """Without extra search data the widget must behave exactly as before."""
+    combo = SearchableCombobox(app, values=["Praxis Alpha", "Praxis Beta"])
+    combo.open_popover()
+    combo.search_entry.insert(0, "alpha")
+    combo._on_search_changed()
+
+    children = combo.options_scroll.winfo_children()
+    assert [w.cget("text") for w in children if isinstance(w, ctk.CTkButton)] == ["Praxis Alpha"]
+    assert not any(_text_widgets(c) for c in children)
+
+
+def test_enter_selects_first_hidden_field_match(app):
+    picked = []
+    combo = SearchableCombobox(
+        app,
+        values=["Praxis Welz (00109)", "Praxis Zeglin (00062)"],
+        search_index={"Praxis Zeglin (00062)": "Uwe Zeglin Inhaber"},
+        command=lambda v: picked.append(v),
+    )
+    combo.open_popover()
+    combo.search_entry.insert(0, "inhaber")
+    combo._on_enter_pressed()
+    assert picked == ["Praxis Zeglin (00062)"]

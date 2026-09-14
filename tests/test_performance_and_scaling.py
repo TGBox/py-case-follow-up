@@ -196,3 +196,119 @@ def test_zip_backup_compression_speed(tmp_path: Path):
     assert output_zip.exists()
     assert result["file_count"] >= 1
     assert duration < 2.5, f"ZIP backup creation took too long: {duration:.3f}s"
+
+
+# --- Case list renders in batches instead of rebuilding everything per keystroke ---
+
+def _case_list(root, count: int):
+    from ui.widgets.case_list_widget import CaseListWidget
+
+    widget = CaseListWidget(root, on_case_selected=lambda c: None, on_search_changed=lambda q: None)
+    widget.pack(fill="both", expand=True)
+    widget.cases = generate_bulk_cases(count)
+    return widget
+
+
+def test_render_list_only_builds_a_batch():
+    """Building every card per keystroke is what made the search feel sluggish."""
+    import customtkinter as ctk
+    from ui.widgets.case_list_widget import CaseListWidget
+
+    root = ctk.CTk()
+    root.geometry("400x700")
+    root.withdraw()
+    try:
+        widget = _case_list(root, 120)
+        widget.render_list()
+        root.update()
+
+        assert widget._rendered_count <= CaseListWidget.RENDER_BATCH_SIZE * 3, (
+            f"{widget._rendered_count} von 120 Karten sofort gebaut - Batching greift nicht"
+        )
+        assert widget._rendered_count > 0
+        assert len(widget._card_widgets) == widget._rendered_count
+    finally:
+        root.destroy()
+
+
+def test_scrolling_pulls_in_the_remaining_cards():
+    import customtkinter as ctk
+
+    root = ctk.CTk()
+    root.geometry("400x700")
+    root.withdraw()
+    try:
+        widget = _case_list(root, 40)
+        widget.render_list()
+        root.update()
+        first_batch = widget._rendered_count
+        assert first_batch < 40
+
+        canvas = widget._scroll_canvas()
+        for _ in range(40):
+            canvas.yview_moveto(1.0)
+            widget._on_scrolled()
+            root.update()
+            if widget._rendered_count >= 40:
+                break
+
+        assert widget._rendered_count == 40, "Nachladen beim Scrollen hat nicht gegriffen"
+        assert set(widget._card_widgets) == {c.case_id for c in widget.cases}
+    finally:
+        root.destroy()
+
+
+def test_selecting_a_case_below_the_fold_renders_it_first():
+    import customtkinter as ctk
+
+    root = ctk.CTk()
+    root.geometry("400x700")
+    root.withdraw()
+    try:
+        widget = _case_list(root, 60)
+        picked: list[str] = []
+        widget.on_case_selected = lambda c: picked.append(c.case_id)
+        widget.render_list()
+        root.update()
+
+        target = widget.cases[-1]
+        assert target.case_id not in widget._card_widgets, "Testfall war schon sichtbar"
+
+        widget.select_case(target)
+        root.update()
+
+        assert target.case_id in widget._card_widgets
+        assert picked == [target.case_id]
+    finally:
+        root.destroy()
+
+
+def test_card_tooltip_binds_only_on_first_hover():
+    """CTkTooltip binds nine events per descendant - far too much per keystroke."""
+    import customtkinter as ctk
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    root = ctk.CTk()
+    root.geometry("400x700")
+    root.withdraw()
+    try:
+        widget = _case_list(root, 20)
+        widget.render_list()
+        root.update()
+
+        card = next(iter(widget._card_widgets.values()))
+        labels = [c for c in card.winfo_children() if isinstance(c, ctk.CTkLabel)]
+        assert labels, "Karte ohne Label - Test greift ins Leere"
+
+        def enter_bindings(w) -> int:
+            bound = w.bind("<Enter>")
+            return len([ln for ln in bound.splitlines() if ln.strip()]) if bound else 0
+
+        assert enter_bindings(labels[0]._label) == 0, "Tooltip hat die Kinder sofort gebunden"
+
+        card._canvas.event_generate("<Enter>", x=5, y=5)
+        root.update()
+        assert enter_bindings(labels[0]._label) > 0, "Tooltip wurde beim Hover nicht nachgezogen"
+    finally:
+        CTkTooltip.dismiss_all()
+        root.destroy()

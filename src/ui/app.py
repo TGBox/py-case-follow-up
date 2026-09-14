@@ -941,7 +941,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.withdraw()
 
     def find_case_by_id(self, case_id: str) -> Case | None:
-        return next((c for c in self.cases if str(c.case_id) == str(case_id)), None)
+        return next((c for c in self.cases if c.case_id == case_id), None)
 
     def request_open_case(self, case_id: str) -> bool:
         """Brings the app forward and opens one case by its id.

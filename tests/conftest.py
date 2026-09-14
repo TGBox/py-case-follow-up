@@ -53,6 +53,7 @@ try:
 except (ImportError, AttributeError):
     pass
 
+
 # Suppress windows popping up, flickering and stealing focus during tests
 try:
     import tkinter as tk
@@ -61,6 +62,19 @@ try:
     # Disable CustomTkinter titlebar color manipulation which un-withdraws windows after 5ms
     setattr(ctk.CTk, "_deactivate_windows_window_header_manipulation", True)
     setattr(ctk.CTkToplevel, "_deactivate_windows_window_header_manipulation", True)
+
+    # Prevent CTkInputDialog from blocking on wait_window if get_input is unmocked in tests
+    if hasattr(ctk, "CTkInputDialog"):
+        _orig_get_input = ctk.CTkInputDialog.get_input
+        def _nonblocking_get_input(self):
+            if hasattr(self, "_user_input") and self._user_input is not None:
+                return self._user_input
+            try:
+                self.destroy()
+            except Exception:
+                pass
+            return getattr(self, "_test_input", "TestUser")
+        setattr(ctk.CTkInputDialog, "get_input", _nonblocking_get_input)
 
     _orig_wm_state = tk.Wm.wm_state
     _orig_wm_withdraw = tk.Wm.wm_withdraw

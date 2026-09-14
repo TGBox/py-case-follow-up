@@ -9,13 +9,8 @@ from services.storage_service import StorageService
 from ui.dialogs.base_dialog import BaseDialog
 from ui.dialogs.profile_settings_ai_tab import AiSettingsTabMixin
 from ui.dialogs.profile_settings_paths_tab import PathsSettingsTabMixin
-from ui.dialogs.profile_settings_shortcuts_tab import ShortcutsSettingsTabMixin, HotkeyRecorderDialog
-from ui.dialogs.profile_settings_ui_tab import (
-    UiSettingsTabMixin,
-    FONT_SCALE_OPTIONS,
-    get_font_scale_display,
-    get_font_scale_val_from_display,
-)
+from ui.dialogs.profile_settings_shortcuts_tab import ShortcutsSettingsTabMixin
+from ui.dialogs.profile_settings_ui_tab import UiSettingsTabMixin
 from ui.dialogs.profile_settings_user_tab import UserSettingsTabMixin
 from ui.dialogs.profile_settings_wiki_tab import WikiSettingsTabMixin
 

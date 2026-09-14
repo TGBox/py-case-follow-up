@@ -138,7 +138,7 @@ class SnippetManagementDialog(BaseDialog):
         ), "common.close", "Schließen").pack(side="right", pady=(5, 0))
 
     def open_hotkey_recorder(self):
-        from ui.dialogs.profile_settings_dialog import HotkeyRecorderDialog
+        from ui.dialogs.profile_settings_shortcuts_tab import HotkeyRecorderDialog
         def on_recorded(key_str: str):
             self.shortcut_entry.delete(0, "end")
             self.shortcut_entry.insert(0, key_str)

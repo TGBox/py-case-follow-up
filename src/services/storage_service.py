@@ -214,6 +214,12 @@ class StorageService:
         return self._cases_cache
 
     def save_cases(self, cases: list[Case], sync: bool = False) -> None:
+        # Bulk save paths (scoring run, follow-up flyout, P2P sync, seeding) mutate
+        # cases in place without going through update_single_case, so the cached
+        # searchable text would keep matching the pre-edit content until restart.
+        # Recomputing is lazy, so this costs nothing until the next search.
+        for c in cases:
+            c.invalidate_search_cache()
         self._cases_cache = cases
         if sync:
             data = [case.to_dict() for case in cases]

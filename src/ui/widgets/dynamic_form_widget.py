@@ -184,6 +184,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         font=ctk.CTkFont(size=12),
                     )
                     chk.pack(anchor="w", pady=4, padx=5)
+                    bind_mouse_wheel_to_canvas(chk, self.scroll_frame)
 
         canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
         if canvas:

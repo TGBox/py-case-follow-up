@@ -3,8 +3,8 @@ import customtkinter as ctk
 import pytest
 from models.profile import UISettings, UserInfo, UserProfile
 from services.storage_service import StorageService
-from ui.dialogs.profile_settings_dialog import (
-    ProfileSettingsDialog,
+from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
+from ui.dialogs.profile_settings_ui_tab import (
     get_font_scale_display,
     get_font_scale_val_from_display,
 )

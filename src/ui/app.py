@@ -70,6 +70,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # preventing CustomTkinter from clamping window dimensions to initial unmapped size.
         self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
+        self.storage_service.apply_profile_paths(self.profile)
         font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
         ctk.set_widget_scaling(font_scale)
 

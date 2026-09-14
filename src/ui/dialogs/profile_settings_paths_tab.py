@@ -49,7 +49,8 @@ class PathsSettingsTabMixin:
             "Pfad zum Datenordner...",
             attr="placeholder_text",
         )
-        self.ws_entry.insert(0, str(self.storage_service.config.workspace_dir))
+        ws_init = getattr(getattr(self.profile, "path_settings", None), "workspace_dir", "") or str(self.storage_service.config.workspace_dir)
+        self.ws_entry.insert(0, ws_init)
         self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         btn_browse_ws = self.register_i18n(
@@ -80,8 +81,9 @@ class PathsSettingsTabMixin:
             "Standard im Datenordner",
             attr="placeholder_text",
         )
-        if self.storage_service.config.custom_cases_path:
-            self.path_cases_entry.insert(0, str(self.storage_service.config.custom_cases_path))
+        cases_init = getattr(getattr(self.profile, "path_settings", None), "custom_cases_path", "") or (str(self.storage_service.config.custom_cases_path) if self.storage_service.config.custom_cases_path else "")
+        if cases_init:
+            self.path_cases_entry.insert(0, cases_init)
         self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
             ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70),
@@ -103,8 +105,9 @@ class PathsSettingsTabMixin:
             "Standard im Datenordner",
             attr="placeholder_text",
         )
-        if self.storage_service.config.custom_customers_path:
-            self.path_cust_entry.insert(0, str(self.storage_service.config.custom_customers_path))
+        cust_init = getattr(getattr(self.profile, "path_settings", None), "custom_customers_path", "") or (str(self.storage_service.config.custom_customers_path) if self.storage_service.config.custom_customers_path else "")
+        if cust_init:
+            self.path_cust_entry.insert(0, cust_init)
         self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
             ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70),
@@ -126,8 +129,9 @@ class PathsSettingsTabMixin:
             "Standard im Datenordner",
             attr="placeholder_text",
         )
-        if self.storage_service.config.custom_wiki_db_path:
-            self.path_wiki_entry.insert(0, str(self.storage_service.config.custom_wiki_db_path))
+        wiki_init = getattr(getattr(self.profile, "path_settings", None), "custom_wiki_db_path", "") or (str(self.storage_service.config.custom_wiki_db_path) if self.storage_service.config.custom_wiki_db_path else "")
+        if wiki_init:
+            self.path_wiki_entry.insert(0, wiki_init)
         self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
             ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70),
@@ -433,18 +437,69 @@ class PathsSettingsTabMixin:
                 text_color="gray70",
             )
 
+    def reload_paths_fields(self) -> None:
+        from config import get_default_workspace_dir
+        ws = getattr(getattr(self.profile, "path_settings", None), "workspace_dir", "") or str(get_default_workspace_dir())
+        cases = getattr(getattr(self.profile, "path_settings", None), "custom_cases_path", "")
+        cust = getattr(getattr(self.profile, "path_settings", None), "custom_customers_path", "")
+        wiki = getattr(getattr(self.profile, "path_settings", None), "custom_wiki_db_path", "")
+
+        if hasattr(self, "ws_entry"):
+            self.ws_entry.delete(0, "end")
+            self.ws_entry.insert(0, ws)
+
+        if hasattr(self, "path_cases_entry"):
+            self.path_cases_entry.delete(0, "end")
+            if cases:
+                self.path_cases_entry.insert(0, cases)
+
+        if hasattr(self, "path_cust_entry"):
+            self.path_cust_entry.delete(0, "end")
+            if cust:
+                self.path_cust_entry.insert(0, cust)
+
+        if hasattr(self, "path_wiki_entry"):
+            self.path_wiki_entry.delete(0, "end")
+            if wiki:
+                self.path_wiki_entry.insert(0, wiki)
+
+        b_set = getattr(self.profile, "backup_settings", None)
+        d_val = getattr(b_set, "daily_days", 7)
+        w_val = getattr(b_set, "weekly_weeks", 4)
+        m_val = getattr(b_set, "monthly_months", 6)
+
+        if hasattr(self, "retention_daily_entry"):
+            self.retention_daily_entry.delete(0, "end")
+            self.retention_daily_entry.insert(0, str(d_val))
+
+        if hasattr(self, "retention_weekly_entry"):
+            self.retention_weekly_entry.delete(0, "end")
+            self.retention_weekly_entry.insert(0, str(w_val))
+
+        if hasattr(self, "retention_monthly_entry"):
+            self.retention_monthly_entry.delete(0, "end")
+            self.retention_monthly_entry.insert(0, str(m_val))
+
     def save_paths_settings(self) -> bool:
-        ws_path_str = self.ws_entry.get().strip()
+        ws_path_str = self.ws_entry.get().strip() if hasattr(self, "ws_entry") else ""
+        cases_override = self.path_cases_entry.get().strip() if hasattr(self, "path_cases_entry") else ""
+        cust_override = self.path_cust_entry.get().strip() if hasattr(self, "path_cust_entry") else ""
+        wiki_override = self.path_wiki_entry.get().strip() if hasattr(self, "path_wiki_entry") else ""
+
+        if not hasattr(self.profile, "path_settings") or self.profile.path_settings is None:
+            from models.profile import PathSettings
+            self.profile.path_settings = PathSettings()
+
+        self.profile.path_settings.workspace_dir = ws_path_str
+        self.profile.path_settings.custom_cases_path = cases_override
+        self.profile.path_settings.custom_customers_path = cust_override
+        self.profile.path_settings.custom_wiki_db_path = wiki_override
+
         if ws_path_str:
             self.storage_service.config.workspace_dir = Path(ws_path_str)
 
-        cases_override = self.path_cases_entry.get().strip()
         self.storage_service.config.custom_cases_path = Path(cases_override) if cases_override else None
-
-        cust_override = self.path_cust_entry.get().strip()
         self.storage_service.config.custom_customers_path = Path(cust_override) if cust_override else None
-
-        wiki_override = self.path_wiki_entry.get().strip()
         self.storage_service.config.custom_wiki_db_path = Path(wiki_override) if wiki_override else None
 
         self.storage_service.config.ensure_directories()

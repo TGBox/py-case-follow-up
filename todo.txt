@@ -5,7 +5,7 @@ x 2026-09-11 (B) profile_settings_dialog.py (von 1314 auf 198 Zeilen reduziert) 
 x 2026-09-11 (B) Retention für die täglichen Backups: perform_daily_backup bereinigt automatisch nach Grandfather-Father-Son (7 Tage täglich, 4 Wochen wöchentlich, 6 Monate monatlich), konfigurierbar im Profil. +Bug @code
 x 2026-09-11 (B) Suchindex für die Volltextsuche: SearchService.matches_query nutzt gecachten searchable_text direkt am Case-Model mit lazy evaluation und Invalidierung bei case.update_single_case(). +Refactoring @search
 x 2026-09-11 (B) PyInstaller-Build erfolgreich gezogen (dist/py-case-follow-up.exe) und über tests/test_pyinstaller_bundle.py verifiziert, dass locales/{de,en,sv}.json im CArchive eingebettet sind und Sprachwechsel unter sys._MEIPASS einwandfrei funktioniert. +Validation @code
-
+x 2026-09-14 (C) Füge post-commit hook hinzu.
 (C) Cockpit: on_click_save ruft form_widget.load_schema() auf und baut damit das komplette Formular neu auf, nur um die Rahmenfarben der Pflichtfelder zu setzen. Stattdessen gezielt border_color der betroffenen Felder konfigurieren. +Refactoring @gui
 (C) Board: toggle_column_collapse ruft create_board() und danach refresh_board() auf und reißt dadurch alle vier Spalten samt Karten zweimal ein. Nur den betroffenen Spalten-Frame austauschen. +Refactoring @gui
 (C) Unsaved-Guard auf die restlichen Formulardialoge ausweiten (BaseDialog.enable_unsaved_guard). Aktiv in NewCaseDialog und EmailDraftDialog. Dialoge mit Liste plus Formular brauchen zusätzlich mark_clean() beim Auswahlwechsel, sonst fragen sie zu oft nach. +NewFeature @gui

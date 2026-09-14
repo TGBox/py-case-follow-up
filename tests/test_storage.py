@@ -1,10 +1,12 @@
 import json
 import pytest
+from datetime import datetime, timedelta
 from pathlib import Path
 from config import AppConfig
 from services.storage_service import StorageService, atomic_save_json, safe_read_json
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from enums import UrgencyLevel, BoardColumn, Actor
+from utils.datetime_utils import format_iso
 
 
 @pytest.fixture
@@ -18,7 +20,7 @@ def test_atomic_save_json(tmp_path: Path):
     atomic_save_json(target, data)
 
     assert target.exists()
-    with open(target, "r", encoding="utf-8") as f:
+    with open(target, encoding="utf-8") as f:
         loaded = json.load(f)
     assert loaded == data
     # Temporary file should no longer exist
@@ -35,7 +37,7 @@ def test_safe_read_json_missing(tmp_path: Path):
 def test_safe_read_json_corrupted(tmp_path: Path):
     target = tmp_path / "corrupted.json"
     target.write_text("INVALID JSON {{{", encoding="utf-8")
-    
+
     result = safe_read_json(target, default_factory=dict)
     assert result == {}
     assert target.exists()
@@ -105,14 +107,14 @@ def test_archive_single_case(tmp_config: AppConfig):
 def test_custom_workspace_and_path_overrides(tmp_path: Path):
     custom_ws = tmp_path / "custom_data_dir"
     custom_cases = tmp_path / "external_cases.json"
-    
+
     config = AppConfig(workspace_dir=custom_ws, custom_cases_path=custom_cases)
     config.ensure_directories()
-    
+
     assert config.workspace_dir == custom_ws
     assert config.cases_path == custom_cases
     assert config.customers_path == custom_ws / "data" / "customers.json"
-    
+
     storage = StorageService(config)
     case = Case(case_id="T-999")
     storage.save_cases([case])
@@ -169,10 +171,6 @@ def test_template_crud_storage(tmp_config: AppConfig):
     found = next(t for t in loaded if t.template_id == "custom_test_tmpl")
     assert found.display_name == "Custom Test"
     assert found.required_schema_fields == ["billing_quarter"]
-
-
-from datetime import datetime, timedelta
-from utils.datetime_utils import format_iso
 
 
 def test_corrupt_json_file_recovery(tmp_path: Path):

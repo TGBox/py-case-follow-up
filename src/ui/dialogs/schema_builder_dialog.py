@@ -104,6 +104,8 @@ class SchemaBuilderDialog(BaseDialog):
 
         self.create_widgets()
         self.refresh_fields_list()
+        # Closing now asks before throwing away an edited schema.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr

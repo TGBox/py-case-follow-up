@@ -28,6 +28,8 @@ class SnippetManagementDialog(BaseDialog):
 
         self.create_widgets()
         self.refresh_list()
+        # Closing now asks before throwing away an edited text block.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
@@ -138,7 +140,7 @@ class SnippetManagementDialog(BaseDialog):
         ), "common.close", "Schließen").pack(side="right", pady=(5, 0))
 
     def open_hotkey_recorder(self):
-        from ui.dialogs.profile_settings_dialog import HotkeyRecorderDialog
+        from ui.dialogs.profile_settings_shortcuts_tab import HotkeyRecorderDialog
         def on_recorded(key_str: str):
             self.shortcut_entry.delete(0, "end")
             self.shortcut_entry.insert(0, key_str)
@@ -201,6 +203,8 @@ class SnippetManagementDialog(BaseDialog):
         from services.i18n_service import tr
         self.status_lbl.configure(text=tr("snippet_mgmt.selected_status", "Ausgewählt: {id}", id=snip.snippet_id), text_color="dodgerblue")
         self.refresh_list()
+        # The form now shows the picked block, not the user's edits.
+        self.mark_clean()
 
     def on_click_new(self):
         from services.i18n_service import tr
@@ -214,6 +218,7 @@ class SnippetManagementDialog(BaseDialog):
         self.delete_btn.configure(state="disabled")
         self.status_lbl.configure(text=tr("snippet_mgmt.new_snippet_status", "Neuer Textbaustein (wird beim Speichern angelegt)"), text_color="gray")
         self.refresh_list()
+        self.mark_clean()
 
     def on_click_save(self):
         from services.i18n_service import tr
@@ -246,6 +251,8 @@ class SnippetManagementDialog(BaseDialog):
         self.delete_btn.configure(state="normal")
         self.status_lbl.configure(text=STATUS_MESSAGES["snippet_saved"], text_color="limegreen")
         self.refresh_list()
+        # Saved - what is on screen is now what is stored.
+        self.mark_clean()
 
         if self.on_snippets_updated:
             self.on_snippets_updated()

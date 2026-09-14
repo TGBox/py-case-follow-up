@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import customtkinter as ctk
-import pytest
 from enums import FieldType
 from models.schema import QuestionSchema, SchemaField
 from services.export_service import ExportService

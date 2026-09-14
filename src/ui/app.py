@@ -17,6 +17,7 @@ from constants import (
     APP_MIN_WIDTH,
     APP_MIN_HEIGHT,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
+    OPEN_CASE_POLL_INTERVAL_MS,
     TOAST_SNIPPET_MACRO_TITLE,
     TOAST_SNIPPET_NO_FOCUS,
 )
@@ -30,6 +31,7 @@ from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
 from services.customer_service import CustomerService
 from services.tray_service import TrayService
+from services.instance_service import HEARTBEAT_INTERVAL_SECONDS, InstanceService, build_case_uri
 from services.i18n_service import tr
 
 from ui.views.cockpit_view import CockpitView
@@ -187,19 +189,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.schedule_hourly_scoring()
         self.after(FOLLOWUP_CHECK_INITIAL_DELAY_MS, self.check_due_followups)
 
-        # All layout is built — now reveal the window with the splash already on top,
-        # then hide the splash shortly after. This prevents any flash of UI content.
-        if self.splash_overlay:
-            self.splash_overlay.lift()
-        self.update_idletasks()  # ensure splash is painted before window appears
-        self.deiconify()
-        try:
-            self.state("zoomed")
-        except Exception:
-            pass
-        self.after(100, self._maximize_initial_window)
-        self.after(400, self._maximize_initial_window)
-        self.after(300, self._hide_splash_screen)
+        # Notification hand-off: a clicked Windows toast starts a second process
+        # that drops the case id in the workspace and exits again (see
+        # services/instance_service.py). main.py hands the lock it already holds
+        # over here; without one the app simply never receives a hand-off.
+        self.instance_service: InstanceService | None = getattr(self, "instance_service", None)
+        self._poll_open_case_request()
+
+        # Hide splash screen smoothly after initial layout pass
+        self.update_idletasks()
+        self.after(250, self._hide_splash_screen)
 
     def _on_window_configure(self, event=None):
         try:
@@ -638,17 +637,32 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 wid = self.winfo_id()
                 if not wid:
                     return
-                hwnd = ctypes.windll.user32.GetParent(wid)
+                # argtypes/restype must be declared: without them ctypes assumes
+                # c_int for both, so on 64-bit Windows GetParent's HWND is
+                # truncated to 32 bits and the handle handed to dwmapi is
+                # garbage. Declaring the real signatures keeps the pointer whole.
+                from ctypes import wintypes
+
+                user32 = ctypes.windll.user32
+                dwmapi = ctypes.windll.dwmapi
+                user32.GetParent.argtypes = [wintypes.HWND]
+                user32.GetParent.restype = wintypes.HWND
+                dwmapi.DwmSetWindowAttribute.argtypes = [
+                    wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD
+                ]
+                dwmapi.DwmSetWindowAttribute.restype = ctypes.c_long
+
+                hwnd = user32.GetParent(wintypes.HWND(wid))
                 if not hwnd:
-                    hwnd = wid
+                    hwnd = wintypes.HWND(wid)
                 if hwnd:
                     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
                     DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19
                     value = ctypes.c_int(1 if dark else 0)
-                    if ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    if dwmapi.DwmSetWindowAttribute(
                         hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(value), ctypes.sizeof(value)
                     ) != 0:
-                        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                        dwmapi.DwmSetWindowAttribute(
                             hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ctypes.byref(value), ctypes.sizeof(value)
                         )
             except Exception:
@@ -875,6 +889,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                             title=tr("app.followup_due_toast_title", "🔔 Wiedervorlage fällig ({count})", count=due_count),
                             message=f"[{top_case.case_id}] {top_case.classification.title}",
                             on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
+                            # Without a launch URI Windows shows the toast but a
+                            # click on it does nothing at all.
+                            launch_uri=build_case_uri(top_case.case_id),
                         )
                     except Exception as e:
                         logger.warning(f"Could not display toast notification: {e}")
@@ -922,6 +939,52 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.storage_service.save_profile(self.profile)
         self.storage_service.flush_all_saves()
         self.withdraw()
+
+    def find_case_by_id(self, case_id: str) -> Case | None:
+        return next((c for c in self.cases if str(c.case_id) == str(case_id)), None)
+
+    def request_open_case(self, case_id: str) -> bool:
+        """Brings the app forward and opens one case by its id.
+
+        Entry point for every out-of-process route into a case: the clicked
+        Windows notification, and `--open-case` on a cold start.
+        """
+        case = self.find_case_by_id(case_id)
+        if case is None:
+            logger.warning(f"Open-case request for unknown case {case_id}")
+            self.bring_to_foreground()
+            return False
+
+        # The tray icon would otherwise replay the toast's own callback later and
+        # pull the user into a second case they never asked for.
+        self._pending_notification_callback = None
+        try:
+            self.switch_to_cockpit_view_for_case(case)
+        except Exception as err:
+            logger.warning(f"Could not open case {case_id} from notification: {err}")
+            return False
+        return True
+
+    def _poll_open_case_request(self):
+        """Refreshes the instance lock and acts on a pending case hand-off."""
+        service = getattr(self, "instance_service", None)
+        if service is not None and self.__dict__.get("tk") is not None:
+            try:
+                self._open_case_poll_ticks = getattr(self, "_open_case_poll_ticks", 0) + 1
+                beat_every = max(1, (HEARTBEAT_INTERVAL_SECONDS * 1000) // OPEN_CASE_POLL_INTERVAL_MS)
+                if self._open_case_poll_ticks % beat_every == 0:
+                    service.heartbeat()
+
+                case_id = service.consume_open_case_request()
+                if case_id:
+                    self.request_open_case(case_id)
+            except Exception as err:
+                logger.warning(f"Open-case poll failed: {err}")
+
+        try:
+            self._open_case_timer_id = self.after(OPEN_CASE_POLL_INTERVAL_MS, self._poll_open_case_request)
+        except Exception:
+            pass
 
     def _on_restore_from_tray(self):
         """Restore the application window from the system tray."""

@@ -1,14 +1,9 @@
-import pytest # type: ignore
-from pathlib import Path
-from unittest.mock import MagicMock
 import customtkinter as ctk
 
-from models.case import Case, CaseCustomer, Classification
-from models.profile import UserProfile, UserInfo
+from models.case import Case, CaseCustomer
 from services.outlook_integration_service import OutlookIntegrationService
 from services.calendar_email_service import CalendarEmailService
 from ui.dialogs.email_import_dialog import EmailImportDialog
-from ui.dialogs.email_draft_dialog import EmailDraftDialog
 
 
 def test_outlook_find_matching_case():
@@ -78,7 +73,7 @@ def test_email_import_dialog_actions():
     )
 
     assert len(dialog.emails) > 0
-    
+
     # Test append to case
     test_mail = {
         "subject": "Ref: FALL-2026-0001 Notiz",

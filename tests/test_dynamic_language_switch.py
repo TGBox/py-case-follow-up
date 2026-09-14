@@ -5,35 +5,23 @@ enum display helpers, and headless CustomTkinter view/widget label refreshment.
 """
 
 from pathlib import Path
-from typing import Any
 import pytest
 import customtkinter as ctk
 
 from config import AppConfig
 from enums import (
-    Actor,
-    Channel,
-    LayoutMode,
     get_actor_display,
     get_channel_display,
     get_layout_display,
-    get_board_column_display,
-    ACTOR_DISPLAY,
-    CHANNEL_DISPLAY,
-    LAYOUT_DISPLAY,
 )
 from constants import (
     DIALOG_TITLES,
-    DIALOG_HEADERS,
     UI_BUTTON_TEXTS,
     STATUS_MESSAGES,
     get_localized_menu_options_stammdaten,
-    get_localized_menu_options_vorlagen,
-    get_localized_menu_options_datenaustausch,
 )
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from models.profile import UserProfile
-from services.i18n_service import I18nService, get_i18n, tr, SUPPORTED_LANGUAGES
+from services.i18n_service import get_i18n, tr
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService

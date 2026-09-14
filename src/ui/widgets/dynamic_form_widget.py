@@ -184,6 +184,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         font=ctk.CTkFont(size=12),
                     )
                     chk.pack(anchor="w", pady=4, padx=5)
+                    bind_mouse_wheel_to_canvas(chk, self.scroll_frame)
 
         canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
         if canvas:
@@ -221,6 +222,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.current_case: Case | None = None
 
         self.field_widgets: dict[str, Any] = {}
+        self._field_border_defaults: dict[str, tuple[Any, Any]] = {}
         self.create_widgets()
 
     def create_widgets(self):
@@ -330,7 +332,11 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         lbl.pack(side="left")
 
         is_missing = f.field_id in missing_fields
-        entry_kwargs: dict[str, Any] = {"border_color": "red", "border_width": 2} if is_missing else {}
+        # The red border is applied after construction rather than through the
+        # constructor, so _set_field_highlight can record each widget's real
+        # default first. That is what makes the highlight removable later
+        # without rebuilding the whole form.
+        entry_kwargs: dict[str, Any] = {}
 
         fid_lower = f.field_id.lower()
         flabel_lower = f.label.lower()
@@ -381,6 +387,58 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         else:
             self._render_text_entry_field(row_frame, f, val, target_widget_dict, entry_kwargs)
 
+        entry = target_widget_dict.get(f.field_id)
+        if entry is not None:
+            self._set_field_highlight(entry[1], is_missing)
+
+    def _set_field_highlight(self, widget: Any, is_missing: bool) -> None:
+        """Marks or unmarks one field as a missing required field.
+
+        The widget's own border settings are stored the first time it is marked,
+        so unmarking restores exactly what the theme gave it instead of guessing
+        a colour. Widgets without a border option (checkboxes, the module tag
+        picker) are skipped.
+        """
+        if widget is None or not hasattr(widget, "configure"):
+            return
+        try:
+            if not widget.winfo_exists():
+                return
+        except Exception:
+            return
+
+        key = str(widget)
+        try:
+            if is_missing:
+                if key not in self._field_border_defaults:
+                    self._field_border_defaults[key] = (widget.cget("border_color"), widget.cget("border_width"))
+                widget.configure(border_color="red", border_width=2)
+            else:
+                previous = self._field_border_defaults.pop(key, None)
+                if previous is not None:
+                    widget.configure(border_color=previous[0], border_width=previous[1])
+        except Exception:
+            # Not every field type has a border; nothing to highlight there.
+            self._field_border_defaults.pop(key, None)
+
+    def apply_missing_field_highlight(self, missing_fields: list[str] | None) -> None:
+        """Updates the red required-field borders in place.
+
+        Saving used to call load_schema() for this, rebuilding every widget of
+        the form just to recolour a few borders - the single most expensive way
+        to change a colour. This touches only the fields whose state changed.
+        """
+        self.missing_fields = list(missing_fields or [])
+        missing = set(self.missing_fields)
+
+        widget_dicts: list[dict[str, Any]] = [self.field_widgets]
+        widget_dicts.extend(getattr(self, "card_field_widgets", []) or [])
+
+        for widget_dict in widget_dicts:
+            for field_id, entry in widget_dict.items():
+                if not entry:
+                    continue
+                self._set_field_highlight(entry[1], field_id in missing)
 
     def load_schema(
         self,
@@ -396,6 +454,9 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.field_widgets.clear()
+        # The old widgets are gone; their remembered borders would only keep
+        # stale Tk paths alive.
+        self._field_border_defaults.clear()
         self.card_field_widgets: list[dict[str, tuple[str, Any]]] = []
         self.field_row_frames: dict[str, ctk.CTkFrame] = {}
 

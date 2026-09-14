@@ -235,3 +235,115 @@ def test_date_keyword_detection_is_overridden_by_explicit_dropdown_or_boolean_ty
     ])
     widget.load_schema(schema, {"datum_bekannt": True})
     assert widget.field_widgets["datum_bekannt"][0] == FieldType.BOOLEAN
+
+
+# --- Required-field borders update in place instead of rebuilding the form ---
+
+def _simple_schema(required_ids: tuple[str, ...] = ("f0", "f3")) -> QuestionSchema:
+    fields = [
+        SchemaField(field_id=f"f{i}", label=f"Feld {i}", field_type="text", required=(f"f{i}" in required_ids))
+        for i in range(6)
+    ]
+    return QuestionSchema(schema_id="borders", display_name="Borders", fields=fields)
+
+
+def _border(widget) -> tuple[str, int] | None:
+    try:
+        return (str(widget.cget("border_color")), int(widget.cget("border_width")))
+    except Exception:
+        return None
+
+
+def test_missing_field_highlight_is_reversible_without_reload():
+    """Saving must not rebuild the form just to recolour required-field borders."""
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        schema = _simple_schema()
+        form = DynamicFormWidget(root)
+        form.pack()
+        form.load_schema(schema, {}, ["f0", "f3"], case=None)
+        root.update()
+
+        required_widget = form.field_widgets["f0"][1]
+        untouched_widget = form.field_widgets["f1"][1]
+        theme_default = _border(untouched_widget)
+
+        assert _border(required_widget) == ("red", 2), "Pflichtfeld wurde nicht markiert"
+
+        widgets_before = {fid: str(entry[1]) for fid, entry in form.field_widgets.items()}
+
+        # All required fields filled in -> highlight goes away
+        form.apply_missing_field_highlight([])
+        root.update()
+        assert _border(required_widget) == theme_default, "Rahmen nicht auf den Theme-Wert zurueckgesetzt"
+
+        # ... and comes back
+        form.apply_missing_field_highlight(["f0"])
+        root.update()
+        assert _border(required_widget) == ("red", 2)
+
+        widgets_after = {fid: str(entry[1]) for fid, entry in form.field_widgets.items()}
+        assert widgets_before == widgets_after, "Widgets wurden neu gebaut statt umgefaerbt"
+        assert form.missing_fields == ["f0"]
+    finally:
+        root.destroy()
+
+
+def test_missing_field_highlight_keeps_typed_input():
+    """Rebuilding the form used to throw away whatever was being typed."""
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        form = DynamicFormWidget(root)
+        form.pack()
+        form.load_schema(_simple_schema(), {}, ["f0"], case=None)
+        root.update()
+
+        entry = form.field_widgets["f1"][1]
+        entry.insert(0, "halb getippter Text")
+
+        form.apply_missing_field_highlight([])
+        root.update()
+
+        assert form.field_widgets["f1"][1].get() == "halb getippter Text"
+    finally:
+        root.destroy()
+
+
+def test_cockpit_save_does_not_reload_the_schema():
+    """on_click_save must go through the in-place path, not load_schema."""
+    # CockpitView pulls in AttachmentWidget -> Pillow. Pillow is a project
+    # dependency, so this only skips where the environment lacks it.
+    pytest.importorskip("PIL", reason="Pillow fehlt in dieser Umgebung")
+    from ui.views.cockpit_view import CockpitView
+
+    calls: list[str] = []
+
+    class FormStub:
+        missing_fields: list[str] = []
+
+        def get_form_data(self):
+            return {"f0": "wert"}
+
+        def load_schema(self, *a, **k):
+            calls.append("load_schema")
+
+        def apply_missing_field_highlight(self, missing):
+            calls.append("apply_missing_field_highlight")
+
+    class ViewStub:
+        on_click_save = CockpitView.on_click_save
+
+    case = Case(case_id="T-1", classification=Classification(schema_id="borders"))
+    view = ViewStub()
+    view.current_case = case
+    view.form_widget = FormStub()
+    view.schemas = [_simple_schema()]
+    view.scoring_service = type("S", (), {"update_case_scoring": lambda self, c: None})()
+    view.on_case_updated = lambda c: None
+
+    view.on_click_save()
+
+    assert "apply_missing_field_highlight" in calls
+    assert "load_schema" not in calls, "Formular wird beim Speichern immer noch neu aufgebaut"

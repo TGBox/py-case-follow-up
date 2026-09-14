@@ -18,6 +18,10 @@ from services.search_service import parse_search_query, SearchService
 
 
 class CaseListWidget(ctk.CTkFrame):
+    #: Cards built per slice. Roughly a screenful, so the first paint is fast
+    #: while scrolling still never has to wait for a batch.
+    RENDER_BATCH_SIZE = 12
+
     def __init__(
         self,
         parent,
@@ -35,6 +39,9 @@ class CaseListWidget(ctk.CTkFrame):
         self.is_deep_search_active: bool = False
         self.deep_search_results: dict[str, dict] = {}
         self._card_widgets: dict[str, Any] = {}
+        self._rendered_count: int = 0
+        self._render_terms: list[str] = []
+        self._render_wrap: int = 250
 
         self.create_widgets()
 
@@ -170,7 +177,10 @@ class CaseListWidget(ctk.CTkFrame):
         from services.i18n_service import tr
         self.count_label.configure(text=tr("case_list.count_cases", "{count} Support-Fälle", count=len(self.cases)))
 
-        if old_sigs == new_sigs and hasattr(self, "_card_widgets") and self._card_widgets and len(self._card_widgets) == len(new_cases):
+        # Identical signatures mean the same cases in the same order, so only the
+        # selection colour can differ. Cards not rendered yet simply get the right
+        # colour when their batch is built.
+        if old_sigs == new_sigs and self._card_widgets and self._rendered_count == min(self._rendered_count, len(new_cases)):
             for case in self.cases:
                 is_selected = case.case_id == self.selected_case_id
                 row_bg = ("gray80", "gray25") if is_selected else ("gray92", "gray15")
@@ -203,259 +213,371 @@ class CaseListWidget(ctk.CTkFrame):
         parsed_q = parse_search_query(query_str) if query_str else None
         search_terms = parsed_q.free_text_terms if parsed_q else []
 
-        for case in self.cases:
-            is_selected = case.case_id == self.selected_case_id
-            row_bg = ("gray80", "gray28") if is_selected else COLOR_CARD_BG
-            border_col = ("dodgerblue", "dodgerblue") if is_selected else COLOR_CARD_BORDER
+        self._render_terms = search_terms
+        self._render_wrap = current_wrap
+        self._rendered_count = 0
+        self._render_next_batch()
 
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, border_width=1, border_color=border_col, cursor="hand2")
-            card.pack(fill="x", pady=4, padx=(4, 6))
-            self._card_widgets[case.case_id] = card
+        bind_mouse_wheel_to_canvas(self.scroll_frame)
+        self._install_scroll_listener()
 
-            # Click binding
-            card.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+    def _scroll_canvas(self) -> Any:
+        return getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
 
-            top_row = ctk.CTkFrame(card, fg_color="transparent")
-            top_row.pack(fill="x", padx=(8, 10), pady=(6, 2))
-            top_row.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+    def _install_scroll_listener(self) -> None:
+        """Binds the batch top-up to scrolling. Installed once per widget."""
+        if getattr(self, "_scroll_listener_installed", False):
+            return
+        canvas = self._scroll_canvas()
+        if canvas is None:
+            return
+        for seq in ("<MouseWheel>", "<Button-4>", "<Button-5>", "<Configure>"):
+            try:
+                canvas.bind(seq, self._on_scrolled, add="+")
+            except Exception:
+                pass
+        self._scroll_listener_installed = True
 
-            score_lbl = ctk.CTkLabel(top_row, text=tr("case_list.score_pts", "Pkt.: {score}", score=f"{case.classification.calculated_score:.0f}"), font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
-            score_lbl.pack(side="right", padx=(0, 6))
-            score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+    def _render_next_batch(self, _event: Any = None) -> None:
+        """Builds the next slice of cards.
 
-            # Urgency Dot Indicator
-            urg = case.classification.urgency_level
-            dot_color = (
-                COLOR_URGENCY_RED
-                if urg == UrgencyLevel.RED
-                else (COLOR_URGENCY_YELLOW if urg == UrgencyLevel.YELLOW else COLOR_URGENCY_GREEN)
+        A card costs roughly 20 ms to build, so rendering all of them on every
+        keystroke is what made the search feel sluggish. Only a screenful is
+        built up front; the rest follows as the user scrolls towards it.
+        """
+        total = len(self.cases)
+        if self._rendered_count >= total:
+            return
+
+        end = min(self._rendered_count + self.RENDER_BATCH_SIZE, total)
+        for case in self.cases[self._rendered_count:end]:
+            self._build_card(case, self._render_terms, self._render_wrap)
+        self._rendered_count = end
+
+        # The viewport may still not be full (tall window, short cards), so keep
+        # topping it up until it is - once idle, never in this call stack.
+        if self._rendered_count < total:
+            try:
+                self.after_idle(self._fill_viewport)
+            except Exception:
+                pass
+
+    def _fill_viewport(self) -> None:
+        """Renders further batches while the list does not yet overflow the canvas."""
+        if self._rendered_count >= len(self.cases):
+            return
+        canvas = self._scroll_canvas()
+        if canvas is None:
+            return
+        try:
+            if not canvas.winfo_exists():
+                return
+            top, bottom = canvas.yview()
+        except Exception:
+            return
+        # bottom == 1.0 while content still remains means everything rendered so
+        # far fits on screen - there is nothing to scroll to yet.
+        if bottom >= 0.995 or (bottom - top) >= 0.999:
+            self._render_next_batch()
+
+    def _on_scrolled(self, _event: Any = None) -> None:
+        """Pulls in the next batch once the user scrolls near the end."""
+        if self._rendered_count >= len(self.cases):
+            return
+        canvas = self._scroll_canvas()
+        if canvas is None:
+            return
+        try:
+            _top, bottom = canvas.yview()
+        except Exception:
+            return
+        if bottom >= 0.9:
+            try:
+                self.after_idle(self._render_next_batch)
+            except Exception:
+                self._render_next_batch()
+
+    def _ensure_case_rendered(self, case_id: str) -> bool:
+        """Renders forward until case_id has a card (used when selecting off-screen)."""
+        guard = 0
+        while case_id not in self._card_widgets and self._rendered_count < len(self.cases):
+            self._render_next_batch()
+            guard += 1
+            if guard > 500:
+                break
+        return case_id in self._card_widgets
+
+    def _build_card(self, case: Case, search_terms: list[str], current_wrap: int) -> None:
+        """Builds one case card. Called per visible case, not for the whole list."""
+        from services.i18n_service import tr
+
+        is_selected = case.case_id == self.selected_case_id
+        row_bg = ("gray80", "gray28") if is_selected else COLOR_CARD_BG
+        border_col = ("dodgerblue", "dodgerblue") if is_selected else COLOR_CARD_BORDER
+
+        card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=6, border_width=1, border_color=border_col, cursor="hand2")
+        card.pack(fill="x", pady=4, padx=(4, 6))
+        self._card_widgets[case.case_id] = card
+
+        # Click binding
+        card.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+        top_row = ctk.CTkFrame(card, fg_color="transparent")
+        top_row.pack(fill="x", padx=(8, 10), pady=(6, 2))
+        top_row.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+        score_lbl = ctk.CTkLabel(top_row, text=tr("case_list.score_pts", "Pkt.: {score}", score=f"{case.classification.calculated_score:.0f}"), font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"))
+        score_lbl.pack(side="right", padx=(0, 6))
+        score_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+        # Urgency Dot Indicator
+        urg = case.classification.urgency_level
+        dot_color = (
+            COLOR_URGENCY_RED
+            if urg == UrgencyLevel.RED
+            else (COLOR_URGENCY_YELLOW if urg == UrgencyLevel.YELLOW else COLOR_URGENCY_GREEN)
+        )
+        dot = ctk.CTkLabel(top_row, text=tr("common.dot", "●"), text_color=dot_color, font=ctk.CTkFont(size=16))
+        dot.pack(side="left", padx=(0, 5))
+        dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+        if search_terms and any(t.lower() in case.case_id.lower() for t in search_terms):
+            case_id_lbl = create_highlighted_label(
+                top_row,
+                text=case.case_id,
+                query=search_terms,
+                font=ctk.CTkFont(weight="bold", size=13),
+                text_color=("black", "white"),
+                bg_color=row_bg,
+                wrap="none",
+                on_click=lambda e, c=case: self.select_case(c),
+                scroll_frame=self.scroll_frame,
             )
-            dot = ctk.CTkLabel(top_row, text=tr("common.dot", "●"), text_color=dot_color, font=ctk.CTkFont(size=16))
-            dot.pack(side="left", padx=(0, 5))
-            dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+        else:
+            case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
+            case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+        case_id_lbl.pack(side="left")
 
-            if search_terms and any(t.lower() in case.case_id.lower() for t in search_terms):
-                case_id_lbl = create_highlighted_label(
-                    top_row,
-                    text=case.case_id,
-                    query=search_terms,
-                    font=ctk.CTkFont(weight="bold", size=13),
-                    text_color=("black", "white"),
-                    bg_color=row_bg,
-                    wrap="none",
-                    on_click=lambda e, c=case: self.select_case(c),
-                    scroll_frame=self.scroll_frame,
-                )
-            else:
-                case_id_lbl = ctk.CTkLabel(top_row, text=case.case_id, font=ctk.CTkFont(weight="bold", size=13))
-                case_id_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-            case_id_lbl.pack(side="left")
+        if case.workflow_status.is_completed:
+            done_lbl = ctk.CTkLabel(
+                top_row,
+                text=tr("case_list.completed_badge", "✓ ERLEDIGT"),
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color="white",
+                fg_color="forestgreen",
+                corner_radius=4,
+                padx=6,
+                pady=1,
+            )
+            done_lbl.pack(side="left", padx=(8, 0))
+            done_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            if case.workflow_status.is_completed:
-                done_lbl = ctk.CTkLabel(
-                    top_row,
-                    text=tr("case_list.completed_badge", "✓ ERLEDIGT"),
-                    font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="white",
-                    fg_color="forestgreen",
-                    corner_radius=4,
-                    padx=6,
-                    pady=1,
-                )
-                done_lbl.pack(side="left", padx=(8, 0))
-                done_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+        # Practice Name / Internal Badge
+        if case.is_internal:
+            practice_str = tr("case_list.internal_task", "🏢 INTERNE AUFGABE / VORGANG")
+            prac_color = "dodgerblue"
+        else:
+            practice_str = case.customer.practice_name
+            if case.customer.is_vip:
+                practice_str += " ★ VIP"
+            prac_color = None
 
-            # Practice Name / Internal Badge
-            if case.is_internal:
-                practice_str = tr("case_list.internal_task", "🏢 INTERNE AUFGABE / VORGANG")
-                prac_color = "dodgerblue"
-            else:
-                practice_str = case.customer.practice_name
-                if case.customer.is_vip:
-                    practice_str += " ★ VIP"
-                prac_color = None
+        disp_prac = practice_str if len(practice_str) <= 60 else practice_str[:57] + "..."
 
-            disp_prac = practice_str if len(practice_str) <= 60 else practice_str[:57] + "..."
+        if search_terms and any(t.lower() in disp_prac.lower() for t in search_terms):
+            prac_lbl = create_highlighted_label(
+                card,
+                text=disp_prac,
+                query=search_terms,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color=prac_color or ("black", "white"),
+                bg_color=row_bg,
+                wrap="word",
+                on_click=lambda e, c=case: self.select_case(c),
+                scroll_frame=self.scroll_frame,
+            )
+        else:
+            prac_lbl = ctk.CTkLabel(
+                card,
+                text=disp_prac,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=12, weight="bold"),
+                text_color=prac_color,
+            )
+            prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(prac_lbl)
+        prac_lbl.pack(fill="x", padx=12, pady=(0, 2))
 
-            if search_terms and any(t.lower() in disp_prac.lower() for t in search_terms):
-                prac_lbl = create_highlighted_label(
+        # Title & Actor
+        sub_str = f"{case.classification.title} | {tr('case_list.assigned_to', 'Zuständig:')} {get_actor_display(case.workflow_status.current_actor)}"
+        disp_sub = sub_str if len(sub_str) <= 80 else sub_str[:77] + "..."
+
+        if search_terms and any(t.lower() in disp_sub.lower() for t in search_terms):
+            sub_lbl = create_highlighted_label(
+                card,
+                text=disp_sub,
+                query=search_terms,
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+                bg_color=row_bg,
+                wrap="word",
+                on_click=lambda e, c=case: self.select_case(c),
+                scroll_frame=self.scroll_frame,
+            )
+        else:
+            sub_lbl = ctk.CTkLabel(
+                card,
+                text=disp_sub,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+            )
+            sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(sub_lbl)
+        sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
+
+        # Matches in timeline / tags / notes / form fields
+        if search_terms:
+            case_match_summary = SearchService.extract_case_search_match_summary(case, search_terms)
+            if case_match_summary:
+                match_lbl = create_highlighted_label(
                     card,
-                    text=disp_prac,
+                    text=case_match_summary,
                     query=search_terms,
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color=prac_color or ("black", "white"),
+                    font=ctk.CTkFont(size=10),
+                    text_color=("gray45", "gray65"),
                     bg_color=row_bg,
                     wrap="word",
                     on_click=lambda e, c=case: self.select_case(c),
                     scroll_frame=self.scroll_frame,
                 )
-            else:
-                prac_lbl = ctk.CTkLabel(
-                    card,
-                    text=disp_prac,
-                    anchor="w",
-                    justify="left",
-                    wraplength=current_wrap,
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color=prac_color,
-                )
-                prac_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(prac_lbl)
-            prac_lbl.pack(fill="x", padx=12, pady=(0, 2))
+                match_lbl.pack(fill="x", padx=12, pady=(0, 2))
 
-            # Title & Actor
-            sub_str = f"{case.classification.title} | {tr('case_list.assigned_to', 'Zuständig:')} {get_actor_display(case.workflow_status.current_actor)}"
-            disp_sub = sub_str if len(sub_str) <= 80 else sub_str[:77] + "..."
+        # Deep Search Match Badges
+        if self.is_deep_search_active and case.case_id in self.deep_search_results:
+            res = self.deep_search_results[case.case_id]
+            att_m = res.get("attachment_matches", [])
+            wiki_m = res.get("wiki_matches", [])
 
-            if search_terms and any(t.lower() in disp_sub.lower() for t in search_terms):
-                sub_lbl = create_highlighted_label(
-                    card,
-                    text=disp_sub,
-                    query=search_terms,
-                    font=ctk.CTkFont(size=11),
-                    text_color=("gray40", "gray70"),
-                    bg_color=row_bg,
-                    wrap="word",
-                    on_click=lambda e, c=case: self.select_case(c),
-                    scroll_frame=self.scroll_frame,
-                )
-            else:
-                sub_lbl = ctk.CTkLabel(
-                    card,
-                    text=disp_sub,
-                    anchor="w",
-                    justify="left",
-                    wraplength=current_wrap,
-                    font=ctk.CTkFont(size=11),
-                    text_color=("gray40", "gray70"),
-                )
-                sub_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(sub_lbl)
-            sub_lbl.pack(fill="x", padx=12, pady=(0, 2))
-
-            # Matches in timeline / tags / notes / form fields
-            if search_terms:
-                case_match_summary = SearchService.extract_case_search_match_summary(case, search_terms)
-                if case_match_summary:
-                    match_lbl = create_highlighted_label(
+            if att_m:
+                m0 = att_m[0]
+                att_text = f"📄 {m0['file_name']} ({tr('case_list.line_abbr', 'Z.')} {m0['line_number']}): \"{m0['snippet'][:35]}...\""
+                if search_terms and any(t.lower() in att_text.lower() for t in search_terms):
+                    att_lbl = create_highlighted_label(
                         card,
-                        text=case_match_summary,
+                        text=att_text,
                         query=search_terms,
-                        font=ctk.CTkFont(size=10),
-                        text_color=("gray45", "gray65"),
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="plum",
                         bg_color=row_bg,
                         wrap="word",
                         on_click=lambda e, c=case: self.select_case(c),
                         scroll_frame=self.scroll_frame,
                     )
-                    match_lbl.pack(fill="x", padx=12, pady=(0, 2))
+                else:
+                    att_lbl = ctk.CTkLabel(
+                        card,
+                        text=att_text,
+                        anchor="w",
+                        justify="left",
+                        wraplength=current_wrap,
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="plum",
+                    )
+                    att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                    self.wrap_labels.append(att_lbl)
+                att_lbl.pack(fill="x", padx=12, pady=(0, 2))
 
-            # Deep Search Match Badges
-            if self.is_deep_search_active and case.case_id in self.deep_search_results:
-                res = self.deep_search_results[case.case_id]
-                att_m = res.get("attachment_matches", [])
-                wiki_m = res.get("wiki_matches", [])
+            if wiki_m:
+                w0 = wiki_m[0]
+                wiki_text = f"📖 {w0['title']} (Score: {w0['score']:.0f}): \"{w0['snippet'][:35]}...\""
+                if search_terms and any(t.lower() in wiki_text.lower() for t in search_terms):
+                    wiki_lbl = create_highlighted_label(
+                        card,
+                        text=wiki_text,
+                        query=search_terms,
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="orchid",
+                        bg_color=row_bg,
+                        wrap="word",
+                        on_click=lambda e, c=case: self.select_case(c),
+                        scroll_frame=self.scroll_frame,
+                    )
+                else:
+                    wiki_lbl = ctk.CTkLabel(
+                        card,
+                        text=wiki_text,
+                        anchor="w",
+                        justify="left",
+                        wraplength=current_wrap,
+                        font=ctk.CTkFont(size=10, weight="bold"),
+                        text_color="orchid",
+                    )
+                    wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                    self.wrap_labels.append(wiki_lbl)
+                wiki_lbl.pack(fill="x", padx=12, pady=(0, 2))
 
-                if att_m:
-                    m0 = att_m[0]
-                    att_text = f"📄 {m0['file_name']} ({tr('case_list.line_abbr', 'Z.')} {m0['line_number']}): \"{m0['snippet'][:35]}...\""
-                    if search_terms and any(t.lower() in att_text.lower() for t in search_terms):
-                        att_lbl = create_highlighted_label(
-                            card,
-                            text=att_text,
-                            query=search_terms,
-                            font=ctk.CTkFont(size=10, weight="bold"),
-                            text_color="plum",
-                            bg_color=row_bg,
-                            wrap="word",
-                            on_click=lambda e, c=case: self.select_case(c),
-                            scroll_frame=self.scroll_frame,
-                        )
-                    else:
-                        att_lbl = ctk.CTkLabel(
-                            card,
-                            text=att_text,
-                            anchor="w",
-                            justify="left",
-                            wraplength=current_wrap,
-                            font=ctk.CTkFont(size=10, weight="bold"),
-                            text_color="plum",
-                        )
-                        att_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                        self.wrap_labels.append(att_lbl)
-                    att_lbl.pack(fill="x", padx=12, pady=(0, 2))
+        bind_mouse_wheel_to_canvas(card, self.scroll_frame)
 
-                if wiki_m:
-                    w0 = wiki_m[0]
-                    wiki_text = f"📖 {w0['title']} (Score: {w0['score']:.0f}): \"{w0['snippet'][:35]}...\""
-                    if search_terms and any(t.lower() in wiki_text.lower() for t in search_terms):
-                        wiki_lbl = create_highlighted_label(
-                            card,
-                            text=wiki_text,
-                            query=search_terms,
-                            font=ctk.CTkFont(size=10, weight="bold"),
-                            text_color="orchid",
-                            bg_color=row_bg,
-                            wrap="word",
-                            on_click=lambda e, c=case: self.select_case(c),
-                            scroll_frame=self.scroll_frame,
-                        )
-                    else:
-                        wiki_lbl = ctk.CTkLabel(
-                            card,
-                            text=wiki_text,
-                            anchor="w",
-                            justify="left",
-                            wraplength=current_wrap,
-                            font=ctk.CTkFont(size=10, weight="bold"),
-                            text_color="orchid",
-                        )
-                        wiki_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                        self.wrap_labels.append(wiki_lbl)
-                    wiki_lbl.pack(fill="x", padx=12, pady=(0, 2))
+        if case.workflow_status.followup_at:
+            from utils.datetime_utils import format_german_date_with_relative, format_german_time
+            fw_date_str = format_german_date_with_relative(case.workflow_status.followup_at)
+            fw_time_str = format_german_time(case.workflow_status.followup_at, with_uhr=True)
 
-            bind_mouse_wheel_to_canvas(card, self.scroll_frame)
+            fw_frame = ctk.CTkFrame(card, fg_color="transparent")
+            fw_frame.pack(fill="x", padx=12, pady=(0, 3))
+            fw_frame.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
-            if case.workflow_status.followup_at:
-                from utils.datetime_utils import format_german_date_with_relative, format_german_time
-                fw_date_str = format_german_date_with_relative(case.workflow_status.followup_at)
-                fw_time_str = format_german_time(case.workflow_status.followup_at, with_uhr=True)
+            lbl_h = ctk.CTkLabel(
+                fw_frame,
+                text=tr("case_list.followup_at", "🔔 Nachfragen am:"),
+                height=0,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=COLOR_WARNING_ORANGE,
+            )
+            lbl_h.pack(fill="x", pady=0)
+            lbl_h.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(lbl_h)
 
-                fw_frame = ctk.CTkFrame(card, fg_color="transparent")
-                fw_frame.pack(fill="x", padx=12, pady=(0, 3))
-                fw_frame.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            lbl_d = ctk.CTkLabel(
+                fw_frame,
+                text=f"  {fw_date_str}",
+                height=0,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=COLOR_WARNING_ORANGE,
+            )
+            lbl_d.pack(fill="x", pady=0)
+            lbl_d.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(lbl_d)
 
-                lbl_h = ctk.CTkLabel(
+            lbl_t = ctk.CTkLabel(
+                fw_frame,
+                text=f"  {fw_time_str}",
+                height=0,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=10),
+                text_color=COLOR_WARNING_ORANGE,
+            )
+            lbl_t.pack(fill="x", pady=0)
+            lbl_t.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(lbl_t)
+
+            if case.workflow_status.followup_note:
+                lbl_n = ctk.CTkLabel(
                     fw_frame,
-                    text=tr("case_list.followup_at", "🔔 Nachfragen am:"),
-                    height=0,
-                    anchor="w",
-                    justify="left",
-                    wraplength=current_wrap,
-                    font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=COLOR_WARNING_ORANGE,
-                )
-                lbl_h.pack(fill="x", pady=0)
-                lbl_h.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(lbl_h)
-
-                lbl_d = ctk.CTkLabel(
-                    fw_frame,
-                    text=f"  {fw_date_str}",
-                    height=0,
-                    anchor="w",
-                    justify="left",
-                    wraplength=current_wrap,
-                    font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=COLOR_WARNING_ORANGE,
-                )
-                lbl_d.pack(fill="x", pady=0)
-                lbl_d.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(lbl_d)
-
-                lbl_t = ctk.CTkLabel(
-                    fw_frame,
-                    text=f"  {fw_time_str}",
+                    text=f"  {case.workflow_status.followup_note}",
                     height=0,
                     anchor="w",
                     justify="left",
@@ -463,72 +585,55 @@ class CaseListWidget(ctk.CTkFrame):
                     font=ctk.CTkFont(size=10),
                     text_color=COLOR_WARNING_ORANGE,
                 )
-                lbl_t.pack(fill="x", pady=0)
-                lbl_t.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(lbl_t)
+                lbl_n.pack(fill="x", pady=0)
+                lbl_n.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+                self.wrap_labels.append(lbl_n)
 
-                if case.workflow_status.followup_note:
-                    lbl_n = ctk.CTkLabel(
-                        fw_frame,
-                        text=f"  {case.workflow_status.followup_note}",
-                        height=0,
-                        anchor="w",
-                        justify="left",
-                        wraplength=current_wrap,
-                        font=ctk.CTkFont(size=10),
-                        text_color=COLOR_WARNING_ORANGE,
-                    )
-                    lbl_n.pack(fill="x", pady=0)
-                    lbl_n.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                    self.wrap_labels.append(lbl_n)
+        if case.classification.tags:
+            tags_str = "🏷 " + ", ".join(case.classification.tags)
+            tag_lbl = ctk.CTkLabel(
+                card,
+                text=tags_str,
+                anchor="w",
+                justify="left",
+                wraplength=current_wrap,
+                font=ctk.CTkFont(size=10, weight="bold"),
+                text_color=("dodgerblue", "cyan"),
+            )
+            tag_lbl.pack(fill="x", padx=12, pady=(0, 6))
+            tag_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+            self.wrap_labels.append(tag_lbl)
 
-            if case.classification.tags:
-                tags_str = "🏷 " + ", ".join(case.classification.tags)
-                tag_lbl = ctk.CTkLabel(
-                    card,
-                    text=tags_str,
-                    anchor="w",
-                    justify="left",
-                    wraplength=current_wrap,
-                    font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=("dodgerblue", "cyan"),
-                )
-                tag_lbl.pack(fill="x", padx=12, pady=(0, 6))
-                tag_lbl.bind("<Button-1>", lambda e, c=case: self.select_case(c))
-                self.wrap_labels.append(tag_lbl)
+        # CTkTooltip hover overlay for full untruncated details
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        def build_tooltip(c: Case = case) -> str:
+            from services.i18n_service import tr
+            lines = [
+                tr("case_list.tooltip_case_header", "📌 Fall: {id} (Priorität: {score} Pkt.)", id=c.case_id, score=f"{c.classification.calculated_score:.0f}"),
+            ]
+            if c.is_internal:
+                lines.append(tr("case_list.tooltip_customer_internal", "🏢 Kunde: INTERNE AUFGABE ({id})", id=c.customer.customer_id))
+            else:
+                vip_t = " ★ VIP" if c.customer.is_vip else ""
+                lines.append(tr("case_list.tooltip_customer_practice", "🏥 Kunde: {name} ({id}){vip}", name=c.customer.practice_name, id=c.customer.customer_id, vip=vip_t))
+                lines.append(tr("case_list.tooltip_contact", "👤 Ansprechpartner: {contact}", contact=c.customer.contact_person))
 
-            # CTkTooltip hover overlay for full untruncated details
-            from ui.widgets.ctk_tooltip import CTkTooltip
-            def build_tooltip(c: Case = case) -> str:
-                from services.i18n_service import tr
-                lines = [
-                    tr("case_list.tooltip_case_header", "📌 Fall: {id} (Priorität: {score} Pkt.)", id=c.case_id, score=f"{c.classification.calculated_score:.0f}"),
-                ]
-                if c.is_internal:
-                    lines.append(tr("case_list.tooltip_customer_internal", "🏢 Kunde: INTERNE AUFGABE ({id})", id=c.customer.customer_id))
-                else:
-                    vip_t = " ★ VIP" if c.customer.is_vip else ""
-                    lines.append(tr("case_list.tooltip_customer_practice", "🏥 Kunde: {name} ({id}){vip}", name=c.customer.practice_name, id=c.customer.customer_id, vip=vip_t))
-                    lines.append(tr("case_list.tooltip_contact", "👤 Ansprechpartner: {contact}", contact=c.customer.contact_person))
+            lines.append(tr("case_list.tooltip_topic", "📋 Thema: {title}", title=c.classification.title))
+            lines.append(tr("case_list.tooltip_assigned", "👤 Zuständig: {actor}", actor=get_actor_display(c.workflow_status.current_actor)))
 
-                lines.append(tr("case_list.tooltip_topic", "📋 Thema: {title}", title=c.classification.title))
-                lines.append(tr("case_list.tooltip_assigned", "👤 Zuständig: {actor}", actor=get_actor_display(c.workflow_status.current_actor)))
+            if c.workflow_status.followup_at:
+                from utils.datetime_utils import format_german_date_with_relative, format_german_time
+                fw_d = format_german_date_with_relative(c.workflow_status.followup_at)
+                fw_tm = format_german_time(c.workflow_status.followup_at, with_uhr=True)
+                note_t = f" ({c.workflow_status.followup_note})" if c.workflow_status.followup_note else ""
+                lines.append(tr("case_list.tooltip_followup", "🔔 Wiedervorlage: {date} um {time}{note}", date=fw_d, time=fw_tm, note=note_t))
 
-                if c.workflow_status.followup_at:
-                    from utils.datetime_utils import format_german_date_with_relative, format_german_time
-                    fw_d = format_german_date_with_relative(c.workflow_status.followup_at)
-                    fw_tm = format_german_time(c.workflow_status.followup_at, with_uhr=True)
-                    note_t = f" ({c.workflow_status.followup_note})" if c.workflow_status.followup_note else ""
-                    lines.append(tr("case_list.tooltip_followup", "🔔 Wiedervorlage: {date} um {time}{note}", date=fw_d, time=fw_tm, note=note_t))
+            if c.classification.tags:
+                lines.append(tr("case_list.tooltip_tags", "🏷 Tags: {tags}", tags=', '.join(c.classification.tags)))
 
-                if c.classification.tags:
-                    lines.append(tr("case_list.tooltip_tags", "🏷 Tags: {tags}", tags=', '.join(c.classification.tags)))
+            return "\n".join(lines)
 
-                return "\n".join(lines)
-
-            CTkTooltip(card, text_or_func=lambda c=case: build_tooltip(c), delay_ms=400)
-
-        bind_mouse_wheel_to_canvas(self.scroll_frame)
+        CTkTooltip.attach_lazy(card, text_or_func=lambda c=case: build_tooltip(c), delay_ms=400)
 
     def select_case(self, case: Case):
         from ui.widgets.ctk_tooltip import CTkTooltip
@@ -537,7 +642,11 @@ class CaseListWidget(ctk.CTkFrame):
         prev_id = self.selected_case_id
         self.selected_case_id = case.case_id
 
-        # O(1) UI update if card frames exist
+        # O(1) UI update if card frames exist. A case further down the list may
+        # not be built yet, so render forward to it instead of rebuilding.
+        if self._card_widgets and case.case_id not in self._card_widgets:
+            self._ensure_case_rendered(case.case_id)
+
         if hasattr(self, "_card_widgets") and case.case_id in self._card_widgets:
             if prev_id and prev_id in self._card_widgets and prev_id != case.case_id:
                 try:

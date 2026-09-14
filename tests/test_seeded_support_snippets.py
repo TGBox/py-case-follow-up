@@ -1,8 +1,7 @@
 """Tests for realistic support snippets catalog (TI, Abrechnung, Ersthilfe, Backup)."""
 
 from pathlib import Path
-import pytest
-from services.snippet_service import DEFAULT_SNIPPETS, SnippetService
+from services.snippet_service import SnippetService
 
 
 def test_default_snippets_cover_core_support_scenarios(tmp_path: Path):

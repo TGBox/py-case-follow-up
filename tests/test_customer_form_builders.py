@@ -18,7 +18,6 @@ import customtkinter as ctk
 import pytest
 
 from config import AppConfig
-from models.customer import Customer
 from services.storage_service import StorageService
 from services.customer_service import CustomerService
 from ui.dialogs.customer_management_dialog import CustomerManagementDialog

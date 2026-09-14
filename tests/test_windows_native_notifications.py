@@ -2,7 +2,6 @@
 
 import sys
 import customtkinter as ctk
-import pytest
 from services.tray_service import TrayService
 from ui.widgets.toast_notification import ToastNotification
 
@@ -72,6 +71,11 @@ def test_toast_notification_dispatches_native_when_win(monkeypatch):
         "message": "Fall T-2026-001 ist bereit.",
     }
     assert app._pending_notification_callback is not None
+
+    # The card must not be built at all when the OS shows the notification. It
+    # used to be built and then thrown away, which left two frames, two buttons
+    # and four labels stacked in one hidden window per notification.
+    assert toast.winfo_children() == [], "Karte wird trotz OS-Benachrichtigung gebaut"
 
     # Simulate restoring from tray notification click
     app._on_restore_from_tray()

@@ -1,4 +1,3 @@
-import pytest # type: ignore
 import customtkinter as ctk
 from models.case import Case, CaseCustomer, WorkflowStatus, Classification
 from models.profile import UserProfile, AiSettings

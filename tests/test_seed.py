@@ -1,5 +1,4 @@
 import sqlite3
-import pytest
 from pathlib import Path
 from config import AppConfig
 from services.storage_service import StorageService

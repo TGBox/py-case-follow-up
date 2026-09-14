@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from collections.abc import Callable
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from models.customer import Customer, Contact
+from services.customer_service import CustomerService
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, Channel
 from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
@@ -107,6 +108,7 @@ class NewCaseDialog(BaseDialog):
         )
 
         self.customers = list(customers)
+        self._customer_by_display: dict[str, Customer] = {}
         self.schemas = schemas
         self.created_by = created_by
         self.on_case_created = on_case_created
@@ -170,7 +172,12 @@ class NewCaseDialog(BaseDialog):
 
         from ui.widgets.searchable_combobox import SearchableCombobox
         initial_cust_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers] if self.customers else [tr("new_case_dialog.no_customers", "Keine Kunden")]
-        self.customer_combo = SearchableCombobox(cust_row, values=initial_cust_names, width=380)
+        self.customer_combo = SearchableCombobox(
+            cust_row,
+            values=initial_cust_names,
+            width=380,
+            summary_provider=self._customer_match_summary,
+        )
         self.customer_combo.pack(side="left", padx=(0, 5), fill="x", expand=True)
 
         self.add_cust_btn = self.register_i18n(ctk.CTkButton(cust_row, text=tr("new_case_dialog.add_practice_btn", "+ Neue Praxis"), command=self.open_quick_add_customer, fg_color="forestgreen", width=120), "new_case_dialog.add_practice_btn", "+ Neue Praxis")
@@ -314,11 +321,57 @@ class NewCaseDialog(BaseDialog):
                     self.on_tag_added(tag_name)
                 self.render_tags_checkboxes()
 
+    @staticmethod
+    def customer_display_name(cust: Customer) -> str:
+        return f"{cust.practice_name} ({cust.customer_id})"
+
+    @staticmethod
+    def customer_search_fields(cust: Customer) -> list[str]:
+        """Everything about a practice that should be findable but is not in the label.
+
+        The dropdown only shows name and ID, so without this a search for a
+        contact, an address, a phone number or a VM number silently returns
+        nothing even though the practice is right there in the list.
+        """
+        parts: list[str] = [
+            cust.practice_name_old, cust.street, cust.zip_code, cust.city,
+            cust.phone_main, cust.phone_direct, cust.mobile,
+            cust.email_address, cust.website, cust.system_version,
+        ]
+        for num in (cust.vm_number, cust.instance_number):
+            if num is not None:
+                parts.append(str(num))
+        for contact in cust.contacts:
+            parts.extend([contact.name, contact.role, contact.email, contact.phone, contact.note])
+        return [p for p in parts if p]
+
+    @classmethod
+    def customer_search_text(cls, cust: Customer) -> str:
+        return " ".join(cls.customer_search_fields(cust))
+
+    def _customer_match_summary(self, display_value: str, query: str) -> str | None:
+        """Explains the hit using the same fields that produced it.
+
+        Deliberately not extract_customer_search_match_summary(): that covers a
+        narrower field set, so a practice found by its city would be explained
+        with an unrelated e-mail address.
+        """
+        cust = self._customer_by_display.get(display_value)
+        if cust is None:
+            return None
+        return CustomerService.summarize_matching_words(
+            self.customer_search_fields(cust), query, exclude_text=display_value
+        )
+
     def refresh_customer_combo(self):
-        customer_names = [f"{c.practice_name} ({c.customer_id})" for c in self.customers]
+        self._customer_by_display = {self.customer_display_name(c): c for c in self.customers}
+        customer_names = list(self._customer_by_display)
         if not customer_names:
             customer_names = ["Standard Praxis (K-10000)"]
         if hasattr(self, "customer_combo"):
+            self.customer_combo.set_search_index({
+                name: self.customer_search_text(c) for name, c in self._customer_by_display.items()
+            })
             self.customer_combo.set_values(customer_names)
 
     def open_quick_add_customer(self):

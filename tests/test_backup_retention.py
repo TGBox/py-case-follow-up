@@ -1,9 +1,7 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock
 
-import pytest
 
 from config import AppConfig
 from models.case import Case

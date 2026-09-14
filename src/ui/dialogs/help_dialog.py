@@ -252,7 +252,9 @@ class HelpDialog(BaseDialog):
                         font=ctk.CTkFont(size=11),
                         text_color=("gray40", "gray70"),
                         bg_color=fg_color,
-                        wrap="none",
+                        # The snippet is ~50+ chars and the nav column is 280px
+                        # wide; wrap="none" clipped the tail with no indication.
+                        wrap="word",
                         on_click=on_click,
                         scroll_frame=self.nav_scroll,
                     )

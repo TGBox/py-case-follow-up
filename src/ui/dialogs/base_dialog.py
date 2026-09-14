@@ -140,6 +140,30 @@ class BaseDialog(ctk.CTkToplevel):
         registry.append((widget, attr, key, default, fmt))
         return widget
 
+    def retranslate_choices(self, widget, choices: Sequence[tuple[str, str]]) -> None:
+        """Re-translates the options of an OptionMenu / SegmentedButton in place.
+
+        register_i18n only ever rewrites one attribute, so a widget whose *values*
+        are translated needs this instead. The selection is carried over by
+        position, because its old text is in the previous language and would no
+        longer match anything in the new list.
+        """
+        from services.i18n_service import tr
+
+        try:
+            if not widget.winfo_exists():
+                return
+            previous = list(widget.cget("values"))
+            current = widget.get()
+            index = previous.index(current) if current in previous else 0
+            translated = [tr(key, default) for key, default in choices]
+            if not translated:
+                return
+            widget.configure(values=translated)
+            widget.set(translated[min(index, len(translated) - 1)])
+        except Exception as err:
+            logger.warning(f"Could not refresh choices of {type(widget).__name__}: {err}")
+
     def _prune_i18n_widgets(self) -> None:
         registry = getattr(self, "_i18n_widgets", None)
         if not registry:
@@ -177,7 +201,11 @@ class BaseDialog(ctk.CTkToplevel):
             try:
                 if not widget.winfo_exists():
                     continue
-                widget.configure(**{attr: tr(key, default, **fmt)})
+                # A placeholder may be a callable when its value is itself
+                # translated (an actor name, a status). Resolving it here keeps
+                # such a label from freezing in the language it was built in.
+                resolved = {name: (value() if callable(value) else value) for name, value in fmt.items()}
+                widget.configure(**{attr: tr(key, default, **resolved)})
                 alive.append(entry)
             except Exception:
                 continue

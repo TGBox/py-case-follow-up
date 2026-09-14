@@ -119,12 +119,16 @@ class TrayService:
             except Exception:
                 pass
 
-    def notify(self, title: str, message: str) -> bool:
+    def notify(self, title: str, message: str, launch: str | None = None) -> bool:
         """Send a native Windows system notification via winotify or tray icon.
 
         Args:
             title: Notification title.
             message: Notification text content.
+            launch: URI the OS opens when the notification is clicked. Windows
+                shows a toast without it, but clicking that toast does nothing -
+                so this is what makes the notification actionable at all. The
+                pystray fallbacks below have no equivalent and ignore it.
 
         Returns:
             True if notification was sent, False otherwise.
@@ -145,6 +149,7 @@ class TrayService:
                     title=title,
                     msg=message,
                     duration="short",
+                    **({"launch": launch} if launch else {}),
                 )
                 toast.show()
                 logger.info(f"Native winotify toast sent: {title}")

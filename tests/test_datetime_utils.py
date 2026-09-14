@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 from utils.datetime_utils import (
     format_german_date,

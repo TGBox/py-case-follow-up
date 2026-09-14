@@ -1,7 +1,6 @@
 """Tests for bring_to_foreground behavior on App and ToastNotification."""
 
 import customtkinter as ctk
-import pytest
 from ui.widgets.toast_notification import ToastNotification
 
 

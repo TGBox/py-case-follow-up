@@ -64,6 +64,13 @@ from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 
 
+#: Key/default pairs for the AI provider selector, see POPUP_TARGET_CHOICES.
+AI_PROVIDER_CHOICES = [
+    ("profile.provider_ollama", "OLLAMA (Lokal)"),
+    ("profile.provider_gemini", "GOOGLE GEMINI (Cloud)"),
+]
+
+
 class AiSettingsTabMixin:
     """Baut den Tab "KI & NLP" auf und enthaelt dessen komplette Event-Logik
     (Ollama-Server-Steuerung, Modell-Management, Gemini-Key-Test, Provider-Wechsel).
@@ -103,7 +110,7 @@ class AiSettingsTabMixin:
         current_provider = getattr(self.profile.ai_settings, "provider", "OLLAMA").upper()
         self.ai_provider_seg = ctk.CTkSegmentedButton(  # type: ignore[attr-defined]
             provider_frame,
-            values=[tr("profile.provider_ollama", "OLLAMA (Lokal)"), tr("profile.provider_gemini", "GOOGLE GEMINI (Cloud)")],
+            values=[tr(key, default) for key, default in AI_PROVIDER_CHOICES],
             command=self.on_change_ai_provider,
         )
         self.ai_provider_seg.set(tr("profile.provider_gemini", "GOOGLE GEMINI (Cloud)") if current_provider == "GEMINI" else tr("profile.provider_ollama", "OLLAMA (Lokal)"))
@@ -740,6 +747,15 @@ class AiSettingsTabMixin:
 
         import threading
         threading.Thread(target=worker, daemon=True).start()
+
+    def refresh_ai_tab_labels(self) -> None:
+        """Re-translates this tab's option lists on a language change.
+
+        The plain labels are handled by register_i18n; the provider selector
+        carries its texts as *values*, which register_i18n cannot reach.
+        """
+        if hasattr(self, "ai_provider_seg"):
+            self.retranslate_choices(self.ai_provider_seg, AI_PROVIDER_CHOICES)
 
     def save_ai_settings(self) -> bool:
         provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"

@@ -7,9 +7,8 @@ import json
 import re
 from pathlib import Path
 from typing import Any
-import pytest
 
-from services.i18n_service import I18nService, tr, SUPPORTED_LANGUAGES
+from services.i18n_service import I18nService, SUPPORTED_LANGUAGES
 
 
 def get_locales_dir() -> Path:
@@ -24,7 +23,7 @@ def load_locale_json(lang_code: str) -> dict[str, Any]:
     locales_dir = get_locales_dir()
     file_path = locales_dir / f"{lang_code}.json"
     assert file_path.exists(), f"Locale file {file_path} does not exist"
-    with open(file_path, "r", encoding="utf-8") as f:
+    with open(file_path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -193,7 +192,7 @@ class TestTranslationPlaceholders:
             if de_tokens != sv_tokens:
                 mismatches.append(f"Key '{key}': DE tokens {de_tokens} != SV tokens {sv_tokens}")
 
-        assert not mismatches, f"Placeholder token mismatches found:\n" + "\n".join(mismatches)
+        assert not mismatches, "Placeholder token mismatches found:\n" + "\n".join(mismatches)
 
     def test_placeholder_tokens_are_valid_identifiers(self):
         """Verify that all placeholder tokens inside curly braces are valid identifiers."""

@@ -9,9 +9,7 @@ Simulates real-world user workflows across German (de), English (en), and Swedis
 - Scenario 6: User profile settings and language persistence on reload
 """
 
-import json
 from pathlib import Path
-from typing import Any
 import pytest
 import customtkinter as ctk
 
@@ -20,27 +18,19 @@ from enums import (
     Actor,
     UrgencyLevel,
     Channel,
-    BoardColumn,
     TargetType,
     get_actor_display,
     get_channel_display,
-    get_layout_display,
-    get_board_column_display,
-    ACTOR_DISPLAY,
-    CHANNEL_DISPLAY,
 )
 from constants import (
     DIALOG_TITLES,
-    UI_BUTTON_TEXTS,
     STATUS_MESSAGES,
 )
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from models.customer import Customer, Contact
-from models.profile import UserProfile, UISettings, UserInfo
 from models.snippet import Snippet
-from models.schema import QuestionSchema, SchemaField, FieldType
 from models.export_template import ExportTemplate
-from services.i18n_service import I18nService, get_i18n, tr
+from services.i18n_service import get_i18n, tr
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.export_service import ExportService

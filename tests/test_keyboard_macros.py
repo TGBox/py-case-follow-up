@@ -1,7 +1,6 @@
 """Tests for expanded keyboard macros and custom shortcut settings."""
 
-import pytest
-from models.profile import ShortcutSettings, UserProfile
+from models.profile import ShortcutSettings
 from models.snippet import Snippet
 
 

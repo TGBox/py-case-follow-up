@@ -1,6 +1,5 @@
 """Tests for support analytics metrics, urgency breakdowns, and practice distribution."""
 
-import pytest
 from enums import UrgencyLevel
 from models.case import Case, CaseCustomer
 

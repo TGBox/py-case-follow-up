@@ -1,7 +1,6 @@
 """Tests for HelpDialog articles, search indexing, and category filtering."""
 
 import customtkinter as ctk
-import pytest
 from ui.dialogs.help_dialog import HELP_ARTICLES, HelpDialog
 
 

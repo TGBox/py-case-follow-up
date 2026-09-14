@@ -1,6 +1,5 @@
 """Tests for OutlookIntegrationService bidirectional mail transfer, bridge parsing, and timeline attachment."""
 
-import pytest
 from models.case import Case, CaseCustomer, Classification
 from services.outlook_integration_service import OutlookIntegrationService
 

@@ -910,7 +910,8 @@
     "save_file_btn": "In Datei speichern...",
     "select_template": "Vorlage auswählen:",
     "window_title": "{base_title} — {case_id}",
-    "file_saved": "💾 Datei gespeichert: {name}"
+    "file_saved": "💾 Datei gespeichert: {name}",
+    "export_for_case": "Export für Fall {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Entwickler-Ticket für Softwarefehler, Abstürze und Schnittstellenprobleme.",
@@ -975,7 +976,9 @@
     "recipient": "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):",
     "select_colleague": "- Aus Mitarbeiterliste wählen -",
     "absence_warning": "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!",
-    "window_title": "{base_title} (Fall {case_id})"
+    "window_title": "{base_title} (Fall {case_id})",
+    "header_full": "👤 Zuständigkeit für {case_id} übergeben",
+    "current_line": "Aktuelle Zuständigkeit: {actor} | Kunde: {customer}"
   },
   "help_content": {
     "advanced_search_filters": {

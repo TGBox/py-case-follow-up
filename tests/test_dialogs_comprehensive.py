@@ -4,17 +4,16 @@ from pathlib import Path
 import customtkinter as ctk
 import pytest
 from config import AppConfig
-from enums import Actor, UrgencyLevel, BoardColumn, FieldType
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from enums import BoardColumn, FieldType
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from models.customer import Customer, Contact
 from models.export_template import ExportTemplate
-from models.profile import UserProfile, Colleague
+from models.profile import Colleague
 from models.schema import QuestionSchema, SchemaField
 from services.storage_service import StorageService
 from services.customer_service import CustomerService
 from services.schema_service import SchemaService
 from services.export_service import ExportService
-from services.calendar_email_service import CalendarEmailService
 
 
 @pytest.fixture(scope="module")
@@ -32,9 +31,9 @@ def shared_app():
 def app_and_storage(tmp_path: Path, shared_app):
     config = AppConfig(workspace_dir=tmp_path)
     storage = StorageService(config)
-    
+
     yield shared_app, storage, config
-    
+
     for child in shared_app.winfo_children():
         try:
             child.destroy()

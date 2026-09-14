@@ -539,6 +539,10 @@ DEFAULT_SCORING_MATRIX = {
 AUTO_ARCHIVE_THRESHOLD_DAYS = 30
 HOURLY_TIMER_MS = 3600000
 FOLLOWUP_CHECK_INITIAL_DELAY_MS = 2000
+# How often the app looks for a case handed over by a clicked notification.
+# The second process is already gone by then, so this interval is all the delay
+# the user perceives between the click and the case appearing.
+OPEN_CASE_POLL_INTERVAL_MS = 800
 TOAST_DURATION_DEFAULT_MS = 5000
 TOOLTIP_DEFAULT_DELAY_MS = 300
 TOOLTIP_POINTER_OFFSET_X = 15

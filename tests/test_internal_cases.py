@@ -1,7 +1,6 @@
-import pytest
 from pathlib import Path
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from services.search_service import SearchService, parse_search_query
+from models.case import Case, CaseCustomer, Classification
+from services.search_service import SearchService
 from services.storage_service import StorageService, AppConfig
 
 

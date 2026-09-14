@@ -23,4 +23,4 @@ def test_unicode_no_variation_selectors_in_src():
             if char in content:
                 violations.append(f"{py_file} contains {char_name}")
 
-    assert not violations, f"Found forbidden Unicode control characters in codebase:\n" + "\n".join(violations)
+    assert not violations, "Found forbidden Unicode control characters in codebase:\n" + "\n".join(violations)

@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 import tkinter as tk
 import customtkinter as ctk
@@ -129,7 +128,7 @@ def test_create_highlighted_label_tags_and_events():
         )
         assert isinstance(lbl, tk.Text)
         assert str(lbl.cget("state")) == "disabled"
-        
+
         # Verify text content
         content = lbl.get("1.0", "end - 1 chars")
         assert content == "Frau Katrin Schmidt"
@@ -140,7 +139,7 @@ def test_create_highlighted_label_tags_and_events():
         tag_r = lbl.tag_names("1.8")
         assert "match" in tag_t
         assert "match" in tag_r
-        
+
         tag_k = lbl.tag_names("1.5")
         assert "normal" in tag_k
 
@@ -231,3 +230,45 @@ def test_customer_management_dialog_search_highlights(tmp_path: Path):
         dialog.destroy()
     finally:
         root.destroy()
+
+
+def test_summarize_matching_words_skips_already_visible_text():
+    """A summary that just repeats the label explains nothing."""
+    fields = ["Ulbricht", "Fr.Ulbricht", "https://www.ulbricht.example"]
+    summary = CustomerService.summarize_matching_words(
+        fields, "ulbricht", exclude_text="Ulbricht (00120)"
+    )
+    assert summary is not None
+    assert not summary.startswith("Ulbricht,")
+    assert "Fr.Ulbricht" in summary
+
+
+def test_summarize_matching_words_empty_and_no_hit():
+    assert CustomerService.summarize_matching_words(["Praxis Welz"], "") is None
+    assert CustomerService.summarize_matching_words(["Praxis Welz"], "   ") is None
+    assert CustomerService.summarize_matching_words(["Praxis Welz"], "zzz") is None
+    assert CustomerService.summarize_matching_words([], "welz") is None
+
+
+def test_new_case_dialog_customer_search_covers_hidden_fields():
+    """The practice picker must find a customer by address, contact and numbers."""
+    from ui.dialogs.new_case_dialog import NewCaseDialog
+
+    cust = Customer(
+        customer_id="00109",
+        practice_name="Praxis Welz",
+        city="Rommerskirchen",
+        phone_main="02183416034",
+        vm_number=41569,
+        contacts=[Contact(name="Frau Katrin Schmidt", role="Leitende MFA")],
+    )
+    haystack = NewCaseDialog.customer_search_text(cust).lower()
+    for needle in ("rommerskirchen", "02183416034", "41569", "katrin", "leitende mfa"):
+        assert needle in haystack, f"{needle!r} waere nicht auffindbar"
+
+    summary = CustomerService.summarize_matching_words(
+        NewCaseDialog.customer_search_fields(cust),
+        "rommerskirchen",
+        exclude_text=NewCaseDialog.customer_display_name(cust),
+    )
+    assert summary is not None and "Rommerskirchen" in summary

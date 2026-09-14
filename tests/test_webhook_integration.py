@@ -1,6 +1,5 @@
 """Tests for GitLab and Jira webhook payload formatting and transmission."""
 
-import pytest
 from models.case import Case, CaseCustomer, Classification
 from services.webhook_integration_service import WebhookIntegrationService
 

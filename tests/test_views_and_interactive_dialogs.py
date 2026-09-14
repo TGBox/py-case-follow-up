@@ -2,25 +2,18 @@
 
 from pathlib import Path
 from typing import Any
-import pytest
 from config import AppConfig
-from enums import UrgencyLevel, Actor, LayoutMode, get_actor_display
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from models.customer import Customer, Contact
-from models.profile import Colleague, UserProfile
+from enums import UrgencyLevel, Actor
+from models.case import Case, CaseCustomer
+from models.profile import Colleague
 from models.schema import QuestionSchema, SchemaField, FieldType
 from models.export_template import ExportTemplate
 from services.seed_service import SeedService
 from services.storage_service import StorageService
-from services.scoring_service import ScoringService
 from services.p2p_sync_service import P2PSyncService
 
-from ui.views.board_view import BoardView, KanbanCardWidget
-from ui.views.table_view import TableView
+from ui.views.board_view import BoardView
 from ui.views.analytics_view import AnalyticsView
-from ui.dialogs.handover_dialog import HandoverDialog
-from ui.dialogs.help_dialog import HelpDialog
-from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 
 
 def test_board_view_column_collapse_and_rendering(tmp_path: Path):

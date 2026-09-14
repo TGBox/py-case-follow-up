@@ -1,4 +1,3 @@
-import pytest # type: ignore
 import customtkinter as ctk
 from models.schema import QuestionSchema, SchemaField
 from enums import FieldType

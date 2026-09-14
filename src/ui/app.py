@@ -636,17 +636,32 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 wid = self.winfo_id()
                 if not wid:
                     return
-                hwnd = ctypes.windll.user32.GetParent(wid)
+                # argtypes/restype must be declared: without them ctypes assumes
+                # c_int for both, so on 64-bit Windows GetParent's HWND is
+                # truncated to 32 bits and the handle handed to dwmapi is
+                # garbage. Declaring the real signatures keeps the pointer whole.
+                from ctypes import wintypes
+
+                user32 = ctypes.windll.user32
+                dwmapi = ctypes.windll.dwmapi
+                user32.GetParent.argtypes = [wintypes.HWND]
+                user32.GetParent.restype = wintypes.HWND
+                dwmapi.DwmSetWindowAttribute.argtypes = [
+                    wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD
+                ]
+                dwmapi.DwmSetWindowAttribute.restype = ctypes.c_long
+
+                hwnd = user32.GetParent(wintypes.HWND(wid))
                 if not hwnd:
-                    hwnd = wid
+                    hwnd = wintypes.HWND(wid)
                 if hwnd:
                     DWMWA_USE_IMMERSIVE_DARK_MODE = 20
                     DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19
                     value = ctypes.c_int(1 if dark else 0)
-                    if ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                    if dwmapi.DwmSetWindowAttribute(
                         hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(value), ctypes.sizeof(value)
                     ) != 0:
-                        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+                        dwmapi.DwmSetWindowAttribute(
                             hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ctypes.byref(value), ctypes.sizeof(value)
                         )
             except Exception:

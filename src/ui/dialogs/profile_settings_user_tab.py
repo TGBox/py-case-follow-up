@@ -17,6 +17,8 @@ class UserSettingsTabMixin:
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
         reload_ui_fields: Callable[[], None]
+        save_settings_quietly: Callable[[], bool]
+        reload_all_tabs: Callable[[], None]
 
     def setup_user_section(self, left_col: ctk.CTkFrame) -> None:
         # Section 1: Profil verwalten & wechseln

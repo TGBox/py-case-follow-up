@@ -533,8 +533,8 @@ class StorageService:
             return self._profile_cache
 
         loaded_profile: UserProfile | None = None
-        if getattr(self.config, "active_profile_name", None):
-            prof_name = self.config.active_profile_name
+        prof_name = getattr(self.config, "active_profile_name", None)
+        if prof_name:
             safe_filename = "".join(c for c in prof_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
             for dir_path in (self.global_profiles_dir, self.profiles_dir):
                 target_path = dir_path / f"profile_{safe_filename}.json"

@@ -58,6 +58,7 @@ class DialogLaunchersMixin:
         p2p_service: Any
         calendar_email_service: Any
         snippet_service: Any
+        attachment_service: Any
         deep_search_service: Any
         search_query: str
         refresh_views: Callable[..., Any]

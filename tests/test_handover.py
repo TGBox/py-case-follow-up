@@ -1,4 +1,3 @@
-import pytest  # type: ignore
 from enums import Actor, ACTOR_DISPLAY, get_actor_display, get_actor_val_from_display
 from models.case import Case, TimelineEntry
 

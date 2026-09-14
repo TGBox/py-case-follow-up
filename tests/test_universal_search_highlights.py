@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 import tkinter as tk
 import customtkinter as ctk

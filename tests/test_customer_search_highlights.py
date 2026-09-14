@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 import tkinter as tk
 import customtkinter as ctk
@@ -129,7 +128,7 @@ def test_create_highlighted_label_tags_and_events():
         )
         assert isinstance(lbl, tk.Text)
         assert str(lbl.cget("state")) == "disabled"
-        
+
         # Verify text content
         content = lbl.get("1.0", "end - 1 chars")
         assert content == "Frau Katrin Schmidt"
@@ -140,7 +139,7 @@ def test_create_highlighted_label_tags_and_events():
         tag_r = lbl.tag_names("1.8")
         assert "match" in tag_t
         assert "match" in tag_r
-        
+
         tag_k = lbl.tag_names("1.5")
         assert "normal" in tag_k
 

@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock
 from models.customer import Customer
 from utils.ui_utils import enable_textbox_cursor_autoscroll

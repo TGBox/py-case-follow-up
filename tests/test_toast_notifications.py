@@ -1,7 +1,6 @@
 """Tests for ToastNotification positioning, packing order, and button visibility."""
 
 import customtkinter as ctk
-import pytest
 from ui.widgets.toast_notification import ToastNotification
 
 

@@ -110,14 +110,15 @@ jobs:
         run: uvx pyright src
 
   lint:
-    # Non-blocking for now (same reasoning the typecheck job used to have):
-    # this is ruff's first pass over the codebase, and its actual findings
-    # here are still unknown/unreviewed. Once a baseline pass has been
-    # triaged (real bugs fixed, remaining noise either fixed or suppressed
-    # with a per-line/per-file ignore + reason), remove continue-on-error so
-    # new lint violations fail the build like typecheck now does.
+    # The baseline pass is done: src was already clean, and tests went from 389
+    # findings to zero (362 autofixed, B010 switched off for tests with a reason
+    # in pyproject.toml, the two stray mid-file imports moved to the top). So
+    # continue-on-error is gone - a new violation fails the build like typecheck.
+    #
+    # tests/ is linted too now. Nearly all of those 389 findings came from test
+    # suites generated in bulk, which carried copied import blocks nobody ever
+    # read; without the scope covering tests, the next such batch lands unnoticed.
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -132,4 +133,4 @@ jobs:
         run: uv sync --locked
 
       - name: Run ruff
-        run: uv run ruff check src
+        run: uv run ruff check src main.py tests

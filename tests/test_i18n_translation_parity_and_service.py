@@ -43,7 +43,7 @@ def locale_data() -> dict[str, dict]:
     data = {}
     for lang in LANGUAGES:
         path = LOCALES_DIR / f"{lang}.json"
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data[lang] = json.load(f)
     return data
 
@@ -62,7 +62,7 @@ def test_all_three_locale_files_exist_and_parse():
     for lang in LANGUAGES:
         path = LOCALES_DIR / f"{lang}.json"
         assert path.exists(), f"locales/{lang}.json is missing"
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         assert isinstance(data, dict) and len(data) > 0
 

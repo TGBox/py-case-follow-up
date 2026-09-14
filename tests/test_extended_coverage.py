@@ -4,12 +4,10 @@ from pathlib import Path
 import customtkinter as ctk
 import pytest
 from config import AppConfig
-from enums import Actor, UrgencyLevel, BoardColumn, TargetType
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.case import Case, CaseCustomer, Classification
 from models.customer import Customer, Contact
 from models.profile import Colleague
 from models.export_template import ExportTemplate
-from models.schema import QuestionSchema, SchemaField
 from services.storage_service import StorageService
 from services.p2p_sync_service import P2PSyncService
 from services.export_service import ExportService

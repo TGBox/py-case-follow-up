@@ -1,17 +1,15 @@
-import pytest
 from pathlib import Path
 from config import AppConfig
 from enums import Actor, BoardColumn, UrgencyLevel, Channel, LayoutMode
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from models.customer import Customer, Contact
-from models.profile import UserProfile, UserInfo, Colleague
 from services.storage_service import StorageService
 from services.seed_service import SeedService
 from services.scoring_service import ScoringService
 from services.search_service import SearchService
 from services.customer_service import CustomerService
 from services.zip_backup_service import ZipBackupService
-from utils.datetime_utils import now_iso, get_local_now
+from utils.datetime_utils import now_iso
 
 
 def test_new_case_creation_and_cockpit_load_chain(tmp_path: Path):
@@ -254,13 +252,10 @@ def test_multi_view_search_and_layout_refresh_chain(tmp_path: Path):
 
 def test_new_case_dialog_manual_creation_date_validation():
     """UI Workflow Chain 8: Test manual creation date selection (past date allowed, future date rejected)."""
-    from datetime import datetime, timedelta
     from typing import Any
     from models.customer import Customer
     from models.schema import QuestionSchema
-    from models.case import Case
     from ui.dialogs.new_case_dialog import NewCaseDialog
-    from utils.datetime_utils import parse_iso, get_local_now
 
     cust = Customer(customer_id="K-10001", practice_name="Test Praxis")
     schema = QuestionSchema(schema_id="default", display_name="Default Schema")
@@ -495,7 +490,7 @@ def test_layout_combo_updates_on_view_redirect(tmp_path: Path):
     from services.storage_service import StorageService
     from services.seed_service import SeedService
     from ui.app import SupportCockpitApp
-    from enums import LayoutMode, get_layout_display
+    from enums import get_layout_display
 
     config = AppConfig(workspace_dir=tmp_path, username="test_agent")
     storage = StorageService(config)
@@ -549,7 +544,6 @@ def test_layout_combo_updates_on_view_redirect(tmp_path: Path):
 
 def test_multiline_info_bar_and_card_tooltip(tmp_path: Path):
     """UI Workflow Chain 13: Cockpit view stacks customer info in 3 vertical lines and case card tooltips build correctly."""
-    from typing import Any
     from config import AppConfig
     from services.storage_service import StorageService
     from services.seed_service import SeedService

@@ -2,7 +2,6 @@
 
 import time
 from pathlib import Path
-import pytest
 from config import AppConfig
 from enums import UrgencyLevel, BoardColumn, Actor
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry

@@ -5,12 +5,9 @@ import zipfile
 from pathlib import Path
 import pytest
 from config import AppConfig
-from models.case import Case, Classification, CaseCustomer, TimelineEntry
-from models.customer import Customer, Contact
-from models.snippet import Snippet
-from models.schema import QuestionSchema, SchemaField
+from models.case import Case, Classification, CaseCustomer
 from models.export_template import ExportTemplate
-from models.profile import Colleague, UserProfile
+from models.profile import Colleague
 from services.storage_service import StorageService
 from services.snippet_service import SnippetService
 from services.zip_backup_service import ZipBackupService

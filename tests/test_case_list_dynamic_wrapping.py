@@ -1,7 +1,6 @@
 """Tests for dynamic wraplength recalculation on configure and 3-line followup cards in CaseListWidget."""
 
 import customtkinter as ctk
-import pytest
 from enums import Actor, UrgencyLevel
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from ui.widgets.case_list_widget import CaseListWidget

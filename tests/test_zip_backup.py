@@ -1,5 +1,4 @@
 from pathlib import Path
-import pytest
 import zipfile
 from services.storage_service import StorageService, AppConfig
 from services.zip_backup_service import ZipBackupService

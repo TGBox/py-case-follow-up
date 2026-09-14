@@ -2,7 +2,6 @@
 
 import sys
 import customtkinter as ctk
-import pytest
 from services.tray_service import TrayService
 from ui.widgets.toast_notification import ToastNotification
 

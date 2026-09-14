@@ -1,5 +1,5 @@
 import pytest
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.case import Case, CaseCustomer, Classification
 from models.export_template import ExportTemplate
 from models.schema import QuestionSchema, SchemaField
 from services.export_service import ExportService

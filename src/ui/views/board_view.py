@@ -199,89 +199,103 @@ class BoardView(ctk.CTkFrame):
 
         self.create_board()
 
-    def create_board(self):
+    def _columns_def(self) -> list[tuple[str, str]]:
         from services.i18n_service import tr
-
-        # Clear existing children
-        for child in self.winfo_children():
-            child.destroy()
-
-        self.grid_rowconfigure(0, weight=1)
-        cols_def = [
+        return [
             ("support", tr("board.col_support_header", "📥 Support / In Bearbeitung")),
             ("dev", tr("board.col_dev_header", "💻 Entwickler / Dev-Team")),
             ("followup", tr("board.col_followup_header", "🔔 Wiedervorlage / Warten")),
             ("completed", tr("board.col_completed_header", "✓ Erledigte Fälle")),
         ]
 
+    def create_board(self):
+        # Clear existing children
+        for child in self.winfo_children():
+            child.destroy()
+
+        self.grid_rowconfigure(0, weight=1)
+
         self.col_headers: dict[str, ctk.CTkLabel] = {}
         self.col_scrolls: dict[str, ctk.CTkScrollableFrame] = {}
+        self.col_frames: dict[str, ctk.CTkFrame] = {}
         # Columns are new, so every cached card signature is stale.
         self._col_signatures: dict[str, list] = {}
 
-        for idx, (col_key, col_title) in enumerate(cols_def):
-            is_collapsed = self.collapsed_states.get(col_key, False)
+        for idx, (col_key, col_title) in enumerate(self._columns_def()):
+            self._build_column(idx, col_key, col_title)
 
-            if is_collapsed:
-                # Collapsed slim column
-                self.grid_columnconfigure(idx, weight=0, minsize=42)
-                col_frame = ctk.CTkFrame(self, width=42, fg_color=("gray80", "gray25"))
-                col_frame.grid(row=0, column=idx, sticky="nsew", padx=2, pady=4)
-                col_frame.grid_propagate(False)
+    def _build_column(self, idx: int, col_key: str, col_title: str) -> None:
+        """Builds exactly one board column, collapsed or expanded.
 
-                # Expand button
-                btn_exp = ctk.CTkButton(
-                    col_frame,
-                    text=tr("board.expand_btn", "▶"),
-                    width=28,
-                    height=28,
-                    command=lambda k=col_key: self.toggle_column_collapse(k),
-                    fg_color=("gray75", "gray35"),
-                    hover_color=("gray65", "gray50"),
-                )
-                btn_exp.pack(anchor="n", pady=8, padx=6)
+        Split out of create_board() so collapsing a column can replace that
+        one column instead of tearing down and rebuilding all four.
+        """
+        from services.i18n_service import tr
 
-                lbl = ctk.CTkLabel(
-                    col_frame,
-                    text=f"{col_title.split(' ')[0]}\n({col_key[0].upper()})",
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                )
-                lbl.pack(pady=10)
-                self.col_headers[col_key] = lbl
-            else:
-                # Expanded full column
-                self.grid_columnconfigure(idx, weight=1, minsize=220)
-                col_frame = ctk.CTkFrame(self)
-                col_frame.grid(row=0, column=idx, sticky="nsew", padx=4, pady=4)
+        is_collapsed = self.collapsed_states.get(col_key, False)
 
-                header_frame = ctk.CTkFrame(col_frame, height=36, fg_color="transparent")
-                header_frame.pack(fill="x", padx=6, pady=(6, 4))
+        if is_collapsed:
+            # Collapsed slim column
+            self.grid_columnconfigure(idx, weight=0, minsize=42)
+            col_frame = ctk.CTkFrame(self, width=42, fg_color=("gray80", "gray25"))
+            col_frame.grid(row=0, column=idx, sticky="nsew", padx=2, pady=4)
+            col_frame.grid_propagate(False)
+            self.col_frames[col_key] = col_frame
 
-                header_lbl = ctk.CTkLabel(
-                    header_frame,
-                    text=col_title,
-                    font=ctk.CTkFont(size=13, weight="bold"),
-                    anchor="w",
-                )
-                header_lbl.pack(side="left", padx=4)
-                self.col_headers[col_key] = header_lbl
+            # Expand button
+            btn_exp = ctk.CTkButton(
+                col_frame,
+                text=tr("board.expand_btn", "▶"),
+                width=28,
+                height=28,
+                command=lambda k=col_key: self.toggle_column_collapse(k),
+                fg_color=("gray75", "gray35"),
+                hover_color=("gray65", "gray50"),
+            )
+            btn_exp.pack(anchor="n", pady=8, padx=6)
 
-                # Collapse button
-                btn_col = ctk.CTkButton(
-                    header_frame,
-                    text=tr("board.collapse_btn", "◀ Zuklappen"),
-                    width=80,
-                    height=24,
-                    font=ctk.CTkFont(size=10),
-                    command=lambda k=col_key: self.toggle_column_collapse(k),
-                    fg_color=("gray75", "gray35"),
-                    hover_color=("gray65", "gray50"),
-                )
-                btn_col.pack(side="right", padx=2)
+            lbl = ctk.CTkLabel(
+                col_frame,
+                text=f"{col_title.split(' ')[0]}\n({col_key[0].upper()})",
+                font=ctk.CTkFont(size=12, weight="bold"),
+            )
+            lbl.pack(pady=10)
+            self.col_headers[col_key] = lbl
+        else:
+            # Expanded full column
+            self.grid_columnconfigure(idx, weight=1, minsize=220)
+            col_frame = ctk.CTkFrame(self)
+            col_frame.grid(row=0, column=idx, sticky="nsew", padx=4, pady=4)
+            self.col_frames[col_key] = col_frame
 
-                scroll = ctk.CTkScrollableFrame(col_frame)
-                scroll.pack(fill="both", expand=True, padx=4, pady=4)
-                self.col_scrolls[col_key] = scroll
+            header_frame = ctk.CTkFrame(col_frame, height=36, fg_color="transparent")
+            header_frame.pack(fill="x", padx=6, pady=(6, 4))
+
+            header_lbl = ctk.CTkLabel(
+                header_frame,
+                text=col_title,
+                font=ctk.CTkFont(size=13, weight="bold"),
+                anchor="w",
+            )
+            header_lbl.pack(side="left", padx=4)
+            self.col_headers[col_key] = header_lbl
+
+            # Collapse button
+            btn_col = ctk.CTkButton(
+                header_frame,
+                text=tr("board.collapse_btn", "◀ Zuklappen"),
+                width=80,
+                height=24,
+                font=ctk.CTkFont(size=10),
+                command=lambda k=col_key: self.toggle_column_collapse(k),
+                fg_color=("gray75", "gray35"),
+                hover_color=("gray65", "gray50"),
+            )
+            btn_col.pack(side="right", padx=2)
+
+            scroll = ctk.CTkScrollableFrame(col_frame)
+            scroll.pack(fill="both", expand=True, padx=4, pady=4)
+            self.col_scrolls[col_key] = scroll
 
     def toggle_column_collapse(self, col_key: str):
         curr = self.collapsed_states.get(col_key, False)
@@ -294,7 +308,29 @@ class BoardView(ctk.CTkFrame):
             if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):
                 self.app_config.ui_settings.board_collapsed[col_key] = not curr
 
-        self.create_board()
+        # Only this column changed. create_board() would destroy and rebuild all
+        # four columns, and because it also wipes the card signatures every card
+        # of every column would be re-rendered on top of that - for one toggle.
+        columns = self._columns_def()
+        entry = next(((i, key, title) for i, (key, title) in enumerate(columns) if key == col_key), None)
+        if entry is None or not getattr(self, "col_frames", None):
+            self.create_board()
+            self.refresh_board()
+            return
+
+        idx, _key, col_title = entry
+        old_frame = self.col_frames.pop(col_key, None)
+        self.col_headers.pop(col_key, None)
+        self.col_scrolls.pop(col_key, None)
+        # This column's cards are gone with its frame, the other three are not.
+        self._col_signatures.pop(col_key, None)
+        if old_frame is not None:
+            try:
+                old_frame.destroy()
+            except Exception:
+                pass
+
+        self._build_column(idx, col_key, col_title)
         self.refresh_board()
 
     def set_cases(self, cases: list[Case]):

@@ -285,3 +285,107 @@ def test_ctk_tooltip_lifecycle(test_env):
     tooltip.on_enter(event)
     tooltip.on_leave(event)
     tooltip.on_destroy(event)
+
+
+# --- Collapsing one board column must not rebuild the other three ---
+
+def _board(root, case_count: int = 12):
+    from ui.views.board_view import BoardView
+
+    board = BoardView(
+        root,
+        on_select_case=lambda c: None,
+        on_switch_to_cockpit=lambda c: None,
+        on_open_followup=lambda c: None,
+        on_toggle_complete=lambda c: None,
+        on_change_actor=lambda c, a: None,
+    )
+    board.pack(fill="both", expand=True)
+    cases = []
+    for i in range(case_count):
+        case = Case(
+            case_id=f"T-{i:04d}",
+            customer=CaseCustomer(customer_id=f"K-{i}", practice_name=f"Praxis {i}"),
+            classification=Classification(title=f"Fall {i}"),
+            workflow_status=WorkflowStatus(
+                current_actor=Actor.DEVELOPMENT if i % 2 else Actor.SUPPORT,
+                is_completed=False,
+            ),
+        )
+        cases.append(case)
+    board.set_cases(cases)
+    return board
+
+
+def test_collapsing_one_column_replaces_only_that_column():
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root)
+        root.update()
+
+        before = {key: str(frame) for key, frame in board.col_frames.items()}
+        assert len(before) == 4
+
+        board.toggle_column_collapse("dev")
+        root.update()
+
+        after = {key: str(frame) for key, frame in board.col_frames.items()}
+        replaced = [key for key in before if before[key] != after[key]]
+
+        assert replaced == ["dev"], f"Es wurden zu viele Spalten neu gebaut: {replaced}"
+        assert set(after) == {"support", "dev", "followup", "completed"}
+        assert board.collapsed_states["dev"] is True
+        assert "dev" not in board.col_scrolls, "eingeklappte Spalte braucht keinen Scrollbereich"
+    finally:
+        root.destroy()
+
+
+def test_collapsing_keeps_the_other_columns_cards_alive():
+    """The cached card signatures of untouched columns must survive a toggle."""
+    from ui.views.board_view import KanbanCardWidget
+
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root)
+        root.update()
+
+        support_scroll = board.col_scrolls["support"]
+        cards_before = [str(w) for w in support_scroll.winfo_children() if isinstance(w, KanbanCardWidget)]
+        assert cards_before, "Testaufbau ohne Karten in 'support'"
+        signatures_before = dict(board._col_signatures)
+
+        board.toggle_column_collapse("dev")
+        root.update()
+
+        cards_after = [str(w) for w in board.col_scrolls["support"].winfo_children() if isinstance(w, KanbanCardWidget)]
+        assert cards_after == cards_before, "Karten fremder Spalten wurden neu gebaut"
+        assert board._col_signatures.get("support") == signatures_before.get("support")
+    finally:
+        root.destroy()
+
+
+def test_expanding_restores_the_column():
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root)
+        root.update()
+
+        board.toggle_column_collapse("dev")
+        root.update()
+        assert "dev" not in board.col_scrolls
+
+        board.toggle_column_collapse("dev")
+        root.update()
+
+        assert board.collapsed_states["dev"] is False
+        assert "dev" in board.col_scrolls
+        assert "dev" in board.col_headers
+        assert len(board.col_frames) == 4
+    finally:
+        root.destroy()

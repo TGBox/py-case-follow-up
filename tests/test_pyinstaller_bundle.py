@@ -66,19 +66,56 @@ def test_spec_file_includes_locales() -> None:
     assert "('locales', 'locales')" in spec_content or '("locales", "locales")' in spec_content
 
 
+REBUILD_HINT = "uv run pyinstaller py-case-follow-up.spec"
+
+
+def _stale_build_inputs(exe_path: Path, project_root: Path) -> list[str]:
+    """Returns the build inputs that are newer than the executable.
+
+    dist/ is gitignored, so the .exe is always a local leftover that nobody
+    rebuilds on checkout. An executable predating the spec or the locale files
+    cannot possibly contain their current content, and the resulting failure
+    says nothing about whether bundling actually works.
+    """
+    exe_mtime = exe_path.stat().st_mtime
+    inputs = [project_root / "py-case-follow-up.spec", *sorted((project_root / "locales").glob("*.json"))]
+    return [
+        str(p.relative_to(project_root)) for p in inputs if p.exists() and p.stat().st_mtime > exe_mtime
+    ]
+
+
 def test_built_executable_contains_locales() -> None:
-    """If dist/py-case-follow-up.exe has been built, verify all locale files are bundled."""
-    exe_path = Path(__file__).resolve().parent.parent / "dist" / "py-case-follow-up.exe"
+    """If a current dist/py-case-follow-up.exe exists, verify all locale files are bundled.
+
+    Skips when there is no build, or when the build predates the spec/locales it
+    would have to contain - in both cases there is simply nothing to verify yet.
+    A build that IS current but misses a locale is a real packaging bug and fails.
+    """
+    project_root = Path(__file__).resolve().parent.parent
+    exe_path = project_root / "dist" / "py-case-follow-up.exe"
     if not exe_path.exists():
-        pytest.skip("dist/py-case-follow-up.exe has not been built yet")
+        pytest.skip(f"dist/py-case-follow-up.exe has not been built yet - build it with: {REBUILD_HINT}")
+
+    stale_inputs = _stale_build_inputs(exe_path, project_root)
+    if stale_inputs:
+        pytest.skip(
+            "dist/py-case-follow-up.exe is older than "
+            f"{', '.join(stale_inputs)} - it cannot contain their current content. "
+            f"Rebuild to make this test meaningful: {REBUILD_HINT}"
+        )
 
     from PyInstaller.archive.readers import CArchiveReader  # type: ignore
 
     reader = CArchiveReader(str(exe_path))
     locale_entries = [k for k in reader.toc if "locale" in k.lower()]
-    assert any("de.json" in k for k in locale_entries), "de.json must be in bundle"
-    assert any("en.json" in k for k in locale_entries), "en.json must be in bundle"
-    assert any("sv.json" in k for k in locale_entries), "sv.json must be in bundle"
+
+    # Reaching here means the build is current, so a missing locale is a genuine
+    # packaging failure, not a stale artefact - rebuilding will not fix it.
+    for lang in ("de", "en", "sv"):
+        assert any(f"{lang}.json" in k for k in locale_entries), (
+            f"{lang}.json missing from an up-to-date build - check the datas entry in "
+            f"py-case-follow-up.spec. Bundled locale entries: {sorted(locale_entries)}"
+        )
 
     # Verify content extraction and translation differentiation
     translations = {}

@@ -1,11 +1,10 @@
 """Unit and integration tests for Wiedervorlage multi-line formatting, compact line spacing, and hover tooltip behavior."""
 
-import pytest
 import customtkinter as ctk
 from pathlib import Path
 from utils.ui_utils import wrap_and_truncate_text
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from enums import Actor, UrgencyLevel
+from enums import Actor
 from config import AppConfig
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService

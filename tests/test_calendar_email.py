@@ -1,12 +1,10 @@
-import os
 from pathlib import Path
-from datetime import datetime
 from models.case import Case, WorkflowStatus
 from models.customer import Customer, Contact
 from services.calendar_email_service import CalendarEmailService
 
 
-from models.case import Case, WorkflowStatus, Classification, CaseCustomer, TimelineEntry
+from models.case import Classification, CaseCustomer, TimelineEntry
 
 
 def create_sample_case() -> Case:

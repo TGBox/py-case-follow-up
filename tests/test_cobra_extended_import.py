@@ -1,6 +1,5 @@
 """Tests for 18-column Cobra CRM import, extended Customer fields, and merge logic."""
 
-import pytest
 from pathlib import Path
 from models.customer import Customer
 from services.cobra_crm_import_service import CobraCrmImportService

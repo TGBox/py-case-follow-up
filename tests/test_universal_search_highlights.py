@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 import tkinter as tk
 import customtkinter as ctk
@@ -425,3 +424,104 @@ def test_module_tag_picker_popup_highlighting():
     finally:
         root.destroy()
 
+
+
+# --- Anti-regression: layout/interaction defects found reviewing the search work ---
+
+def test_highlighted_label_has_no_duplicate_click_bindings():
+    """on_click must be bound once, on the widget only.
+
+    Tk invokes tag bindings *in addition to* the widget binding, so binding
+    on_click to the 'normal'/'match' tags as well fired it twice per real click
+    (wiki links opened twice, toggle handlers cancelled themselves out).
+    event_generate() without warp never routes to tag bindings, so this is
+    asserted structurally rather than by synthesising a click.
+    """
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        lbl = create_highlighted_label(
+            root,
+            text="Praxis Welz Travemünde",
+            query=["welz"],
+            font=("Segoe UI", 11),
+            text_color=("black", "white"),
+            bg_color=("gray85", "gray20"),
+            on_click=lambda e: None,
+        )
+        def tag_binding(tag: str) -> str:
+            # tkinter's tag_bind() cannot be used to *query* a binding (func is
+            # required and passing None unbinds), so ask Tcl directly.
+            return str(lbl.tk.call(lbl._w, "tag", "bind", tag, "<Button-1>"))  # type: ignore[attr-defined]
+
+        assert lbl.bind("<Button-1>"), "widget-level click binding is missing"
+        assert tag_binding("normal") == "", "duplicate click binding on 'normal' tag"
+        assert tag_binding("match") == "", "duplicate click binding on 'match' tag"
+    finally:
+        root.destroy()
+
+
+def test_highlighted_label_is_wired_for_auto_sizing():
+    """A wrapped label must size itself from measured display lines, not a constant.
+
+    tests/conftest.py force-withdraws every window, so no widget ever receives
+    real geometry here and the wrapping itself cannot be measured headless. What
+    is checkable is that the sizing hook exists and is wired to <Configure> -
+    that hook is what replaced the old hardcoded height of 2 lines, which
+    silently swallowed everything past line 2 of a wiki snippet or a long case
+    subtitle.
+    """
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        wrapped = create_highlighted_label(
+            root,
+            text="Der Druckertreiber muss nach einem Update neu installiert werden.",
+            query=["treiber"],
+            font=("Segoe UI", 11),
+            text_color=("black", "white"),
+            bg_color=("gray85", "gray20"),
+            wrap="word",
+        )
+        assert wrapped.bind("<Configure>"), "wrapped label has no auto-sizing <Configure> hook"
+
+        # wrap="none" labels are single-line by definition and must stay at 1.
+        flat = create_highlighted_label(
+            root,
+            text="T-2026-1042",
+            query=["2026"],
+            font=("Segoe UI", 11),
+            text_color=("black", "white"),
+            bg_color=("gray85", "gray20"),
+            wrap="none",
+        )
+        assert int(flat.cget("height")) == 1
+    finally:
+        root.destroy()
+
+
+def test_auto_hiding_scrollbar_is_installed_only_once():
+    """AutoScrollableFrame must not end up with two competing scrollbar controllers.
+
+    CTkScrollableFrame.__init__ is patched to install the auto-hide handler, and
+    AutoScrollableFrame installed it a second time after super().__init__().
+    """
+    from utils.ui_utils import AutoScrollableFrame, enable_auto_hiding_scrollbar
+
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        frame = AutoScrollableFrame(root, width=200, height=150)
+        frame.pack()
+        root.update()
+
+        assert getattr(frame, "_auto_hide_scrollbar_installed", False) is True
+
+        canvas = getattr(frame, "_parent_canvas", getattr(frame, "_canvas", None))
+        assert canvas is not None
+        before = len(canvas.bind("<Configure>").splitlines())
+        enable_auto_hiding_scrollbar(frame)
+        after = len(canvas.bind("<Configure>").splitlines())
+        assert after == before, "repeat call added another <Configure> handler"
+    finally:
+        root.destroy()

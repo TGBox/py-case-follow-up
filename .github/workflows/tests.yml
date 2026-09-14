@@ -44,6 +44,49 @@ jobs:
         # baseline run has been reviewed, add e.g. --cov-fail-under=70 to the
         # "Run test suite" step above to stop coverage regressing silently.
 
+  build:
+    # dist/ is gitignored, so on a fresh checkout there is no executable and
+    # test_built_executable_contains_locales skips itself - it has never actually
+    # run in CI. Building here is what turns it into a real check: it is the only
+    # test that proves the packaged .exe really carries the locale files the app
+    # loads at runtime, which a wrong/missing datas entry in the spec would break
+    # silently (the app starts, every label falls back to its hardcoded default).
+    #
+    # needs: pytest keeps this off the (2x-priced) Windows minutes while the suite
+    # is red - drop it if you'd rather learn about test and packaging breakage in
+    # the same run.
+    needs: pytest
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies (uv.lock)
+        run: uv sync --locked
+
+      - name: Build executable
+        run: uv run pyinstaller --noconfirm py-case-follow-up.spec
+
+      - name: Verify bundled executable
+        # Has to be the same job as the build: dist/ does not carry over to
+        # another job. --no-cov because coverage of a four-test file would only
+        # produce a misleading second report.
+        run: uv run pytest tests/test_pyinstaller_bundle.py -q --no-cov
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: py-case-follow-up-exe
+          path: dist/py-case-follow-up.exe
+          retention-days: 14
+          if-no-files-found: error
+
   typecheck:
     # Was continue-on-error: true while the codebase had pre-existing pyright
     # errors; now that a full cleanup pass has landed (78 -> 0), this blocks
@@ -67,14 +110,15 @@ jobs:
         run: uvx pyright src
 
   lint:
-    # Non-blocking for now (same reasoning the typecheck job used to have):
-    # this is ruff's first pass over the codebase, and its actual findings
-    # here are still unknown/unreviewed. Once a baseline pass has been
-    # triaged (real bugs fixed, remaining noise either fixed or suppressed
-    # with a per-line/per-file ignore + reason), remove continue-on-error so
-    # new lint violations fail the build like typecheck now does.
+    # The baseline pass is done: src was already clean, and tests went from 389
+    # findings to zero (362 autofixed, B010 switched off for tests with a reason
+    # in pyproject.toml, the two stray mid-file imports moved to the top). So
+    # continue-on-error is gone - a new violation fails the build like typecheck.
+    #
+    # tests/ is linted too now. Nearly all of those 389 findings came from test
+    # suites generated in bulk, which carried copied import blocks nobody ever
+    # read; without the scope covering tests, the next such batch lands unnoticed.
     runs-on: ubuntu-latest
-    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -89,4 +133,4 @@ jobs:
         run: uv sync --locked
 
       - name: Run ruff
-        run: uv run ruff check src
+        run: uv run ruff check src main.py tests

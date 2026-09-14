@@ -910,7 +910,8 @@
     "save_file_btn": "Save to file...",
     "select_template": "Select template:",
     "window_title": "{base_title} — {case_id}",
-    "file_saved": "💾 File saved: {name}"
+    "file_saved": "💾 File saved: {name}",
+    "export_for_case": "Export for case {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Developer ticket for software bugs, crashes, and interface issues.",
@@ -975,7 +976,9 @@
     "recipient": "Recipient / Person name (select from colleague list or enter):",
     "select_colleague": "- Select from colleague list -",
     "absence_warning": "⚠ ATTENTION: {name} is currently absent{reason}!",
-    "window_title": "{base_title} (Case {case_id})"
+    "window_title": "{base_title} (Case {case_id})",
+    "header_full": "👤 Hand over responsibility for {case_id}",
+    "current_line": "Current responsibility: {actor} | Customer: {customer}"
   },
   "help_content": {
     "advanced_search_filters": {

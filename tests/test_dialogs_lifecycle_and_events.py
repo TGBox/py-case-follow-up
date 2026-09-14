@@ -5,12 +5,12 @@ from pathlib import Path
 import customtkinter as ctk
 import pytest
 from config import AppConfig
-from enums import Actor, UrgencyLevel, TargetType
+from enums import UrgencyLevel
 from models.case import Case, CaseCustomer, Classification
-from models.customer import Customer, Contact
+from models.customer import Customer
 from models.export_template import ExportTemplate
 from models.profile import UserProfile, Colleague
-from models.schema import QuestionSchema, SchemaField
+from models.schema import QuestionSchema
 from services.storage_service import StorageService
 from services.export_service import ExportService
 from services.calendar_email_service import CalendarEmailService

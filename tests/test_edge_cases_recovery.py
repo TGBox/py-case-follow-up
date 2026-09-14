@@ -1,12 +1,7 @@
 """Comprehensive edge case, invalid input handling, and error recovery test suite."""
 
-import json
 from pathlib import Path
-from typing import Any
-import pytest
 from config import AppConfig
-from enums import SyncMode
-from models.case import Case
 from models.profile import UserProfile
 from services.seed_service import SeedService
 from services.storage_service import StorageService

@@ -1,6 +1,5 @@
 """Tests for Colleague model absence tracking, holiday reasons, and serialization."""
 
-import pytest
 from models.profile import Colleague
 
 

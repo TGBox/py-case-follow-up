@@ -14,8 +14,19 @@ class SearchableCombobox(ctk.CTkFrame):
         width: int = 380,
         height: int = 32,
         placeholder_text: str | None = None,
+        search_index: dict[str, str] | None = None,
+        summary_provider: Callable[[str, str], str | None] | None = None,
         **kwargs: Any
     ):
+        """search_index maps a display value to extra text that should also be
+        searchable (contacts, website, customer numbers - anything not visible in
+        the label itself). summary_provider returns a short "matched here" line
+        for a value, so a hit in one of those hidden fields is explained instead
+        of looking like an unrelated entry.
+
+        Both are optional: without them the widget behaves exactly as before,
+        matching on the display strings and rendering plain buttons.
+        """
         super().__init__(master, fg_color="transparent", width=width, height=height, **kwargs)
         self.pack_propagate(False)
 
@@ -23,6 +34,8 @@ class SearchableCombobox(ctk.CTkFrame):
         self._values: list[str] = list(values) if values else []
         self._command = command
         self._selected_value: str = ""
+        self._search_index: dict[str, str] = dict(search_index) if search_index else {}
+        self._summary_provider = summary_provider
         self.placeholder_text = placeholder_text if placeholder_text is not None else tr("common.please_select", "– Bitte auswählen –")
         self._popover: ctk.CTkToplevel | None = None
         self._focus_next: Any | None = None
@@ -52,6 +65,27 @@ class SearchableCombobox(ctk.CTkFrame):
         costs the user an extra click on the field they want to fill in next.
         """
         self._focus_next = widget
+
+    def set_search_index(self, search_index: dict[str, str] | None) -> None:
+        """Replaces the hidden searchable text, e.g. after the value list changed."""
+        self._search_index = dict(search_index) if search_index else {}
+
+    @property
+    def _rich_results(self) -> bool:
+        """Rich rows are only used where extra search data was actually supplied."""
+        return bool(self._search_index or self._summary_provider)
+
+    def _haystack(self, value: str) -> str:
+        extra = self._search_index.get(value, "")
+        return f"{value} {extra}".lower() if extra else value.lower()
+
+    def _matches(self, value: str, query_lower: str) -> bool:
+        return query_lower in self._haystack(value)
+
+    def _filtered(self, query_lower: str) -> list[str]:
+        if not query_lower:
+            return self._values
+        return [v for v in self._values if self._matches(v, query_lower)]
 
     def set_values(self, values: list[str], default_value: str | None = None) -> None:
         self._values = list(values)
@@ -234,20 +268,15 @@ class SearchableCombobox(ctk.CTkFrame):
             _do()
 
     def _on_search_changed(self, event=None) -> None:
-        query = self.search_entry.get().strip().lower()
-        if not query:
-            filtered = self._values
-        else:
-            filtered = [v for v in self._values if query in v.lower()]
-        self._render_options(filtered)
+        raw_query = self.search_entry.get().strip()
+        self._render_options(self._filtered(raw_query.lower()), raw_query)
 
     def _on_enter_pressed(self, event=None) -> None:
-        query = self.search_entry.get().strip().lower()
-        filtered = [v for v in self._values if query in v.lower()] if query else self._values
+        filtered = self._filtered(self.search_entry.get().strip().lower())
         if filtered:
             self._select_item(filtered[0])
 
-    def _render_options(self, items: list[str]) -> None:
+    def _render_options(self, items: list[str], query: str = "") -> None:
         for w in self.options_scroll.winfo_children():
             w.destroy()
 
@@ -260,6 +289,10 @@ class SearchableCombobox(ctk.CTkFrame):
                 font=ctk.CTkFont(size=11),
                 text_color="gray",
             ).pack(pady=10)
+            return
+
+        if query and self._rich_results:
+            self._render_rich_options(items, query)
             return
 
         for item in items:
@@ -279,6 +312,64 @@ class SearchableCombobox(ctk.CTkFrame):
                 command=lambda val=item: self._select_item(val),
             )
             btn.pack(fill="x", pady=1, padx=2)
+
+    def _render_rich_options(self, items: list[str], query: str) -> None:
+        """Renders one row per hit with the matched text highlighted.
+
+        A hit in a hidden field (a contact, the website, a VM number) gets a
+        second line naming what actually matched - otherwise the row looks like
+        it has nothing to do with the query the user typed.
+        """
+        from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
+
+        for item in items:
+            is_selected = item == self._selected_value
+            row_bg = ("#2563eb", "#1d4ed8") if is_selected else ("gray90", "gray18")
+            text_col = ("white", "white") if is_selected else ("black", "white")
+
+            row = ctk.CTkFrame(self.options_scroll, fg_color=row_bg, corner_radius=4, cursor="hand2")
+            row.pack(fill="x", pady=1, padx=2)
+
+            def on_click(_event=None, val=item):
+                self._select_item(val)
+
+            row.bind("<Button-1>", on_click)
+
+            create_highlighted_label(
+                row,
+                text=item,
+                query=query,
+                font=ctk.CTkFont(size=11),
+                text_color=text_col,
+                bg_color=row_bg,
+                wrap="none",
+                on_click=on_click,
+                scroll_frame=self.options_scroll,
+            ).pack(fill="x", anchor="w", padx=8, pady=(4, 0))
+
+            summary = None
+            if self._summary_provider is not None:
+                try:
+                    summary = self._summary_provider(item, query)
+                except Exception:
+                    summary = None
+
+            if summary:
+                create_highlighted_label(
+                    row,
+                    text=f"↳ {summary}",
+                    query=query,
+                    font=ctk.CTkFont(size=10),
+                    text_color=("gray45", "gray65") if not is_selected else ("white", "white"),
+                    bg_color=row_bg,
+                    wrap="word",
+                    on_click=on_click,
+                    scroll_frame=self.options_scroll,
+                ).pack(fill="x", anchor="w", padx=(16, 8), pady=(0, 4))
+            else:
+                ctk.CTkFrame(row, fg_color="transparent", height=4).pack()
+
+            bind_mouse_wheel_to_canvas(row, self.options_scroll)
 
     def _select_item(self, val: str) -> None:
         self.set_selected(val)

@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from models.profile import WikiSettings
 from services.wiki_sync_service import WikiSyncService

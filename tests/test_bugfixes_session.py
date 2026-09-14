@@ -70,7 +70,7 @@ def test_report_tkinter_exception_signature():
         sys.path.insert(0, root_dir)
 
     main_mod = importlib.import_module("main")
-    _report_tkinter_exception = getattr(main_mod, "_report_tkinter_exception")
+    _report_tkinter_exception = main_mod._report_tkinter_exception
 
     try:
         raise ValueError("Test error for exception handler")

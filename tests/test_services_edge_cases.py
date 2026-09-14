@@ -5,11 +5,10 @@ import sqlite3
 from pathlib import Path
 import pytest
 from config import AppConfig
-from enums import Actor, UrgencyLevel, BoardColumn
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from enums import UrgencyLevel
+from models.case import Case, CaseCustomer, Classification
 from models.profile import Colleague
 from models.export_template import ExportTemplate
-from models.schema import QuestionSchema, SchemaField
 from services.storage_service import StorageService
 from services.outlook_integration_service import OutlookIntegrationService
 from services.p2p_sync_service import P2PSyncService

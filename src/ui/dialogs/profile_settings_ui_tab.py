@@ -35,6 +35,14 @@ def get_font_scale_val_from_display(display_text: str) -> float:
     return 1.0
 
 
+#: Key/default pairs for the popup target menu. Kept in one place so the
+#: widget and its language refresh can never drift apart.
+POPUP_TARGET_CHOICES = [
+    ("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"),
+    ("profile.popup_target_primary", "Hauptbildschirm"),
+]
+
+
 class UiSettingsTabMixin:
     """Mixin for Appearance, Layout, Font Scaling, and Column Widths."""
 
@@ -117,7 +125,7 @@ class UiSettingsTabMixin:
         self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
         self.popup_target_combo = ctk.CTkOptionMenu(
             right_col,
-            values=[tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)"), tr("profile.popup_target_primary", "Hauptbildschirm")],
+            values=[tr(key, default) for key, default in POPUP_TARGET_CHOICES],
             width=380,
         )
         curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
@@ -264,11 +272,10 @@ class UiSettingsTabMixin:
         if hasattr(self, "popup_target_lbl"):
             self.popup_target_lbl.configure(text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
         if hasattr(self, "popup_target_combo"):
-            curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
-            opt_app = tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)")
-            opt_pri = tr("profile.popup_target_primary", "Hauptbildschirm")
-            self.popup_target_combo.configure(values=[opt_app, opt_pri])
-            self.popup_target_combo.set(opt_app if curr_target == "APP_SCREEN" else opt_pri)
+            # Carries the selection over by position instead of re-reading the
+            # profile: a choice the user made but has not saved yet used to be
+            # silently reverted by a language change.
+            self.retranslate_choices(self.popup_target_combo, POPUP_TARGET_CHOICES)
         if hasattr(self, "col_widths_hdr_lbl"):
             self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
         if hasattr(self, "btn_reset_widths"):

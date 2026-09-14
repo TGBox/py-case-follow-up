@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from models.case import Case, CaseCustomer, TimelineEntry
 from models.export_template import ExportTemplate, TargetType

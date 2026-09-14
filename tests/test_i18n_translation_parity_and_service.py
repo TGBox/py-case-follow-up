@@ -43,7 +43,7 @@ def locale_data() -> dict[str, dict]:
     data = {}
     for lang in LANGUAGES:
         path = LOCALES_DIR / f"{lang}.json"
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data[lang] = json.load(f)
     return data
 
@@ -62,7 +62,7 @@ def test_all_three_locale_files_exist_and_parse():
     for lang in LANGUAGES:
         path = LOCALES_DIR / f"{lang}.json"
         assert path.exists(), f"locales/{lang}.json is missing"
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             data = json.load(f)
         assert isinstance(data, dict) and len(data) > 0
 
@@ -261,3 +261,113 @@ def test_localized_dict_resolves_translation_and_falls_back_to_initial_value(tmp
     # .values()/.items() must go through the same dynamic resolution.
     assert widget_texts.values() == ["Save", "Cancel (fallback)"]
     assert widget_texts.items() == [("save", "Save"), ("cancel", "Cancel (fallback)")]
+
+
+# --- Labels that embed a value must survive a language change ---
+
+def test_registered_labels_do_not_glue_tr_into_an_f_string():
+    """A label handed to register_i18n must carry its key, not a finished string.
+
+    register_i18n rebuilds a widget's text from key + placeholders on every
+    language change. If the text was assembled with an f-string that merely
+    embeds tr(...), only the string from the build-time language survives, and
+    a translator cannot move the embedded value to where their language needs
+    it. Views that re-render themselves wholesale (board, cockpit, case list)
+    are deliberately not covered - there the f-string is rebuilt anyway.
+    """
+    import ast
+    from pathlib import Path
+
+    src_dir = Path(__file__).resolve().parent.parent / "src"
+
+    def embeds_tr(node: ast.AST) -> bool:
+        if not isinstance(node, ast.JoinedStr):
+            return False
+        for part in ast.walk(node):
+            if isinstance(part, ast.Call) and getattr(part.func, "id", None) == "tr":
+                return True
+        return False
+
+    offenders = []
+    for path in sorted(src_dir.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            if getattr(node.func, "attr", None) != "register_i18n" or not node.args:
+                continue
+            widget_call = node.args[0]
+            if not isinstance(widget_call, ast.Call):
+                continue
+            for keyword in widget_call.keywords:
+                if keyword.arg in ("text", "placeholder_text") and embeds_tr(keyword.value):
+                    offenders.append(f"{path.relative_to(src_dir)}:{node.lineno}")
+
+    assert not offenders, "register_i18n mit tr() im f-String: " + ", ".join(offenders)
+
+
+def test_placeholder_keys_exist_in_every_locale():
+    """A new key that only lives in the source falls back to German everywhere."""
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parent.parent
+    required = [
+        ("handover_dialog", "header_full", "{case_id}"),
+        ("handover_dialog", "current_line", "{actor}"),
+        ("export_dialog", "export_for_case", "{case_id}"),
+    ]
+    for lang in ("de", "en", "sv"):
+        data = json.loads((root / "locales" / f"{lang}.json").read_text(encoding="utf-8"))
+        for section, key, placeholder in required:
+            value = data.get(section, {}).get(key)
+            assert value, f"{lang}.json fehlt {section}.{key}"
+            assert placeholder in value, f"{lang}.json: {section}.{key} ohne Platzhalter {placeholder}"
+
+
+def test_translated_placeholder_is_re_evaluated_on_language_change():
+    """A placeholder whose own value is translated must not freeze."""
+    import customtkinter as ctk
+
+    from services.i18n_service import get_i18n
+    from ui.dialogs.base_dialog import BaseDialog
+
+    i18n = get_i18n()
+    previous = i18n.current_language
+    root = ctk.CTk()
+    root.withdraw()
+    try:
+        class Demo(BaseDialog):
+            def __init__(self, parent):
+                super().__init__(parent)
+                self.setup_window(parent, "Demo", (300, 200), modal=False)
+
+        dialog = Demo(root)
+        calls = {"n": 0}
+
+        def actor_name():
+            calls["n"] += 1
+            return f"Stelle-{calls['n']}"
+
+        label = dialog.register_i18n(
+            ctk.CTkLabel(dialog, text="start"),
+            "does.not.exist",
+            "Zuständig: {actor}",
+            actor=actor_name,
+        )
+
+        dialog.refresh_ui_labels()
+        first = label.cget("text")
+        dialog.refresh_ui_labels()
+        second = label.cget("text")
+
+        assert first == "Zuständig: Stelle-1"
+        assert second == "Zuständig: Stelle-2", "Platzhalter wurde nicht neu ausgewertet"
+    finally:
+        i18n.current_language = previous
+        for child in list(root.winfo_children()):
+            try:
+                child.destroy()
+            except Exception:
+                pass
+        root.destroy()

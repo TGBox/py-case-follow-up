@@ -1,7 +1,6 @@
 """Tests for CalendarDialog time picker range (07:00 - 20:00) and hour/minute steppers."""
 
 import customtkinter as ctk
-import pytest
 from ui.widgets.date_picker import CalendarDialog
 
 

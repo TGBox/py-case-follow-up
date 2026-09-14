@@ -1,6 +1,5 @@
 """Tests for quick filter search tokens (is:internal, vip:true, etc.) in SearchService."""
 
-import pytest
 from models.case import Case, CaseCustomer
 from services.search_service import SearchService
 

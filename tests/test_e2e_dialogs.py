@@ -1,14 +1,11 @@
 """Comprehensive E2E integration tests for all Support Cockpit dialogs & services."""
 
 from pathlib import Path
-from typing import Any
-import pytest
 from config import AppConfig
 from enums import UrgencyLevel
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from models.customer import Customer, Contact
 from models.profile import Colleague
-from models.schema import QuestionSchema, SchemaField, FieldType
 from services.seed_service import SeedService
 from services.storage_service import StorageService
 from services.snippet_service import SnippetService

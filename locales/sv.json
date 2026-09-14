@@ -910,7 +910,8 @@
     "save_file_btn": "Spara till fil...",
     "select_template": "Välj mall:",
     "window_title": "{base_title} — {case_id}",
-    "file_saved": "💾 Filen sparad: {name}"
+    "file_saved": "💾 Filen sparad: {name}",
+    "export_for_case": "Exportera för ärende {case_id}"
   },
   "export_templates": {
     "gitlab_dev_bug_desc": "Utvecklarärende för programfel, krascher och gränssnittsproblem.",
@@ -975,7 +976,9 @@
     "recipient": "Mottagare / Personens namn (välj från kollegelistan eller ange):",
     "select_colleague": "- Välj från kollegelistan -",
     "absence_warning": "⚠ OBS: {name} är för närvarande frånvarande{reason}!",
-    "window_title": "{base_title} (Ärende {case_id})"
+    "window_title": "{base_title} (Ärende {case_id})",
+    "header_full": "👤 Överlämna ansvar för {case_id}",
+    "current_line": "Aktuellt ansvar: {actor} | Kund: {customer}"
   },
   "help_content": {
     "advanced_search_filters": {

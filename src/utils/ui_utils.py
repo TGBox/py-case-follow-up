@@ -6,6 +6,18 @@ import customtkinter as ctk
 
 def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
+    # CTkScrollableFrame.__init__ is patched to call this, and AutoScrollableFrame
+    # calls it again after super().__init__(). Without this guard every
+    # AutoScrollableFrame ends up with two independent controllers, each with its
+    # own _last_visible memo, fighting over the same scrollbar and scheduling a
+    # second set of <Configure> handlers and after() timers.
+    if getattr(scroll_frame, "_auto_hide_scrollbar_installed", False):
+        return
+    try:
+        scroll_frame._auto_hide_scrollbar_installed = True  # pyright: ignore[reportAttributeAccessIssue]
+    except Exception:
+        pass
+
     canvas = getattr(scroll_frame, "_parent_canvas", getattr(scroll_frame, "_canvas", None))
     scrollbar = getattr(scroll_frame, "_scrollbar", None)
 
@@ -28,6 +40,14 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     _updating = False
     _scheduled = False
     _last_visible = None
+    # Showing or hiding the bar resizes the canvas, which re-wraps the content,
+    # which can flip the decision straight back - an endless hide/show cascade
+    # that keeps the idle queue full, so update_idletasks() never returns and the
+    # app (or a test calling it) freezes. Two brakes: a dead band around the
+    # decision, and a hard cap on how often one frame may flip.
+    _HYSTERESIS_PX = 24
+    _MAX_FLIPS = 12
+    _flips = 0
 
     def update_scrollbar_visibility(*_args):
         nonlocal _scheduled
@@ -36,7 +56,7 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
         _scheduled = True
 
         def _do_update():
-            nonlocal _updating, _scheduled, _last_visible
+            nonlocal _updating, _scheduled, _last_visible, _flips
             _scheduled = False
             if _updating:
                 return
@@ -57,9 +77,25 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
                 if canvas_dim <= 1:
                     return
 
-                should_show = content_dim > (canvas_dim + 2)
+                if _last_visible is True:
+                    # Already visible: only hide once the content clears the dead
+                    # band, so a few pixels of reflow cannot toggle it back.
+                    should_show = content_dim > (canvas_dim - _HYSTERESIS_PX)
+                else:
+                    should_show = content_dim > (canvas_dim + 2)
+
                 if should_show == _last_visible:
                     return
+
+                if _flips >= _MAX_FLIPS:
+                    # This frame is oscillating. Settle on "visible", which is the
+                    # harmless end state (a scrollbar too many beats content the
+                    # user cannot reach), and stop reacting.
+                    if _last_visible is True:
+                        return
+                    should_show = True
+
+                _flips += 1
                 _last_visible = should_show
 
                 if not should_show:
@@ -637,6 +673,7 @@ def create_highlighted_label(
     on_click: Callable[[Any], Any] | None = None,
     scroll_frame: ctk.CTkScrollableFrame | None = None,
     max_height_chars: int = 35,
+    max_display_lines: int = 6,
 ) -> tk.Text:
     """Creates a seamless, borderless tk.Text widget with highlighted query occurrences.
 
@@ -652,29 +689,50 @@ def create_highlighted_label(
 
     res_bg = _resolve(bg_color)
     if res_bg == "transparent":
-        p_fg = None
-        if hasattr(parent, "cget"):
+        # Walk up the widget chain: a transparent row inside a transparent frame
+        # still has to inherit the colour of the first opaque ancestor, otherwise
+        # the label renders a visibly mismatched rectangle (light mode especially).
+        node = parent
+        for _ in range(8):
+            if node is None or not hasattr(node, "cget"):
+                break
             try:
-                p_fg = parent.cget("fg_color")
+                p_fg = node.cget("fg_color")
             except Exception:
-                pass
-        if p_fg and p_fg != "transparent":
-            res_bg = _resolve(p_fg)
-        else:
+                p_fg = None
+            if p_fg and p_fg != "transparent":
+                res_bg = _resolve(p_fg)
+                break
+            node = getattr(node, "master", None)
+        if res_bg == "transparent":
             res_bg = "#2b2b2b" if mode == "dark" else "#ebebeb"
     res_text = _resolve(text_color)
     res_hl = _resolve(highlight_color)
 
-    # Determine height based on length / wrapping
+    # Height/width are recomputed from real font metrics below; these are only
+    # the initial values so the widget does not flash at the wrong size.
     if wrap == "none" or ("\n" not in text and len(text) <= max_height_chars):
         h = 1
     else:
         h = 2
 
+    init_width = 1
+    if wrap == "none":
+        # tk.Text width is measured in units of the font's '0' glyph, not in
+        # characters. For a proportional font len(text) under-sizes strings with
+        # wide glyphs (caps, umlauts) and the tail is silently clipped, so
+        # convert pixels -> '0'-units instead.
+        try:
+            measure = _get_measure_func(font)
+            zero_w = max(1, int(measure("0")))
+            init_width = max(1, -(-int(measure(text)) // zero_w) + 1)
+        except Exception:
+            init_width = max(1, len(text))
+
     txt = tk.Text(
         parent,
         height=h,
-        width=max(1, len(text)) if wrap == "none" else 1,
+        width=init_width,
         font=cast(Any, font),
         wrap=wrap,
         relief="flat",
@@ -743,10 +801,45 @@ def create_highlighted_label(
 
     txt.configure(state="disabled")
 
+    if wrap != "none":
+        # A fixed height of 2 lines silently swallows everything past line 2
+        # (wiki snippets, long case subtitles). Re-measure the real number of
+        # display lines whenever the widget is resized and grow to fit.
+        _applied_h = [h]
+
+        def _fit_height(_event=None, _w=txt):
+            try:
+                if not _w.winfo_exists() or _w.winfo_width() <= 1:
+                    return
+                # Text.count("displaylines") returns the number of display-line
+                # *breaks* between the two indices, and Tk/Tkinter reports that as
+                # None for 0, a bare int on Python 3.13+, or a 1-tuple on older
+                # versions - so normalise all three before adding the first line.
+                raw = _w.count("1.0", "end - 1 chars", "displaylines")
+                if raw is None:
+                    breaks = 0
+                elif isinstance(raw, (tuple, list)):
+                    breaks = int(raw[0]) if raw else 0
+                else:
+                    breaks = int(raw)
+                needed = max(1, min(breaks + 1, max_display_lines))
+                if needed != _applied_h[0]:
+                    _applied_h[0] = needed
+                    _w.configure(height=needed)
+            except Exception:
+                pass
+
+        txt.bind("<Configure>", _fit_height, add="+")
+        try:
+            txt.after_idle(_fit_height)
+        except Exception:
+            pass
+
     if on_click:
+        # Only the widget-level binding. Tk invokes tag bindings *in addition to*
+        # the widget binding, so also tag_bind-ing on_click fired it twice per
+        # click (opened wiki links twice, and cancelled out toggle handlers).
         txt.bind("<Button-1>", on_click)
-        txt.tag_bind("normal", "<Button-1>", on_click)
-        txt.tag_bind("match", "<Button-1>", on_click)
         txt.bind("<B1-Motion>", lambda e: "break")
 
     if scroll_frame:

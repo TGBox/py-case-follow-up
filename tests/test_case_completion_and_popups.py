@@ -1,8 +1,7 @@
-import pytest
-from models.profile import UISettings, UserProfile
+from models.profile import UISettings
 from models.case import Case, WorkflowStatus, Classification, CaseCustomer
 from services.scoring_service import ScoringService
-from utils.ui_utils import get_app_monitor_bounds, center_window
+from utils.ui_utils import get_app_monitor_bounds
 from unittest.mock import MagicMock
 
 

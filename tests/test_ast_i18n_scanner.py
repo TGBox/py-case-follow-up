@@ -8,8 +8,6 @@ import ast
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
-import pytest
 
 
 @dataclass
@@ -63,8 +61,7 @@ class I18nASTScanner(ast.NodeVisitor):
         "w", "e", "n", "s", "ne", "nw", "se", "sw", "center",
         "left", "right", "top", "bottom", "both", "x", "y", "none",
         "normal", "disabled", "readonly", "zoomed", "horizontal", "vertical",
-        "ew", "nsew", "ns", "sn", "nw", "se",
-        "Arial", "Roboto", "Segoe UI", "Helvetica", "Courier", "Consolas",
+        "ew", "nsew", "ns", "sn", "Arial", "Roboto", "Segoe UI", "Helvetica", "Courier", "Consolas",
         "bold", "italic", "underline",
         "case_id", "customer_id", "id", "status", "urgency", "title", "description",
         "created_at", "updated_at", "workflow_status", "is_completed", "channel",
@@ -266,7 +263,7 @@ def scan_python_file(file_path: Path | str) -> list[ASTViolation]:
     path = Path(file_path)
     if not path.exists() or not path.is_file():
         return []
-    with open(path, "r", encoding="utf-8", errors="replace") as f:
+    with open(path, encoding="utf-8", errors="replace") as f:
         content = f.read()
     return scan_source_code(content, file_path=str(path))
 

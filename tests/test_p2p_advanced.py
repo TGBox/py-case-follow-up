@@ -1,8 +1,6 @@
-import pytest
 from pathlib import Path
 from models.case import Case
-from models.profile import Colleague
-from services.p2p_sync_service import P2PSyncService, CaseDiffItem
+from services.p2p_sync_service import P2PSyncService
 from services.storage_service import StorageService, AppConfig
 
 

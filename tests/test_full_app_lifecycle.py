@@ -1,10 +1,7 @@
 """Comprehensive full application lifecycle and workspace integration tests."""
 
 from pathlib import Path
-from typing import Any
-import pytest
 from config import AppConfig
-from enums import LayoutMode, get_layout_display
 from models.case import Case, Classification, WorkflowStatus
 from services.seed_service import SeedService
 from services.storage_service import StorageService

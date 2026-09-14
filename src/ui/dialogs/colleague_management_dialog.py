@@ -39,6 +39,8 @@ class ColleagueManagementDialog(BaseDialog):
 
         self.create_widgets()
         self.load_colleagues()
+        # Closing now asks before throwing away an edited colleague.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -245,9 +247,22 @@ class ColleagueManagementDialog(BaseDialog):
                         seen_words.add(w.lower())
                         uniq_words.append(w)
                 if uniq_words:
-                    notes_summary = ", ".join(uniq_words[:3])
-                    if len(uniq_words) > 3 or len(notes_summary) > 45:
-                        notes_summary = notes_summary[:45] + "..."
+                    # Truncate on word boundaries: a blind [:45] slice could cut
+                    # through the matched substring, leaving a "match" line with
+                    # nothing highlighted in it.
+                    shown: list[str] = []
+                    used = 0
+                    for w in uniq_words[:3]:
+                        add = len(w) + (2 if shown else 0)
+                        if shown and used + add > 45:
+                            break
+                        shown.append(w)
+                        used += add
+                    if not shown:
+                        shown = [uniq_words[0][:45]]
+                    notes_summary = ", ".join(shown)
+                    if len(shown) < len(uniq_words):
+                        notes_summary += "..."
                     notes_lbl = create_highlighted_label(
                         card,
                         text=f"📝 {notes_summary}",
@@ -304,6 +319,10 @@ class ColleagueManagementDialog(BaseDialog):
             self.delete_btn.configure(state="disabled")
 
         self.filter_and_render_list()
+        # The form now mirrors the selected colleague (or is empty for a new
+        # one), so this is the clean baseline. Saving ends here too, which makes
+        # the post-save state clean as well.
+        self.mark_clean()
 
     def on_click_new_colleague(self):
         self.select_colleague(None)

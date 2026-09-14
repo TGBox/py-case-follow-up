@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import customtkinter as ctk
-import pytest
 from config import AppConfig
 from enums import Actor, BoardColumn
 from models.case import Case, CaseCustomer, Classification, TimelineEntry, WorkflowStatus

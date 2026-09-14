@@ -13,39 +13,20 @@ Focus areas:
 import json
 import threading
 from pathlib import Path
-from typing import Any
 import pytest
 import customtkinter as ctk
 
 from config import AppConfig
 from enums import (
-    Actor,
-    BoardColumn,
-    Channel,
-    LayoutMode,
     UrgencyLevel,
     get_actor_display,
-    get_channel_display,
     get_layout_display,
-    get_board_column_display,
-    ACTOR_DISPLAY,
-    CHANNEL_DISPLAY,
-    LAYOUT_DISPLAY,
 )
 from constants import (
-    APP_WINDOW_TITLE,
     DIALOG_TITLES,
-    DIALOG_HEADERS,
-    UI_BUTTON_TEXTS,
-    STATUS_MESSAGES,
-    get_localized_menu_options_stammdaten,
-    get_localized_menu_options_vorlagen,
-    get_localized_menu_options_datenaustausch,
 )
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from models.profile import UserProfile
-from models.schema import QuestionSchema, SchemaField
-from services.i18n_service import I18nService, get_i18n, tr, SUPPORTED_LANGUAGES, LocalizedDict
+from models.case import Case, Classification, WorkflowStatus
+from services.i18n_service import get_i18n, tr
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService
@@ -201,11 +182,11 @@ class TestParameterAndFormatRobustness:
         import re
         locales_dir = Path(__file__).resolve().parent.parent / "locales"
 
-        with open(locales_dir / "de.json", "r", encoding="utf-8") as f:
+        with open(locales_dir / "de.json", encoding="utf-8") as f:
             de_data = json.load(f)
-        with open(locales_dir / "en.json", "r", encoding="utf-8") as f:
+        with open(locales_dir / "en.json", encoding="utf-8") as f:
             en_data = json.load(f)
-        with open(locales_dir / "sv.json", "r", encoding="utf-8") as f:
+        with open(locales_dir / "sv.json", encoding="utf-8") as f:
             sv_data = json.load(f)
 
         token_pattern = re.compile(r"\{([a-zA-Z0-9_]+)\}")
@@ -368,7 +349,7 @@ class TestHeadlessUIViewsDynamicUpdates:
 
     def test_table_view_headings_and_detail_panel(self, headless_root, tmp_path: Path):
         """Verify TableView's treeview columns and detail panel adapt across DE, EN, and SV."""
-        from ui.views.table_view import TableView, COL_TITLE_MAP
+        from ui.views.table_view import TableView
 
         config = AppConfig(workspace_dir=tmp_path)
         storage = StorageService(config)

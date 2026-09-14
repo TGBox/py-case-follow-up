@@ -32,6 +32,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         self.create_widgets()
         self.load_customers()
+        # Closing now asks before throwing away an edited practice.
+        self.enable_unsaved_guard()
 
     def create_widgets(self):
         self._build_top_bar()
@@ -419,6 +421,11 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         self.render_contact_rows(c.contacts)
         self.render_list()
+        # The form now shows this practice, not the user's edits. Without a fresh
+        # snapshot every click in the list would count as unsaved input and the
+        # dialog would ask on every close. Saving ends here too, so this covers
+        # the post-save case as well.
+        self.mark_clean()
 
     def on_click_new_customer(self):
         from services.i18n_service import tr
@@ -462,6 +469,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         self.status_lbl.configure(text="")
         self.render_contact_rows([])
         self.render_list()
+        # An empty form is not unsaved input either.
+        self.mark_clean()
 
     def save_current_customer(self):
         from services.i18n_service import tr

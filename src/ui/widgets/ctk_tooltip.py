@@ -23,6 +23,39 @@ class CTkTooltip:
             tooltip.cancel_timer()
             tooltip.hide_tooltip()
 
+    @classmethod
+    def attach_lazy(
+        cls,
+        widget: Any,
+        text_or_func: str | Callable[[], str],
+        delay_ms: int = TOOLTIP_DEFAULT_DELAY_MS,
+    ) -> None:
+        """Defers the tooltip until the widget is first hovered.
+
+        _bind_events walks the whole subtree and binds nine events per widget.
+        For a list that rebuilds every card on each keystroke that is thousands
+        of bindings nobody ever triggers, so the real binding is postponed until
+        a pointer actually arrives.
+        """
+        state: dict[str, Any] = {"tip": None}
+
+        def _on_first_enter(event: Any = None) -> None:
+            if state["tip"] is not None:
+                return
+            try:
+                if not widget.winfo_exists():
+                    return
+                state["tip"] = cls(widget, text_or_func, delay_ms=delay_ms)
+                # The real handler missed this very <Enter>, so replay it.
+                state["tip"].on_enter(event)
+            except Exception:
+                pass
+
+        try:
+            widget.bind("<Enter>", _on_first_enter, add="+")
+        except Exception:
+            pass
+
     def __init__(
         self,
         widget: Any,

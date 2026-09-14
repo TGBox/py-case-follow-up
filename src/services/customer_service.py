@@ -41,40 +41,24 @@ class CustomerService:
         return results
 
     @staticmethod
-    def extract_customer_search_match_summary(
-        customer: Customer,
+    def summarize_matching_words(
+        fields_to_check: list[str],
         query: str,
         max_matches: int = 3,
         max_chars: int = 50,
+        exclude_text: str = "",
     ) -> str | None:
-        """Extracts matching words from non-primary customer fields (contacts, website, VM/instance numbers).
+        """Names the words that matched, so a hit in a hidden field is explained.
 
-        Returns a comma-separated string of unique matching words with match count / character
-        length caps, appending '...' when truncated, or None if no matches are found outside name/ID.
+        exclude_text is text already visible to the user (a label, a heading):
+        words found there are skipped, because repeating them explains nothing.
         """
         q = query.strip()
         if not q:
             return None
 
         q_lower = q.lower()
-        fields_to_check: list[str] = []
-
-        if customer.website:
-            fields_to_check.append(customer.website)
-        if customer.vm_number is not None:
-            fields_to_check.append(str(customer.vm_number))
-        if customer.instance_number is not None:
-            fields_to_check.append(str(customer.instance_number))
-
-        for contact in customer.contacts:
-            if contact.name:
-                fields_to_check.append(contact.name)
-            if contact.role:
-                fields_to_check.append(contact.role)
-            if contact.email:
-                fields_to_check.append(contact.email)
-            if contact.phone:
-                fields_to_check.append(contact.phone)
+        exclude_lower = exclude_text.lower()
 
         unique_matches: list[str] = []
         seen: set[str] = set()
@@ -90,6 +74,8 @@ class CustomerService:
                 if q_lower in clean_w.lower():
                     w_key = clean_w.lower()
                     if w_key in seen:
+                        continue
+                    if exclude_lower and w_key in exclude_lower:
                         continue
                     seen.add(w_key)
                     if len(unique_matches) < max_matches:
@@ -120,6 +106,41 @@ class CustomerService:
         if truncated:
             summary += "..."
         return summary
+
+    @staticmethod
+    def extract_customer_search_match_summary(
+        customer: Customer,
+        query: str,
+        max_matches: int = 3,
+        max_chars: int = 50,
+    ) -> str | None:
+        """Extracts matching words from non-primary customer fields (contacts, website, VM/instance numbers).
+
+        Returns a comma-separated string of unique matching words with match count / character
+        length caps, appending '...' when truncated, or None if no matches are found outside name/ID.
+        """
+        fields_to_check: list[str] = []
+
+        if customer.website:
+            fields_to_check.append(customer.website)
+        if customer.vm_number is not None:
+            fields_to_check.append(str(customer.vm_number))
+        if customer.instance_number is not None:
+            fields_to_check.append(str(customer.instance_number))
+
+        for contact in customer.contacts:
+            if contact.name:
+                fields_to_check.append(contact.name)
+            if contact.role:
+                fields_to_check.append(contact.role)
+            if contact.email:
+                fields_to_check.append(contact.email)
+            if contact.phone:
+                fields_to_check.append(contact.phone)
+
+        return CustomerService.summarize_matching_words(
+            fields_to_check, query, max_matches=max_matches, max_chars=max_chars
+        )
 
     def save_customer(self, customer: Customer) -> None:
         customers = self.get_all_customers()

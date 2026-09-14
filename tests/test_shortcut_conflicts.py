@@ -1,6 +1,5 @@
 """Tests for keyboard shortcut configuration, uniqueness, and conflict detection."""
 
-import pytest
 from models.profile import ShortcutSettings
 
 

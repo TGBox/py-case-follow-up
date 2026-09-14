@@ -5,7 +5,7 @@ import customtkinter as ctk
 import pytest
 from config import AppConfig
 from enums import Actor, UrgencyLevel, BoardColumn, FieldType
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from models.schema import QuestionSchema, SchemaField
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
@@ -20,12 +20,12 @@ def test_env(tmp_path: Path):
     scoring = ScoringService()
     attachment_svc = AttachmentService(config)
     wiki_svc = WikiSyncService(config)
-    
+
     app = ctk.CTk()
     app.withdraw()
-    
+
     yield app, storage, scoring, attachment_svc, wiki_svc, config
-    
+
     try:
         app.destroy()
     except Exception:

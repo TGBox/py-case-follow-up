@@ -1,15 +1,10 @@
-import pytest # type: ignore
 from pathlib import Path
-import customtkinter as ctk
-from unittest.mock import MagicMock
 
 from config import AppConfig
 from services.storage_service import StorageService
-from services.search_service import SearchService, parse_search_query
+from services.search_service import parse_search_query
 from services.deep_search_service import DeepSearchService
-from models.case import Case, Classification, WorkflowStatus, CaseCustomer
-from models.customer import Customer
-from enums import UrgencyLevel, Actor
+from models.case import Case, CaseCustomer
 
 
 def test_storage_service_caching_and_update_single(tmp_path: Path):

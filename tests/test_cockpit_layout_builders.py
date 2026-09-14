@@ -19,7 +19,6 @@ import pytest
 from config import AppConfig
 from enums import Actor, BoardColumn
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService

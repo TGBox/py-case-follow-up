@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import MagicMock, patch
 from services.ai_service import AiService
 from models.profile import UserProfile

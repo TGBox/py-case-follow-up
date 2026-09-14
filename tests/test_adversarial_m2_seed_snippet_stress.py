@@ -7,20 +7,12 @@
 - LocalizedDict and LocalizedHotkeyDict robustness
 """
 
-import json
-from datetime import datetime, date, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 import pytest
 
 from constants import (
-    DISPLAY_ACTOR_NAMES,
-    DISPLAY_BOARD_COLUMN_NAMES,
-    DISPLAY_CHANNEL_NAMES,
-    DISPLAY_LAYOUT_NAMES,
-    VALIDATION_MESSAGES,
     HOTKEY_ACTION_LABELS,
-    HOTKEY_ACTION_LABELS_MAP,
-    get_localized_hotkey_action_labels,
     get_localized_departments,
     get_localized_handover_channels,
     get_localized_task_categories,
@@ -28,19 +20,9 @@ from constants import (
     get_localized_menu_options_vorlagen,
     get_localized_menu_options_datenaustausch,
 )
-from enums import (
-    Actor,
-    BoardColumn,
-    Channel,
-    LayoutMode,
-    get_actor_display,
-    get_channel_display,
-    get_layout_display,
-    get_board_column_display,
-)
 from models.case import Case
 from models.snippet import Snippet
-from services.i18n_service import LocalizedDict, get_i18n, tr, SUPPORTED_LANGUAGES
+from services.i18n_service import LocalizedDict, get_i18n
 from services.seed_case_data import build_seed_cases
 from services.seed_service import SeedService
 from services.snippet_service import SnippetService, get_default_snippets
@@ -50,17 +32,7 @@ from services.export_service import ExportService
 from config import AppConfig
 from utils.datetime_utils import (
     get_relative_date_text,
-    format_german_date,
-    format_german_time,
-    format_german_datetime,
-    format_german_date_with_relative,
-    parse_german_date,
-    format_date,
-    format_time,
-    format_datetime,
-    format_date_with_relative,
     parse_date,
-    parse_iso,
     calculate_idle_days,
     hours_until_deadline,
 )

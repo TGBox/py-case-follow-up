@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from models.customer import Customer, Contact
 from services.customer_service import CustomerService

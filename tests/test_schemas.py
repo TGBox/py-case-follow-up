@@ -1,5 +1,4 @@
 from pathlib import Path
-import pytest
 from enums import FieldType
 from models.schema import QuestionSchema, SchemaField
 from services.schema_service import SchemaService

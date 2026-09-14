@@ -1,4 +1,3 @@
-import pytest
 from pathlib import Path
 from models.schema import QuestionSchema, SchemaField
 from models.case import Case, Classification, CaseCustomer
@@ -99,7 +98,6 @@ def test_export_rendering_multi_file_requests(tmp_path: Path):
     zuzahlung_schema = next(s for s in schemas if s.schema_id == "schema_zuzahlungsnachforderung")
     zuzahlung_tpl = next(t for t in templates if t.template_id == "mail_dev_zuzahlung_abrechnung")
 
-    from models.case import Case, Classification, CaseCustomer
 
     customer = CaseCustomer(customer_id="P100", practice_name="Praxis Dr. Test", contact_person="Frau Müller")
     classification = Classification(title="Zuzahlungsanfrage Test", schema_id="schema_zuzahlungsnachforderung")

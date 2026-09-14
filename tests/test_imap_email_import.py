@@ -1,6 +1,5 @@
 """Tests for IMAP email parsing and conversion to case drafts."""
 
-import pytest
 from services.imap_import_service import EmailMessageDraft, ImapImportService
 
 

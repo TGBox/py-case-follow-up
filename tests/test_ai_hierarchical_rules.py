@@ -1,6 +1,5 @@
-import pytest # type: ignore
 from models.customer import Customer, Contact
-from models.profile import UserProfile, AiSettings
+from models.profile import AiSettings
 from services.ai_service import AiService
 
 

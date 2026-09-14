@@ -1,5 +1,4 @@
 import json
-import pytest
 from unittest.mock import patch, MagicMock
 from models.case import Case, CaseCustomer
 from services.ai_service import AiService
@@ -63,7 +62,7 @@ def test_ai_service_gemini_query_with_anonymization():
 
 def test_check_gemini_status_valid():
     ai_service = AiService(provider="GEMINI", gemini_api_key="valid_key")
-    
+
     mock_resp = MagicMock()
     mock_resp.status = 200
 

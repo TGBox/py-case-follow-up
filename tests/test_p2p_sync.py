@@ -1,9 +1,7 @@
-import pytest
 from pathlib import Path
 from config import AppConfig
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus
-from models.profile import Colleague
-from services.storage_service import StorageService, atomic_save_json
+from models.case import Case
+from services.storage_service import StorageService
 from services.p2p_sync_service import P2PSyncService
 
 

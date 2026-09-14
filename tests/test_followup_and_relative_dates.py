@@ -3,8 +3,7 @@
 and timeline additions without actor disruption.
 """
 
-from datetime import datetime, date, timedelta
-import pytest
+from datetime import date, timedelta
 from models.case import Case, TimelineEntry
 from utils.datetime_utils import (
     format_german_date,

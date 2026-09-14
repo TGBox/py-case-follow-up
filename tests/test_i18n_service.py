@@ -1,6 +1,5 @@
-import pytest
 from pathlib import Path
-from services.i18n_service import I18nService, tr, SUPPORTED_LANGUAGES
+from services.i18n_service import I18nService, SUPPORTED_LANGUAGES
 from models.profile import UISettings
 
 

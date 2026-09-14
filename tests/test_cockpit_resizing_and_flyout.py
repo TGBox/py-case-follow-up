@@ -3,9 +3,7 @@ title truncation, and vector rendering configuration.
 """
 from datetime import datetime
 from typing import Any
-import pytest
 from unittest.mock import MagicMock
-import customtkinter as ctk
 from customtkinter.windows.widgets.core_rendering import DrawEngine
 
 from utils.datetime_utils import parse_flexible_followup_input

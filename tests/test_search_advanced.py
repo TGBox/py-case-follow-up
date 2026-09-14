@@ -1,7 +1,6 @@
-import pytest
-from enums import Actor, UrgencyLevel
+from enums import Actor
 from models.case import Case
-from services.search_service import SearchService, parse_search_query
+from services.search_service import SearchService
 
 
 def test_search_service_filters_by_actor_and_vip():

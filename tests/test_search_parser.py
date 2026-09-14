@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
-import pytest
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from enums import UrgencyLevel, BoardColumn, Actor
+from enums import Actor
 from services.search_service import SearchService, parse_search_query
 from utils.datetime_utils import format_iso
 

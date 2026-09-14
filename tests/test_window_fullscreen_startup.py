@@ -2,7 +2,6 @@
 
 from pathlib import Path
 import pytest
-import customtkinter as ctk
 
 from config import AppConfig
 from services.storage_service import StorageService

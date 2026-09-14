@@ -7,11 +7,6 @@ Testing extreme edge cases:
 - Full SupportCockpitApp under stress lifecycle events and rapid language mutation.
 """
 
-import io
-import os
-import json
-import tempfile
-import threading
 from pathlib import Path
 import pytest
 import customtkinter as ctk
@@ -20,44 +15,23 @@ from PIL import Image
 from config import AppConfig
 from enums import (
     Actor,
-    BoardColumn,
-    Channel,
-    LayoutMode,
     UrgencyLevel,
-    get_actor_display,
-    get_channel_display,
     get_layout_display,
-    get_board_column_display,
-    ACTOR_DISPLAY,
-    CHANNEL_DISPLAY,
-    LAYOUT_DISPLAY,
 )
-from constants import (
-    APP_WINDOW_TITLE,
-    DIALOG_TITLES,
-    DIALOG_HEADERS,
-    UI_BUTTON_TEXTS,
-    STATUS_MESSAGES,
-)
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from models.profile import UserProfile
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from models.schema import QuestionSchema, SchemaField
-from services.i18n_service import I18nService, get_i18n, tr, SUPPORTED_LANGUAGES, LocalizedDict
+from services.i18n_service import get_i18n, tr
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
 from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
 from ui.views.cockpit_view import CockpitView
-from ui.views.board_view import BoardView
 from ui.views.table_view import TableView
-from ui.views.analytics_view import AnalyticsView
 from ui.widgets.attachment_widget import AttachmentWidget
-from ui.widgets.timeline_widget import TimelineWidget
-from ui.widgets.wiki_widget import WikiWidget
 from ui.widgets.dynamic_form_widget import DynamicFormWidget
 from ui.widgets.case_list_widget import CaseListWidget
 from ui.widgets.toast_notification import ToastNotification
-from ui.widgets.date_picker import DatePickerWidget, CalendarDialog
+from ui.widgets.date_picker import DatePickerWidget
 from ui.widgets.searchable_combobox import SearchableCombobox
 
 

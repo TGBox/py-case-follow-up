@@ -4,29 +4,19 @@ and architectural anti-regression verification across UI dialogs, views, and ser
 """
 
 import re
-import pytest
 from datetime import datetime
 from pathlib import Path
 import customtkinter as ctk
 
-from config import AppConfig
-from enums import Actor, BoardColumn, UrgencyLevel
+from enums import Actor, BoardColumn
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
-from models.customer import Customer, Contact
 from services.calendar_email_service import CalendarEmailService
-from services.storage_service import StorageService
-from services.scoring_service import ScoringService
-from services.attachment_service import AttachmentService
-from services.wiki_sync_service import WikiSyncService
 from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
-from ui.views.cockpit_view import CockpitView
 from utils.datetime_utils import (
     format_german_date,
     format_german_time,
     format_german_datetime,
     parse_german_date,
-    parse_iso,
-    get_local_now,
 )
 
 

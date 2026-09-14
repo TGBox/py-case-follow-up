@@ -52,6 +52,7 @@ class UiSettingsTabMixin:
         status_lbl: ctk.CTkLabel
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
+        retranslate_choices: Callable[..., Any]
         _initial_font_scale: float
         _saved: bool
 
@@ -218,13 +219,31 @@ class UiSettingsTabMixin:
             self.on_profile_updated()
 
     def reload_ui_fields(self) -> None:
-        self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
+        if hasattr(self, "language_combo"):
+            curr_lang = getattr(self.profile.ui_settings, "language", "de")
+            self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
+        if hasattr(self, "theme_combo"):
+            self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
         if hasattr(self, "font_scale_combo"):
             self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
-        self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
+        if hasattr(self, "layout_combo"):
+            self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
         if hasattr(self, "popup_target_combo"):
             curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
             self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
+        if hasattr(self, "demo_switch"):
+            if self.profile.ui_settings.show_demo_data is True:
+                self.demo_switch.select()
+            else:
+                self.demo_switch.deselect()
+        if hasattr(self, "os_popup_switch"):
+            if getattr(self.profile.reminder_settings, "os_popup_enabled", True):
+                self.os_popup_switch.select()
+            else:
+                self.os_popup_switch.deselect()
+        if hasattr(self, "widths_label"):
+            widths = self.profile.ui_settings.column_widths
+            self.widths_label.configure(text=self._build_widths_str(widths))
 
     def save_ui_settings(self) -> bool:
         if hasattr(self, "language_combo"):

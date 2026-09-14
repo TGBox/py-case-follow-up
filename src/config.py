@@ -45,6 +45,7 @@ class AppConfig:
     username: str = field(default_factory=lambda: os.getlogin() if hasattr(os, "getlogin") else "default_user")
 
     # Optional individual file path overrides
+    active_profile_name: str | None = None
     custom_cases_path: Path | None = None
     custom_archive_path: Path | None = None
     custom_customers_path: Path | None = None
@@ -161,6 +162,7 @@ class AppConfig:
         config_file = get_global_config_file()
         data = {
             "workspace_dir": str(self.workspace_dir),
+            "active_profile_name": self.active_profile_name,
             "custom_cases_path": str(self.custom_cases_path) if self.custom_cases_path else None,
             "custom_archive_path": str(self.custom_archive_path) if self.custom_archive_path else None,
             "custom_customers_path": str(self.custom_customers_path) if self.custom_customers_path else None,
@@ -202,8 +204,10 @@ class AppConfig:
                 if isinstance(col_widths, dict):
                     default_widths.update(col_widths)
 
+                active_prof = data.get("active_profile_name")
                 return cls(
                     workspace_dir=ws_dir,
+                    active_profile_name=str(active_prof) if active_prof else None,
                     custom_cases_path=Path(data["custom_cases_path"]) if data.get("custom_cases_path") else None,
                     custom_archive_path=Path(data["custom_archive_path"]) if data.get("custom_archive_path") else None,
                     custom_customers_path=Path(data["custom_customers_path"]) if data.get("custom_customers_path") else None,

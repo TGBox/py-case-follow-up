@@ -84,6 +84,7 @@ class AiSettingsTabMixin:
         storage_service: Any
         # Provided by BaseDialog once mixed into ProfileSettingsDialog.
         register_i18n: Callable[..., Any]
+        retranslate_choices: Callable[..., Any]
         winfo_exists: Callable[[], bool]
         after: Callable[..., Any]
         update_idletasks: Callable[[], None]
@@ -756,6 +757,58 @@ class AiSettingsTabMixin:
         """
         if hasattr(self, "ai_provider_seg"):
             self.retranslate_choices(self.ai_provider_seg, AI_PROVIDER_CHOICES)
+
+    def reload_ai_fields(self) -> None:
+        ai = getattr(self.profile, "ai_settings", None)
+        if ai is None:
+            return
+
+        current_provider = getattr(ai, "provider", "OLLAMA").upper()
+        if hasattr(self, "ai_provider_seg"):
+            from services.i18n_service import tr
+            self.ai_provider_seg.set(tr("profile.provider_gemini", "GOOGLE GEMINI (Cloud)") if current_provider == "GEMINI" else tr("profile.provider_ollama", "OLLAMA (Lokal)"))
+            self.on_change_ai_provider(self.ai_provider_seg.get())
+
+        if hasattr(self, "anonymize_chk_var"):
+            self.anonymize_chk_var.set(bool(getattr(ai, "enable_anonymization", True)))
+
+        if hasattr(self, "gemini_key_entry"):
+            self.gemini_key_entry.delete(0, "end")
+            self.gemini_key_entry.insert(0, getattr(ai, "gemini_api_key", "") or "")
+
+        if hasattr(self, "gemini_model_combo"):
+            saved_g_model = getattr(ai, "gemini_model", DEFAULT_GEMINI_MODEL)
+            self.gemini_model_combo.set(saved_g_model if saved_g_model in AVAILABLE_GEMINI_MODELS else DEFAULT_GEMINI_MODEL)
+
+        if hasattr(self, "gemini_status_lbl"):
+            self.gemini_status_lbl.configure(text="")
+
+        if hasattr(self, "gemini_modelfile_chk_var"):
+            self.gemini_modelfile_chk_var.set(bool(getattr(ai, "use_modelfile_rules_for_gemini", False)))
+
+        if hasattr(self, "ai_model_combo"):
+            m_name = getattr(ai, "model_name", DEFAULT_OLLAMA_MODEL) or DEFAULT_OLLAMA_MODEL
+            self.ai_model_combo.set(m_name)
+
+        if hasattr(self, "ai_model_entry"):
+            self.ai_model_entry.delete(0, "end")
+            self.ai_model_entry.insert(0, getattr(ai, "model_name", "") or "")
+
+        if hasattr(self, "ai_url_entry"):
+            self.ai_url_entry.delete(0, "end")
+            self.ai_url_entry.insert(0, getattr(ai, "ollama_url", DEFAULT_OLLAMA_URL) or DEFAULT_OLLAMA_URL)
+
+        if hasattr(self, "ai_enable_chk"):
+            if getattr(ai, "enable_ai", True):
+                self.ai_enable_chk.select()
+            else:
+                self.ai_enable_chk.deselect()
+
+        if hasattr(self, "ai_base_rules_txt"):
+            self.ai_base_rules_txt.delete("1.0", "end")
+            rules = getattr(ai, "base_rules", [])
+            if rules:
+                self.ai_base_rules_txt.insert("1.0", "\n".join(rules))
 
     def save_ai_settings(self) -> bool:
         provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"

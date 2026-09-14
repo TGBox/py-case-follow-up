@@ -194,6 +194,38 @@ class ProfileSettingsDialog(
         self.refresh_wiki_tab_labels()
         self.refresh_ai_tab_labels()
 
+    def reload_all_tabs(self) -> None:
+        """Reloads all input widgets across all dialog tabs to reflect self.profile."""
+        self.reload_user_fields()
+        if hasattr(self, "reload_ui_fields"):
+            self.reload_ui_fields()
+        if hasattr(self, "reload_paths_fields"):
+            self.reload_paths_fields()
+        if hasattr(self, "reload_wiki_fields"):
+            self.reload_wiki_fields()
+        if hasattr(self, "reload_ai_fields"):
+            self.reload_ai_fields()
+        if hasattr(self, "reload_shortcuts_fields"):
+            self.reload_shortcuts_fields()
+
+    def save_settings_quietly(self) -> bool:
+        """Saves all tabs to self.profile without status message or label re-renders."""
+        if not self.save_user_settings():
+            return False
+        if not self.save_ui_settings():
+            return False
+        if not self.save_paths_settings():
+            return False
+        if not self.save_wiki_settings():
+            return False
+        if not self.save_ai_settings():
+            return False
+        if not self.save_shortcuts_settings():
+            return False
+
+        self.storage_service.save_profile(self.profile, sync=True)
+        return True
+
     def save_settings(self) -> None:
         if not self.save_user_settings():
             return
@@ -208,7 +240,8 @@ class ProfileSettingsDialog(
         if not self.save_shortcuts_settings():
             return
 
-        self.storage_service.save_profile(self.profile)
+        self.storage_service.save_profile(self.profile, sync=True)
+        self.storage_service.apply_profile_paths(self.profile)
         self.refresh_ui_labels()
         self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color="green")
 

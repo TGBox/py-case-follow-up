@@ -260,6 +260,22 @@ class ShortcutsSettingsTabMixin:
             self.conflict_warn_lbl.configure(text="")
             return True
 
+    def reload_shortcuts_fields(self) -> None:
+        sc = getattr(self.profile, "shortcuts", None)
+        if sc and hasattr(self, "shortcut_entries"):
+            for attr_name, entry in self.shortcut_entries.items():
+                val = getattr(sc, attr_name, "")
+                entry.delete(0, "end")
+                entry.insert(0, val)
+
+        if hasattr(self, "vip_bonus_entry"):
+            v_pts = getattr(getattr(self.profile, "scoring_matrix", None), "vip_bonus_points", 50)
+            self.vip_bonus_entry.delete(0, "end")
+            self.vip_bonus_entry.insert(0, str(v_pts))
+
+        if hasattr(self, "conflict_warn_lbl"):
+            self.conflict_warn_lbl.configure(text="")
+
     def save_shortcuts_settings(self) -> bool:
         if not self.validate_shortcut_conflicts():
             self.status_lbl.configure(text=STATUS_SHORTCUT_CONFLICT_GENERIC, text_color="red")

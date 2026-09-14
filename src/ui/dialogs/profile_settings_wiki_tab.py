@@ -87,5 +87,28 @@ class WikiSettingsTabMixin:
         self.profile.wiki_settings.sync_on_startup = self.sync_startup_var.get()
         return True
 
+    def reload_wiki_fields(self) -> None:
+        ws = getattr(self.profile, "wiki_settings", None)
+        if ws is None:
+            return
+
+        if hasattr(self, "wiki_url_entry"):
+            self.wiki_url_entry.delete(0, "end")
+            self.wiki_url_entry.insert(0, ws.api_url or "")
+
+        if hasattr(self, "wiki_token_id_entry"):
+            self.wiki_token_id_entry.delete(0, "end")
+            self.wiki_token_id_entry.insert(0, ws.token_id or "")
+
+        if hasattr(self, "wiki_token_secret_entry"):
+            self.wiki_token_secret_entry.delete(0, "end")
+            self.wiki_token_secret_entry.insert(0, ws.token_secret or "")
+
+        if hasattr(self, "sync_mode_combo"):
+            self.sync_mode_combo.set(ws.sync_mode or SyncMode.METADATA_ONLY.value)
+
+        if hasattr(self, "sync_startup_var"):
+            self.sync_startup_var.set(bool(ws.sync_on_startup))
+
     def refresh_wiki_tab_labels(self) -> None:
         pass

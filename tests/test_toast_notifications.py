@@ -4,9 +4,25 @@ import customtkinter as ctk
 from ui.widgets.toast_notification import ToastNotification
 
 
+class CardOnlyApp(ctk.CTk):
+    """Parent that asks for the in-app card instead of the native Windows toast.
+
+    On Windows the toast now goes to the OS and no card is built at all - it used
+    to be built and thrown away, which cost two frames, two buttons and four
+    labels per notification. This test is about the card's layout, so it turns
+    OS popups off through the same setting the user has in the profile dialog.
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.profile = type(
+            "P", (), {"reminder_settings": type("R", (), {"os_popup_enabled": False})()}
+        )()
+
+
 def test_toast_notification_button_visibility():
     """Verify ToastNotification initializes with spacious geometry and fully visible button."""
-    app = ctk.CTk()
+    app = CardOnlyApp()
     app.withdraw()
 
     opened = []

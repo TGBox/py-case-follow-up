@@ -125,6 +125,15 @@ def parse_args():
         action="store_true",
         help="Generates seed test data and launches the GUI in demo mode."
     )
+    parser.add_argument(
+        "--open-case",
+        type=str,
+        default=None,
+        metavar="CASE_OR_URI",
+        help="Opens the given case in the cockpit. Accepts a case id or a "
+             "supportcockpit://case/<id> URI - this is what a clicked Windows "
+             "notification passes in."
+    )
     return parser.parse_args()
 
 
@@ -133,6 +142,18 @@ def main():
 
     config = AppConfig.load_user_config(cli_workspace=args.workspace)
     set_crash_log_dir(config.workspace_dir / "logs")
+
+    # A clicked Windows notification starts a *second* process with the toast's
+    # launch URI. If the app is already running, that process must only hand the
+    # case over and exit - otherwise every click opens another copy.
+    from services.instance_service import InstanceService, parse_case_uri, register_uri_scheme
+    requested_case = parse_case_uri(args.open_case)
+    instance = InstanceService(config.workspace_dir)
+    if instance.handoff_or_claim(requested_case):
+        print(f"[*] Case {requested_case} handed to the running instance.")
+        sys.exit(0)
+    register_uri_scheme()
+
     storage = StorageService(config)
 
     if args.seed:
@@ -157,12 +178,17 @@ def main():
     try:
         from ui.app import SupportCockpitApp
         app = SupportCockpitApp(config)
+        app.instance_service = instance
+        if requested_case:
+            app.request_open_case(requested_case)
         app.mainloop()
     except KeyboardInterrupt:
         print("[*] Application interrupted by user.")
     except Exception as e:
         print(f"[-] Application execution error: {e}")
         sys.exit(1)
+    finally:
+        instance.release()
 
 
 if __name__ == "__main__":

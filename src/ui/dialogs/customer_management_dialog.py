@@ -32,7 +32,13 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         self.create_widgets()
         self.load_customers()
-        # Closing now asks before throwing away an edited practice.
+        # Closing now asks before throwing away an edited practice. Searching and
+        # sorting only change which practice is shown, so they must not count as
+        # input - otherwise typing a search string alone triggered the question.
+        self.exclude_from_unsaved_guard(
+            getattr(self, "search_entry", None),
+            getattr(self, "sort_criterion_combo", None),
+        )
         self.enable_unsaved_guard()
 
     def create_widgets(self):

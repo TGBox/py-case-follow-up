@@ -255,6 +255,31 @@ class BaseDialog(ctk.CTkToplevel):
         """Takes a fresh reference snapshot, e.g. right after a successful save."""
         self._clean_snapshot = self._collect_input_snapshot()
 
+    def exclude_from_unsaved_guard(self, *widgets: Any) -> None:
+        """Marks widgets that navigate rather than edit - search boxes, sort menus, filters.
+
+        The guard walks every input widget in the dialog, so without this a typed
+        search string or a changed sort order counts as unsaved input and the
+        user is asked to discard changes they never made. The widget's whole
+        subtree is excluded, because these controls are usually composites.
+        """
+        excluded = getattr(self, "_unsaved_guard_excluded", None)
+        if excluded is None:
+            excluded = set()
+            self._unsaved_guard_excluded = excluded
+        for widget in widgets:
+            if widget is not None:
+                excluded.add(str(widget))
+        # A widget marked after the snapshot was taken must not stay in it.
+        if getattr(self, "_unsaved_guard_enabled", False):
+            self.mark_clean()
+
+    def _is_excluded_from_guard(self, widget_path: str) -> bool:
+        for excluded in getattr(self, "_unsaved_guard_excluded", ()):
+            if widget_path == excluded or widget_path.startswith(excluded + "."):
+                return True
+        return False
+
     def _iter_input_widgets(self, parent: Any = None) -> Iterator[Any]:
         parent = parent if parent is not None else self
         try:
@@ -270,10 +295,20 @@ class BaseDialog(ctk.CTkToplevel):
         for widget in self._iter_input_widgets():
             class_name = widget.__class__.__name__
             try:
+                widget_path = str(widget)
+                if self._is_excluded_from_guard(widget_path):
+                    continue
+                # Read-only widgets cannot hold typed input, so they are never
+                # unsaved changes. This matters for the search result cards: each
+                # one is a disabled tk.Text (the highlighting needs per-character
+                # tags), so a re-rendered list used to look like a screenful of
+                # new, filled-in fields.
+                if str(widget.cget("state")) != "normal":
+                    continue
                 if class_name in _MULTILINE_CLASSES:
-                    snapshot[str(widget)] = widget.get("1.0", "end-1c")
+                    snapshot[widget_path] = widget.get("1.0", "end-1c")
                 elif class_name in _TEXT_INPUT_CLASSES:
-                    snapshot[str(widget)] = str(widget.get())
+                    snapshot[widget_path] = str(widget.get())
             except Exception:
                 continue
         return snapshot

@@ -315,3 +315,95 @@ def test_starting_a_new_record_clears_the_guard(root, tmp_path):
     dialog.on_click_new_customer()
     dialog.update()
     assert dialog.is_dirty() is False, "leeres Formular gilt faelschlich als Eingabe"
+
+
+# --- Navigieren ist keine Eingabe ---
+#
+# Gemeldet aus der Praxisverwaltung: Suchstring eintippen, Fenster schliessen,
+# Rueckfrage "ungespeicherte Eingaben" - obwohl nichts bearbeitet wurde. Zwei
+# Ursachen: das Suchfeld selbst, und die Trefferkarten, die fuer die
+# Hervorhebung je ein (deaktiviertes) tk.Text sind und nach jedem Filtern unter
+# neuen Widget-Pfaden entstehen.
+
+def test_searching_a_list_is_not_unsaved_input(root, tmp_path):
+    dialog = _customer_dialog(root, tmp_path)
+
+    dialog.search_entry.insert(0, "Praxis")
+    dialog.on_search_changed()
+    dialog.update()
+
+    assert dialog.is_dirty() is False, "Suchen gilt faelschlich als Eingabe"
+
+
+def test_sorting_a_list_is_not_unsaved_input(root, tmp_path):
+    dialog = _customer_dialog(root, tmp_path)
+
+    werte = dialog.sort_criterion_combo.cget("values")
+    dialog.sort_criterion_combo.set(werte[1])
+    dialog.on_sort_changed()
+    dialog.update()
+
+    assert dialog.is_dirty() is False, "Sortieren gilt faelschlich als Eingabe"
+
+
+def test_a_search_that_finds_nothing_is_not_unsaved_input(root, tmp_path):
+    """Die Trefferliste wird dabei komplett neu aufgebaut."""
+    dialog = _customer_dialog(root, tmp_path)
+
+    dialog.search_entry.insert(0, "gibtesnicht")
+    dialog.on_search_changed()
+    dialog.update()
+    assert dialog.is_dirty() is False
+
+    dialog.search_entry.delete(0, "end")
+    dialog.on_search_changed()
+    dialog.update()
+    assert dialog.is_dirty() is False, "Zuruecksetzen der Suche gilt als Eingabe"
+
+
+def test_read_only_fields_are_never_unsaved_input(root):
+    """Ein deaktiviertes Feld kann keine getippte Eingabe enthalten."""
+    dialog = KeyboardDemoDialog(root)
+    dialog.enable_unsaved_guard()
+    root.update()
+
+    anzeige = ctk.CTkEntry(dialog)
+    anzeige.insert(0, "nur zur Anzeige")
+    anzeige.configure(state="disabled")
+    anzeige.pack()
+    root.update()
+
+    assert dialog.is_dirty() is False
+
+
+def test_searching_in_the_colleague_dialog_is_not_unsaved_input(root, tmp_path):
+    from config import AppConfig
+    from services.storage_service import StorageService
+    from ui.dialogs.colleague_management_dialog import ColleagueManagementDialog
+
+    dialog = ColleagueManagementDialog(root, storage_service=StorageService(AppConfig(workspace_dir=tmp_path)))
+    dialog.update()
+
+    dialog.search_entry.insert(0, "Mei")
+    dialog.on_search_changed()
+    dialog.update()
+
+    assert dialog.is_dirty() is False, "Suchen gilt faelschlich als Eingabe"
+
+
+def test_excluding_a_container_covers_the_controls_inside_it(root):
+    """Filterleisten sind meist eine Leiste mit mehreren Bedienelementen darin."""
+    dialog = KeyboardDemoDialog(root)
+    filterleiste = ctk.CTkFrame(dialog)
+    filterleiste.pack()
+    filter_feld = ctk.CTkEntry(filterleiste)
+    filter_feld.pack()
+    dialog.exclude_from_unsaved_guard(filterleiste)
+    dialog.enable_unsaved_guard()
+    root.update()
+
+    filter_feld.insert(0, "Suchbegriff")
+    assert dialog.is_dirty() is False, "Bedienelement in der ausgeschlossenen Leiste zaehlt mit"
+
+    dialog.entry.insert(0, "echte Eingabe")
+    assert dialog.is_dirty() is True

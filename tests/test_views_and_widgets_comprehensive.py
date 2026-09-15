@@ -417,6 +417,13 @@ def test_a_column_renders_only_a_batch_up_front():
 
 
 def test_scrolling_to_the_end_pulls_in_the_next_batch():
+    """Nur scrollen - der Nachlade-Handler wird bewusst nicht selbst aufgerufen.
+
+    Genau das verdeckte den Fehler zuvor: der Test rief board._on_scrolled()
+    direkt auf und war gruen, waehrend im Programm nichts nachlud. Weder das
+    Mausrad (das Ereignis geht an die Karte unter dem Zeiger) noch die
+    Bildlaufleiste (die gar kein Ereignis erzeugt) erreichte den Canvas.
+    """
     root = ctk.CTk()
     root.geometry("1200x700")
     root.withdraw()
@@ -428,10 +435,65 @@ def test_scrolling_to_the_end_pulls_in_the_next_batch():
         canvas = board._col_canvas("support")
         assert canvas is not None
         canvas.yview_moveto(1.0)
-        board._on_scrolled("support")
+        root.update()
+        root.update_idletasks()
         root.update()
 
         assert board._rendered_counts["support"] > vorher, "beim Scrollen wird nichts nachgeladen"
+    finally:
+        root.destroy()
+
+
+def test_scrolling_reaches_every_case_in_a_column():
+    """Wer bis ans Ende scrollt, muss auch den letzten Fall sehen."""
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root, case_count=80)
+        root.update()
+        canvas = board._col_canvas("support")
+        assert canvas is not None
+        gesamt = len(board._pending_cases["support"])
+
+        for _ in range(60):
+            if board._rendered_counts["support"] >= gesamt:
+                break
+            canvas.yview_moveto(1.0)
+            root.update()
+            root.update_idletasks()
+
+        assert board._rendered_counts["support"] == gesamt, (
+            f"nur {board._rendered_counts['support']} von {gesamt} Faellen erreichbar"
+        )
+    finally:
+        root.destroy()
+
+
+def test_the_scroll_watch_leaves_the_scrollbar_working():
+    """Der Hook haengt sich in yscrollcommand - die Bildlaufleiste muss weiter folgen."""
+    from utils.ui_utils import watch_scroll_position
+
+    root = ctk.CTk()
+    root.geometry("300x200")
+    root.withdraw()
+    try:
+        rahmen = ctk.CTkScrollableFrame(root, height=120)
+        rahmen.pack(fill="both", expand=True)
+        for i in range(40):
+            ctk.CTkLabel(rahmen, text=f"Zeile {i}").pack()
+        root.update()
+
+        positionen = []
+        assert watch_scroll_position(rahmen, lambda first, last: positionen.append((first, last)))
+
+        canvas = rahmen._parent_canvas
+        canvas.yview_moveto(1.0)
+        root.update()
+
+        assert positionen, "der Hook wurde beim Scrollen nicht aufgerufen"
+        leiste = rahmen._scrollbar.get()  # type: ignore[attr-defined]
+        assert leiste[1] > 0.5, f"die Bildlaufleiste folgt dem Scrollen nicht mehr: {leiste}"
     finally:
         root.destroy()
 

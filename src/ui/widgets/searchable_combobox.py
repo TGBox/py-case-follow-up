@@ -207,6 +207,12 @@ class SearchableCombobox(ctk.CTkFrame):
                 self.after(100, lambda: self.close_popover(restore_focus=False))
 
     def close_popover(self, restore_focus: bool = True, focus_target: Any | None = None) -> None:
+        # Das Suchfeld gehoert dem Popover, die Verzoegerung haengt aber am
+        # Widget, das weiterlebt. Ohne Abbruch liefe die wartende Suche nach
+        # dem Schliessen auf ein zerstoertes Eingabefeld.
+        from utils.ui_utils import cancel_debounce
+        cancel_debounce(self, "combobox_search")
+
         pop = self._popover
         self._popover = None
 

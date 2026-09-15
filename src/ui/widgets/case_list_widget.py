@@ -226,15 +226,20 @@ class CaseListWidget(ctk.CTkFrame):
         return getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
 
     def _install_scroll_listener(self) -> None:
-        """Binds the batch top-up to scrolling. Installed once per widget."""
+        """Hooks the batch top-up into the scroll position. Installed once per widget."""
         if getattr(self, "_scroll_listener_installed", False):
             return
+        from utils.ui_utils import watch_scroll_position
+
+        # Not <MouseWheel>: that event goes to the card under the pointer, and
+        # dragging the scrollbar fires no event at all - see watch_scroll_position.
+        watch_scroll_position(self.scroll_frame, lambda _first, _last: self._on_scrolled())
+
         canvas = self._scroll_canvas()
-        if canvas is None:
-            return
-        for seq in ("<MouseWheel>", "<Button-4>", "<Button-5>", "<Configure>"):
+        if canvas is not None:
             try:
-                canvas.bind(seq, self._on_scrolled, add="+")
+                # Resizing can uncover empty space below the last card.
+                canvas.bind("<Configure>", self._on_scrolled, add="+")
             except Exception:
                 pass
         self._scroll_listener_installed = True

@@ -39,7 +39,9 @@ class ColleagueManagementDialog(BaseDialog):
 
         self.create_widgets()
         self.load_colleagues()
-        # Closing now asks before throwing away an edited colleague.
+        # Closing now asks before throwing away an edited colleague. The search
+        # box only narrows the list, so it must not count as input.
+        self.exclude_from_unsaved_guard(getattr(self, "search_entry", None))
         self.enable_unsaved_guard()
 
     def create_widgets(self):

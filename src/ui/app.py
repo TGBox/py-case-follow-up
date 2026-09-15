@@ -89,28 +89,21 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.geometry("1440x880")
         self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
         self._set_scaled_min_max()
-        try:
-            self.state("zoomed")
-        except Exception:
-            pass
+        # No wm state here: "zoomed" maps the window on Windows just like
+        # deiconify does, and at this point there is nothing to show but an empty
+        # frame. The window is revealed further down, once the splash overlay
+        # exists and is the only thing that can be painted.
 
         self.apply_windows_theme(theme_mode == "Dark")
 
-        # Startup Splash Screen Overlay (constructed immediately and placed over full window)
-        self.splash_overlay: ctk.CTkFrame | None = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
-        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+        # The splash overlay is built further down, right before the window is
+        # shown. Tk stacks siblings in creation order, so building it last is
+        # what puts it above the menu bar - a lift() afterwards is not enough,
+        # because CustomTkinter already redraws while the menu is being built.
+        self.splash_overlay: ctk.CTkFrame | None = None
 
-        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
-        splash_box.place(relx=0.5, rely=0.5, anchor="center")
-
-        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
-        self.splash_title_lbl.pack(pady=(0, 8))
-        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
-        self.splash_msg_lbl.pack()
-
-        # Window stays withdrawn until the full layout is built and the splash
-        # overlay has been painted — preventing any flash of un-rendered content.
-        # (deiconify happens after switch_layout() below)
+        # The window stays hidden until the menu bar and the content frame exist
+        # and the splash covers them - see _reveal_window below.
         self._initial_map_done = False
         self.bind("<Map>", self._on_initial_window_mapped, add="+")
 
@@ -149,10 +142,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.container_frame.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Ensure splash overlay stays on top while views are initialized
-        if self.splash_overlay:
-            self.splash_overlay.lift()
-        self.update_idletasks()
+        # Built now, after the menu bar and the content frame, so that it covers
+        # both. Everything the views add from here on lands inside
+        # container_frame and therefore stays below it.
+        self._build_splash_overlay()
+
+        # Only now does the window appear. CustomTkinter redraws while the menu
+        # bar is being built, so a window mapped before this point showed the
+        # buttons and dropdowns before the splash could cover them.
+        self._reveal_window(theme_mode == "Dark")
 
         # Views are built on first use (see _get_view); only the layout the
         # user actually starts in is created during startup.
@@ -199,6 +197,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._poll_open_case_request()
 
         # Hide splash screen smoothly after initial layout pass
+        self._lift_splash()
         self.update_idletasks()
         self.after(250, self._hide_splash_screen)
 
@@ -210,6 +209,50 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     self._last_geometry = (x, y, w, h)
         except Exception:
             pass
+
+    def _build_splash_overlay(self) -> None:
+        """Creates the startup overlay covering the whole window."""
+        from services.i18n_service import tr
+
+        self.splash_overlay = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
+        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+
+        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
+        splash_box.place(relx=0.5, rely=0.5, anchor="center")
+
+        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
+        self.splash_title_lbl.pack(pady=(0, 8))
+        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
+        self.splash_msg_lbl.pack()
+
+    def _reveal_window(self, dark: bool) -> None:
+        """Shows the window for the first time, with the splash overlay on top."""
+        try:
+            self.deiconify()
+        except Exception:
+            pass
+        self._maximize_window()
+        # Re-applied after mapping: the dark title bar is a window-manager
+        # attribute, and the handle only becomes meaningful once the window exists.
+        self.apply_windows_theme(dark)
+        self._lift_splash()
+        # A full update(), not just update_idletasks(): maximizing is carried out
+        # by the window manager and arrives as an event. Flushing only the idle
+        # queue leaves that event unhandled, so the window kept the size it was
+        # painted at and then stayed unpainted - black - for the whole of the
+        # view construction below, with the splash never showing at all.
+        try:
+            self.update()
+        except Exception:
+            self.update_idletasks()
+
+    def _lift_splash(self) -> None:
+        """Raises the splash overlay above everything built so far."""
+        if self.splash_overlay is not None:
+            try:
+                self.splash_overlay.lift()
+            except Exception:
+                pass
 
     def _hide_splash_screen(self):
         if hasattr(self, "splash_overlay") and self.splash_overlay:

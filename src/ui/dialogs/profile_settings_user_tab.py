@@ -17,8 +17,11 @@ class UserSettingsTabMixin:
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
         reload_ui_fields: Callable[[], None]
-        save_settings_quietly: Callable[[], bool]
-        reload_all_tabs: Callable[[], None]
+        # Als Methoden deklariert, nicht als Callable-Attribute: ProfileSettingsDialog
+        # erbt diesen Mixin und definiert beide selbst - gegen ein Attribut waere
+        # das fuer pyright ein unvertraeglicher Override.
+        def save_settings_quietly(self) -> bool: ...
+        def reload_all_tabs(self) -> None: ...
 
     def setup_user_section(self, left_col: ctk.CTkFrame) -> None:
         # Section 1: Profil verwalten & wechseln

@@ -54,6 +54,10 @@ class AppConfig:
     custom_question_schemas_path: Path | None = None
     custom_export_templates_path: Path | None = None
     custom_wiki_db_path: Path | None = None
+    # Set when --workspace named the directory. Not persisted: it describes how
+    # this one start was invoked, and it keeps the profile's stored workspace
+    # from overriding what the user asked for on the command line.
+    workspace_from_cli: bool = False
     column_widths: dict[str, int] = field(
         default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
@@ -185,7 +189,7 @@ class AppConfig:
         """Loads AppConfig with persisted global settings if present."""
         if cli_workspace:
             ws_dir = Path(cli_workspace)
-            return cls(workspace_dir=ws_dir)
+            return cls(workspace_dir=ws_dir, workspace_from_cli=True)
 
         config_file = get_global_config_file()
         if config_file.exists():

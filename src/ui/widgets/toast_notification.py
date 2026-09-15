@@ -1,3 +1,4 @@
+import inspect
 import sys
 import logging
 import customtkinter as ctk
@@ -5,6 +6,14 @@ from collections.abc import Callable
 from constants import TOAST_DURATION_DEFAULT_MS
 
 logger = logging.getLogger("SupportCockpit")
+
+
+def _accepts_launch(notify: Callable[..., object]) -> bool:
+    """Whether a tray service's notify() takes the launch URI."""
+    try:
+        return "launch" in inspect.signature(notify).parameters
+    except (TypeError, ValueError):
+        return False
 
 
 class ToastNotification(ctk.CTkToplevel):
@@ -124,11 +133,13 @@ class ToastNotification(ctk.CTkToplevel):
 
         tray_svc = getattr(top_app, "tray_service", None)
         if tray_svc is not None:
+            # Whether the tray service understands `launch` is decided from its
+            # signature, not from catching TypeError: a TypeError raised *inside*
+            # notify() would otherwise be mistaken for an old signature, and the
+            # retry would then escape this method uncaught.
+            kwargs = {"launch": launch_uri} if _accepts_launch(tray_svc.notify) else {}
             try:
-                return bool(tray_svc.notify(title, message, launch=launch_uri))
-            except TypeError:
-                # Older tray service without launch support.
-                return bool(tray_svc.notify(title, message))
+                return bool(tray_svc.notify(title, message, **kwargs))
             except Exception as err:
                 logger.warning(f"Could not send native tray notification: {err}")
                 return False

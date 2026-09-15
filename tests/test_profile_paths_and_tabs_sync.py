@@ -250,3 +250,80 @@ def test_profile_switch_persists_pending_changes(dummy_app, test_storage, tmp_pa
     assert dialog.wiki_url_entry.get() == "https://modified-wiki.de/api"
 
     dialog.destroy()
+
+
+# --- Pfadübernahme darf nichts verlieren und nichts blockieren ---
+#
+# Die drei Tests unten halten Fälle fest, die sich reproduzieren ließen:
+# ein gesetzter Archiv-/Kollegenpfad verschwand beim ersten Start, ein kopierter
+# Datenordner lenkte die App auf den Pfad des Ursprungsrechners um, und ein dort
+# eingetragenes fremdes Laufwerk brachte den Start zum Absturz.
+
+def _config_with_all_overrides(tmp_path):
+    extern = tmp_path / "extern"
+    extern.mkdir(parents=True, exist_ok=True)
+    return AppConfig(
+        workspace_dir=tmp_path / "ws",
+        custom_cases_path=extern / "cases.json",
+        custom_archive_path=extern / "archive.json",
+        custom_customers_path=extern / "customers.json",
+        custom_app_profile_path=extern / "app_profile.json",
+        custom_colleagues_path=extern / "colleagues.json",
+        custom_question_schemas_path=extern / "schemas.json",
+        custom_export_templates_path=extern / "templates.json",
+        custom_wiki_db_path=extern / "wiki.sqlite",
+    )
+
+
+def test_existing_path_overrides_survive_the_first_start(tmp_path):
+    """Nur vier Pfade stehen im Dialog - die anderen duerfen nicht verloren gehen."""
+    from services.storage_service import PROFILE_PATH_OVERRIDES
+
+    cfg = _config_with_all_overrides(tmp_path)
+    svc = StorageService(cfg)
+
+    profile = svc.load_profile()
+    svc.apply_profile_paths(profile)
+
+    verloren = [attr for attr in PROFILE_PATH_OVERRIDES if getattr(cfg, attr) is None]
+    assert verloren == [], f"Pfade beim Start geloescht: {verloren}"
+
+
+def test_an_explicit_workspace_argument_wins_over_the_profile(tmp_path):
+    """Sonst lenkt ein kopierter Datenordner die App auf den fremden Pfad um."""
+    ws_cli = tmp_path / "ws_cli"
+    ws_cli.mkdir()
+    # Über den echten Einstieg, damit auch das Setzen der Markierung mitgeprüft wird.
+    cfg = AppConfig.load_user_config(cli_workspace=ws_cli)
+    svc = StorageService(cfg)
+
+    profile = UserProfile(
+        user=UserInfo(name="Kollegin"),
+        path_settings=PathSettings(workspace_dir=str(tmp_path / "vom_anderen_rechner")),
+    )
+    svc.apply_profile_paths(profile)
+
+    assert svc.config.workspace_dir == ws_cli
+    assert not (tmp_path / "vom_anderen_rechner").exists(), "fremder Workspace wurde trotzdem angelegt"
+
+
+def test_a_workspace_that_cannot_be_created_leaves_the_app_running(tmp_path, monkeypatch):
+    """Ein fremdes Laufwerk im Profil darf den Start nicht verhindern."""
+    ws = tmp_path / "ws"
+    cfg = AppConfig(workspace_dir=ws)
+    cfg.ensure_directories()
+    svc = StorageService(cfg)
+
+    def _refuse(*args, **kwargs):
+        raise OSError(2, "No such file or directory")
+
+    monkeypatch.setattr(AppConfig, "ensure_directories", _refuse)
+
+    profile = UserProfile(
+        user=UserInfo(name="Kollegin"),
+        path_settings=PathSettings(workspace_dir="D:/Nicht/Auf/Diesem/Rechner"),
+    )
+    svc.apply_profile_paths(profile)
+
+    assert svc.config.workspace_dir == ws, "App zeigt auf ein Verzeichnis, das sie nicht anlegen konnte"
+    assert isinstance(svc.load_cases(), list)

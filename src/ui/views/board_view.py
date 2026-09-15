@@ -163,6 +163,10 @@ class KanbanCardWidget(ctk.CTkFrame):
 class BoardView(ctk.CTkFrame):
     """Interactive 4-column Kanban workflow board with individual column collapsing."""
 
+    # Cards per batch, per column. Mirrors CaseListWidget.RENDER_BATCH_SIZE - a
+    # column is about this tall on a normal window.
+    RENDER_BATCH_SIZE = 12
+
     def __init__(
         self,
         parent,
@@ -183,6 +187,9 @@ class BoardView(ctk.CTkFrame):
 
         self.cases: list[Case] = []
         self._col_signatures: dict[str, list] = {}
+        # Was noch zu rendern ist, je Spalte, und wie weit sie schon ist.
+        self._pending_cases: dict[str, list[Case]] = {}
+        self._rendered_counts: dict[str, int] = {}
         self.collapsed_states: dict[str, bool] = {
             "support": False,
             "dev": False,
@@ -406,17 +413,116 @@ class BoardView(ctk.CTkFrame):
                 for child in scroll.winfo_children():
                     child.destroy()
 
-                for c in c_list_sorted:
-                    card = KanbanCardWidget(
-                        scroll,
-                        case=c,
-                        on_select_case=self.on_select_case,
-                        on_switch_to_cockpit=self.on_switch_to_cockpit,
-                        on_open_followup=self.on_open_followup,
-                        on_toggle_complete=self.on_toggle_complete,
-                        on_change_actor=self.on_change_actor,
-                    )
-                    card.pack(fill="x", pady=4, padx=2)
+                # Only a screenful up front; the rest follows on scroll. A card
+                # costs roughly 15 ms to build, so rendering every case of every
+                # column made the first switch to the board scale with the case
+                # count - measured 880 ms at 31 cases and 2.7 s at 100.
+                self._pending_cases[col_key] = c_list_sorted
+                self._rendered_counts[col_key] = 0
+                self._render_next_batch(col_key)
+                self._install_scroll_listener(col_key)
+
+    # --- Kartenrendering in Haeppchen, je Spalte ---
+
+    def _col_canvas(self, col_key: str) -> Any:
+        scroll = self.col_scrolls.get(col_key)
+        if scroll is None:
+            return None
+        return getattr(scroll, "_parent_canvas", getattr(scroll, "_canvas", None))
+
+    def _build_card(self, col_key: str, case: Case) -> None:
+        card = KanbanCardWidget(
+            self.col_scrolls[col_key],
+            case=case,
+            on_select_case=self.on_select_case,
+            on_switch_to_cockpit=self.on_switch_to_cockpit,
+            on_open_followup=self.on_open_followup,
+            on_toggle_complete=self.on_toggle_complete,
+            on_change_actor=self.on_change_actor,
+        )
+        card.pack(fill="x", pady=4, padx=2)
+
+    def _render_next_batch(self, col_key: str, _event: Any = None) -> None:
+        """Builds the next slice of cards for one column."""
+        cases = self._pending_cases.get(col_key, [])
+        done = self._rendered_counts.get(col_key, 0)
+        if done >= len(cases) or col_key not in self.col_scrolls:
+            return
+
+        end = min(done + self.RENDER_BATCH_SIZE, len(cases))
+        for case in cases[done:end]:
+            self._build_card(col_key, case)
+        self._rendered_counts[col_key] = end
+
+        # A tall window may still leave the column half empty, so keep topping it
+        # up until it overflows - once idle, never inside this call stack.
+        if end < len(cases):
+            try:
+                self.after_idle(lambda k=col_key: self._fill_viewport(k))
+            except Exception:
+                pass
+
+    def _fill_viewport(self, col_key: str) -> None:
+        """Renders further batches while the column does not yet overflow."""
+        cases = self._pending_cases.get(col_key, [])
+        if self._rendered_counts.get(col_key, 0) >= len(cases):
+            return
+        canvas = self._col_canvas(col_key)
+        if canvas is None:
+            return
+        try:
+            if not canvas.winfo_exists():
+                return
+            top, bottom = canvas.yview()
+        except Exception:
+            return
+        # bottom == 1.0 with cases left means what is rendered still fits.
+        if bottom >= 0.995 or (bottom - top) >= 0.999:
+            self._render_next_batch(col_key)
+
+    def _on_scrolled(self, col_key: str, _event: Any = None) -> None:
+        """Pulls in the next batch once the user scrolls near the end."""
+        cases = self._pending_cases.get(col_key, [])
+        if self._rendered_counts.get(col_key, 0) >= len(cases):
+            return
+        canvas = self._col_canvas(col_key)
+        if canvas is None:
+            return
+        try:
+            _top, bottom = canvas.yview()
+        except Exception:
+            return
+        if bottom >= 0.9:
+            try:
+                self.after_idle(lambda k=col_key: self._render_next_batch(k))
+            except Exception:
+                self._render_next_batch(col_key)
+
+    def _install_scroll_listener(self, col_key: str) -> None:
+        """Binds the top-up to scrolling. Installed once per column widget."""
+        canvas = self._col_canvas(col_key)
+        if canvas is None or getattr(canvas, "_board_scroll_listener", False):
+            return
+        for seq in ("<MouseWheel>", "<Button-4>", "<Button-5>", "<Configure>"):
+            try:
+                canvas.bind(seq, lambda e, k=col_key: self._on_scrolled(k, e), add="+")
+            except Exception:
+                pass
+        try:
+            canvas._board_scroll_listener = True
+        except Exception:
+            pass
+
+    def render_all_cards(self, col_key: str | None = None) -> None:
+        """Renders every remaining card. For tests and anything counting cards."""
+        keys = [col_key] if col_key else list(self._pending_cases.keys())
+        for key in keys:
+            guard = 0
+            while self._rendered_counts.get(key, 0) < len(self._pending_cases.get(key, [])):
+                self._render_next_batch(key)
+                guard += 1
+                if guard > 500:
+                    break
 
     def refresh_ui_labels(self):
         self.create_board()

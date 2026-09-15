@@ -389,3 +389,88 @@ def test_expanding_restores_the_column():
         assert len(board.col_frames) == 4
     finally:
         root.destroy()
+
+
+# --- Das Board baut nur einen Bildschirm voll, nicht alle Karten ---
+#
+# Gemessen vor der Umstellung (erster Wechsel ins Board):
+#   31 Faelle 880 ms, 100 Faelle 2700 ms - rund 15 ms pro Karte, linear.
+# Danach rund 300 ms, unabhaengig von der Fallzahl.
+
+def test_a_column_renders_only_a_batch_up_front():
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root, case_count=80)
+        root.update()
+
+        offen = board._pending_cases.get("support", [])
+        assert len(offen) > board.RENDER_BATCH_SIZE, "Testdaten fuellen keine zwei Haeppchen"
+        gerendert = board._rendered_counts.get("support", 0)
+        assert gerendert <= board.RENDER_BATCH_SIZE * 2, (
+            f"{gerendert} von {len(offen)} Karten sofort gebaut - das skaliert wieder mit der Fallzahl"
+        )
+        assert gerendert > 0, "gar keine Karte gebaut"
+    finally:
+        root.destroy()
+
+
+def test_scrolling_to_the_end_pulls_in_the_next_batch():
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root, case_count=80)
+        root.update()
+        vorher = board._rendered_counts["support"]
+
+        canvas = board._col_canvas("support")
+        assert canvas is not None
+        canvas.yview_moveto(1.0)
+        board._on_scrolled("support")
+        root.update()
+
+        assert board._rendered_counts["support"] > vorher, "beim Scrollen wird nichts nachgeladen"
+    finally:
+        root.destroy()
+
+
+def test_every_case_can_still_be_reached():
+    """Haeppchenweise heisst nicht, dass Faelle verloren gehen."""
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root, case_count=80)
+        root.update()
+        board.render_all_cards()
+        root.update()
+
+        for key, faelle in board._pending_cases.items():
+            assert board._rendered_counts[key] == len(faelle), f"Spalte {key} unvollstaendig"
+            if faelle:
+                assert len(board.col_scrolls[key].winfo_children()) == len(faelle)
+    finally:
+        root.destroy()
+
+
+def test_a_refresh_without_changes_does_not_rebuild_the_columns():
+    """Die Signaturpruefung muss die Haeppchen ueberleben."""
+    root = ctk.CTk()
+    root.geometry("1200x700")
+    root.withdraw()
+    try:
+        board = _board(root, case_count=40)
+        root.update()
+        board.render_all_cards()
+        root.update()
+        vorher = [str(w) for w in board.col_scrolls["support"].winfo_children()]
+
+        board.refresh_board()
+        root.update()
+        nachher = [str(w) for w in board.col_scrolls["support"].winfo_children()]
+
+        assert vorher == nachher, "unveraenderte Spalte wurde neu aufgebaut"
+    finally:
+        root.destroy()

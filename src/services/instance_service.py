@@ -96,8 +96,21 @@ class InstanceService:
             return False
         return age < LOCK_STALE_SECONDS
 
+    @property
+    def owns_lock(self) -> bool:
+        """True when this process is the one answering hand-offs."""
+        return self._owns_lock
+
     def acquire(self) -> bool:
-        """Claims the lock for this process. Returns False if the file is unwritable."""
+        """Claims the lock. False when another instance already holds it, or the file is unwritable.
+
+        Only the holder answers hand-offs. Without that restriction a second app
+        on the same workspace would overwrite the lock and both would poll for
+        the same request file - whichever happened to read it first would open
+        the case, which is a coin toss from the user's side.
+        """
+        if self.is_running() and not self._owns_lock:
+            return False
         if self.heartbeat():
             self._owns_lock = True
             return True
@@ -192,6 +205,19 @@ class InstanceService:
         return case_id
 
 
+def _registered_command() -> str | None:
+    """What HKCU currently runs for supportcockpit://, or None if nothing is registered."""
+    try:
+        import winreg  # pyright: ignore[reportMissingModuleSource] - Windows-only stdlib module
+
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, rf"Software\Classes\{URI_SCHEME}\shell\open\command") as key:
+            # "" is the key's default value - the entry Windows actually runs.
+            value, _ = winreg.QueryValueEx(key, "")
+            return str(value)
+    except Exception:
+        return None
+
+
 def _launch_command() -> str:
     """Command line Windows should run for a supportcockpit:// URI.
 
@@ -203,6 +229,22 @@ def _launch_command() -> str:
         return f'"{exe}" --open-case "%1"'
     script = Path(__file__).resolve().parents[2] / "main.py"
     return f'"{exe}" "{script}" --open-case "%1"'
+
+
+def should_register(current: str | None, command: str, frozen: bool) -> bool:
+    """Whether the URI handler should be (re)written.
+
+    Three rules, in order: an unchanged entry is left alone so a normal start
+    does not touch the registry at all; nothing registered means this build
+    claims it; and an entry that belongs to another build is only overwritten by
+    a packaged .exe - so a quick run from source cannot take the handler away
+    from the installed app and leave every later click pointing at a checkout.
+    """
+    if current == command:
+        return False
+    if not current:
+        return True
+    return frozen
 
 
 def register_uri_scheme() -> bool:
@@ -217,10 +259,17 @@ def register_uri_scheme() -> bool:
     """
     if not sys.platform.startswith("win"):
         return False
+
+    command = _launch_command()
+    current = _registered_command()
+    if not should_register(current, command, frozen=bool(getattr(sys, "frozen", False))):
+        if current != command:
+            logger.info(f"Leaving the registered {URI_SCHEME}:// handler untouched: {current}")
+        return current == command
+
     try:
         import winreg  # pyright: ignore[reportMissingModuleSource] - Windows-only stdlib module
 
-        command = _launch_command()
         base = rf"Software\Classes\{URI_SCHEME}"
         with winreg.CreateKey(winreg.HKEY_CURRENT_USER, base) as key:
             winreg.SetValueEx(key, None, 0, winreg.REG_SZ, "URL:Support-Cockpit Protocol")

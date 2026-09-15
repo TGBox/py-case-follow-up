@@ -65,7 +65,6 @@ try:
 
     # Prevent CTkInputDialog from blocking on wait_window if get_input is unmocked in tests
     if hasattr(ctk, "CTkInputDialog"):
-        _orig_get_input = ctk.CTkInputDialog.get_input
         def _nonblocking_get_input(self):
             if hasattr(self, "_user_input") and self._user_input is not None:
                 return self._user_input

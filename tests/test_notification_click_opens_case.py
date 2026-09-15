@@ -150,6 +150,63 @@ def test_a_normal_start_never_hands_anything_over(tmp_path):
     assert InstanceService(tmp_path).handoff_or_claim(None) is False
 
 
+def test_only_one_instance_owns_the_hand_off(tmp_path):
+    """Two apps on one workspace would otherwise race for the same request file."""
+    first = InstanceService(tmp_path)
+    assert first.acquire() is True
+    assert first.owns_lock is True
+
+    second = InstanceService(tmp_path)
+    assert second.acquire() is False, "zweite Instanz reisst die Sperre an sich"
+    assert second.owns_lock is False
+
+    second.handoff_or_claim(None)
+    assert second.owns_lock is False, "zweite Instanz beantwortet Uebergaben mit"
+
+
+def test_the_lock_returns_to_a_fresh_start_after_the_holder_is_gone(tmp_path):
+    first = InstanceService(tmp_path)
+    first.acquire()
+    first.release()
+    assert InstanceService(tmp_path).acquire() is True
+
+
+def test_releasing_a_lock_this_process_never_held_leaves_it_alone(tmp_path):
+    """Sonst raeumt eine zweite Instanz beim Beenden die Sperre der ersten weg."""
+    first = InstanceService(tmp_path)
+    first.acquire()
+
+    second = InstanceService(tmp_path)
+    second.acquire()
+    second.release()
+
+    assert first.is_running() is True
+
+
+# --- URI-Handler in der Registry ---
+
+def test_an_unchanged_handler_is_not_rewritten():
+    """Ein normaler Start soll die Registry gar nicht anfassen."""
+    from services.instance_service import should_register
+
+    assert should_register('"C:/App.exe" --open-case "%1"', '"C:/App.exe" --open-case "%1"', frozen=True) is False
+
+
+def test_an_unregistered_handler_is_claimed_by_any_build():
+    from services.instance_service import should_register
+
+    assert should_register(None, '"C:/py.exe" main.py --open-case "%1"', frozen=False) is True
+
+
+def test_a_run_from_source_does_not_take_the_handler_from_the_installed_exe():
+    from services.instance_service import should_register
+
+    installed = '"C:/Program Files/Support-Cockpit.exe" --open-case "%1"'
+    from_source = '"C:/py.exe" "C:/checkout/main.py" --open-case "%1"'
+    assert should_register(installed, from_source, frozen=False) is False
+    assert should_register(from_source, installed, frozen=True) is True, "die gebaute Exe muss uebernehmen duerfen"
+
+
 def test_an_unwritable_workspace_starts_the_app_instead_of_swallowing_the_click(tmp_path, monkeypatch):
     """A click that opens nothing at all is the worse failure."""
     running = InstanceService(tmp_path)
@@ -254,7 +311,6 @@ def test_the_poll_keeps_the_instance_lock_from_going_stale(app, tmp_path):
     """A long-running app whose lock ages out starts answering clicks with a second window."""
     import os
 
-    from constants import OPEN_CASE_POLL_INTERVAL_MS
     from services.instance_service import HEARTBEAT_INTERVAL_SECONDS
 
     service = InstanceService(tmp_path)
@@ -265,12 +321,45 @@ def test_the_poll_keeps_the_instance_lock_from_going_stale(app, tmp_path):
     os.utime(service.lock_path, (stale, stale))
     assert service.is_running() is False
 
-    ticks = (HEARTBEAT_INTERVAL_SECONDS * 1000) // OPEN_CASE_POLL_INTERVAL_MS + 1
-    for _ in range(ticks):
+    def poll_once():
         app._poll_open_case_request()
         app.after_cancel(app._open_case_timer_id)
 
+    poll_once()
     assert service.is_running() is True, "die Sperre wird nie aufgefrischt"
+
+    # ... aber nicht bei jedem Poll: das waere 75 Schreibzugriffe pro Minute.
+    written_at = service.lock_path.stat().st_mtime_ns
+    poll_once()
+    assert service.lock_path.stat().st_mtime_ns == written_at, "Sperre wird bei jedem Poll geschrieben"
+
+    # Nach Ablauf des Intervalls wieder - unabhaengig davon, wie oft gepollt wurde.
+    app._last_heartbeat_at -= HEARTBEAT_INTERVAL_SECONDS + 1
+    os.utime(service.lock_path, (stale, stale))
+    poll_once()
+    assert service.is_running() is True, "nach dem Intervall wird nicht mehr aufgefrischt"
+
+
+def test_a_second_app_takes_over_once_the_first_one_is_closed(app, tmp_path):
+    """Sonst beantwortet das offen gebliebene Fenster bis zum Neustart keinen Klick."""
+    first = InstanceService(tmp_path)
+    first.acquire()
+
+    second = InstanceService(tmp_path)
+    second.acquire()
+    app.instance_service = second
+    assert second.owns_lock is False
+
+    InstanceService(tmp_path).write_open_case_request("T-2")
+    app._poll_open_case_request()
+    app.after_cancel(app._open_case_timer_id)
+    assert app.cockpit_view.selected == [], "zweite Instanz greift der ersten vor"
+
+    first.release()
+    app._poll_open_case_request()
+    app.after_cancel(app._open_case_timer_id)
+    assert second.owns_lock is True, "Sperre wird nach dem Schliessen nicht uebernommen"
+    assert [c.case_id for c in app.cockpit_view.selected] == ["T-2"]
 
 
 def test_the_poll_is_harmless_without_an_instance_service(app):
@@ -330,6 +419,23 @@ def test_a_tray_service_without_launch_support_still_notifies(app):
 
     assert toast._send_native(app, "T", "M") is True
     assert tray.calls == [("T", "M")]
+    toast.destroy()
+
+
+def test_a_broken_tray_service_is_reported_instead_of_being_called_twice(app):
+    """Ein TypeError *aus* notify() heraus darf nicht als alte Signatur gelten."""
+    calls: list[tuple] = []
+
+    class _BrokenTrayStub:
+        def notify(self, title, message, launch=None):
+            calls.append((title, message, launch))
+            raise TypeError("etwas in notify() ist kaputt")
+
+    toast = ToastNotification(app, title="T", message="M", duration_ms=1000, launch_uri="supportcockpit://case/T-2")
+    app.tray_service = _BrokenTrayStub()
+
+    assert toast._send_native(app, "T", "M") is False
+    assert len(calls) == 1, "notify() wurde nach dem Fehler ein zweites Mal aufgerufen"
     toast.destroy()
 
 

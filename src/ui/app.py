@@ -1,6 +1,7 @@
 import logging
 import sys
 import threading
+import time
 import ctypes
 from typing import TYPE_CHECKING, Any, cast
 import customtkinter as ctk
@@ -969,11 +970,19 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def _poll_open_case_request(self):
         """Refreshes the instance lock and acts on a pending case hand-off."""
         service = getattr(self, "instance_service", None)
-        if service is not None and self.__dict__.get("tk") is not None:
+        # Only the instance holding the lock answers hand-offs; a second app on
+        # the same workspace would otherwise race it for the request file. A
+        # second app does keep trying, so when the first one is closed the one
+        # left open takes over within a poll instead of leaving clicks
+        # unanswered until the next restart.
+        if service is not None and self.__dict__.get("tk") is not None and (service.owns_lock or service.acquire()):
             try:
-                self._open_case_poll_ticks = getattr(self, "_open_case_poll_ticks", 0) + 1
-                beat_every = max(1, (HEARTBEAT_INTERVAL_SECONDS * 1000) // OPEN_CASE_POLL_INTERVAL_MS)
-                if self._open_case_poll_ticks % beat_every == 0:
+                # Measured against the clock rather than counted in ticks: a tick
+                # count silently breaks as soon as the poll interval changes.
+                now = time.monotonic()
+                last_beat = getattr(self, "_last_heartbeat_at", 0.0)
+                if now - last_beat >= HEARTBEAT_INTERVAL_SECONDS:
+                    self._last_heartbeat_at = now
                     service.heartbeat()
 
                 case_id = service.consume_open_case_request()

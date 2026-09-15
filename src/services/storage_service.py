@@ -19,6 +19,20 @@ from utils.datetime_utils import calculate_idle_days
 
 logger = logging.getLogger("SupportCockpit")
 
+# The path overrides a profile carries, named identically on PathSettings and on
+# AppConfig. Seeding (load_profile) and applying (apply_profile_paths) both walk
+# this tuple so the two can no longer cover different sets of fields.
+PROFILE_PATH_OVERRIDES: tuple[str, ...] = (
+    "custom_cases_path",
+    "custom_archive_path",
+    "custom_customers_path",
+    "custom_app_profile_path",
+    "custom_colleagues_path",
+    "custom_question_schemas_path",
+    "custom_export_templates_path",
+    "custom_wiki_db_path",
+)
+
 
 def setup_logging(log_path: Path) -> None:
     """Sets up rotating file logging."""
@@ -555,15 +569,17 @@ class StorageService:
             else:
                 loaded_profile = UserProfile()
 
-        # Seed missing path_settings from active config if not set
+        # Seed missing path_settings from the active config. This has to cover
+        # every override, not just the four the dialog shows: apply_profile_paths
+        # writes all of them back, so a path that is never seeded here is set to
+        # None there and then persisted - which silently deleted an existing
+        # archive, colleagues, schema or template path on the first start.
         if not loaded_profile.path_settings.workspace_dir:
             loaded_profile.path_settings.workspace_dir = str(self.config.workspace_dir)
-        if self.config.custom_cases_path and not loaded_profile.path_settings.custom_cases_path:
-            loaded_profile.path_settings.custom_cases_path = str(self.config.custom_cases_path)
-        if self.config.custom_customers_path and not loaded_profile.path_settings.custom_customers_path:
-            loaded_profile.path_settings.custom_customers_path = str(self.config.custom_customers_path)
-        if self.config.custom_wiki_db_path and not loaded_profile.path_settings.custom_wiki_db_path:
-            loaded_profile.path_settings.custom_wiki_db_path = str(self.config.custom_wiki_db_path)
+        for attr in PROFILE_PATH_OVERRIDES:
+            config_value = getattr(self.config, attr, None)
+            if config_value and not getattr(loaded_profile.path_settings, attr, ""):
+                setattr(loaded_profile.path_settings, attr, str(config_value))
 
         self._profile_cache = loaded_profile
         return self._profile_cache
@@ -607,39 +623,42 @@ class StorageService:
         self.config.save_user_config()
 
     def apply_profile_paths(self, profile: UserProfile) -> None:
-        """Applies PathSettings from profile to storage config, ensures directories, and invalidates data caches."""
+        """Applies PathSettings from profile to storage config, ensures directories, and invalidates data caches.
+
+        Never leaves the app pointing at a location it cannot use: if the
+        directories cannot be created - a drive letter that only exists on the
+        machine the workspace was copied from, a folder without write access -
+        the previous paths are restored and the app keeps running on them. The
+        alternative was an exception out of SupportCockpitApp.__init__, which in
+        a windowed build means the program simply does not start, with no
+        message anywhere.
+        """
         if not hasattr(profile, "path_settings") or profile.path_settings is None:
             return
 
+        previous = self._current_path_config()
+
         ws_str = profile.path_settings.workspace_dir.strip()
-        if ws_str:
+        # An explicitly requested workspace (--workspace) outranks the one stored
+        # in the profile; otherwise a copied data folder would quietly redirect
+        # the app back to the path it was copied from.
+        if ws_str and not getattr(self.config, "workspace_from_cli", False):
             self.config.workspace_dir = Path(ws_str)
 
-        cases_str = profile.path_settings.custom_cases_path.strip()
-        self.config.custom_cases_path = Path(cases_str) if cases_str else None
+        for attr in PROFILE_PATH_OVERRIDES:
+            value = getattr(profile.path_settings, attr, "").strip()
+            setattr(self.config, attr, Path(value) if value else None)
 
-        cust_str = profile.path_settings.custom_customers_path.strip()
-        self.config.custom_customers_path = Path(cust_str) if cust_str else None
+        try:
+            self.config.ensure_directories()
+        except OSError as err:
+            self._restore_path_config(previous)
+            logger.error(
+                f"Profile paths point to an unusable location ({err}); "
+                f"staying on {self.config.workspace_dir}"
+            )
+            return
 
-        wiki_str = profile.path_settings.custom_wiki_db_path.strip()
-        self.config.custom_wiki_db_path = Path(wiki_str) if wiki_str else None
-
-        archive_str = profile.path_settings.custom_archive_path.strip()
-        self.config.custom_archive_path = Path(archive_str) if archive_str else None
-
-        app_prof_str = profile.path_settings.custom_app_profile_path.strip()
-        self.config.custom_app_profile_path = Path(app_prof_str) if app_prof_str else None
-
-        colleagues_str = profile.path_settings.custom_colleagues_path.strip()
-        self.config.custom_colleagues_path = Path(colleagues_str) if colleagues_str else None
-
-        schemas_str = profile.path_settings.custom_question_schemas_path.strip()
-        self.config.custom_question_schemas_path = Path(schemas_str) if schemas_str else None
-
-        templates_str = profile.path_settings.custom_export_templates_path.strip()
-        self.config.custom_export_templates_path = Path(templates_str) if templates_str else None
-
-        self.config.ensure_directories()
         self.flush_all_saves()
         self._cases_cache = None
         self._archive_cache = None
@@ -649,6 +668,16 @@ class StorageService:
         self._colleagues_cache = None
         self._profile_cache = profile
         self.config.save_user_config()
+
+    def _current_path_config(self) -> dict[str, Any]:
+        snapshot: dict[str, Any] = {"workspace_dir": self.config.workspace_dir}
+        for attr in PROFILE_PATH_OVERRIDES:
+            snapshot[attr] = getattr(self.config, attr, None)
+        return snapshot
+
+    def _restore_path_config(self, snapshot: dict[str, Any]) -> None:
+        for attr, value in snapshot.items():
+            setattr(self.config, attr, value)
 
     # --- Schemas ---
     def load_schemas(self, use_cache: bool = True) -> list[QuestionSchema]:

@@ -70,6 +70,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # preventing CustomTkinter from clamping window dimensions to initial unmapped size.
         self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
+        self.storage_service.apply_profile_paths(self.profile)
         font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
         ctk.set_widget_scaling(font_scale)
 
@@ -106,19 +107,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
         self.splash_msg_lbl.pack()
 
-        # Reveal the window now that splash overlay is covering it completely
-        self.deiconify()
-        try:
-            self.state("zoomed")
-        except Exception:
-            pass
-        self.splash_overlay.lift()
-        self.update()
-
+        # Window stays withdrawn until the full layout is built and the splash
+        # overlay has been painted — preventing any flash of un-rendered content.
+        # (deiconify happens after switch_layout() below)
         self._initial_map_done = False
         self.bind("<Map>", self._on_initial_window_mapped, add="+")
-        self.after(100, self._maximize_initial_window)
-        self.after(400, self._maximize_initial_window)
 
         self.customer_service = CustomerService(self.storage_service)
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
@@ -949,7 +942,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.withdraw()
 
     def find_case_by_id(self, case_id: str) -> Case | None:
-        return next((c for c in self.cases if str(c.case_id) == str(case_id)), None)
+        return next((c for c in self.cases if c.case_id == case_id), None)
 
     def request_open_case(self, case_id: str) -> bool:
         """Brings the app forward and opens one case by its id.

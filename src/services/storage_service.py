@@ -499,51 +499,87 @@ class StorageService:
 
     # --- Profile ---
     @property
+    def global_profiles_dir(self) -> Path:
+        from config import get_global_config_dir
+        p_dir = get_global_config_dir() / "profiles"
+        p_dir.mkdir(parents=True, exist_ok=True)
+        return p_dir
+
+    @property
     def profiles_dir(self) -> Path:
         p_dir = self.config.data_dir / "profiles"
         p_dir.mkdir(parents=True, exist_ok=True)
         return p_dir
 
     def list_profiles(self) -> list[str]:
-        """Lists available user profile usernames."""
+        """Lists available user profile usernames from both workspace and global profiles directory."""
         curr_profile = self.load_profile()
         profiles = [curr_profile.user.name]
-        if self.profiles_dir.exists():
-            for f in self.profiles_dir.glob("*.json"):
-                try:
-                    with open(f, encoding="utf-8") as file:
-                        data = json.load(file)
-                    name = data.get("user", {}).get("name")
-                    if name and name not in profiles:
-                        profiles.append(name)
-                except Exception as profile_err:
-                    logger.warning(f"Skipping unreadable profile file {f}: {profile_err}")
+        for dir_path in (self.global_profiles_dir, self.profiles_dir):
+            if dir_path.exists():
+                for f in dir_path.glob("*.json"):
+                    try:
+                        with open(f, encoding="utf-8") as file:
+                            data = json.load(file)
+                        name = data.get("user", {}).get("name")
+                        if name and name not in profiles:
+                            profiles.append(name)
+                    except Exception as profile_err:
+                        logger.warning(f"Skipping unreadable profile file {f}: {profile_err}")
         return profiles
 
     def load_profile(self, use_cache: bool = True) -> UserProfile:
         if use_cache and self._profile_cache is not None:
             return self._profile_cache
 
-        data = safe_read_json(
-            self.config.app_profile_path,
-            default_factory=dict,
-            example_path=self.config.get_example_path("app_profile.json")
-        )
-        if isinstance(data, dict):
-            self._profile_cache = UserProfile.from_dict(data)
-        else:
-            self._profile_cache = UserProfile()
+        loaded_profile: UserProfile | None = None
+        prof_name = getattr(self.config, "active_profile_name", None)
+        if prof_name:
+            safe_filename = "".join(c for c in prof_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+            for dir_path in (self.global_profiles_dir, self.profiles_dir):
+                target_path = dir_path / f"profile_{safe_filename}.json"
+                if target_path.exists():
+                    data = safe_read_json(target_path, default_factory=dict)
+                    if isinstance(data, dict) and data:
+                        loaded_profile = UserProfile.from_dict(data)
+                        break
+
+        if loaded_profile is None:
+            data = safe_read_json(
+                self.config.app_profile_path,
+                default_factory=dict,
+                example_path=self.config.get_example_path("app_profile.json")
+            )
+            if isinstance(data, dict) and data:
+                loaded_profile = UserProfile.from_dict(data)
+            else:
+                loaded_profile = UserProfile()
+
+        # Seed missing path_settings from active config if not set
+        if not loaded_profile.path_settings.workspace_dir:
+            loaded_profile.path_settings.workspace_dir = str(self.config.workspace_dir)
+        if self.config.custom_cases_path and not loaded_profile.path_settings.custom_cases_path:
+            loaded_profile.path_settings.custom_cases_path = str(self.config.custom_cases_path)
+        if self.config.custom_customers_path and not loaded_profile.path_settings.custom_customers_path:
+            loaded_profile.path_settings.custom_customers_path = str(self.config.custom_customers_path)
+        if self.config.custom_wiki_db_path and not loaded_profile.path_settings.custom_wiki_db_path:
+            loaded_profile.path_settings.custom_wiki_db_path = str(self.config.custom_wiki_db_path)
+
+        self._profile_cache = loaded_profile
         return self._profile_cache
 
     def load_profile_by_name(self, profile_name: str) -> UserProfile:
-        """Loads UserProfile by user name from profiles_dir or falls back to active profile."""
+        """Loads UserProfile by user name from global or workspace profiles_dir or falls back to active profile."""
         safe_filename = "".join(c for c in profile_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
-        target_path = self.profiles_dir / f"profile_{safe_filename}.json"
-
-        if target_path.exists():
-            data = safe_read_json(target_path, default_factory=dict)
-            if isinstance(data, dict):
-                return UserProfile.from_dict(data)
+        for dir_path in (self.global_profiles_dir, self.profiles_dir):
+            target_path = dir_path / f"profile_{safe_filename}.json"
+            if target_path.exists():
+                data = safe_read_json(target_path, default_factory=dict)
+                if isinstance(data, dict) and data:
+                    loaded = UserProfile.from_dict(data)
+                    if not loaded.path_settings.workspace_dir:
+                        loaded.path_settings.workspace_dir = str(self.config.workspace_dir)
+                    return loaded
 
         return self.load_profile()
 
@@ -555,15 +591,64 @@ class StorageService:
             atomic_save_json(self.config.app_profile_path, p_dict)
         else:
             self.saver.save_debounced(self.config.app_profile_path, lambda: profile.to_dict())
+
         safe_filename = "".join(c for c in profile.user.name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
         if safe_filename:
-            target_path = self.profiles_dir / f"profile_{safe_filename}.json"
-            if sync:
-                if p_dict is None:
-                    p_dict = profile.to_dict()
-                atomic_save_json(target_path, p_dict)
-            else:
-                self.saver.save_debounced(target_path, lambda: profile.to_dict())
+            for dir_path in (self.global_profiles_dir, self.profiles_dir):
+                target_path = dir_path / f"profile_{safe_filename}.json"
+                if sync:
+                    if p_dict is None:
+                        p_dict = profile.to_dict()
+                    atomic_save_json(target_path, p_dict)
+                else:
+                    self.saver.save_debounced(target_path, lambda: profile.to_dict())
+
+        self.config.active_profile_name = profile.user.name
+        self.config.save_user_config()
+
+    def apply_profile_paths(self, profile: UserProfile) -> None:
+        """Applies PathSettings from profile to storage config, ensures directories, and invalidates data caches."""
+        if not hasattr(profile, "path_settings") or profile.path_settings is None:
+            return
+
+        ws_str = profile.path_settings.workspace_dir.strip()
+        if ws_str:
+            self.config.workspace_dir = Path(ws_str)
+
+        cases_str = profile.path_settings.custom_cases_path.strip()
+        self.config.custom_cases_path = Path(cases_str) if cases_str else None
+
+        cust_str = profile.path_settings.custom_customers_path.strip()
+        self.config.custom_customers_path = Path(cust_str) if cust_str else None
+
+        wiki_str = profile.path_settings.custom_wiki_db_path.strip()
+        self.config.custom_wiki_db_path = Path(wiki_str) if wiki_str else None
+
+        archive_str = profile.path_settings.custom_archive_path.strip()
+        self.config.custom_archive_path = Path(archive_str) if archive_str else None
+
+        app_prof_str = profile.path_settings.custom_app_profile_path.strip()
+        self.config.custom_app_profile_path = Path(app_prof_str) if app_prof_str else None
+
+        colleagues_str = profile.path_settings.custom_colleagues_path.strip()
+        self.config.custom_colleagues_path = Path(colleagues_str) if colleagues_str else None
+
+        schemas_str = profile.path_settings.custom_question_schemas_path.strip()
+        self.config.custom_question_schemas_path = Path(schemas_str) if schemas_str else None
+
+        templates_str = profile.path_settings.custom_export_templates_path.strip()
+        self.config.custom_export_templates_path = Path(templates_str) if templates_str else None
+
+        self.config.ensure_directories()
+        self.flush_all_saves()
+        self._cases_cache = None
+        self._archive_cache = None
+        self._customers_cache = None
+        self._schemas_cache = None
+        self._templates_cache = None
+        self._colleagues_cache = None
+        self._profile_cache = profile
+        self.config.save_user_config()
 
     # --- Schemas ---
     def load_schemas(self, use_cache: bool = True) -> list[QuestionSchema]:

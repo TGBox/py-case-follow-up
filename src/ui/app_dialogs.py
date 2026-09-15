@@ -58,6 +58,7 @@ class DialogLaunchersMixin:
         p2p_service: Any
         calendar_email_service: Any
         snippet_service: Any
+        attachment_service: Any
         deep_search_service: Any
         search_query: str
         refresh_views: Callable[..., Any]
@@ -228,11 +229,25 @@ class DialogLaunchersMixin:
 
     def on_profile_updated(self):
         from services.i18n_service import get_i18n
-        self.load_all_data()
         self.profile = self.storage_service.load_profile()
+        if hasattr(self, "app_config"):
+            self.app_config = self.storage_service.config
+        if hasattr(self, "attachment_service") and hasattr(self.attachment_service, "config"):
+            self.attachment_service.config = self.storage_service.config
+        if hasattr(self, "snippet_service"):
+            from services.snippet_service import SnippetService
+            self.snippet_service = SnippetService(self.storage_service.config.workspace_dir)
+        if hasattr(self, "calendar_email_service"):
+            from services.calendar_email_service import CalendarEmailService
+            self.calendar_email_service = CalendarEmailService(self.storage_service.config.workspace_dir)
+        if hasattr(self, "deep_search_service"):
+            from services.deep_search_service import DeepSearchService
+            self.deep_search_service = DeepSearchService(self.storage_service.config.workspace_dir)
+        self.load_all_data()
         if hasattr(self, "user_btn") and self.user_btn and self.user_btn.winfo_exists():
             self.user_btn.configure(text=f"👤 {self.profile.user.name}")
-        self.cockpit_view.author_name = self.profile.user.name
+        if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
+            self.cockpit_view.author_name = self.profile.user.name
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
         if hasattr(self, "apply_windows_theme"):
             self.apply_windows_theme(self.profile.ui_settings.theme == "Dark")

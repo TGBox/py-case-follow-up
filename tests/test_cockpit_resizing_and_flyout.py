@@ -190,6 +190,40 @@ def test_resizing_does_not_re_place_the_sashes(cockpit_im_fenster):
         view.paned = echtes_paned
 
 
+def test_resizing_does_not_overwrite_the_saved_column_widths(cockpit_im_fenster):
+    """Gemeldet: die eingestellten Spaltenbreiten waren nach dem Neustart wieder weg.
+
+    Der Configure-Handler hat die drei Breiten bei jeder Fenstergroessenaenderung
+    neu ausgerechnet (2/3 Mitte, je 1/6 aussen) und das Ergebnis ins Profil
+    geschrieben. Beim Beenden wurde dann diese Rechnung gespeichert, nicht das,
+    was der Nutzer gezogen hatte. Gemessen mit gespeicherten 430/250 px, Fenster
+    1400 -> 1000 -> 1600 -> 1200 px: 430/250 -> 363/184 -> 463/284 -> 396/661.
+    """
+    _, view = cockpit_im_fenster
+    view.profile.ui_settings.column_widths["cockpit_left"] = 430
+    view.profile.ui_settings.column_widths["cockpit_right"] = 250
+
+    echtes_paned = view.paned
+    attrappe = MagicMock()
+    attrappe.winfo_exists.return_value = True
+    attrappe.winfo_width.return_value = 1000
+    attrappe.sash_coord.side_effect = lambda i: [(430, 0), (1150, 0)][i]
+    view.paned = attrappe
+    view._last_paned_width = 1400
+    try:
+        for breite in (1000, 1600, 1200):
+            attrappe.winfo_width.return_value = breite
+            ereignis = MagicMock()
+            ereignis.widget = attrappe
+            ereignis.width = breite
+            view._on_paned_configure(ereignis)
+
+        assert view.profile.ui_settings.column_widths["cockpit_left"] == 430
+        assert view.profile.ui_settings.column_widths["cockpit_right"] == 250
+    finally:
+        view.paned = echtes_paned
+
+
 # --- Das sichtbare Ergebnis, sobald ein echtes Fenster vorhanden ist ---
 #
 # Gemessen ausserhalb der Testsuite (Fenster 1000 -> 1600 px):

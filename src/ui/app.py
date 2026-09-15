@@ -560,16 +560,26 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._set_view(LayoutMode.ANALYTICS.value, view)
 
     def switch_layout(self, layout_name: str):
-        if self.active_view:
-            self.active_view.pack_forget()
-
         # Handle both display name and internal enum value
         val = get_layout_val_from_display(layout_name)
         if val not in (LayoutMode.BOARD.value, LayoutMode.TABLE.value, LayoutMode.ANALYTICS.value):
             val = LayoutMode.COCKPIT.value
 
+        # Build and fill the new view while it is still unpacked, and only then
+        # swap it in. Hiding the old one first left the content area empty for
+        # the whole construction - several hundred milliseconds in which the app
+        # never returns to the event loop, so the window was on screen half
+        # painted: menu bar labels drawn over each other, columns as grey
+        # placeholder blocks. An unpacked widget is not drawn at all.
+        neue_ansicht = self._get_view(val)
         self._active_layout = val
-        self.active_view = self._get_view(val)
+        # Fills the new view - refresh_views() works on _active_layout, which
+        # now points at it. Still unpacked at this point, so none of it shows.
+        self.refresh_views()
+
+        if self.active_view is not None and self.active_view is not neue_ansicht:
+            self.active_view.pack_forget()
+        self.active_view = neue_ansicht
         self.active_view.pack(fill="both", expand=True)
 
         if self.__dict__.get("layout_combo"):
@@ -577,7 +587,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.profile.ui_settings.default_layout = val
         self.storage_service.save_profile(self.profile)
-        self.refresh_views()
 
     def _apply_cases_to_view(self, layout_value: str, cases: list[Case], deep_results: dict):
         """Pushes the current case selection into one layout's view."""

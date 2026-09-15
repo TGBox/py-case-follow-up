@@ -113,7 +113,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
     def _on_tag_search_keyrelease(self, event=None):
         """Debounces the tag filter so the checkbox list is rebuilt once per typing pause."""
         from utils.ui_utils import debounce
-        debounce(self, "tag_search", 180, self.render_tag_checkboxes)
+        from constants import SEARCH_DEBOUNCE_MS
+        debounce(self, "tag_search", SEARCH_DEBOUNCE_MS, self.render_tag_checkboxes)
 
     def render_tag_checkboxes(self):
         from services.i18n_service import tr

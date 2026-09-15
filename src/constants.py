@@ -543,6 +543,11 @@ FOLLOWUP_CHECK_INITIAL_DELAY_MS = 2000
 # The second process is already gone by then, so this interval is all the delay
 # the user perceives between the click and the case appearing.
 OPEN_CASE_POLL_INTERVAL_MS = 800
+# Wartezeit nach dem letzten Tastendruck, bevor eine Suche ausgefuehrt wird.
+# Ohne sie loest jeder einzelne Buchstabe eine vollstaendige Filterung samt
+# Neuaufbau der Trefferliste aus - beim Tippen von drei Buchstaben dreimal,
+# wobei der zweite Tastendruck erst nach der ersten Liste ueberhaupt ankommt.
+SEARCH_DEBOUNCE_MS = 220
 TOAST_DURATION_DEFAULT_MS = 5000
 TOOLTIP_DEFAULT_DELAY_MS = 300
 TOOLTIP_POINTER_OFFSET_X = 15

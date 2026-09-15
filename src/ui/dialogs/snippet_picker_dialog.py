@@ -6,6 +6,8 @@ from models.snippet import Snippet
 from services.snippet_service import SnippetService
 from constants import DIALOG_DIMENSIONS
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
+from constants import SEARCH_DEBOUNCE_MS
+from utils.ui_utils import debounce
 
 
 class SnippetPickerDialog(BaseDialog):
@@ -50,7 +52,7 @@ class SnippetPickerDialog(BaseDialog):
             hdr_frame, placeholder_text=tr("snippet_picker.search", "🔍 Textbaustein suchen..."), width=320
         ), "snippet_picker.search", "🔍 Textbaustein suchen...", attr="placeholder_text")
         self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
-        self.search_entry.bind("<KeyRelease>", lambda e: self.refresh_snippet_list())
+        self.search_entry.bind("<KeyRelease>", lambda e: debounce(self, "snippet_search", SEARCH_DEBOUNCE_MS, self.refresh_snippet_list))
 
         self.cat_combo = ctk.CTkOptionMenu(
             hdr_frame,

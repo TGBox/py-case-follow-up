@@ -565,6 +565,17 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         if self.on_customers_updated:
             self.on_customers_updated()
 
+    def _on_search_keyrelease(self, event=None):
+        """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern.
+
+        Ohne das loeste der erste Buchstabe eine vollstaendige Suche ueber alle
+        Praxen samt Neuaufbau der Trefferliste aus, und der zweite Tastendruck
+        kam erst danach ueberhaupt an.
+        """
+        from constants import SEARCH_DEBOUNCE_MS
+        from utils.ui_utils import debounce
+        debounce(self, "customer_search", SEARCH_DEBOUNCE_MS, self.on_search_changed)
+
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()
         if not query:

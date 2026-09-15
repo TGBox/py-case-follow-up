@@ -385,10 +385,25 @@ class EmailDraftDialog(BaseDialog):
         return "break"
 
     def _on_to_keyrelease(self, event=None):
+        # Escape und ein geleertes Feld wirken sofort - wer die Vorschlagsliste
+        # wegdrueckt, will nicht erst auf einen Timer warten.
         if event and event.keysym == "Escape":
+            from utils.ui_utils import cancel_debounce
+            cancel_debounce(self, "recipient_search")
             self.hide_suggestions()
             return
 
+        if not self.to_entry.get().strip():
+            from utils.ui_utils import cancel_debounce
+            cancel_debounce(self, "recipient_search")
+            self.hide_suggestions()
+            return
+
+        from constants import SEARCH_DEBOUNCE_MS
+        from utils.ui_utils import debounce
+        debounce(self, "recipient_search", SEARCH_DEBOUNCE_MS, self._render_recipient_suggestions)
+
+    def _render_recipient_suggestions(self):
         query = self.to_entry.get().strip().lower()
         if not query:
             self.hide_suggestions()

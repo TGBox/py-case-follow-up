@@ -82,7 +82,7 @@ class ColleagueManagementDialog(BaseDialog):
             left_frame, placeholder_text=tr("colleague_mgmt.search_placeholder", "🔍 Name, Kürzel, Abteilung...")
         ), "colleague_mgmt.search_placeholder", "🔍 Name, Kürzel, Abteilung...", attr="placeholder_text")
         self.search_entry.pack(fill="x", padx=10, pady=(10, 5))
-        self.search_entry.bind("<KeyRelease>", self.on_search_changed)
+        self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
         self.list_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
         self.list_scroll.pack(fill="both", expand=True, padx=5, pady=5)
@@ -279,6 +279,12 @@ class ColleagueManagementDialog(BaseDialog):
                     notes_lbl.pack(fill="x", padx=8, pady=(0, 4))
 
             bind_mouse_wheel_to_canvas(card, self.list_scroll)
+
+    def _on_search_keyrelease(self, event=None):
+        """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern."""
+        from constants import SEARCH_DEBOUNCE_MS
+        from utils.ui_utils import debounce
+        debounce(self, "colleague_search", SEARCH_DEBOUNCE_MS, self.on_search_changed)
 
     def on_search_changed(self, event=None):
         self.filter_and_render_list()

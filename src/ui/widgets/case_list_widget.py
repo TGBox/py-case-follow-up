@@ -142,7 +142,8 @@ class CaseListWidget(ctk.CTkFrame):
     def _on_search_keyrelease(self, event=None):
         """Debounces the search so the case list is re-rendered once per typing pause."""
         from utils.ui_utils import debounce
-        debounce(self, "case_search", 220, lambda: self.on_search_changed(self.search_entry.get()))
+        from constants import SEARCH_DEBOUNCE_MS
+        debounce(self, "case_search", SEARCH_DEBOUNCE_MS, lambda: self.on_search_changed(self.search_entry.get()))
 
     def toggle_deep_search(self):
         self.is_deep_search_active = not self.is_deep_search_active

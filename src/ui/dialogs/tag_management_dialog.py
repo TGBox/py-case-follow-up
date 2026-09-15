@@ -6,6 +6,8 @@ from models.profile import UserProfile
 from services.storage_service import StorageService
 from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
+from constants import SEARCH_DEBOUNCE_MS
+from utils.ui_utils import debounce
 
 
 class TagManagementDialog(BaseDialog):
@@ -78,7 +80,7 @@ class TagManagementDialog(BaseDialog):
 
         self.search_tag_entry = self.register_i18n(ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...")), "tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...", attr="placeholder_text")
         self.search_tag_entry.pack(fill="x", padx=10, pady=(8, 4))
-        self.search_tag_entry.bind("<KeyRelease>", lambda e: self.render_tags_list())
+        self.search_tag_entry.bind("<KeyRelease>", lambda e: debounce(self, "tag_search", SEARCH_DEBOUNCE_MS, self.render_tags_list))
 
         add_row1 = ctk.CTkFrame(add_box1, fg_color="transparent")
         add_row1.pack(fill="x", padx=10, pady=(4, 8))
@@ -100,7 +102,7 @@ class TagManagementDialog(BaseDialog):
 
         self.search_mod_entry = self.register_i18n(ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...")), "tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...", attr="placeholder_text")
         self.search_mod_entry.pack(fill="x", padx=10, pady=(8, 4))
-        self.search_mod_entry.bind("<KeyRelease>", lambda e: self.render_modules_list())
+        self.search_mod_entry.bind("<KeyRelease>", lambda e: debounce(self, "module_search", SEARCH_DEBOUNCE_MS, self.render_modules_list))
 
         add_row2 = ctk.CTkFrame(add_box2, fg_color="transparent")
         add_row2.pack(fill="x", padx=10, pady=(4, 8))

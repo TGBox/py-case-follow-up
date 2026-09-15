@@ -243,11 +243,13 @@ def test_scrolling_pulls_in_the_remaining_cards():
         first_batch = widget._rendered_count
         assert first_batch < 40
 
+        # Nur scrollen, kein direkter Aufruf von _on_scrolled: sonst prueft der
+        # Test seinen eigenen Aufruf statt den Weg, den der Nutzer nimmt.
         canvas = widget._scroll_canvas()
         for _ in range(40):
             canvas.yview_moveto(1.0)
-            widget._on_scrolled()
             root.update()
+            root.update_idletasks()
             if widget._rendered_count >= 40:
                 break
 

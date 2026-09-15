@@ -185,6 +185,11 @@ def main():
     except KeyboardInterrupt:
         print("[*] Application interrupted by user.")
     except Exception as e:
+        # Ein Absturz beim Aufbau des Fensters landete bisher nirgends: der
+        # Tk-Fehlerbericht greift nur fuer Callbacks im laufenden Programm, und
+        # in der gepackten .exe ist stdout None. Fuer den Nutzer sah das aus wie
+        # "die App startet einfach nicht" - ohne eine einzige Spur im Log.
+        _report_tkinter_exception(*sys.exc_info())
         print(f"[-] Application execution error: {e}")
         sys.exit(1)
     finally:

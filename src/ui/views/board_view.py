@@ -499,17 +499,21 @@ class BoardView(ctk.CTkFrame):
                 self._render_next_batch(col_key)
 
     def _install_scroll_listener(self, col_key: str) -> None:
-        """Binds the top-up to scrolling. Installed once per column widget."""
-        canvas = self._col_canvas(col_key)
-        if canvas is None or getattr(canvas, "_board_scroll_listener", False):
+        """Hooks the top-up into the column's scroll position. Once per column."""
+        from utils.ui_utils import watch_scroll_position
+
+        scroll = self.col_scrolls.get(col_key)
+        if scroll is None:
             return
-        for seq in ("<MouseWheel>", "<Button-4>", "<Button-5>", "<Configure>"):
-            try:
-                canvas.bind(seq, lambda e, k=col_key: self._on_scrolled(k, e), add="+")
-            except Exception:
-                pass
+        watch_scroll_position(scroll, lambda _first, _last, k=col_key: self._on_scrolled(k))
+
+        # Resizing the column can uncover empty space below the last card.
+        canvas = self._col_canvas(col_key)
+        if canvas is None or getattr(canvas, "_board_resize_listener", False):
+            return
         try:
-            canvas._board_scroll_listener = True
+            canvas.bind("<Configure>", lambda e, k=col_key: self._on_scrolled(k, e), add="+")
+            canvas._board_resize_listener = True
         except Exception:
             pass
 

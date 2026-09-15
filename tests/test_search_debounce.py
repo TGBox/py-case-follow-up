@@ -208,3 +208,89 @@ def test_the_delay_is_noticeable_but_not_annoying():
     assert 120 <= SEARCH_DEBOUNCE_MS <= 400, (
         f"{SEARCH_DEBOUNCE_MS} ms - zu kurz bringt nichts, zu lang fuehlt sich traege an"
     )
+
+
+# --- Was passiert, wenn der Nutzer waehrend der Wartezeit weiterklickt? ---
+#
+# Die Verzoegerung oeffnet ein Zeitfenster, das es vorher nicht gab: zwischen
+# dem letzten Buchstaben und der Suche kann der Nutzer die Liste schliessen
+# oder einen Treffer auswaehlen. Laeuft die Suche danach trotzdem, arbeitet sie
+# auf Widgets, die es nicht mehr gibt - oder macht die Auswahl wieder zunichte.
+
+
+def _warten(widget, sekunden=1.0):
+    ende = time.monotonic() + sekunden
+    while time.monotonic() < ende:
+        widget.update()
+        time.sleep(0.01)
+
+
+def test_closing_the_combobox_popover_drops_the_pending_search(root):
+    """Escape/Enter zerstoert das Popover - die wartende Suche darf nicht hinterherlaufen."""
+    from ui.widgets.searchable_combobox import SearchableCombobox
+
+    fehler = []
+    root.report_callback_exception = lambda *args: fehler.append(args)
+
+    combo = SearchableCombobox(root, values=[f"Praxis {i}" for i in range(30)])
+    combo.pack()
+    combo.open_popover()
+    root.update()
+
+    combo.search_entry.insert(0, "Pra")
+    combo._on_search_keyrelease()
+    combo.close_popover()
+
+    _warten(root)
+
+    assert fehler == [], (
+        "die wartende Suche lief auf dem zerstoerten Popover weiter: "
+        + "; ".join(str(f[1]) for f in fehler)
+    )
+
+
+def test_picking_a_recipient_does_not_reopen_the_suggestion_list(tmp_path, root):
+    """Ein Klick auf einen Vorschlag setzt den Empfaenger - die Liste bleibt zu."""
+    from config import AppConfig
+    from enums import Actor, UrgencyLevel
+    from models.case import Case, CaseCustomer, Classification, WorkflowStatus
+    from services.calendar_email_service import CalendarEmailService
+    from services.snippet_service import SnippetService
+    from ui.dialogs.email_draft_dialog import EmailDraftDialog
+
+    config = AppConfig(workspace_dir=tmp_path)
+    fall = Case(
+        case_id="T-DEB-01",
+        customer=CaseCustomer(customer_id="K-1", practice_name="Praxis Sonnenberg", email="info@sonnenberg.de"),
+        classification=Classification(title="Testfall", urgency_level=UrgencyLevel.YELLOW),
+        workflow_status=WorkflowStatus(current_actor=Actor.SUPPORT),
+    )
+    dialog = EmailDraftDialog(
+        root,
+        case=fall,
+        calendar_email_service=CalendarEmailService(config),
+        user_name="Daniel",
+        snippet_service=SnippetService(tmp_path),
+    )
+    dialog.all_contacts = [
+        {"name": "Frau Weber", "email": "weber@sonnenberg.de", "practice": "Praxis Sonnenberg",
+         "search_key": "frau weber weber@sonnenberg.de praxis sonnenberg"},
+    ]
+    dialog.update_idletasks()
+
+    dialog.to_entry.delete(0, "end")
+    dialog.to_entry.insert(0, "web")
+    dialog._on_to_keyrelease()                      # Tastendruck, Suche wartet
+    dialog.select_contact(dialog.all_contacts[0])   # Nutzer klickt den Treffer an
+
+    _warten(dialog)
+
+    assert dialog.to_entry.get() == "weber@sonnenberg.de"
+    assert not dialog.suggestions_frame_visible, (
+        "die Vorschlagsliste ist nach der Auswahl wieder aufgesprungen"
+    )
+
+    try:
+        dialog.destroy()
+    except Exception:
+        pass

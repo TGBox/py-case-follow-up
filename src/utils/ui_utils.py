@@ -388,6 +388,55 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
     window.geometry(f"{w}x{h}+{x}+{y}")
 
 
+def watch_scroll_position(scroll_frame: Any, callback: Callable[[float, float], None]) -> bool:
+    """Calls callback(first, last) on every scroll of a CTkScrollableFrame.
+
+    Hooked into the canvas' yscrollcommand rather than <MouseWheel>, because
+    neither of the two ways a user actually scrolls reaches a binding on the
+    canvas: the wheel event is delivered to the card under the pointer (which
+    scrolls the canvas itself, see bind_mouse_wheel_to_canvas), and dragging the
+    scrollbar produces no event at all. Anything that loads more content while
+    scrolling therefore waited for events that never arrived.
+
+    yscrollcommand is set once by CTkScrollableFrame.__init__ and fires for every
+    view change, whatever caused it. Returns False if the frame has no usable
+    canvas or the watch is already installed.
+    """
+    canvas = getattr(scroll_frame, "_parent_canvas", None) or getattr(scroll_frame, "_canvas", None)
+    if canvas is None or getattr(canvas, "_scroll_position_watch", False):
+        return False
+
+    try:
+        vorher = canvas.cget("yscrollcommand")
+    except Exception:
+        return False
+
+    def _relay(first, last):
+        if vorher:
+            try:
+                canvas.tk.call(vorher, first, last)
+            except Exception:
+                pass
+        # Rendering inside the callback moves the view again, which calls this
+        # relay a second time - without the guard that recurses until Tk gives up.
+        if getattr(canvas, "_scroll_position_busy", False):
+            return
+        canvas._scroll_position_busy = True
+        try:
+            callback(float(first), float(last))
+        except Exception:
+            pass
+        finally:
+            canvas._scroll_position_busy = False
+
+    try:
+        canvas.configure(yscrollcommand=_relay)
+        canvas._scroll_position_watch = True
+    except Exception:
+        return False
+    return True
+
+
 def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkScrollableFrame | None = None) -> None:
     """Recursively binds MouseWheel events on all child widgets of a scrollable frame to ensure 100% fluid, stutter-free scrolling everywhere."""
     if scroll_frame is None and isinstance(container_or_widget, ctk.CTkScrollableFrame):

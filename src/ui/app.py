@@ -90,20 +90,20 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
         self._set_scaled_min_max()
         # No wm state here: "zoomed" maps the window on Windows just like
-        # deiconify does, and at this point there is nothing to show but an empty
-        # frame. The window is revealed further down, once the splash overlay
-        # exists and is the only thing that can be painted.
+        # deiconify does. The window stays hidden for the whole of the build
+        # below and is shown by _reveal_window() at the very end.
 
         self.apply_windows_theme(theme_mode == "Dark")
 
-        # The splash overlay is built further down, right before the window is
-        # shown. Tk stacks siblings in creation order, so building it last is
-        # what puts it above the menu bar - a lift() afterwards is not enough,
-        # because CustomTkinter already redraws while the menu is being built.
-        self.splash_overlay: ctk.CTkFrame | None = None
+        # The splash is a window of its own, not an overlay inside this one.
+        # An overlay can only ever cover the main window, never keep it from
+        # being drawn: Tk stacks siblings in creation order, CustomTkinter
+        # redraws while the menu bar is being built, and uncovering forces a
+        # repaint of everything underneath. A separate window sidesteps all of
+        # that - the main window simply stays hidden until it is complete.
+        self.splash_window: ctk.CTkToplevel | None = None
+        self._show_splash_window()
 
-        # The window stays hidden until the menu bar and the content frame exist
-        # and the splash covers them - see _reveal_window below.
         self._initial_map_done = False
         self.bind("<Map>", self._on_initial_window_mapped, add="+")
 
@@ -141,16 +141,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.container_frame.pack(fill="both", expand=True, padx=5, pady=5)
-
-        # Built now, after the menu bar and the content frame, so that it covers
-        # both. Everything the views add from here on lands inside
-        # container_frame and therefore stays below it.
-        self._build_splash_overlay()
-
-        # Only now does the window appear. CustomTkinter redraws while the menu
-        # bar is being built, so a window mapped before this point showed the
-        # buttons and dropdowns before the splash could cover them.
-        self._reveal_window(theme_mode == "Dark")
 
         # Views are built on first use (see _get_view); only the layout the
         # user actually starts in is created during startup.
@@ -196,10 +186,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.instance_service: InstanceService | None = getattr(self, "instance_service", None)
         self._poll_open_case_request()
 
-        # Hide splash screen smoothly after initial layout pass
-        self._lift_splash()
+        # Everything is built: close the splash window and show the real one.
+        # Nothing of it has been on screen before this point.
         self.update_idletasks()
-        self.after(250, self._hide_splash_screen)
+        self._close_splash_window()
+        self._reveal_window(theme_mode == "Dark")
 
     def _on_window_configure(self, event=None):
         try:
@@ -210,23 +201,48 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         except Exception:
             pass
 
-    def _build_splash_overlay(self) -> None:
-        """Creates the startup overlay covering the whole window."""
+    def _show_splash_window(self) -> None:
+        """Opens the small startup window shown while the main window is built."""
         from services.i18n_service import tr
 
-        self.splash_overlay = ctk.CTkFrame(self, fg_color=("gray95", "gray12"))
-        self.splash_overlay.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+        try:
+            win = ctk.CTkToplevel(self)
+            win.withdraw()
+            win.overrideredirect(True)
+            width, height = 420, 150
+            x = (win.winfo_screenwidth() - width) // 2
+            y = (win.winfo_screenheight() - height) // 2
+            win.geometry(f"{width}x{height}+{x}+{y}")
 
-        splash_box = ctk.CTkFrame(self.splash_overlay, fg_color="transparent")
-        splash_box.place(relx=0.5, rely=0.5, anchor="center")
+            frame = ctk.CTkFrame(win, fg_color=("gray95", "gray12"), border_width=1, border_color="dodgerblue")
+            frame.pack(fill="both", expand=True)
 
-        self.splash_title_lbl = ctk.CTkLabel(splash_box, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=26, weight="bold"), text_color="dodgerblue")
-        self.splash_title_lbl.pack(pady=(0, 8))
-        self.splash_msg_lbl = ctk.CTkLabel(splash_box, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=14), text_color=("gray40", "gray70"))
-        self.splash_msg_lbl.pack()
+            self.splash_title_lbl = ctk.CTkLabel(frame, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=22, weight="bold"), text_color="dodgerblue")
+            self.splash_title_lbl.pack(pady=(38, 8))
+            self.splash_msg_lbl = ctk.CTkLabel(frame, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=12), text_color=("gray40", "gray70"))
+            self.splash_msg_lbl.pack()
+
+            win.deiconify()
+            win.attributes("-topmost", True)
+            # A full update(), not just update_idletasks(): the splash has to be
+            # on screen before the build below blocks the event loop.
+            win.update()
+            self.splash_window = win
+        except Exception as err:
+            logger.warning(f"Could not show splash window: {err}")
+            self.splash_window = None
+
+    def _close_splash_window(self) -> None:
+        if self.splash_window is None:
+            return
+        try:
+            self.splash_window.destroy()
+        except Exception:
+            pass
+        self.splash_window = None
 
     def _reveal_window(self, dark: bool) -> None:
-        """Shows the window for the first time, with the splash overlay on top."""
+        """Shows the main window, complete, for the first time."""
         try:
             self.deiconify()
         except Exception:
@@ -235,32 +251,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Re-applied after mapping: the dark title bar is a window-manager
         # attribute, and the handle only becomes meaningful once the window exists.
         self.apply_windows_theme(dark)
-        self._lift_splash()
+        try:
+            self.focus_force()
+        except Exception:
+            pass
         # A full update(), not just update_idletasks(): maximizing is carried out
-        # by the window manager and arrives as an event. Flushing only the idle
-        # queue leaves that event unhandled, so the window kept the size it was
-        # painted at and then stayed unpainted - black - for the whole of the
-        # view construction below, with the splash never showing at all.
+        # by the window manager and comes back as an event, which the idle queue
+        # alone never processes.
         try:
             self.update()
         except Exception:
             self.update_idletasks()
-
-    def _lift_splash(self) -> None:
-        """Raises the splash overlay above everything built so far."""
-        if self.splash_overlay is not None:
-            try:
-                self.splash_overlay.lift()
-            except Exception:
-                pass
-
-    def _hide_splash_screen(self):
-        if hasattr(self, "splash_overlay") and self.splash_overlay:
-            try:
-                self.splash_overlay.destroy()
-                self.splash_overlay = None
-            except Exception:
-                pass
         if not getattr(self, "_initial_map_done", False):
             self._maximize_window()
             self._initial_map_done = True

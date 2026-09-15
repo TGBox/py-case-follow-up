@@ -17,6 +17,8 @@ class UserSettingsTabMixin:
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
         reload_ui_fields: Callable[[], None]
+        save_settings_quietly: Callable[[], bool]
+        reload_all_tabs: Callable[[], None]
 
     def setup_user_section(self, left_col: ctk.CTkFrame) -> None:
         # Section 1: Profil verwalten & wechseln
@@ -259,42 +261,82 @@ class UserSettingsTabMixin:
         name_input = dialog.get_input()
         if name_input and name_input.strip():
             new_name = name_input.strip()
-            new_profile = UserProfile(user=UserInfo(name=new_name))
-            self.storage_service.save_profile(new_profile)
+
+            # Auto-save current profile before creating new profile
+            if hasattr(self, "save_settings_quietly"):
+                self.save_settings_quietly()
+
+            from config import get_default_workspace_dir
+            from models.profile import PathSettings
+            new_profile = UserProfile(
+                user=UserInfo(name=new_name),
+                path_settings=PathSettings(workspace_dir=str(get_default_workspace_dir())),
+            )
+            self.storage_service.save_profile(new_profile, sync=True)
+            self.storage_service.apply_profile_paths(new_profile)
 
             # Refresh list & switch
             self.profile = new_profile
             profiles_list = self.storage_service.list_profiles()
             self.profile_combo.configure(values=profiles_list)
             self.profile_combo.set(new_name)
-            self.reload_user_fields()
-            self.status_lbl.configure(text=tr("profile.created_and_activated", "Profil '{name}' angelegt und aktiviert!", name=new_name))
+
+            if hasattr(self, "reload_all_tabs"):
+                self.reload_all_tabs()
+            else:
+                self.reload_user_fields()
+
+            self.status_lbl.configure(text=tr("profile.created_and_activated", "Profil '{name}' angelegt und aktiviert!", name=new_name), text_color="green")
             if self.on_profile_updated:
                 self.on_profile_updated()
 
     def on_switch_profile(self, selected_name: str) -> None:
+        if selected_name == self.profile.user.name:
+            return
+
+        # Auto-save current profile before switching
+        if hasattr(self, "save_settings_quietly"):
+            self.save_settings_quietly()
+
         self.profile = self.storage_service.load_profile_by_name(selected_name)
-        self.storage_service.save_profile(self.profile)
-        self.reload_user_fields()
-        self.status_lbl.configure(text=tr("profile.switched_to", "Profil auf '{name}' gewechselt.", name=selected_name))
+        self.storage_service.save_profile(self.profile, sync=True)
+        self.storage_service.apply_profile_paths(self.profile)
+
+        if hasattr(self, "reload_all_tabs"):
+            self.reload_all_tabs()
+        else:
+            self.reload_user_fields()
+
+        self.status_lbl.configure(text=tr("profile.switched_to", "Profil auf '{name}' gewechselt.", name=selected_name), text_color="green")
         if self.on_profile_updated:
             self.on_profile_updated()
 
     def reload_user_fields(self) -> None:
-        self.user_name_entry.delete(0, "end")
-        self.user_name_entry.insert(0, self.profile.user.name)
+        if hasattr(self, "profile_combo"):
+            profiles_list = self.storage_service.list_profiles()
+            self.profile_combo.configure(values=profiles_list)
+            if self.profile.user.name in profiles_list:
+                self.profile_combo.set(self.profile.user.name)
 
-        self.user_dept_entry.delete(0, "end")
-        self.user_dept_entry.insert(0, self.profile.user.department)
+        if hasattr(self, "user_name_entry"):
+            self.user_name_entry.delete(0, "end")
+            self.user_name_entry.insert(0, self.profile.user.name)
 
-        self.user_ext_entry.delete(0, "end")
-        self.user_ext_entry.insert(0, self.profile.user.extension)
+        if hasattr(self, "user_dept_entry"):
+            self.user_dept_entry.delete(0, "end")
+            self.user_dept_entry.insert(0, self.profile.user.department)
 
-        self.user_email_entry.delete(0, "end")
-        self.user_email_entry.insert(0, self.profile.user.email)
+        if hasattr(self, "user_ext_entry"):
+            self.user_ext_entry.delete(0, "end")
+            self.user_ext_entry.insert(0, self.profile.user.extension)
 
-        self.user_mobile_entry.delete(0, "end")
-        self.user_mobile_entry.insert(0, self.profile.user.mobile)
+        if hasattr(self, "user_email_entry"):
+            self.user_email_entry.delete(0, "end")
+            self.user_email_entry.insert(0, self.profile.user.email)
+
+        if hasattr(self, "user_mobile_entry"):
+            self.user_mobile_entry.delete(0, "end")
+            self.user_mobile_entry.insert(0, self.profile.user.mobile)
 
         if hasattr(self, "user_sig_txt"):
             self.user_sig_txt.delete("1.0", "end")

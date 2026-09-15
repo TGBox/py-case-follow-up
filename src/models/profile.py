@@ -320,6 +320,38 @@ class BackupSettings:
 
 
 @dataclass
+class PathSettings:
+    workspace_dir: str = ""
+    custom_cases_path: str = ""
+    custom_customers_path: str = ""
+    custom_wiki_db_path: str = ""
+    custom_archive_path: str = ""
+    custom_app_profile_path: str = ""
+    custom_colleagues_path: str = ""
+    custom_question_schemas_path: str = ""
+    custom_export_templates_path: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> PathSettings:
+        if not isinstance(data, dict):
+            return cls()
+        return cls(
+            workspace_dir=str(data.get("workspace_dir", "") or ""),
+            custom_cases_path=str(data.get("custom_cases_path", "") or ""),
+            custom_customers_path=str(data.get("custom_customers_path", "") or ""),
+            custom_wiki_db_path=str(data.get("custom_wiki_db_path", "") or ""),
+            custom_archive_path=str(data.get("custom_archive_path", "") or ""),
+            custom_app_profile_path=str(data.get("custom_app_profile_path", "") or ""),
+            custom_colleagues_path=str(data.get("custom_colleagues_path", "") or ""),
+            custom_question_schemas_path=str(data.get("custom_question_schemas_path", "") or ""),
+            custom_export_templates_path=str(data.get("custom_export_templates_path", "") or ""),
+        )
+
+
+@dataclass
 class UserProfile:
     user: UserInfo = field(default_factory=UserInfo)
     ui_settings: UISettings = field(default_factory=UISettings)
@@ -329,6 +361,7 @@ class UserProfile:
     wiki_settings: WikiSettings = field(default_factory=WikiSettings)
     ai_settings: AiSettings = field(default_factory=AiSettings)
     backup_settings: BackupSettings = field(default_factory=BackupSettings)
+    path_settings: PathSettings = field(default_factory=PathSettings)
     available_tags: list[str] = field(default_factory=lambda: list(DEFAULT_TAGS))
     available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
@@ -342,6 +375,7 @@ class UserProfile:
             "wiki_settings": self.wiki_settings.to_dict(),
             "ai_settings": self.ai_settings.to_dict(),
             "backup_settings": self.backup_settings.to_dict(),
+            "path_settings": self.path_settings.to_dict(),
             "available_tags": self.available_tags,
             "available_module_tags": self.available_module_tags,
         }
@@ -361,6 +395,7 @@ class UserProfile:
             wiki_settings=WikiSettings.from_dict(data.get("wiki_settings", {})),
             ai_settings=AiSettings.from_dict(data.get("ai_settings", {})),
             backup_settings=BackupSettings.from_dict(data.get("backup_settings", {})),
+            path_settings=PathSettings.from_dict(data.get("path_settings", {})),
             available_tags=tags,
             available_module_tags=mod_tags,
         )

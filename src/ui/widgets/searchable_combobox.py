@@ -159,7 +159,7 @@ class SearchableCombobox(ctk.CTkFrame):
             font=ctk.CTkFont(size=11),
         )
         self.search_entry.pack(fill="x", padx=6, pady=(6, 4))
-        self.search_entry.bind("<KeyRelease>", self._on_search_changed)
+        self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
         self.search_entry.bind("<Return>", self._on_enter_pressed)
         self.search_entry.bind("<Escape>", lambda e: self.close_popover())  # focus returns to the picker button
 
@@ -266,6 +266,12 @@ class SearchableCombobox(ctk.CTkFrame):
             self.after(10, _do)
         except Exception:
             _do()
+
+    def _on_search_keyrelease(self, event=None) -> None:
+        """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern."""
+        from constants import SEARCH_DEBOUNCE_MS
+        from utils.ui_utils import debounce
+        debounce(self, "combobox_search", SEARCH_DEBOUNCE_MS, self._on_search_changed)
 
     def _on_search_changed(self, event=None) -> None:
         raw_query = self.search_entry.get().strip()

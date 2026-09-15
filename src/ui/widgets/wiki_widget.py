@@ -59,7 +59,8 @@ class WikiWidget(ctk.CTkFrame):
     def _on_search_keyrelease(self, event=None):
         """Debounces the SQLite wiki search instead of querying on every key press."""
         from utils.ui_utils import debounce
-        debounce(self, "wiki_search", 250, self.on_search)
+        from constants import SEARCH_DEBOUNCE_MS
+        debounce(self, "wiki_search", SEARCH_DEBOUNCE_MS, self.on_search)
 
     def on_search(self):
         from services.i18n_service import tr

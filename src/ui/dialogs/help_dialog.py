@@ -143,7 +143,7 @@ class HelpDialog(BaseDialog):
 
         self.search_entry = self.register_i18n(ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=320), "help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen...", attr="placeholder_text")
         self.search_entry.pack(side="right", padx=10)
-        self.search_entry.bind("<KeyRelease>", self.on_search_changed)
+        self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
         body_frame = ctk.CTkFrame(self, fg_color="transparent")
         body_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
@@ -378,6 +378,12 @@ class HelpDialog(BaseDialog):
 
         if in_table:
             flush_table()
+
+    def _on_search_keyrelease(self, event=None):
+        """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern."""
+        from constants import SEARCH_DEBOUNCE_MS
+        from utils.ui_utils import debounce
+        debounce(self, "help_search", SEARCH_DEBOUNCE_MS, self.on_search_changed)
 
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()

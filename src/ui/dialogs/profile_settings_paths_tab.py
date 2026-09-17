@@ -22,6 +22,15 @@ class PathsSettingsTabMixin:
         status_lbl: ctk.CTkLabel
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
+        ws_entry: ctk.CTkEntry
+        path_cases_entry: ctk.CTkEntry
+        path_archive_entry: ctk.CTkEntry
+        path_cust_entry: ctk.CTkEntry
+        path_profile_entry: ctk.CTkEntry
+        path_colleagues_entry: ctk.CTkEntry
+        path_schemas_entry: ctk.CTkEntry
+        path_templates_entry: ctk.CTkEntry
+        path_wiki_entry: ctk.CTkEntry
 
     def setup_paths_tab(self) -> None:
         from utils.ui_utils import enable_auto_hiding_scrollbar
@@ -68,6 +77,8 @@ class PathsSettingsTabMixin:
         ws_init = getattr(getattr(self.profile, "path_settings", None), "workspace_dir", "") or str(self.storage_service.config.workspace_dir)
         self.ws_entry.insert(0, ws_init)
         self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.ws_entry.bind("<FocusOut>", lambda e: self.on_workspace_entry_changed())
+        self.ws_entry.bind("<Return>", lambda e: self.on_workspace_entry_changed())
 
         btn_browse_ws = self.register_i18n(
             ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=110),
@@ -83,77 +94,54 @@ class PathsSettingsTabMixin:
             "Benutzerdefinierte Einzeldateipfade (Optional):",
         ).pack(anchor="w", pady=(6, 4))
 
-        # Cases Path Override
-        row_cases = ctk.CTkFrame(left_col, fg_color="transparent")
-        row_cases.pack(fill="x", pady=2)
-        self.register_i18n(
-            ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=150, anchor="w"),
-            "profile.cases_file",
-            "Fälle (cases.json):",
-        ).pack(side="left")
-        self.path_cases_entry = self.register_i18n(
-            ctk.CTkEntry(row_cases, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")),
-            "profile.default_in_data",
-            "Standard im Datenordner",
-            attr="placeholder_text",
-        )
-        cases_init = getattr(getattr(self.profile, "path_settings", None), "custom_cases_path", "") or (str(self.storage_service.config.custom_cases_path) if self.storage_service.config.custom_cases_path else "")
-        if cases_init:
-            self.path_cases_entry.insert(0, cases_init)
-        self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(
-            ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=65),
-            "profile.file_browse",
-            "Datei...",
-        ).pack(side="right")
+        path_specs = [
+            ("path_cases_entry", "custom_cases_path", "profile.cases_file", "Fälle (cases.json):", "*.json"),
+            ("path_archive_entry", "custom_archive_path", "profile.archive_file", "Archiv (archive.json):", "*.json"),
+            ("path_cust_entry", "custom_customers_path", "profile.cust_file", "Kunden (customers.json):", "*.json"),
+            ("path_profile_entry", "custom_app_profile_path", "profile.app_profile_file", "App-Profil (app_profile.json):", "*.json"),
+            ("path_colleagues_entry", "custom_colleagues_path", "profile.colleagues_file", "Kollegen (colleagues.json):", "*.json"),
+            ("path_schemas_entry", "custom_question_schemas_path", "profile.schemas_file", "Formulare (question_schemas.json):", "*.json"),
+            ("path_templates_entry", "custom_export_templates_path", "profile.templates_file", "Export-Vorlagen (export_templates.json):", "*.json"),
+            ("path_wiki_entry", "custom_wiki_db_path", "profile.wiki_file", "Wiki DB (sqlite):", "*.sqlite"),
+        ]
 
-        # Customers Path Override
-        row_cust = ctk.CTkFrame(left_col, fg_color="transparent")
-        row_cust.pack(fill="x", pady=2)
-        self.register_i18n(
-            ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=150, anchor="w"),
-            "profile.cust_file",
-            "Kunden (customers.json):",
-        ).pack(side="left")
-        self.path_cust_entry = self.register_i18n(
-            ctk.CTkEntry(row_cust, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")),
-            "profile.default_in_data",
-            "Standard im Datenordner",
-            attr="placeholder_text",
-        )
-        cust_init = getattr(getattr(self.profile, "path_settings", None), "custom_customers_path", "") or (str(self.storage_service.config.custom_customers_path) if self.storage_service.config.custom_customers_path else "")
-        if cust_init:
-            self.path_cust_entry.insert(0, cust_init)
-        self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(
-            ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=65),
-            "profile.file_browse",
-            "Datei...",
-        ).pack(side="right")
+        for attr_name, config_attr, label_key, label_default, file_pat in path_specs:
+            row = ctk.CTkFrame(left_col, fg_color="transparent")
+            row.pack(fill="x", pady=1)
 
-        # Wiki DB Path Override
-        row_wiki = ctk.CTkFrame(left_col, fg_color="transparent")
-        row_wiki.pack(fill="x", pady=2)
-        self.register_i18n(
-            ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=150, anchor="w"),
-            "profile.wiki_file",
-            "Wiki DB (sqlite):",
-        ).pack(side="left")
-        self.path_wiki_entry = self.register_i18n(
-            ctk.CTkEntry(row_wiki, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")),
-            "profile.default_in_data",
-            "Standard im Datenordner",
-            attr="placeholder_text",
-        )
-        wiki_init = getattr(getattr(self.profile, "path_settings", None), "custom_wiki_db_path", "") or (str(self.storage_service.config.custom_wiki_db_path) if self.storage_service.config.custom_wiki_db_path else "")
-        if wiki_init:
-            self.path_wiki_entry.insert(0, wiki_init)
-        self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.register_i18n(
-            ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=65),
-            "profile.file_browse",
-            "Datei...",
-        ).pack(side="right")
+            entry = self.register_i18n(
+                ctk.CTkEntry(row, placeholder_text=tr("profile.default_in_data", "Standard im Datenordner")),
+                "profile.default_in_data",
+                "Standard im Datenordner",
+                attr="placeholder_text",
+            )
+            val_init = getattr(getattr(self.profile, "path_settings", None), config_attr, "") or (
+                str(getattr(self.storage_service.config, config_attr))
+                if getattr(self.storage_service.config, config_attr)
+                else ""
+            )
+            if val_init:
+                entry.insert(0, val_init)
+            setattr(self, attr_name, entry)
+
+            btn = self.register_i18n(
+                ctk.CTkButton(
+                    row,
+                    text=tr("profile.file_browse", "Datei..."),
+                    command=lambda e=entry, pat=file_pat: self.on_browse_file(e, pat),
+                    width=65,
+                ),
+                "profile.file_browse",
+                "Datei...",
+            )
+            btn.pack(side="right")
+            entry.pack(side="right", fill="x", expand=True, padx=5)
+
+            self.register_i18n(
+                ctk.CTkLabel(row, text=tr(label_key, label_default), width=180, anchor="w"),
+                label_key,
+                label_default,
+            ).pack(side="left")
 
         # Reset button
         btn_reset_paths = self.register_i18n(
@@ -361,6 +349,37 @@ class PathsSettingsTabMixin:
         if chosen:
             self.ws_entry.delete(0, "end")
             self.ws_entry.insert(0, chosen)
+            self.update_paths_from_workspace(chosen)
+
+    def on_workspace_entry_changed(self) -> None:
+        ws = self.ws_entry.get().strip() if hasattr(self, "ws_entry") else ""
+        if ws:
+            self.update_paths_from_workspace(ws)
+
+    def update_paths_from_workspace(self, ws: str) -> None:
+        if not ws:
+            return
+        ws_path = Path(ws)
+        if ws_path.name.lower() == "data":
+            data_dir = ws_path
+        else:
+            data_dir = ws_path / "data"
+
+        mapping = [
+            (getattr(self, "path_cases_entry", None), data_dir / "cases.json"),
+            (getattr(self, "path_archive_entry", None), data_dir / "archive.json"),
+            (getattr(self, "path_cust_entry", None), data_dir / "customers.json"),
+            (getattr(self, "path_profile_entry", None), data_dir / "app_profile.json"),
+            (getattr(self, "path_colleagues_entry", None), data_dir / "colleagues.json"),
+            (getattr(self, "path_schemas_entry", None), data_dir / "question_schemas.json"),
+            (getattr(self, "path_templates_entry", None), data_dir / "export_templates.json"),
+            (getattr(self, "path_wiki_entry", None), data_dir / "wiki_index.sqlite"),
+        ]
+
+        for entry, path in mapping:
+            if entry is not None:
+                entry.delete(0, "end")
+                entry.insert(0, str(path))
 
     def on_browse_file(self, entry_widget: ctk.CTkEntry, file_pattern: str) -> None:
         chosen = filedialog.askopenfilename(title=tr("profile.browse_file_title", "Datei auswählen"), filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
@@ -369,9 +388,14 @@ class PathsSettingsTabMixin:
             entry_widget.insert(0, chosen)
 
     def on_reset_paths(self) -> None:
-        self.path_cases_entry.delete(0, "end")
-        self.path_cust_entry.delete(0, "end")
-        self.path_wiki_entry.delete(0, "end")
+        for attr in [
+            "path_cases_entry", "path_archive_entry", "path_cust_entry",
+            "path_profile_entry", "path_colleagues_entry", "path_schemas_entry",
+            "path_templates_entry", "path_wiki_entry"
+        ]:
+            entry = getattr(self, attr, None)
+            if entry is not None:
+                entry.delete(0, "end")
 
     def on_click_export_zip(self) -> None:
         dest_file = filedialog.asksaveasfilename(
@@ -461,29 +485,30 @@ class PathsSettingsTabMixin:
 
     def reload_paths_fields(self) -> None:
         from config import get_default_workspace_dir
-        ws = getattr(getattr(self.profile, "path_settings", None), "workspace_dir", "") or str(get_default_workspace_dir())
-        cases = getattr(getattr(self.profile, "path_settings", None), "custom_cases_path", "")
-        cust = getattr(getattr(self.profile, "path_settings", None), "custom_customers_path", "")
-        wiki = getattr(getattr(self.profile, "path_settings", None), "custom_wiki_db_path", "")
+        ps = getattr(self.profile, "path_settings", None)
+        ws = getattr(ps, "workspace_dir", "") or str(get_default_workspace_dir())
 
         if hasattr(self, "ws_entry"):
             self.ws_entry.delete(0, "end")
             self.ws_entry.insert(0, ws)
 
-        if hasattr(self, "path_cases_entry"):
-            self.path_cases_entry.delete(0, "end")
-            if cases:
-                self.path_cases_entry.insert(0, cases)
+        attr_mapping = [
+            ("path_cases_entry", getattr(ps, "custom_cases_path", "")),
+            ("path_archive_entry", getattr(ps, "custom_archive_path", "")),
+            ("path_cust_entry", getattr(ps, "custom_customers_path", "")),
+            ("path_profile_entry", getattr(ps, "custom_app_profile_path", "")),
+            ("path_colleagues_entry", getattr(ps, "custom_colleagues_path", "")),
+            ("path_schemas_entry", getattr(ps, "custom_question_schemas_path", "")),
+            ("path_templates_entry", getattr(ps, "custom_export_templates_path", "")),
+            ("path_wiki_entry", getattr(ps, "custom_wiki_db_path", "")),
+        ]
 
-        if hasattr(self, "path_cust_entry"):
-            self.path_cust_entry.delete(0, "end")
-            if cust:
-                self.path_cust_entry.insert(0, cust)
-
-        if hasattr(self, "path_wiki_entry"):
-            self.path_wiki_entry.delete(0, "end")
-            if wiki:
-                self.path_wiki_entry.insert(0, wiki)
+        for attr, val in attr_mapping:
+            entry = getattr(self, attr, None)
+            if entry is not None:
+                entry.delete(0, "end")
+                if val:
+                    entry.insert(0, val)
 
         b_set = getattr(self.profile, "backup_settings", None)
         d_val = getattr(b_set, "daily_days", 7)
@@ -504,9 +529,19 @@ class PathsSettingsTabMixin:
 
     def save_paths_settings(self) -> bool:
         ws_path_str = self.ws_entry.get().strip() if hasattr(self, "ws_entry") else ""
-        cases_override = self.path_cases_entry.get().strip() if hasattr(self, "path_cases_entry") else ""
-        cust_override = self.path_cust_entry.get().strip() if hasattr(self, "path_cust_entry") else ""
-        wiki_override = self.path_wiki_entry.get().strip() if hasattr(self, "path_wiki_entry") else ""
+
+        def get_val(attr: str) -> str:
+            entry = getattr(self, attr, None)
+            return entry.get().strip() if entry else ""
+
+        cases_override = get_val("path_cases_entry")
+        archive_override = get_val("path_archive_entry")
+        cust_override = get_val("path_cust_entry")
+        profile_override = get_val("path_profile_entry")
+        colleagues_override = get_val("path_colleagues_entry")
+        schemas_override = get_val("path_schemas_entry")
+        templates_override = get_val("path_templates_entry")
+        wiki_override = get_val("path_wiki_entry")
 
         if not hasattr(self.profile, "path_settings") or self.profile.path_settings is None:
             from models.profile import PathSettings
@@ -514,14 +549,24 @@ class PathsSettingsTabMixin:
 
         self.profile.path_settings.workspace_dir = ws_path_str
         self.profile.path_settings.custom_cases_path = cases_override
+        self.profile.path_settings.custom_archive_path = archive_override
         self.profile.path_settings.custom_customers_path = cust_override
+        self.profile.path_settings.custom_app_profile_path = profile_override
+        self.profile.path_settings.custom_colleagues_path = colleagues_override
+        self.profile.path_settings.custom_question_schemas_path = schemas_override
+        self.profile.path_settings.custom_export_templates_path = templates_override
         self.profile.path_settings.custom_wiki_db_path = wiki_override
 
         if ws_path_str:
             self.storage_service.config.workspace_dir = Path(ws_path_str)
 
         self.storage_service.config.custom_cases_path = Path(cases_override) if cases_override else None
+        self.storage_service.config.custom_archive_path = Path(archive_override) if archive_override else None
         self.storage_service.config.custom_customers_path = Path(cust_override) if cust_override else None
+        self.storage_service.config.custom_app_profile_path = Path(profile_override) if profile_override else None
+        self.storage_service.config.custom_colleagues_path = Path(colleagues_override) if colleagues_override else None
+        self.storage_service.config.custom_question_schemas_path = Path(schemas_override) if schemas_override else None
+        self.storage_service.config.custom_export_templates_path = Path(templates_override) if templates_override else None
         self.storage_service.config.custom_wiki_db_path = Path(wiki_override) if wiki_override else None
 
         self.storage_service.config.ensure_directories()

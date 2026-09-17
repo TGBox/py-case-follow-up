@@ -132,7 +132,7 @@ def ask_confirmation(
         return bool(getattr(dialog, "result", False))
     finally:
         _restore_parent_grab(parent, previous_grab)
-    return bool(dialog.result)
+    return dialog.result
 
 
 def show_notice(parent, message: str, title: str | None = None) -> None:

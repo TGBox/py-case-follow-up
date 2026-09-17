@@ -24,24 +24,40 @@ class PathsSettingsTabMixin:
         register_i18n: Callable[..., Any]
 
     def setup_paths_tab(self) -> None:
+        from utils.ui_utils import enable_auto_hiding_scrollbar
         self.paths_scroll = ctk.CTkScrollableFrame(self.tab_paths, fg_color="transparent")
         self.paths_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        enable_auto_hiding_scrollbar(self.paths_scroll)
 
-        # --- Sektion 1: Speicherorte & Dateipfade ---
+        # 2-Column Side-by-Side Container
+        cols_container = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
+        cols_container.pack(fill="both", expand=True, padx=5, pady=5)
+        cols_container.columnconfigure(0, weight=1, uniform="paths_cols")
+        cols_container.columnconfigure(1, weight=1, uniform="paths_cols")
+
+        left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
+
+        right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
+        right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
+
+        # =========================================================================
+        # --- LINKE SPALTE: Speicherorte & Retention ---
+        # =========================================================================
         self.register_i18n(
-            ctk.CTkLabel(self.paths_scroll, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(left_col, text=tr("profile.paths_title", "Speicherort & Dateipfade (EXE / Externe Daten)"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.paths_title",
             "Speicherort & Dateipfade (EXE / Externe Daten)",
-        ).pack(anchor="w", pady=(5, 5))
+        ).pack(anchor="w", pady=(5, 4))
 
         # Main Workspace Directory
         self.register_i18n(
-            ctk.CTkLabel(self.paths_scroll, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")),
+            ctk.CTkLabel(left_col, text=tr("profile.workspace_label", "Arbeitsbereich / Datenordner-Pfad:")),
             "profile.workspace_label",
             "Arbeitsbereich / Datenordner-Pfad:",
-        ).pack(anchor="w", pady=(5, 2))
-        ws_frame = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
-        ws_frame.pack(fill="x", pady=(0, 10))
+        ).pack(anchor="w", pady=(4, 2))
+        ws_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        ws_frame.pack(fill="x", pady=(0, 8))
 
         self.ws_entry = self.register_i18n(
             ctk.CTkEntry(ws_frame, placeholder_text=tr("profile.workspace_placeholder", "Pfad zum Datenordner...")),
@@ -54,7 +70,7 @@ class PathsSettingsTabMixin:
         self.ws_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
 
         btn_browse_ws = self.register_i18n(
-            ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=120),
+            ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=110),
             "profile.browse_folder",
             "📁 Ordner wählen",
         )
@@ -62,16 +78,16 @@ class PathsSettingsTabMixin:
 
         # Custom Individual File Path Overrides
         self.register_i18n(
-            ctk.CTkLabel(self.paths_scroll, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")),
+            ctk.CTkLabel(left_col, text=tr("profile.custom_overrides", "Benutzerdefinierte Einzeldateipfade (Optional):"), font=ctk.CTkFont(size=12, weight="bold")),
             "profile.custom_overrides",
             "Benutzerdefinierte Einzeldateipfade (Optional):",
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(6, 4))
 
         # Cases Path Override
-        row_cases = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
+        row_cases = ctk.CTkFrame(left_col, fg_color="transparent")
         row_cases.pack(fill="x", pady=2)
         self.register_i18n(
-            ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=160, anchor="w"),
+            ctk.CTkLabel(row_cases, text=tr("profile.cases_file", "Fälle (cases.json):"), width=150, anchor="w"),
             "profile.cases_file",
             "Fälle (cases.json):",
         ).pack(side="left")
@@ -86,16 +102,16 @@ class PathsSettingsTabMixin:
             self.path_cases_entry.insert(0, cases_init)
         self.path_cases_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
-            ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=70),
+            ctk.CTkButton(row_cases, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cases_entry, "*.json"), width=65),
             "profile.file_browse",
             "Datei...",
         ).pack(side="right")
 
         # Customers Path Override
-        row_cust = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
+        row_cust = ctk.CTkFrame(left_col, fg_color="transparent")
         row_cust.pack(fill="x", pady=2)
         self.register_i18n(
-            ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=160, anchor="w"),
+            ctk.CTkLabel(row_cust, text=tr("profile.cust_file", "Kunden (customers.json):"), width=150, anchor="w"),
             "profile.cust_file",
             "Kunden (customers.json):",
         ).pack(side="left")
@@ -110,16 +126,16 @@ class PathsSettingsTabMixin:
             self.path_cust_entry.insert(0, cust_init)
         self.path_cust_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
-            ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=70),
+            ctk.CTkButton(row_cust, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_cust_entry, "*.json"), width=65),
             "profile.file_browse",
             "Datei...",
         ).pack(side="right")
 
         # Wiki DB Path Override
-        row_wiki = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
+        row_wiki = ctk.CTkFrame(left_col, fg_color="transparent")
         row_wiki.pack(fill="x", pady=2)
         self.register_i18n(
-            ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=160, anchor="w"),
+            ctk.CTkLabel(row_wiki, text=tr("profile.wiki_file", "Wiki DB (sqlite):"), width=150, anchor="w"),
             "profile.wiki_file",
             "Wiki DB (sqlite):",
         ).pack(side="left")
@@ -134,29 +150,113 @@ class PathsSettingsTabMixin:
             self.path_wiki_entry.insert(0, wiki_init)
         self.path_wiki_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.register_i18n(
-            ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=70),
+            ctk.CTkButton(row_wiki, text=tr("profile.file_browse", "Datei..."), command=lambda: self.on_browse_file(self.path_wiki_entry, "*.sqlite"), width=65),
             "profile.file_browse",
             "Datei...",
         ).pack(side="right")
 
         # Reset button
         btn_reset_paths = self.register_i18n(
-            ctk.CTkButton(self.paths_scroll, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240),
+            ctk.CTkButton(left_col, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color="gray40", width=240),
             "profile.reset_paths_btn",
             "🔄 Einzelpfade auf Standard zurücksetzen",
         )
-        btn_reset_paths.pack(anchor="w", pady=(15, 20))
+        btn_reset_paths.pack(anchor="w", pady=(8, 12))
 
-        # --- Sektion 2: Komplett-Datensicherung & ZIP-Archivierung (Datenexport / Import) ---
+        # --- Sektion 2: Automatische Backup-Aufbewahrung (Retention) ---
         self.register_i18n(
             ctk.CTkLabel(
-                self.paths_scroll,
+                left_col,
+                text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
+                font=ctk.CTkFont(size=14, weight="bold"),
+            ),
+            "profile.retention_title",
+            "🔄 Automatische Backup-Aufbewahrung (Retention)",
+        ).pack(anchor="w", pady=(8, 4))
+
+        self.register_i18n(
+            ctk.CTkLabel(
+                left_col,
+                text=tr(
+                    "profile.retention_desc",
+                    "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
+                ),
+                font=ctk.CTkFont(size=11),
+                text_color=("gray40", "gray70"),
+                justify="left",
+                anchor="w",
+                wraplength=420,
+            ),
+            "profile.retention_desc",
+            "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
+        ).pack(anchor="w", pady=(0, 6))
+
+        retention_card = ctk.CTkFrame(left_col, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        retention_card.pack(fill="x", pady=(0, 10), padx=2)
+
+        # Row 1: Daily days
+        row_daily = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_daily.pack(fill="x", padx=10, pady=(8, 3))
+        self.register_i18n(
+            ctk.CTkLabel(row_daily, text=tr("profile.retention_daily", "Tägliche Backups (Tage vollständig behalten):"), width=280, anchor="w"),
+            "profile.retention_daily",
+            "Tägliche Backups (Tage vollständig behalten):",
+        ).pack(side="left")
+        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=70)
+        self.retention_daily_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "daily_days", 7)))
+        self.retention_daily_entry.pack(side="left", padx=5)
+
+        # Row 2: Weekly weeks
+        row_weekly = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_weekly.pack(fill="x", padx=10, pady=3)
+        self.register_i18n(
+            ctk.CTkLabel(row_weekly, text=tr("profile.retention_weekly", "Wöchentliche Backups (Wochen je 1 Backup):"), width=280, anchor="w"),
+            "profile.retention_weekly",
+            "Wöchentliche Backups (Wochen je 1 Backup):",
+        ).pack(side="left")
+        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=70)
+        self.retention_weekly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "weekly_weeks", 4)))
+        self.retention_weekly_entry.pack(side="left", padx=5)
+
+        # Row 3: Monthly months
+        row_monthly = ctk.CTkFrame(retention_card, fg_color="transparent")
+        row_monthly.pack(fill="x", padx=10, pady=(3, 8))
+        self.register_i18n(
+            ctk.CTkLabel(row_monthly, text=tr("profile.retention_monthly", "Monatliche Backups (Monate je 1 Backup):"), width=280, anchor="w"),
+            "profile.retention_monthly",
+            "Monatliche Backups (Monate je 1 Backup):",
+        ).pack(side="left")
+        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=70)
+        self.retention_monthly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "monthly_months", 6)))
+        self.retention_monthly_entry.pack(side="left", padx=5)
+
+        # Row 4: Manual prune button
+        btn_prune = self.register_i18n(
+            ctk.CTkButton(
+                retention_card,
+                text=tr("profile.retention_prune_now_btn", "🧹 Jetzt alte Backups bereinigen"),
+                command=self.on_click_prune_backups,
+                fg_color="gray40",
+                hover_color="gray50",
+                width=240,
+            ),
+            "profile.retention_prune_now_btn",
+            "🧹 Jetzt alte Backups bereinigen",
+        )
+        btn_prune.pack(anchor="w", padx=10, pady=(0, 10))
+
+        # =========================================================================
+        # --- RECHTE SPALTE: Komplett-Datensicherung & ZIP-Archivierung ---
+        # =========================================================================
+        self.register_i18n(
+            ctk.CTkLabel(
+                right_col,
                 text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
                 font=ctk.CTkFont(size=14, weight="bold"),
             ),
             "profile.backup_title",
             "📦 Komplett-Datensicherung & ZIP-Archivierung",
-        ).pack(anchor="w", pady=(10, 5))
+        ).pack(anchor="w", pady=(5, 4))
 
         desc_str = tr(
             "profile.backup_desc",
@@ -165,18 +265,18 @@ class PathsSettingsTabMixin:
             "den Wechsel auf einen anderen Arbeitsplatz genutzt werden.",
         )
         ctk.CTkLabel(
-            self.paths_scroll,
+            right_col,
             text=desc_str,
             font=ctk.CTkFont(size=11),
             text_color=("gray30", "gray80"),
             justify="left",
             anchor="w",
-            wraplength=800,
-        ).pack(anchor="w", pady=(0, 15))
+            wraplength=420,
+        ).pack(anchor="w", pady=(0, 12))
 
         # Section 2.1: Export
-        exp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        exp_card.pack(fill="x", pady=(0, 15), padx=2)
+        exp_card = ctk.CTkFrame(right_col, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        exp_card.pack(fill="x", pady=(0, 12), padx=2)
 
         self.register_i18n(
             ctk.CTkLabel(
@@ -195,6 +295,8 @@ class PathsSettingsTabMixin:
                 font=ctk.CTkFont(size=11),
                 text_color=("gray40", "gray70"),
                 anchor="w",
+                wraplength=400,
+                justify="left",
             ),
             "profile.backup_exp_desc",
             "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.",
@@ -214,8 +316,8 @@ class PathsSettingsTabMixin:
         btn_export.pack(anchor="w", padx=12, pady=(0, 12))
 
         # Section 2.2: Import
-        imp_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        imp_card.pack(fill="x", pady=(0, 15), padx=2)
+        imp_card = ctk.CTkFrame(right_col, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        imp_card.pack(fill="x", pady=(0, 12), padx=2)
 
         self.register_i18n(
             ctk.CTkLabel(
@@ -234,6 +336,8 @@ class PathsSettingsTabMixin:
                 font=ctk.CTkFont(size=11),
                 text_color=("gray40", "gray70"),
                 anchor="w",
+                wraplength=400,
+                justify="left",
             ),
             "profile.backup_imp_desc",
             "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her.",
@@ -251,88 +355,6 @@ class PathsSettingsTabMixin:
             "📥 Datensicherung aus ZIP importieren...",
         )
         btn_import.pack(anchor="w", padx=12, pady=(0, 12))
-
-        # --- Sektion 3: Automatische Backup-Aufbewahrung (Retention) ---
-        self.register_i18n(
-            ctk.CTkLabel(
-                self.paths_scroll,
-                text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
-                font=ctk.CTkFont(size=14, weight="bold"),
-            ),
-            "profile.retention_title",
-            "🔄 Automatische Backup-Aufbewahrung (Retention)",
-        ).pack(anchor="w", pady=(15, 5))
-
-        self.register_i18n(
-            ctk.CTkLabel(
-                self.paths_scroll,
-                text=tr(
-                    "profile.retention_desc",
-                    "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
-                ),
-                font=ctk.CTkFont(size=11),
-                text_color=("gray40", "gray70"),
-                justify="left",
-                anchor="w",
-                wraplength=800,
-            ),
-            "profile.retention_desc",
-            "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
-        ).pack(anchor="w", pady=(0, 10))
-
-        retention_card = ctk.CTkFrame(self.paths_scroll, corner_radius=8, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
-        retention_card.pack(fill="x", pady=(0, 15), padx=2)
-
-        # Row 1: Daily days
-        row_daily = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_daily.pack(fill="x", padx=12, pady=(10, 4))
-        self.register_i18n(
-            ctk.CTkLabel(row_daily, text=tr("profile.retention_daily", "Tägliche Backups (Tage vollständig behalten):"), width=340, anchor="w"),
-            "profile.retention_daily",
-            "Tägliche Backups (Tage vollständig behalten):",
-        ).pack(side="left")
-        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=80)
-        self.retention_daily_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "daily_days", 7)))
-        self.retention_daily_entry.pack(side="left", padx=5)
-
-        # Row 2: Weekly weeks
-        row_weekly = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_weekly.pack(fill="x", padx=12, pady=4)
-        self.register_i18n(
-            ctk.CTkLabel(row_weekly, text=tr("profile.retention_weekly", "Wöchentliche Backups (Wochen je 1 Backup):"), width=340, anchor="w"),
-            "profile.retention_weekly",
-            "Wöchentliche Backups (Wochen je 1 Backup):",
-        ).pack(side="left")
-        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=80)
-        self.retention_weekly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "weekly_weeks", 4)))
-        self.retention_weekly_entry.pack(side="left", padx=5)
-
-        # Row 3: Monthly months
-        row_monthly = ctk.CTkFrame(retention_card, fg_color="transparent")
-        row_monthly.pack(fill="x", padx=12, pady=(4, 10))
-        self.register_i18n(
-            ctk.CTkLabel(row_monthly, text=tr("profile.retention_monthly", "Monatliche Backups (Monate je 1 Backup):"), width=340, anchor="w"),
-            "profile.retention_monthly",
-            "Monatliche Backups (Monate je 1 Backup):",
-        ).pack(side="left")
-        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=80)
-        self.retention_monthly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "monthly_months", 6)))
-        self.retention_monthly_entry.pack(side="left", padx=5)
-
-        # Row 4: Manual prune button
-        btn_prune = self.register_i18n(
-            ctk.CTkButton(
-                retention_card,
-                text=tr("profile.retention_prune_now_btn", "🧹 Jetzt alte Backups bereinigen"),
-                command=self.on_click_prune_backups,
-                fg_color="gray40",
-                hover_color="gray50",
-                width=240,
-            ),
-            "profile.retention_prune_now_btn",
-            "🧹 Jetzt alte Backups bereinigen",
-        )
-        btn_prune.pack(anchor="w", padx=12, pady=(0, 12))
 
     def on_browse_workspace(self) -> None:
         chosen = filedialog.askdirectory(title=tr("profile.browse_folder_title", "Datenordner auswählen"), initialdir=self.ws_entry.get().strip() or None)

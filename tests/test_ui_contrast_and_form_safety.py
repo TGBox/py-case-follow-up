@@ -309,7 +309,15 @@ def test_profile_settings_dialog_appearance_switch_no_white_boxes(dummy_app, rea
     assert paths_scroll._parent_canvas.cget("bg") == "gray17"
 
     # Verify export and import cards have border styling and panel bg
-    found_cards = [w for w in dialog.paths_scroll.winfo_children() if isinstance(w, ctk.CTkFrame) and w.cget("corner_radius") == 8]
+    def _find_cards(parent):
+        res = []
+        for w in parent.winfo_children():
+            if isinstance(w, ctk.CTkFrame) and w.cget("corner_radius") == 8:
+                res.append(w)
+            res.extend(_find_cards(w))
+        return res
+
+    found_cards = _find_cards(dialog.paths_scroll)
     assert len(found_cards) >= 2
     for card in found_cards:
         assert card.cget("border_width") == 1

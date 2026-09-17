@@ -36,17 +36,19 @@ def test_consolidated_tabs_count_and_titles(dummy_app, storage_service_mock):
     profile = UserProfile(user=UserInfo(name="Test User", email_signature="Mit freundlichen Grüßen\nMax Mustermann"))
     dialog = ProfileSettingsDialog(dummy_app, profile=profile, storage_service=storage_service_mock)
 
-    # Verify exactly 5 tabs in _tab_keys
+    # Verify exactly 4 tabs in _tab_keys
     tab_ids = [t[0] for t in dialog._tab_keys]
-    assert tab_ids == ["tab_user", "tab_paths", "tab_wiki", "tab_ai", "tab_scoring"]
+    assert tab_ids == ["tab_user", "tab_paths", "tab_ai", "tab_scoring"]
 
     # Verify tab names
     assert "Benutzerprofil" in dialog._tab_name_map["tab_user"]
     assert "Speicherort & Datenexport" in dialog._tab_name_map["tab_paths"]
+    assert "Sonstiges" in dialog._tab_name_map["tab_scoring"]
 
     # Verify backward compatibility aliases
     assert dialog.tab_ui is dialog.tab_user
     assert dialog.tab_backup is dialog.tab_paths
+    assert dialog.tab_wiki is dialog.tab_scoring
 
     dialog.destroy()
 

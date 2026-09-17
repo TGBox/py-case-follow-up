@@ -72,9 +72,8 @@ class ProfileSettingsDialog(
         self._tab_keys = [
             ("tab_user", "profile.tab_user", "👤 Benutzerprofil"),
             ("tab_paths", "profile.tab_paths", "📁 Speicherort & Datenexport"),
-            ("tab_wiki", "profile.tab_wiki", "📚 BookStack Wiki"),
             ("tab_ai", "profile.tab_ai", "🤖 KI & NLP"),
-            ("tab_scoring", "profile.tab_shortcuts", "⌨ Tastenkürzel & Scoring"),
+            ("tab_scoring", "profile.tab_misc", "🧩 Sonstiges"),
         ]
         self._tab_name_map = {}
         for tab_id, key, default in self._tab_keys:
@@ -83,26 +82,26 @@ class ProfileSettingsDialog(
 
         self.tab_user = self.tabview.add(self._tab_name_map["tab_user"])
         self.tab_paths = self.tabview.add(self._tab_name_map["tab_paths"])
-        self.tab_wiki = self.tabview.add(self._tab_name_map["tab_wiki"])
         self.tab_ai = self.tabview.add(self._tab_name_map["tab_ai"])
         self.tab_scoring = self.tabview.add(self._tab_name_map["tab_scoring"])
 
         tv_fg = getattr(self.tabview, "_fg_color", ("gray86", "gray17"))
         tv_bg = getattr(self.tabview, "_bg_color", ("gray86", "gray17"))
         target_tab_color = tv_bg if tv_fg == "transparent" else tv_fg
-        all_tabs: list[Any] = [self.tab_user, self.tab_paths, self.tab_wiki, self.tab_ai, self.tab_scoring]
+        all_tabs: list[Any] = [self.tab_user, self.tab_paths, self.tab_ai, self.tab_scoring]
         for tab in all_tabs:
             tab.configure(fg_color=target_tab_color, bg_color=target_tab_color)
 
-        # Backward compatibility aliases for tab_ui and tab_backup
+        # Backward compatibility aliases for tab_ui, tab_backup, and tab_wiki
         self.tab_ui = self.tab_user
         self.tab_backup = self.tab_paths
+        self.tab_wiki = self.tab_scoring
 
         self.setup_user_tab()
         self.setup_paths_tab()
-        self.setup_wiki_tab()
         self.setup_ai_tab()
         self.setup_scoring_tab()
+        self.setup_wiki_tab()
 
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")

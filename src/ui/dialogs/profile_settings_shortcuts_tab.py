@@ -99,16 +99,20 @@ class ShortcutsSettingsTabMixin:
         status_lbl: ctk.CTkLabel
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
+        def setup_wiki_section(self, parent_frame: ctk.CTkFrame) -> None: ...
 
     def setup_scoring_tab(self) -> None:
+        from utils.ui_utils import enable_auto_hiding_scrollbar
         scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        enable_auto_hiding_scrollbar(scroll)
+        self.scoring_scroll = scroll
 
         # 2-Column Side-by-Side Container
         cols_container = ctk.CTkFrame(scroll, fg_color="transparent")
         cols_container.pack(fill="both", expand=True, padx=5, pady=5)
-        cols_container.columnconfigure(0, weight=1, uniform="shortcuts_cols")
-        cols_container.columnconfigure(1, weight=1, uniform="shortcuts_cols")
+        cols_container.columnconfigure(0, weight=1, uniform="scoring_cols")
+        cols_container.columnconfigure(1, weight=1, uniform="scoring_cols")
 
         left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
         left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
@@ -116,24 +120,50 @@ class ShortcutsSettingsTabMixin:
         right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
         right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
 
-        # --- Left Column: App-Aktionen Tastenkürzel ---
+        # =====================================================================
+        # --- LINKE SPALTE: BookStack Wiki Server & Prioritäts-Scoring ---
+        # =====================================================================
+        if hasattr(self, "setup_wiki_section"):
+            self.setup_wiki_section(left_col)
+
+        self.scoring_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(left_col, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")),
+            "profile.scoring_points_title",
+            "Prioritäts-Scoring Punkte",
+        )
+        self.scoring_hdr_lbl.pack(anchor="w", pady=(10, 5))
+
+        row4 = ctk.CTkFrame(left_col, fg_color="transparent")
+        row4.pack(fill="x", pady=2)
+        self.register_i18n(
+            ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):"), width=150, anchor="w"),
+            "profile.vip_bonus_lbl",
+            "VIP-Bonus (Punkte):",
+        ).pack(side="left")
+        self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
+        self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
+        self.vip_bonus_entry.pack(side="left", padx=(10, 0))
+
+        # =====================================================================
+        # --- RECHTE SPALTE: App-Aktionen Tastenkürzel & Snippet-Makros ---
+        # =====================================================================
         self.app_shortcuts_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(left_col, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(right_col, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.shortcuts_app_header",
             LABEL_APP_SHORTCUTS_HEADER,
         )
-        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 8))
+        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 6))
 
         self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
         self.rec_buttons: list[ctk.CTkButton] = []
 
         for attr_name, label_text in HOTKEY_ACTION_LABELS:
-            row = ctk.CTkFrame(left_col, fg_color="transparent")
-            row.pack(fill="x", pady=2)
-            ctk.CTkLabel(row, text=label_text, width=170, anchor="w").pack(side="left")
+            row = ctk.CTkFrame(right_col, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+            ctk.CTkLabel(row, text=label_text, width=160, anchor="w").pack(side="left")
 
             val = getattr(self.profile.shortcuts, attr_name, "")
-            entry = ctk.CTkEntry(row, width=125)
+            entry = ctk.CTkEntry(row, width=110)
             entry.insert(0, val)
             entry.pack(side="left", padx=(5, 5))
             self.shortcut_entries[attr_name] = entry
@@ -142,7 +172,7 @@ class ShortcutsSettingsTabMixin:
                 ctk.CTkButton(
                     row,
                     text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                    width=110,
+                    width=100,
                     fg_color=("gray45", "gray35"),
                     hover_color=("gray35", "gray45"),
                     text_color="white",
@@ -156,13 +186,13 @@ class ShortcutsSettingsTabMixin:
 
             entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
-        # --- Right Column: Textbaustein-Makros (Snippets) ---
+        # Textbaustein-Makros (Snippets) direkt unter den App-Shortcuts in der rechten Spalte
         self.snippet_shortcuts_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.shortcuts_snippet_header", LABEL_SNIPPET_SHORTCUTS_HEADER), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.shortcuts_snippet_header",
             LABEL_SNIPPET_SHORTCUTS_HEADER,
         )
-        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(5, 8))
+        self.snippet_shortcuts_hdr_lbl.pack(anchor="w", pady=(12, 6))
 
         self.snippet_shortcut_entries: list[tuple[Any, ctk.CTkEntry]] = []
         all_snippets = self.snippet_service.get_all_snippets()
@@ -177,9 +207,9 @@ class ShortcutsSettingsTabMixin:
         else:
             for snip in all_snippets:
                 s_row = ctk.CTkFrame(right_col, fg_color="transparent")
-                s_row.pack(fill="x", pady=2)
+                s_row.pack(fill="x", pady=1)
 
-                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:24]} ({snip.snippet_id}):", width=190, anchor="w")
+                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:22]} ({snip.snippet_id}):", width=160, anchor="w")
                 title_lbl.pack(side="left")
 
                 s_entry = ctk.CTkEntry(s_row, width=110)
@@ -191,7 +221,7 @@ class ShortcutsSettingsTabMixin:
                     ctk.CTkButton(
                         s_row,
                         text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                        width=110,
+                        width=100,
                         fg_color=("gray45", "gray35"),
                         hover_color=("gray35", "gray45"),
                         text_color="white",
@@ -205,28 +235,9 @@ class ShortcutsSettingsTabMixin:
 
                 s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
-        # --- Right Column: Prioritäts-Scoring Section direkt unter Snippets ---
-        self.scoring_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(right_col, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=14, weight="bold")),
-            "profile.scoring_points_title",
-            "Prioritäts-Scoring Punkte",
-        )
-        self.scoring_hdr_lbl.pack(anchor="w", pady=(20, 8))
-
-        row4 = ctk.CTkFrame(right_col, fg_color="transparent")
-        row4.pack(fill="x", pady=3)
-        self.register_i18n(
-            ctk.CTkLabel(row4, text=tr("profile.vip_bonus_lbl", "VIP-Bonus (Punkte):")),
-            "profile.vip_bonus_lbl",
-            "VIP-Bonus (Punkte):",
-        ).pack(side="left")
-        self.vip_bonus_entry = ctk.CTkEntry(row4, width=80)
-        self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
-        self.vip_bonus_entry.pack(side="left", padx=(10, 0))
-
         # Conflict Warning Label at the bottom across full width
         self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color="red", font=ctk.CTkFont(weight="bold"))
-        self.conflict_warn_lbl.pack(fill="x", pady=(10, 5))
+        self.conflict_warn_lbl.pack(fill="x", pady=(8, 4))
 
     def setup_shortcuts_tab(self) -> None:
         """Alias for setup_scoring_tab."""

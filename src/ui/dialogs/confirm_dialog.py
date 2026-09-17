@@ -26,7 +26,7 @@ class ConfirmDialog(BaseDialog):
         super().__init__(parent)
         from services.i18n_service import tr
 
-        self.result = False
+        self.result: bool = False
 
         w, h = DIALOG_DIMENSIONS["confirm"]
         self.setup_window(

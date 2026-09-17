@@ -25,16 +25,19 @@ class UserSettingsTabMixin:
         def reload_all_tabs(self) -> None: ...
 
     def setup_user_section(self, left_col: ctk.CTkFrame) -> None:
+        left_col.columnconfigure(0, weight=1, uniform="left_subcols")
+        left_col.columnconfigure(1, weight=1, uniform="left_subcols")
+
         # Section 1: Profil verwalten & wechseln
         self.user_tab_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.user_tab_header", "Mitarbeiter-Profil verwalten & wechseln"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.user_tab_header",
             "Mitarbeiter-Profil verwalten & wechseln",
         )
-        self.user_tab_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.user_tab_hdr_lbl.grid(row=0, column=0, columnspan=2, sticky="w", pady=(4, 2))
 
         prof_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        prof_frame.pack(anchor="w", pady=(0, 15))
+        prof_frame.grid(row=1, column=0, columnspan=2, sticky="w", pady=(0, 6))
 
         self.active_prof_lbl = self.register_i18n(
             ctk.CTkLabel(prof_frame, text=tr("profile.active_profile", "Aktives Profil:")),
@@ -66,61 +69,90 @@ class UserSettingsTabMixin:
         )
         self.btn_new_prof.pack(side="left")
 
-        # Section 2: Persönliche Angaben & Kontaktdaten
+        # Section 2: Persönliche Angaben & Kontaktdaten (Kompakte 2-Spalten-Anordnung)
         self.user_details_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.user_info_header",
             "Benutzerinformationen (Aktives Profil)",
         )
-        self.user_details_hdr_lbl.pack(anchor="w", pady=(8, 4))
+        self.user_details_hdr_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=(6, 2))
 
-        self.register_i18n(
+        # Row 3: Name Label (Col 0) | Abteilung Label (Col 1)
+        self.user_name_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.display_name", "Name / Anzeigename *:")),
             "profile.display_name",
             "Name / Anzeigename *:",
-        ).pack(anchor="w", pady=(4, 2))
+        )
+        self.user_name_lbl.grid(row=3, column=0, sticky="w", padx=(0, 5), pady=(2, 1))
+
+        self.user_dept_lbl = self.register_i18n(
+            ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")),
+            "profile.dept",
+            "Abteilung / Department *:",
+        )
+        self.user_dept_lbl.grid(row=3, column=1, sticky="w", padx=(5, 0), pady=(2, 1))
+
+        # Row 4: Name Entry (Col 0) | Abteilung Entry (Col 1)
         self.user_name_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=380),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=185),
             "profile.name_placeholder",
             "Ihr Name",
             attr="placeholder_text",
         )
         self.user_name_entry.insert(0, self.profile.user.name)
-        self.user_name_entry.pack(anchor="w", pady=(0, 7))
+        self.user_name_entry.grid(row=4, column=0, sticky="ew", padx=(0, 5), pady=(0, 4))
 
-        self.register_i18n(
-            ctk.CTkLabel(left_col, text=tr("profile.dept", "Abteilung / Department *:")),
-            "profile.dept",
-            "Abteilung / Department *:",
-        ).pack(anchor="w", pady=(4, 2))
         self.user_dept_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Entwicklung, Technik"), width=380),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Technik"), width=185),
             "profile.dept_placeholder",
-            "z. B. Support, Entwicklung, Technik",
+            "z. B. Support, Technik",
             attr="placeholder_text",
         )
         self.user_dept_entry.insert(0, self.profile.user.department)
-        self.user_dept_entry.pack(anchor="w", pady=(0, 7))
+        self.user_dept_entry.grid(row=4, column=1, sticky="ew", padx=(5, 0), pady=(0, 4))
 
-        self.register_i18n(
+        # Row 5: Durchwahl Label (Col 0) | Mobiltelefon Label (Col 1)
+        self.user_ext_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.ext", "Durchwahl / Extension:")),
             "profile.ext",
             "Durchwahl / Extension:",
-        ).pack(anchor="w", pady=(4, 2))
+        )
+        self.user_ext_lbl.grid(row=5, column=0, sticky="w", padx=(0, 5), pady=(2, 1))
+
+        self.user_mobile_lbl = self.register_i18n(
+            ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")),
+            "profile.mobile",
+            "Mobiltelefon:",
+        )
+        self.user_mobile_lbl.grid(row=5, column=1, sticky="w", padx=(5, 0), pady=(2, 1))
+
+        # Row 6: Durchwahl Entry (Col 0) | Mobiltelefon Entry (Col 1)
         self.user_ext_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=380),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=185),
             "profile.ext_placeholder",
             "z.B. 4012",
             attr="placeholder_text",
         )
         self.user_ext_entry.insert(0, self.profile.user.extension)
-        self.user_ext_entry.pack(anchor="w", pady=(0, 7))
+        self.user_ext_entry.grid(row=6, column=0, sticky="ew", padx=(0, 5), pady=(0, 4))
 
-        self.register_i18n(
+        self.user_mobile_entry = self.register_i18n(
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=185),
+            "profile.mobile_placeholder",
+            "0170 / 1234567",
+            attr="placeholder_text",
+        )
+        self.user_mobile_entry.insert(0, self.profile.user.mobile)
+        self.user_mobile_entry.grid(row=6, column=1, sticky="ew", padx=(5, 0), pady=(0, 4))
+
+        # Row 7 & 8: E-Mail-Adresse (Volle Breite)
+        self.user_email_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.email", "E-Mail-Adresse:")),
             "profile.email",
             "E-Mail-Adresse:",
-        ).pack(anchor="w", pady=(4, 2))
+        )
+        self.user_email_lbl.grid(row=7, column=0, columnspan=2, sticky="w", pady=(2, 1))
+
         self.user_email_entry = self.register_i18n(
             ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=380),
             "profile.email_placeholder",
@@ -128,34 +160,20 @@ class UserSettingsTabMixin:
             attr="placeholder_text",
         )
         self.user_email_entry.insert(0, self.profile.user.email)
-        self.user_email_entry.pack(anchor="w", pady=(0, 7))
+        self.user_email_entry.grid(row=8, column=0, columnspan=2, sticky="ew", pady=(0, 4))
 
-        self.register_i18n(
-            ctk.CTkLabel(left_col, text=tr("profile.mobile", "Mobiltelefon:")),
-            "profile.mobile",
-            "Mobiltelefon:",
-        ).pack(anchor="w", pady=(4, 2))
-        self.user_mobile_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=380),
-            "profile.mobile_placeholder",
-            "0170 / 1234567",
-            attr="placeholder_text",
-        )
-        self.user_mobile_entry.insert(0, self.profile.user.mobile)
-        self.user_mobile_entry.pack(anchor="w", pady=(0, 7))
-
-        # Section 3: E-Mail Signatur (mehrzeilig + Datei Export/Import)
+        # Section 3: E-Mail Signatur (Kompakte Höhe + Datei Export/Import)
         self.sig_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):")),
             "profile.signature",
             "E-Mail Signatur (für E-Mail-Entwürfe):",
         )
-        self.sig_lbl.pack(anchor="w", pady=(4, 2))
+        self.sig_lbl.grid(row=9, column=0, columnspan=2, sticky="w", pady=(3, 1))
 
         self.user_sig_txt = ctk.CTkTextbox(
             left_col,
             width=380,
-            height=95,
+            height=52,
             wrap="word",
             corner_radius=6,
             border_width=1,
@@ -163,7 +181,7 @@ class UserSettingsTabMixin:
             fg_color=("#F8F9FA", "gray17"),
         )
         self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
-        self.user_sig_txt.pack(anchor="w", pady=(0, 6))
+        self.user_sig_txt.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(0, 4))
 
         # Safe wrappers for backward compatibility with CTkEntry
         orig_get = self.user_sig_txt.get
@@ -175,7 +193,7 @@ class UserSettingsTabMixin:
         self.user_sig_entry: Any = self.user_sig_txt
 
         sig_btn_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        sig_btn_frame.pack(anchor="w", pady=(0, 8))
+        sig_btn_frame.grid(row=11, column=0, columnspan=2, sticky="w", pady=(0, 6))
 
         self.btn_save_sig = self.register_i18n(
             ctk.CTkButton(
@@ -207,27 +225,13 @@ class UserSettingsTabMixin:
         )
         self.btn_load_sig.pack(side="left")
 
-        # Section 4: P2P-Kollegen-Synchronisation
+        # Section 4: P2P-Kollegen-Synchronisation (Kompakt nebeneinander)
         self.p2p_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.p2p_sync_header",
             "P2P-Kollegen-Synchronisation",
         )
-        self.p2p_hdr_lbl.pack(anchor="w", pady=(14, 4))
-
-        self.p2p_desc_lbl = self.register_i18n(
-            ctk.CTkLabel(
-                left_col,
-                text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
-                font=ctk.CTkFont(size=11),
-                text_color=("gray30", "gray70"),
-                wraplength=380,
-                justify="left",
-            ),
-            "profile.p2p_sync_desc",
-            "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
-        )
-        self.p2p_desc_lbl.pack(anchor="w", pady=(0, 8))
+        self.p2p_hdr_lbl.grid(row=12, column=0, columnspan=2, sticky="w", pady=(5, 2))
 
         self.btn_open_p2p = self.register_i18n(
             ctk.CTkButton(
@@ -236,20 +240,34 @@ class UserSettingsTabMixin:
                 command=self.on_open_p2p_sync_dialog,
                 fg_color="#2563eb",
                 hover_color="#1d4ed8",
-                width=200,
+                width=185,
             ),
             "profile.btn_open_p2p_sync",
             "🔄 P2P-Sync öffnen...",
         )
-        self.btn_open_p2p.pack(anchor="w", pady=(0, 10))
+        self.btn_open_p2p.grid(row=13, column=0, sticky="w", padx=(0, 5), pady=(0, 4))
 
-        # Section 5: Persönliche Farbmarkierung
+        self.p2p_desc_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                left_col,
+                text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
+                font=ctk.CTkFont(size=10),
+                text_color=("gray30", "gray70"),
+                wraplength=185,
+                justify="left",
+            ),
+            "profile.p2p_sync_desc",
+            "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
+        )
+        self.p2p_desc_lbl.grid(row=13, column=1, sticky="w", padx=(5, 0), pady=(0, 4))
+
+        # Section 5: Persönliche Farbmarkierung (Kompakte Zeile)
         self.color_marker_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.color_marker_header", "Persönliche Farbmarkierung"), font=ctk.CTkFont(size=14, weight="bold")),
             "profile.color_marker_header",
             "Persönliche Farbmarkierung",
         )
-        self.color_marker_hdr_lbl.pack(anchor="w", pady=(14, 4))
+        self.color_marker_hdr_lbl.grid(row=14, column=0, columnspan=2, sticky="w", pady=(5, 2))
 
         self.selected_user_color: str = getattr(self.profile.user, "user_color", "#3b82f6") or "#3b82f6"
 
@@ -266,19 +284,19 @@ class UserSettingsTabMixin:
             self.color_marker_switch.select()
         else:
             self.color_marker_switch.deselect()
-        self.color_marker_switch.pack(anchor="w", pady=(0, 8))
+        self.color_marker_switch.grid(row=15, column=0, columnspan=2, sticky="w", pady=(0, 4))
 
-        palette_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        palette_frame.pack(anchor="w", pady=(0, 8))
+        color_row_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        color_row_frame.grid(row=16, column=0, columnspan=2, sticky="w", pady=(0, 4))
 
         self._color_presets = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4"]
         self._preset_buttons = []
         for color in self._color_presets:
             btn = ctk.CTkButton(
-                palette_frame,
+                color_row_frame,
                 text="",
-                width=24,
-                height=24,
+                width=22,
+                height=22,
                 corner_radius=4,
                 fg_color=color,
                 hover_color=color,
@@ -286,14 +304,14 @@ class UserSettingsTabMixin:
                 border_color="#ffffff" if color.lower() == self.selected_user_color.lower() else "#18181b",
                 command=lambda c=color: self.set_selected_user_color(c),
             )
-            btn.pack(side="left", padx=(0, 6))
+            btn.pack(side="left", padx=(0, 4))
             self._preset_buttons.append((color, btn))
 
         self.btn_pick_color = self.register_i18n(
             ctk.CTkButton(
-                palette_frame,
+                color_row_frame,
                 text=tr("profile.color_marker_select", "Farbe wählen..."),
-                width=130,
+                width=110,
                 command=self.on_pick_custom_color,
                 fg_color=("gray45", "gray35"),
                 hover_color=("gray35", "gray45"),
@@ -302,20 +320,17 @@ class UserSettingsTabMixin:
             "profile.color_marker_select",
             "Farbe wählen...",
         )
-        self.btn_pick_color.pack(side="left", padx=(6, 0))
-
-        preview_frame = ctk.CTkFrame(left_col, fg_color="transparent")
-        preview_frame.pack(anchor="w", pady=(0, 10))
+        self.btn_pick_color.pack(side="left", padx=(4, 8))
 
         self.preview_lbl = self.register_i18n(
-            ctk.CTkLabel(preview_frame, text=tr("profile.color_marker_preview", "Vorschau:"), font=ctk.CTkFont(size=12)),
+            ctk.CTkLabel(color_row_frame, text=tr("profile.color_marker_preview", "Vorschau:"), font=ctk.CTkFont(size=11)),
             "profile.color_marker_preview",
             "Vorschau:",
         )
-        self.preview_lbl.pack(side="left", padx=(0, 8))
+        self.preview_lbl.pack(side="left", padx=(0, 4))
 
         self.preview_tile = ctk.CTkFrame(
-            preview_frame,
+            color_row_frame,
             width=14,
             height=14,
             corner_radius=2,
@@ -323,10 +338,10 @@ class UserSettingsTabMixin:
             border_width=1,
             border_color="#18181b",
         )
-        self.preview_tile.pack(side="left", padx=(0, 6), pady=2)
+        self.preview_tile.pack(side="left", padx=(0, 4), pady=2)
 
         self.preview_sample_lbl = ctk.CTkLabel(
-            preview_frame,
+            color_row_frame,
             text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})",
             font=ctk.CTkFont(size=11),
             text_color=("gray30", "gray70"),
@@ -562,6 +577,16 @@ class UserSettingsTabMixin:
             self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
         if hasattr(self, "user_details_hdr_lbl"):
             self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
+        if hasattr(self, "user_name_lbl"):
+            self.user_name_lbl.configure(text=tr("profile.display_name", "Name / Anzeigename *:"))
+        if hasattr(self, "user_dept_lbl"):
+            self.user_dept_lbl.configure(text=tr("profile.dept", "Abteilung / Department *:"))
+        if hasattr(self, "user_ext_lbl"):
+            self.user_ext_lbl.configure(text=tr("profile.ext", "Durchwahl / Extension:"))
+        if hasattr(self, "user_mobile_lbl"):
+            self.user_mobile_lbl.configure(text=tr("profile.mobile", "Mobiltelefon:"))
+        if hasattr(self, "user_email_lbl"):
+            self.user_email_lbl.configure(text=tr("profile.email", "E-Mail-Adresse:"))
         if hasattr(self, "sig_lbl"):
             self.sig_lbl.configure(text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
         if hasattr(self, "btn_save_sig"):

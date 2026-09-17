@@ -62,14 +62,14 @@ class UiSettingsTabMixin:
             "profile.appearance_layout",
             "Erscheinungsbild & Layout",
         )
-        self.appearance_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.appearance_hdr_lbl.pack(anchor="w", pady=(4, 2))
 
         self.lang_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:")),
             "profile.language",
             "Sprache / Language:",
         )
-        self.lang_lbl.pack(anchor="w", pady=(5, 2))
+        self.lang_lbl.pack(anchor="w", pady=(2, 1))
         self.language_combo = ctk.CTkOptionMenu(
             right_col,
             values=list(SUPPORTED_LANGUAGES.values()),
@@ -77,24 +77,24 @@ class UiSettingsTabMixin:
         )
         curr_lang = getattr(self.profile.ui_settings, "language", "de")
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
-        self.language_combo.pack(anchor="w", pady=(0, 12))
+        self.language_combo.pack(anchor="w", pady=(0, 5))
 
         self.theme_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):")),
             "profile.theme",
             "Farb-Thema (Theme):",
         )
-        self.theme_lbl.pack(anchor="w", pady=(5, 2))
+        self.theme_lbl.pack(anchor="w", pady=(2, 1))
         self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        self.theme_combo.pack(anchor="w", pady=(0, 12))
+        self.theme_combo.pack(anchor="w", pady=(0, 5))
 
         self.font_scale_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:")),
             "profile.font_scale",
             "Schriftgröße / Skalierung:",
         )
-        self.font_scale_lbl.pack(anchor="w", pady=(5, 2))
+        self.font_scale_lbl.pack(anchor="w", pady=(2, 1))
         self.font_scale_combo = ctk.CTkOptionMenu(
             right_col,
             values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS],
@@ -102,28 +102,28 @@ class UiSettingsTabMixin:
             width=380,
         )
         self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
-        self.font_scale_combo.pack(anchor="w", pady=(0, 12))
+        self.font_scale_combo.pack(anchor="w", pady=(0, 5))
 
         self.default_layout_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:")),
             "profile.default_layout",
             "Standard-Layout beim Start:",
         )
-        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
+        self.default_layout_lbl.pack(anchor="w", pady=(2, 1))
         self.layout_combo = ctk.CTkOptionMenu(
             right_col,
             values=list(LAYOUT_DISPLAY.values()),
             width=380,
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(anchor="w", pady=(0, 12))
+        self.layout_combo.pack(anchor="w", pady=(0, 5))
 
         self.popup_target_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")),
             "profile.popup_position",
             "Position zusätzlicher Fenster & Benachrichtigungen:",
         )
-        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
+        self.popup_target_lbl.pack(anchor="w", pady=(2, 1))
         self.popup_target_combo = ctk.CTkOptionMenu(
             right_col,
             values=[tr(key, default) for key, default in POPUP_TARGET_CHOICES],
@@ -131,7 +131,7 @@ class UiSettingsTabMixin:
         )
         curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
         self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-        self.popup_target_combo.pack(anchor="w", pady=(0, 15))
+        self.popup_target_combo.pack(anchor="w", pady=(0, 6))
 
         self.demo_switch = self.register_i18n(
             ctk.CTkSwitch(  # type: ignore[attr-defined]
@@ -145,7 +145,7 @@ class UiSettingsTabMixin:
             self.demo_switch.select()
         else:
             self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 12))
+        self.demo_switch.pack(anchor="w", pady=(0, 5))
 
         self.os_popup_switch = self.register_i18n(
             ctk.CTkSwitch(  # type: ignore[attr-defined]
@@ -159,7 +159,7 @@ class UiSettingsTabMixin:
             self.os_popup_switch.select()
         else:
             self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
+        self.os_popup_switch.pack(anchor="w", pady=(0, 6))
 
         # Column widths reset section
         self.col_widths_hdr_lbl = self.register_i18n(
@@ -167,12 +167,12 @@ class UiSettingsTabMixin:
             "profile.saved_widths",
             "Gespeicherte Spaltenbreiten (Profile-Level)",
         )
-        self.col_widths_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.col_widths_hdr_lbl.pack(anchor="w", pady=(4, 2))
 
         widths = self.profile.ui_settings.column_widths
         w_str = self._build_widths_str(widths)
         self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
-        self.widths_label.pack(anchor="w", pady=(0, 10))
+        self.widths_label.pack(anchor="w", pady=(0, 4))
 
         self.btn_reset_widths = self.register_i18n(
             ctk.CTkButton(
@@ -187,7 +187,7 @@ class UiSettingsTabMixin:
             "profile.reset_widths_btn",
             "↻ Alle Spaltenbreiten auf Standard zurücksetzen",
         )
-        self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
+        self.btn_reset_widths.pack(anchor="w", pady=(0, 6))
 
     def _build_widths_str(self, w_dict: dict) -> str:
         return tr(

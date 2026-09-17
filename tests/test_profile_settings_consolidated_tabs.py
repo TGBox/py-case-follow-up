@@ -55,12 +55,12 @@ def test_field_width_constraints(dummy_app, storage_service_mock):
     profile = UserProfile(user=UserInfo(name="Test User"))
     dialog = ProfileSettingsDialog(dummy_app, profile=profile, storage_service=storage_service_mock)
 
-    # Ensure single-line entries have constrained width (380px)
-    assert dialog.user_name_entry.cget("width") == 380
-    assert dialog.user_dept_entry.cget("width") == 380
-    assert dialog.user_ext_entry.cget("width") == 380
+    # Ensure single-line entries have constrained width (compact side-by-side: 185px, full-width email: 380px)
+    assert dialog.user_name_entry.cget("width") == 185
+    assert dialog.user_dept_entry.cget("width") == 185
+    assert dialog.user_ext_entry.cget("width") == 185
     assert dialog.user_email_entry.cget("width") == 380
-    assert dialog.user_mobile_entry.cget("width") == 380
+    assert dialog.user_mobile_entry.cget("width") == 185
 
     # Ensure dropdowns in user profile have constrained width (380px)
     assert dialog.language_combo.cget("width") == 380

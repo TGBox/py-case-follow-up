@@ -139,8 +139,10 @@ class ProfileSettingsDialog(
         self.status_lbl.pack(side="left", padx=5)
 
     def setup_user_tab(self) -> None:
+        from utils.ui_utils import enable_auto_hiding_scrollbar
         self.user_scroll = ctk.CTkScrollableFrame(self.tab_user, fg_color="transparent")
         self.user_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        enable_auto_hiding_scrollbar(self.user_scroll)
 
         # 2-Column Side-by-Side Container
         cols_container = ctk.CTkFrame(self.user_scroll, fg_color="transparent")

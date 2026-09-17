@@ -96,12 +96,18 @@ class CockpitLayoutBuilderMixin:
 
     def _build_left_pane(self):
         # 1. Left Pane: Case List
+        user_color = getattr(self.profile.user, "user_color", "#3b82f6") if hasattr(self, "profile") and hasattr(self.profile, "user") else "#3b82f6"
+        color_marker_enabled = getattr(self.profile.user, "color_marker_enabled", False) if hasattr(self, "profile") and hasattr(self.profile, "user") else False
+
         self.left_frame = CaseListWidget(
             self.paned,
             on_case_selected=self.on_select_case_from_list,
             on_search_changed=self.on_search_changed,
             on_toggle_deep_search=lambda active: self.on_search_changed(self.left_frame.search_entry.get()),
             bg_color=("gray92", "#2b2b2b"),
+            current_user_name=self.author_name,
+            user_color=user_color,
+            color_marker_enabled=color_marker_enabled,
         )
 
     def _build_center_pane(self):
@@ -222,11 +228,23 @@ class CockpitLayoutBuilderMixin:
 
         from services.i18n_service import tr
 
-        self.complete_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.complete", "✓ Erledigt"), command=self.on_toggle_complete, width=90, fg_color="green")
-        self.complete_btn.pack(side="right", padx=2)
+        self.actor_combo = ctk.CTkOptionMenu(
+            self.status_right_frame,
+            values=list(ACTOR_DISPLAY.values()),
+            command=self.on_actor_changed,
+            width=110,
+        )
+        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
+        self.actor_combo.pack(side="top", anchor="e", padx=2, pady=(0, 2))
 
-        self.actor_combo = ctk.CTkOptionMenu(self.status_right_frame, values=list(ACTOR_DISPLAY.values()), command=self.on_actor_changed, width=130)
-        self.actor_combo.pack(side="right", padx=2)
+        self.complete_btn = ctk.CTkButton(
+            self.status_right_frame,
+            text=tr("cockpit.complete", "✓ Erledigt"),
+            command=self.on_toggle_complete,
+            width=110,
+            fg_color="green",
+        )
+        self.complete_btn.pack(side="top", anchor="e", padx=2, pady=(2, 0))
 
         # Retained as non-packed widget for backwards compatibility
         self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=95, fg_color="darkred")
@@ -337,9 +355,9 @@ class CockpitLayoutBuilderMixin:
         if want_horizontal:
             self.status_right_frame.pack_forget()
             self.status_right_frame.pack(side="right", anchor="e")
-            for w in (self.complete_btn, self.actor_combo):
+            for w in (self.actor_combo, self.complete_btn):
                 w.pack_forget()
-                w.pack(side="right", padx=2)
+                w.pack(side="top", anchor="e", padx=2, pady=1)
         else:
             self.status_right_frame.pack_forget()
             self.status_right_frame.pack(side="top", fill="x", pady=(2, 0))
@@ -360,12 +378,19 @@ class CockpitLayoutBuilderMixin:
                 tr("cockpit.convert_form", "🔄 Formular umwandeln"),
             ])
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
-        if hasattr(self, "email_btn"):
-            self.email_btn.configure(text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"))
-        if hasattr(self, "cal_btn"):
-            self.cal_btn.configure(text=tr("cockpit.calendar", "📅 Kalender"))
+
+        if hasattr(self, "complete_btn"):
+            if getattr(self, "current_case", None):
+                self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
+            else:
+                self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+
+        if hasattr(self, "archive_btn"):
+            self.archive_btn.configure(text=tr("cockpit.archive", "📦 Archivieren"))
+
         if hasattr(self, "followup_btn"):
             self.followup_btn.configure(text=tr("cockpit.followup", "🔔 Wiedervorlage"))
+
         if hasattr(self, "add_note_btn"):
             self.add_note_btn.configure(text=tr("cockpit.note", "📝 Notiz"))
         if hasattr(self, "save_btn"):
@@ -381,8 +406,7 @@ class CockpitLayoutBuilderMixin:
                 self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
         if hasattr(self, "actor_combo"):
             self.actor_combo.configure(values=list(ACTOR_DISPLAY.values()))
-            if getattr(self, "current_case", None):
-                self.actor_combo.set(get_actor_display(self.current_case.workflow_status.current_actor))
+            self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         if hasattr(self, "case_title_label"):
             if getattr(self, "current_case", None):
                 if hasattr(self, "_update_title_label"):
@@ -464,11 +488,16 @@ class CockpitLayoutBuilderMixin:
             if "Wiki" in btns:
                 btns["Wiki"].configure(text=t_wiki)
 
+        user_color = getattr(self.profile.user, "user_color", "#3b82f6") if hasattr(self, "profile") and hasattr(self.profile, "user") else "#3b82f6"
+        color_marker_enabled = getattr(self.profile.user, "color_marker_enabled", False) if hasattr(self, "profile") and hasattr(self.profile, "user") else False
+
         self.timeline_widget = TimelineWidget(
             tab_timeline,
             self.author_name,
             self.on_timeline_updated,
             on_open_snippet_picker=self.on_open_snippet_picker,
+            user_color=user_color,
+            color_marker_enabled=color_marker_enabled,
         )
         self.timeline_widget.pack(fill="both", expand=True)
 

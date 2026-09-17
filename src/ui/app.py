@@ -469,6 +469,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 on_toggle_complete=self.on_toggle_complete_for_case,
                 on_change_actor=self.open_handover_dialog_for_case,
                 app_config=self.app_config,
+                current_user_name=self.profile.user.name,
+                user_color=getattr(self.profile.user, "user_color", "#3b82f6"),
+                color_marker_enabled=getattr(self.profile.user, "color_marker_enabled", False),
             )
         if layout_value == LayoutMode.TABLE.value:
             return TableView(

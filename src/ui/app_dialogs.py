@@ -248,6 +248,24 @@ class DialogLaunchersMixin:
             self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
             self.cockpit_view.author_name = self.profile.user.name
+            if hasattr(self.cockpit_view, "left_frame") and hasattr(self.cockpit_view.left_frame, "set_user_color_settings"):
+                self.cockpit_view.left_frame.set_user_color_settings(
+                    self.profile.user.name,
+                    getattr(self.profile.user, "user_color", "#3b82f6"),
+                    getattr(self.profile.user, "color_marker_enabled", False),
+                )
+            if hasattr(self.cockpit_view, "timeline_widget") and hasattr(self.cockpit_view.timeline_widget, "set_user_color_settings"):
+                self.cockpit_view.timeline_widget.author_name = self.profile.user.name
+                self.cockpit_view.timeline_widget.set_user_color_settings(
+                    getattr(self.profile.user, "user_color", "#3b82f6"),
+                    getattr(self.profile.user, "color_marker_enabled", False),
+                )
+        if hasattr(self, "board_view") and hasattr(self.board_view, "set_user_color_settings"):
+            self.board_view.set_user_color_settings(
+                self.profile.user.name,
+                getattr(self.profile.user, "user_color", "#3b82f6"),
+                getattr(self.profile.user, "color_marker_enabled", False),
+            )
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
         if hasattr(self, "apply_windows_theme"):
             self.apply_windows_theme(self.profile.ui_settings.theme == "Dark")

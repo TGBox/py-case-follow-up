@@ -298,7 +298,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
         self._update_wiedervorlage_display()
 
-        self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
+        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
 
         # Reset sidebar loaded tabs cache for new case
@@ -420,6 +420,9 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.on_case_updated(self.current_case)
 
     def on_actor_changed(self, new_actor_display: str):
+        from services.i18n_service import tr
+        if hasattr(self, "actor_combo"):
+            self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         if self.current_case:
             from ui.dialogs.handover_dialog import HandoverDialog
             from utils.datetime_utils import now_iso
@@ -428,7 +431,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
                 if self.current_case:
-                    from services.i18n_service import tr
                     prev_actor_val = self.current_case.workflow_status.current_actor
                     self.current_case.workflow_status.current_actor = new_actor_val
                     self.current_case.workflow_status.actor_since = now_iso()
@@ -455,6 +457,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 self,
                 case=self.current_case,
                 on_handover_confirmed=on_confirmed,
+                target_actor=new_actor_display,
             )
 
     def open_followup_dialog(self):

@@ -28,12 +28,18 @@ class CaseListWidget(ctk.CTkFrame):
         on_case_selected: Callable[[Case], None],
         on_search_changed: Callable[[str], None],
         on_toggle_deep_search: Callable[[bool], None] | None = None,
+        current_user_name: str = "",
+        user_color: str | None = None,
+        color_marker_enabled: bool = False,
         **kwargs,
     ):
         super().__init__(parent, **kwargs)
         self.on_case_selected = on_case_selected
         self.on_search_changed = on_search_changed
         self.on_toggle_deep_search = on_toggle_deep_search
+        self.current_user_name = current_user_name
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
         self.cases: list[Case] = []
         self.selected_case_id: str | None = None
         self.is_deep_search_active: bool = False
@@ -44,6 +50,13 @@ class CaseListWidget(ctk.CTkFrame):
         self._render_wrap: int = 250
 
         self.create_widgets()
+
+    def set_user_color_settings(self, current_user_name: str, user_color: str | None, color_marker_enabled: bool):
+        self.current_user_name = current_user_name
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
+        if self.cases:
+            self.render_list()
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -346,6 +359,27 @@ class CaseListWidget(ctk.CTkFrame):
         dot = ctk.CTkLabel(top_row, text=tr("common.dot", "●"), text_color=dot_color, font=ctk.CTkFont(size=16))
         dot.pack(side="left", padx=(0, 5))
         dot.bind("<Button-1>", lambda e, c=case: self.select_case(c))
+
+        is_user_case = bool(
+            self.current_user_name
+            and (
+                (case.assigned_to and case.assigned_to.strip().lower() == self.current_user_name.strip().lower())
+                or (case.created_by and case.created_by.strip().lower() == self.current_user_name.strip().lower())
+                or any(t.author and t.author.strip().lower() == self.current_user_name.strip().lower() for t in case.timeline)
+            )
+        )
+        if is_user_case and self.color_marker_enabled and self.user_color:
+            tile = ctk.CTkFrame(
+                top_row,
+                width=10,
+                height=10,
+                corner_radius=2,
+                fg_color=self.user_color,
+                border_width=1,
+                border_color="#18181b",
+            )
+            tile.pack(side="left", padx=(0, 4), pady=2)
+            tile.bind("<Button-1>", lambda e, c=case: self.select_case(c))
 
         if search_terms and any(t.lower() in case.case_id.lower() for t in search_terms):
             case_id_lbl = create_highlighted_label(

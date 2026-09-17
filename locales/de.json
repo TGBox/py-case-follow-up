@@ -232,6 +232,7 @@
     "banner_print": "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“.",
     "banner_view": "<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {case_id}.",
     "btn_print_pdf": "🖨 Drucken / Als PDF speichern",
+    "header_case_metadata": "Fall-Metadaten",
     "header_customer_data": "Kunden- & Praxisdaten",
     "header_form_fields": "Formularfelder & Details",
     "header_timeline": "Verlauf & Zeitleiste",

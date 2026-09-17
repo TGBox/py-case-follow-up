@@ -232,6 +232,7 @@
     "banner_print": "<strong>Utskriftsvy för ärendeakt</strong> — Utskriftsdialogrutan öppnas. Välj din skrivare eller \"Spara som PDF\".",
     "banner_view": "<strong>Ärendeaktvy</strong> — Översikt för ärende {case_id}.",
     "btn_print_pdf": "🖨 Skriv ut / Spara som PDF",
+    "header_case_metadata": "Ärendemetadata",
     "header_customer_data": "Kund- & mottagningsdata",
     "header_form_fields": "Formulärfält & detaljer",
     "header_timeline": "Historik & tidslinje",

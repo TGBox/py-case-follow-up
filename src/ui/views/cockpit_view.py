@@ -3,7 +3,6 @@ from typing import Any
 from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
-from enums import get_actor_display
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService

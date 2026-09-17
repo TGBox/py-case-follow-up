@@ -4,6 +4,7 @@ Verifies I18nService listener propagation, LocalizedDict dynamic resolution,
 enum display helpers, and headless CustomTkinter view/widget label refreshment.
 """
 
+from typing import Any, cast
 from pathlib import Path
 import pytest
 import customtkinter as ctk
@@ -361,7 +362,7 @@ class TestDynamicLanguageSwitchHeadlessUI:
         # 1. Switch to English
         get_i18n().current_language = "en"
         cockpit.refresh_ui_labels()
-        btns_c = getattr(cockpit.right_tabview, "_segmented_button")._buttons_dict
+        btns_c = cast(Any, cockpit.right_tabview)._segmented_button._buttons_dict
         assert btns_c["Zeitleiste"].cget("text") == "Timeline"
         assert btns_c["Anhänge"].cget("text") == "Attachments"
         assert btns_c["Wiki"].cget("text") == "Wiki / Knowledge Base"
@@ -393,7 +394,7 @@ class TestDynamicLanguageSwitchHeadlessUI:
 
         get_i18n().current_language = "en"
         tv.refresh_ui_labels()
-        btns_tv = getattr(tv.detail_tabview, "_segmented_button")._buttons_dict
+        btns_tv = cast(Any, tv.detail_tabview)._segmented_button._buttons_dict
         assert "Form & Fill" in btns_tv["📝 Formular & Ausfüllen"].cget("text")
         assert "Timeline" in btns_tv["🕒 Zeitleiste"].cget("text")
         assert "Attachments" in btns_tv["📎 Anhänge"].cget("text")

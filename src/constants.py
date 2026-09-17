@@ -230,6 +230,7 @@ DIALOG_DIMENSIONS = {
     "ai_assistant": (820, 580),
     "email_import": (850, 600),
     "confirm": (470, 215),
+    "export": (760, 750)
 }
 
 # --- AI & LLM Service Configuration & Prompts ---

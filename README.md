@@ -7,7 +7,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 ## 🌟 Hauptfunktionen & Features
 
 * **4 Flexible Ansichten (Layout-Modi):**
-  * **Cockpit-Ansicht (`Strg+1`)**: Dreigeteiltes Haupt-Layout mit Fallliste, Falldetails/Formular, Notizbereich, Schnellaktionen und BookStack-Wiki. Beinhaltet das dedizierte **Übergabe-Dropdown** direkt rechtsbündig über dem `✓ Erledigt`-Button.
+  * **Cockpit-Ansicht (`Strg+1`)**: Dreigeteiltes Haupt-Layout mit Fallliste, Falldetails/Formular, Notizbereich, Schnellaktionen und BookStack-Wiki. Beinhaltet das dedizierte **Übergabe-Dropdown** direkt in der Aktionsleiste neben dem `✓ Erledigt`-Button.
   * **6-Spalten Kanban-Board (`Strg+2`)**: Vollständige Übersicht nach den 4 Kern-Abteilungsbereichen und 2 Prozessspalten:
     1. 📞 **Hotline** (`hotline`)
     2. 🔧 **Technik** (`tech`)
@@ -20,18 +20,17 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   * **Auswertungen & Kennzahlen (`Strg+4`)**: Vollständiges Statistik- & KPI-Dashboard.
 
 * **🤝 Gezielte Zuständigkeits-Übergabe & Abwesenheitswarnung:**
-  * **Übergabe-Dropdown**: Befindet sich rechtsbündig direkt über dem `✓ Erledigt`-Button im Cockpit.
+  * **Übergabe-Dropdown**: Befindet sich in der unteren Aktionsleiste direkt neben dem `✓ Erledigt`-Button im Cockpit.
   * Auswahl der 4 Zielbereiche: **Hotline**, **Technik**, **Entwicklung** und **Kunde**.
   * Öffnet direkt den Übergabedialog mit vorausgewählter Zielabteilung und springt sofort wieder auf die Beschriftung *"Übergabe"* zurück.
   * **Mitarbeiter-Abwesenheitswarnung**: Warnt visuell sofort, wenn ein zugewiesener Kollege als abwesend (Urlaub/Krankheit) vermerkt ist.
 
-* **🎨 Persönliche Mitarbeiter-Farbmarkierung & Timeline-Karten-Redesign:**
+* **🎨 Persönliche Mitarbeiter-Farbmarkierung & Kompaktes Timeline-Design:**
   * **Persönliche Farbmarkierung**: Im Benutzerprofil (`⚙ Profil & Einstellungen` -> Reiter `👤 Benutzer`) kann jeder Mitarbeiter eine persönliche Farbe wählen (Presets oder Farbwähler).
   * **Dezente 10x10 Farbkacheln**: Bei aktivierter Markierung erhalten eigene Fälle und Einträge eine dezente, schwarz umrandete Kachel in der Fallliste, auf Kanban-Karten und in Zeitleisten-Einträgen.
-  * **Modernes Timeline-Layout**:
-    * *Oben links*: Art der Notiz (z. B. `E-Mail`, `Telefon`, `Interner Vermerk`) ohne eckige Klammern.
-    * *Oben rechts*: Datum (`TT.MM.JJJJ`) und Uhrzeit (`HH:MM:SS Uhr`) sauber rechtsbündig untereinander gestapelt.
-    * *Unten rechts*: Name des Bearbeiters (`👤 {author}`) mit optionaler Farbkachel.
+  * **Kompaktes Timeline-Layout**:
+    * *Links*: Art der Notiz (z. B. `E-Mail`, `Telefon`, `Interner Vermerk`) und direkt darunter der Notizinhalt ohne Leerzeilen.
+    * *Rechts*: Datum (`TT.MM.JJJJ`), Uhrzeit (`HH:MM:SS Uhr`) direkt unter dem Datum und darunter der Name des Bearbeiters mit Farbkachel (ohne Personen-Icon).
 
 * **📤 Konsolidierter Dialog „Export & Übergabe“ (`ExportDialog` / `Strg+E`):**
   * Ersetzt separate Export- und Druckoptionen durch einen gemeinsamen, strukturierten 2-Reiter-Dialog:

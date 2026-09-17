@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from typing import Any
 from collections.abc import Callable
 from models.case import TimelineEntry
 from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
@@ -116,34 +117,36 @@ class TimelineWidget(ctk.CTkFrame):
 
         for entry in reversed(self.timeline_entries):
             card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER)
-            card.pack(fill="x", pady=4, padx=4)
+            card.pack(fill="x", pady=3, padx=4)
 
-            top_row = ctk.CTkFrame(card, fg_color="transparent")
-            top_row.pack(fill="x", padx=8, pady=(4, 2))
+            content_row = ctk.CTkFrame(card, fg_color="transparent")
+            content_row.pack(fill="x", padx=8, pady=(4, 4))
 
-            channel_text = get_channel_display(entry.channel)
-            ctk.CTkLabel(top_row, text=channel_text, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", anchor="nw")
+            # Right Column: Date, Time (directly below date), Author & color marker (no person icon)
+            right_col = ctk.CTkFrame(content_row, fg_color="transparent")
+            right_col.pack(side="right", anchor="ne", padx=(6, 0))
 
-            dt_col = ctk.CTkFrame(top_row, fg_color="transparent")
-            dt_col.pack(side="right", anchor="ne")
             formatted_d = format_german_date(entry.timestamp)
             formatted_t = format_german_time(entry.timestamp, include_seconds=True, with_uhr=True)
-            ctk.CTkLabel(dt_col, text=formatted_d, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(anchor="e")
-            ctk.CTkLabel(dt_col, text=formatted_t, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(anchor="e")
 
-            note_lbl = ctk.CTkLabel(card, text=entry.note, anchor="w", justify="left", font=ctk.CTkFont(size=12), wraplength=300)
-            note_lbl.pack(fill="x", padx=10, pady=(2, 4))
+            ctk.CTkLabel(
+                right_col,
+                text=formatted_d,
+                font=ctk.CTkFont(size=10),
+                text_color=("gray40", "gray70"),
+                height=13,
+            ).pack(anchor="e")
 
-            if entry.status_change:
-                from services.i18n_service import tr
-                sc_lbl = ctk.CTkLabel(card, text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change), font=ctk.CTkFont(size=10), text_color="dodgerblue")
-                sc_lbl.pack(anchor="w", padx=10, pady=(0, 4))
+            ctk.CTkLabel(
+                right_col,
+                text=formatted_t,
+                font=ctk.CTkFont(size=10),
+                text_color=("gray40", "gray70"),
+                height=13,
+            ).pack(anchor="e", pady=(1, 0))
 
-            bottom_row = ctk.CTkFrame(card, fg_color="transparent")
-            bottom_row.pack(fill="x", padx=8, pady=(2, 4))
-
-            author_frame = ctk.CTkFrame(bottom_row, fg_color="transparent")
-            author_frame.pack(side="right", anchor="e")
+            author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+            author_frame.pack(anchor="e", pady=(2, 0))
 
             is_own_entry = bool(
                 self.author_name
@@ -160,14 +163,56 @@ class TimelineWidget(ctk.CTkFrame):
                     border_width=1,
                     border_color="#18181b",
                 )
-                color_tile.pack(side="left", padx=(0, 5), pady=1)
+                color_tile.pack(side="left", padx=(0, 4))
 
             ctk.CTkLabel(
                 author_frame,
-                text=f"👤 {entry.author}",
+                text=entry.author,
                 font=ctk.CTkFont(size=10),
                 text_color=("gray45", "gray65"),
+                height=13,
             ).pack(side="left")
+
+            # Left Column: Channel Title, Note text (directly below title), Status change
+            left_col = ctk.CTkFrame(content_row, fg_color="transparent")
+            left_col.pack(side="left", fill="both", expand=True)
+
+            channel_text = get_channel_display(entry.channel)
+            ctk.CTkLabel(
+                left_col,
+                text=channel_text,
+                font=ctk.CTkFont(weight="bold", size=11),
+                height=15,
+            ).pack(anchor="w")
+
+            note_lbl = ctk.CTkLabel(
+                left_col,
+                text=entry.note,
+                anchor="w",
+                justify="left",
+                font=ctk.CTkFont(size=12),
+                wraplength=280,
+            )
+            note_lbl.pack(fill="x", anchor="w", pady=(1, 1))
+
+            def _make_wrap_updater(target_lbl: ctk.CTkLabel):
+                def _update_wrap(event: Any) -> None:
+                    target_wrap = max(180, event.width - 120)
+                    target_lbl.configure(wraplength=target_wrap)
+                return _update_wrap
+
+            card.bind("<Configure>", _make_wrap_updater(note_lbl), add="+")
+
+            if entry.status_change:
+                from services.i18n_service import tr
+                sc_lbl = ctk.CTkLabel(
+                    left_col,
+                    text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change),
+                    font=ctk.CTkFont(size=10),
+                    text_color="dodgerblue",
+                    height=13,
+                )
+                sc_lbl.pack(anchor="w", pady=(1, 0))
 
         from utils.ui_utils import bind_mouse_wheel_to_canvas
         bind_mouse_wheel_to_canvas(self.scroll_frame)

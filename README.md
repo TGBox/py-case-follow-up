@@ -26,7 +26,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   * **Mitarbeiter-Abwesenheitswarnung**: Warnt visuell sofort, wenn ein zugewiesener Kollege als abwesend (Urlaub/Krankheit) vermerkt ist.
 
 * **🎨 Persönliche Mitarbeiter-Farbmarkierung & Kompaktes Timeline-Design:**
-  * **Persönliche Farbmarkierung**: Im Benutzerprofil (`⚙ Profil & Einstellungen` -> Reiter `👤 Benutzer`) kann jeder Mitarbeiter eine persönliche Farbe wählen (Presets oder Farbwähler).
+  * **Persönliche Farbmarkierung**: Im Benutzerprofil (`⚙ Profil & Einstellungen` -> Reiter `👤 Benutzerprofil`) kann jeder Mitarbeiter eine persönliche Farbe wählen (Presets oder Farbwähler).
   * **Dezente 10x10 Farbkacheln**: Bei aktivierter Markierung erhalten eigene Fälle und Einträge eine dezente, schwarz umrandete Kachel in der Fallliste, auf Kanban-Karten und in Zeitleisten-Einträgen.
   * **Kompaktes Timeline-Layout**:
     * *Links*: Art der Notiz (z. B. `E-Mail`, `Telefon`, `Interner Vermerk`) und direkt darunter der Notizinhalt ohne Leerzeilen.
@@ -70,7 +70,7 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
 
 * **⌨ Einstellbare Keyboard-Makros & Shortcuts:**
   * Beliebige globale und benutzerdefinierte Tastenkürzel sowie Textbaustein-Makros.
-  * Interaktive Tasten-Erfassung und automatische Konfliktprüfung in den Profileinstellungen.
+  * Interaktive Tasten-Erfassung und automatische Konfliktprüfung in den Profileinstellungen (`⚙ Profil & Einstellungen` -> Reiter `🧩 Sonstiges`).
 
 * **🔔 Live-Wiedervorlagen & Background Toast-Popups:**
   * Glocken-Badge (`🔔 3`) in der Kopfzeile mit Live-Zähler fälliger Fristen.
@@ -90,11 +90,18 @@ Eine moderne Python-Desktop-Applikation (`customtkinter`) zur Erfassung, Nachver
   * Live-Text- und Bild-Vorschau für Anhänge (PNG, JPG, Logfiles, JSON).
   * Direktes Öffnen von Anhängen im OS-Standardprogramm und Speichern von Screenshots per `Strg+V`.
 
-* **📦 Komplett-ZIP Backup & Import/Export:** Export und Wiederherstellung des gesamten Datenbestands als zeitgestempeltes ZIP-Archiv.
+* **📦 Komplett-ZIP Backup & Import/Export:** Export und Wiederherstellung des gesamten Datenbestands als zeitgestempeltes ZIP-Archiv im Einstellungsdialog (`⚙ Profil & Einstellungen` -> Reiter `📁 Speicherort & Datenexport`).
 
 * **🔌 E-Mail-Import (IMAP) & REST Webhooks:** Automatische Fallentwürfe aus Support-Postfächern sowie Webhooks für GitLab/Jira Issue Tracker.
 
-* **📚 BookStack Wiki Offline-Suche:** SQLite3 FTS5 Volltextsuchindex für Offline-Zugriff auf Wiki-Dokumentationen mit BookStack REST-API Sync.
+* **📚 BookStack Wiki Offline-Suche:** SQLite3 FTS5 Volltextsuchindex für Offline-Zugriff auf Wiki-Dokumentationen mit BookStack REST-API Sync (Server-Konfiguration unter `⚙ Profil & Einstellungen` -> Reiter `🧩 Sonstiges`).
+
+* **⚙ Kompakter 4-Reiter Einstellungsdialog (`ProfileSettingsDialog` / `Strg+P`):**
+  * **1. 👤 Benutzerprofil**: Kompakte 2-Spalten-Ansicht für persönliche Kontaktdaten (Name, Abteilung, Durchwahl, Mobil), E-Mail-Signatur, P2P-Sync und Farbmarkierung (links) sowie Erscheinungsbild (Theme, Schriftgröße, Spaltenbreiten-Reset rechts).
+  * **2. 📁 Speicherort & Datenexport**: 2-Spalten-Layout für Arbeitsverzeichnis, Datei-Pfade und automatische Grandfather-Father-Son Backup-Aufbewahrung (links) sowie Komplett-Datensicherung per ZIP-Export & -Import (rechts).
+  * **3. 🤖 KI & NLP**: Ollama Server-Steuerung (Start/Stopp), Modell-Verwaltung, Status-Farbcodes und hierarchische Prompt-Regeln.
+  * **4. 🧩 Sonstiges**: 2-Spalten-Layout für BookStack Wiki-Serverkonfiguration & Synchronisation, Prioritäts-Scoring (links) sowie App-Shortcuts und Textbaustein-Makros mit Live-Recorder (rechts).
+  * Durch intelligente 2-Spalten-Grids und automatisches Ausblenden der Scrollleisten (`enable_auto_hiding_scrollbar`) sind alle Dialogreiter ohne vertikales Scrollen direkt vollständig sichtbar.
 
 * **🔄 Multi-User P2P-Sync:** Dezentraler Abgleich der `cases.json` von Kollegen über Netzlaufwerke mit interaktivem Diff-Dialog.
 

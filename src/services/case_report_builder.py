@@ -1,6 +1,11 @@
 import base64
 from collections.abc import Sequence
 
+from constants import (
+    IMAGE_FILE_EXTENSIONS,
+    PRINT_AUTO_DELAY_MS,
+    REPORT_FIELD_LONG_TEXT_THRESHOLD,
+)
 from enums import get_actor_display, get_board_column_display
 from models.case import Case, TimelineEntry
 from services.attachment_service import AttachmentService
@@ -29,10 +34,10 @@ def generate_case_report_html(
     followup_str = case.formatted_followup or tr("case_print.no_followup", "Keine Wiedervorlage gesetzt")
 
     print_script = (
-        """<script>
-window.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() { window.print(); }, 400);
-});
+        f"""<script>
+window.addEventListener('DOMContentLoaded', function() {{
+    setTimeout(function() {{ window.print(); }}, {PRINT_AUTO_DELAY_MS});
+}});
 </script>"""
         if auto_print
         else ""
@@ -171,7 +176,7 @@ window.addEventListener('DOMContentLoaded', function() {
         for k, v in case.form_data.items():
             v_str = str(v)
             val_disp = "<br>".join(v_str.splitlines()) if "\n" in v_str else v_str
-            is_long = len(v_str) > 80 or "\n" in v_str
+            is_long = len(v_str) > REPORT_FIELD_LONG_TEXT_THRESHOLD or "\n" in v_str
             full_cls = " full-width" if is_long else ""
             html_lines.append(
                 f"<div class='field-card{full_cls}'><div class='field-label'>{k}</div><div class='field-value'>{val_disp}</div></div>"
@@ -195,7 +200,7 @@ window.addEventListener('DOMContentLoaded', function() {
             att_files = attachment_service.list_attachments(case)
             if att_files:
                 html_lines.append(f"<h2>{hdr_attachments}</h2>")
-                img_exts = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+                img_exts = IMAGE_FILE_EXTENSIONS
                 img_files = [f for f in att_files if f.suffix.lower() in img_exts]
                 other_files = [f for f in att_files if f.suffix.lower() not in img_exts]
 

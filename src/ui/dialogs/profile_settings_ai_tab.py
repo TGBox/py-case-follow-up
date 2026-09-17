@@ -9,56 +9,102 @@ koennen. Reines Verschieben von Code, keine Verhaltensaenderung.
 """
 import customtkinter as ctk
 from constants import (
-    DEFAULT_OLLAMA_URL,
-    DEFAULT_OLLAMA_MODEL,
-    DEFAULT_GEMINI_MODEL,
-    AVAILABLE_GEMINI_MODELS,
-    OLLAMA_DOWNLOAD_URL,
-    OLLAMA_LIBRARY_QWEN_URL,
-    OLLAMA_LIBRARY_LLAMA_URL,
-    AI_STATUS_ONLINE_LOADED,
-    AI_STATUS_ONLINE_STANDBY,
-    AI_STATUS_ONLINE_DISABLED,
-    AI_STATUS_OFFLINE_LABEL,
-    AI_STATUS_CHECKING,
-    AI_STATUS_UNLOADING,
-    AI_STATUS_UNLOADED,
-    AI_STATUS_ACTIVATED,
-    AI_STATUS_STARTING,
-    AI_STATUS_STOPPING,
-    AI_NO_MODELS_TITLE,
-    AI_NO_MODELS_DESC,
-    AI_OFFLINE_DESC,
-    AI_LABEL_BASE_RULES_TITLE,
-    AI_LABEL_BASE_RULES_HINT,
-    AI_LABEL_SELECT_MODEL,
-    AI_LABEL_OLLAMA_URL,
+    AI_BTN_CREATE_PVS_MODEL,
+    AI_BTN_DOWNLOAD_LLAMA,
+    AI_BTN_DOWNLOAD_OLLAMA,
+    AI_BTN_DOWNLOAD_QWEN,
     AI_BTN_GLOBAL_TOGGLE,
+    AI_BTN_PRELOAD_MODEL,
     AI_BTN_START_SERVER,
     AI_BTN_STOP_SERVER,
     AI_BTN_TEST_GEMINI_KEY,
-    AI_BTN_DOWNLOAD_OLLAMA,
-    AI_BTN_DOWNLOAD_QWEN,
-    AI_BTN_DOWNLOAD_LLAMA,
-    AI_BTN_CREATE_PVS_MODEL,
-    AI_BTN_PRELOAD_MODEL,
     AI_BTN_UNLOAD_MODEL,
-    TEXTBOX_SPACING1_PARAGRAPH,
-    TEXTBOX_SPACING3_PARAGRAPH,
-    TEXTBOX_SPACING2_PARAGRAPH,
-    COLOR_SUCCESS,
-    COLOR_SUCCESS_HOVER,
+    AI_LABEL_BASE_RULES_HINT,
+    AI_LABEL_BASE_RULES_TITLE,
+    AI_LABEL_OLLAMA_URL,
+    AI_LABEL_SELECT_MODEL,
+    AI_NO_MODELS_DESC,
+    AI_NO_MODELS_TITLE,
+    AI_OFFLINE_DESC,
+    AI_STATUS_ACTIVATED,
+    AI_STATUS_CHECKING,
+    AI_STATUS_OFFLINE_LABEL,
+    AI_STATUS_ONLINE_DISABLED,
+    AI_STATUS_ONLINE_LOADED,
+    AI_STATUS_ONLINE_STANDBY,
+    AI_STATUS_STARTING,
+    AI_STATUS_STOPPING,
+    AI_STATUS_UNLOADED,
+    AI_STATUS_UNLOADING,
+    AVAILABLE_GEMINI_MODELS,
+    BTN_WIDTH_ACTION,
+    BTN_WIDTH_CREATE_PVS,
+    BTN_WIDTH_DOWNLOAD_MODEL,
+    BTN_WIDTH_DOWNLOAD_OLLAMA,
+    BTN_WIDTH_ICON_SM,
+    BTN_WIDTH_PRELOAD,
+    BTN_WIDTH_SCAN_OLLAMA,
+    BTN_WIDTH_START_OLLAMA,
+    COLOR_BTN_GRAY,
+    COLOR_BTN_GRAY30,
     COLOR_DANGER,
     COLOR_DANGER_HOVER,
-    COLOR_TEXT_RED,
+    COLOR_MUTED_BODY,
+    COLOR_MUTED_DISABLED,
+    COLOR_MUTED_LABEL,
+    COLOR_PANEL_MUTED_BG,
+    COLOR_PRIMARY_BLUE,
+    COLOR_PURPLE_DARK,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_TEXT_BLUE,
+    COLOR_TEXT_GRAY,
     COLOR_TEXT_GREEN,
     COLOR_TEXT_ORANGE,
-    COLOR_TEXT_BLUE,
-    COLOR_PURPLE_DARK,
-    COLOR_PRIMARY_BLUE,
-    COLOR_BTN_GRAY,
-    COLOR_MUTED_LABEL,
-    COLOR_MUTED_DISABLED,
+    COLOR_TEXT_RED,
+    COMBO_WIDTH_GEMINI_MODEL,
+    COMBO_WIDTH_OLLAMA_MODEL,
+    CORNER_RADIUS_CARD,
+    CORNER_RADIUS_MD,
+    DEFAULT_GEMINI_MODEL,
+    DEFAULT_MODELFILE_PATH,
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_PVS_MODEL_NAME,
+    DELAY_OLLAMA_STATUS_SCAN_MS,
+    ENTRY_WIDTH_GEMINI_KEY,
+    ENTRY_WIDTH_OLLAMA_MODEL,
+    ENTRY_WIDTH_OLLAMA_URL,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_WEIGHT_BOLD,
+    ICON_PASSWORD_HIDE,
+    ICON_PASSWORD_SHOW,
+    ICON_STATUS_ERROR,
+    ICON_STATUS_FLASH,
+    ICON_STATUS_SUCCESS,
+    ICON_STATUS_WARNING,
+    MODELFILE_SYSTEM_PREFIX,
+    MODELFILE_SYSTEM_RULES_MARKER,
+    MODELFILE_SYSTEM_SUFFIX,
+    OLLAMA_DOWNLOAD_URL,
+    OLLAMA_LIBRARY_LLAMA_URL,
+    OLLAMA_LIBRARY_QWEN_URL,
+    PAD_10,
+    PAD_15,
+    PAD_CARD_INSET,
+    PAD_CONTAINER,
+    PAD_GAP,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+    PASSWORD_CHAR_MASK,
+    PASSWORD_CHAR_SHOW,
+    TEXTBOX_SPACING1_PARAGRAPH,
+    TEXTBOX_SPACING2_PARAGRAPH,
+    TEXTBOX_SPACING3_PARAGRAPH,
 )
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
@@ -99,14 +145,14 @@ class AiSettingsTabMixin:
         self.register_i18n(ctk.CTkLabel(
             self.tab_ai,
             text=tr("profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)"),
-            font=ctk.CTkFont(size=14, weight="bold"),
-        ), "profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)").pack(anchor="w", pady=(10, 5))
+            font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight=FONT_WEIGHT_BOLD),
+        ), "profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)").pack(anchor="w", pady=(PAD_10, PAD_CONTAINER))
 
         # --- Provider Selection Row ---
         provider_frame = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
-        provider_frame.pack(fill="x", pady=(0, 8))
+        provider_frame.pack(fill="x", pady=(PAD_NONE, PAD_MD))
 
-        self.register_i18n(ctk.CTkLabel(provider_frame, text=tr("profile.ai_provider_label", "KI-Anbieter wählen:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.ai_provider_label", "KI-Anbieter wählen:").pack(side="left", padx=(0, 10))
+        self.register_i18n(ctk.CTkLabel(provider_frame, text=tr("profile.ai_provider_label", "KI-Anbieter wählen:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD)), "profile.ai_provider_label", "KI-Anbieter wählen:").pack(side="left", padx=(PAD_NONE, PAD_10))
 
         current_provider = getattr(self.profile.ai_settings, "provider", "OLLAMA").upper()
         self.ai_provider_seg = ctk.CTkSegmentedButton(  # type: ignore[attr-defined]
@@ -115,73 +161,73 @@ class AiSettingsTabMixin:
             command=self.on_change_ai_provider,
         )
         self.ai_provider_seg.set(tr("profile.provider_gemini", "GOOGLE GEMINI (Cloud)") if current_provider == "GEMINI" else tr("profile.provider_ollama", "OLLAMA (Lokal)"))
-        self.ai_provider_seg.pack(side="left", padx=(0, 15))
+        self.ai_provider_seg.pack(side="left", padx=(PAD_NONE, PAD_15))
 
         self.anonymize_chk_var = ctk.BooleanVar(value=getattr(self.profile.ai_settings, "enable_anonymization", True))
         self.anonymize_chk = self.register_i18n(ctk.CTkCheckBox(
             provider_frame,
             text=tr("profile.anonymize_toggle", "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)"),
             variable=self.anonymize_chk_var,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
         ), "profile.anonymize_toggle", "🔒 Lokale PII-Anonymisierung aktivieren (DSGVO / § 203 StGB)")
         self.anonymize_chk.pack(side="left")
 
         # --- Gemini Card (Shown when Gemini selected) ---
-        self.gemini_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
+        self.gemini_card = ctk.CTkFrame(self.tab_ai, corner_radius=CORNER_RADIUS_CARD)
 
         gemini_top_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
-        gemini_top_row.pack(fill="x", padx=12, pady=(10, 5))
+        gemini_top_row.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_10, PAD_CONTAINER))
 
-        self.register_i18n(ctk.CTkLabel(gemini_top_row, text=tr("profile.gemini_key_lbl", "🔑 Google Gemini API Key:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.gemini_key_lbl", "🔑 Google Gemini API Key:").pack(side="left", padx=(0, 8))
+        self.register_i18n(ctk.CTkLabel(gemini_top_row, text=tr("profile.gemini_key_lbl", "🔑 Google Gemini API Key:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD)), "profile.gemini_key_lbl", "🔑 Google Gemini API Key:").pack(side="left", padx=(PAD_NONE, PAD_MD))
         self.gemini_key_entry = self.register_i18n(ctk.CTkEntry(
             gemini_top_row,
             placeholder_text=tr("profile.gemini_key_placeholder", "AIzaSy..."),
-            show="*",
-            width=280,
+            show=PASSWORD_CHAR_MASK,
+            width=ENTRY_WIDTH_GEMINI_KEY,
         ), "profile.gemini_key_placeholder", "AIzaSy...", attr="placeholder_text")
         self.gemini_key_entry.insert(0, getattr(self.profile.ai_settings, "gemini_api_key", ""))
-        self.gemini_key_entry.pack(side="left", padx=(0, 8))
+        self.gemini_key_entry.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.btn_toggle_key_show = ctk.CTkButton(
             gemini_top_row,
-            text="👁",
-            width=35,
-            fg_color="gray30",
+            text=ICON_PASSWORD_SHOW,
+            width=BTN_WIDTH_ICON_SM,
+            fg_color=COLOR_BTN_GRAY30,
             command=self.on_toggle_show_gemini_key
         )
-        self.btn_toggle_key_show.pack(side="left", padx=(0, 8))
+        self.btn_toggle_key_show.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.btn_test_gemini = ctk.CTkButton(
             gemini_top_row,
             text=AI_BTN_TEST_GEMINI_KEY,
             command=self.on_test_gemini_key,
             fg_color=COLOR_PRIMARY_BLUE,
-            width=140,
+            width=BTN_WIDTH_ACTION,
         )
         self.btn_test_gemini.pack(side="left")
 
         gemini_model_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
-        gemini_model_row.pack(fill="x", padx=12, pady=(0, 10))
+        gemini_model_row.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_NONE, PAD_10))
 
-        self.register_i18n(ctk.CTkLabel(gemini_model_row, text=tr("profile.gemini_select_model", "Gemini Modell wählen:"), font=ctk.CTkFont(size=12, weight="bold")), "profile.gemini_select_model", "Gemini Modell wählen:").pack(side="left", padx=(0, 8))
+        self.register_i18n(ctk.CTkLabel(gemini_model_row, text=tr("profile.gemini_select_model", "Gemini Modell wählen:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD)), "profile.gemini_select_model", "Gemini Modell wählen:").pack(side="left", padx=(PAD_NONE, PAD_MD))
         self.gemini_model_combo = ctk.CTkOptionMenu(
             gemini_model_row,
             values=AVAILABLE_GEMINI_MODELS,
-            width=200,
+            width=COMBO_WIDTH_GEMINI_MODEL,
         )
         saved_g_model = getattr(self.profile.ai_settings, "gemini_model", DEFAULT_GEMINI_MODEL)
         self.gemini_model_combo.set(saved_g_model if saved_g_model in AVAILABLE_GEMINI_MODELS else DEFAULT_GEMINI_MODEL)
-        self.gemini_model_combo.pack(side="left", padx=(0, 15))
+        self.gemini_model_combo.pack(side="left", padx=(PAD_NONE, PAD_15))
 
         self.gemini_status_lbl = ctk.CTkLabel(
             gemini_model_row,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
         )
         self.gemini_status_lbl.pack(side="left")
 
         gemini_rules_row = ctk.CTkFrame(self.gemini_card, fg_color="transparent")
-        gemini_rules_row.pack(fill="x", padx=12, pady=(0, 10))
+        gemini_rules_row.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_NONE, PAD_10))
 
         import tkinter as tk
         self.gemini_modelfile_chk_var = tk.BooleanVar(value=getattr(self.profile.ai_settings, "use_modelfile_rules_for_gemini", False))
@@ -190,22 +236,22 @@ class AiSettingsTabMixin:
             text=tr("profile.gemini_modelfile_rules", "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)"),
             variable=self.gemini_modelfile_chk_var,
             command=self.on_toggle_gemini_modelfile_rules,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
         ), "profile.gemini_modelfile_rules", "📄 Modelfile-Systemregeln für Gemini in Basis-Regeln übernehmen (aus ollama/Modelfile)")
         self.gemini_modelfile_chk.pack(side="left")
 
         # Top Ollama Management Card
-        self.ollama_card = ctk.CTkFrame(self.tab_ai, corner_radius=8)
-        self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
+        self.ollama_card = ctk.CTkFrame(self.tab_ai, corner_radius=CORNER_RADIUS_CARD)
+        self.ollama_card.pack(fill="x", pady=(PAD_NONE, PAD_10), padx=PAD_XS)
 
         # Status row
         status_row = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
-        status_row.pack(fill="x", padx=12, pady=(10, 5))
+        status_row.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_10, PAD_CONTAINER))
 
         self.ollama_status_lbl = self.register_i18n(ctk.CTkLabel(
             status_row,
             text=tr("profile.checking_ollama", "🔍 Prüfe Ollama-Status..."),
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
         ), "profile.checking_ollama", "🔍 Prüfe Ollama-Status...")
         self.ollama_status_lbl.pack(side="left")
 
@@ -213,8 +259,8 @@ class AiSettingsTabMixin:
             status_row,
             text=tr("profile.scan_ollama_btn", "🔄 Status & Modelle scannen"),
             command=self.scan_ollama_status,
-            width=180,
-            fg_color="gray30",
+            width=BTN_WIDTH_SCAN_OLLAMA,
+            fg_color=COLOR_BTN_GRAY30,
         ), "profile.scan_ollama_btn", "🔄 Status & Modelle scannen")
         self.btn_refresh_ollama.pack(side="right")
 
@@ -225,14 +271,14 @@ class AiSettingsTabMixin:
         ctk.CTkLabel(
             self.ollama_offline_frame,
             text=off_desc,
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_MUTED_LABEL,
             justify="left",
             anchor="w",
-        ).pack(anchor="w", pady=(0, 8))
+        ).pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
         off_btns_row = ctk.CTkFrame(self.ollama_offline_frame, fg_color="transparent")
-        off_btns_row.pack(anchor="w", pady=(0, 5))
+        off_btns_row.pack(anchor="w", pady=(PAD_NONE, PAD_CONTAINER))
 
         btn_start_ollama = ctk.CTkButton(
             off_btns_row,
@@ -240,16 +286,16 @@ class AiSettingsTabMixin:
             command=self.on_start_ollama_server,
             fg_color=COLOR_SUCCESS,
             hover_color=COLOR_SUCCESS_HOVER,
-            width=200,
+            width=BTN_WIDTH_START_OLLAMA,
         )
-        btn_start_ollama.pack(side="left", padx=(0, 8))
+        btn_start_ollama.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         btn_download_ollama = ctk.CTkButton(
             off_btns_row,
             text=AI_BTN_DOWNLOAD_OLLAMA,
             command=lambda: webbrowser.open(OLLAMA_DOWNLOAD_URL),
             fg_color=COLOR_PRIMARY_BLUE,
-            width=360,
+            width=BTN_WIDTH_DOWNLOAD_OLLAMA,
         )
         btn_download_ollama.pack(side="left")
 
@@ -257,90 +303,90 @@ class AiSettingsTabMixin:
         self.ollama_online_frame = ctk.CTkFrame(self.ollama_card, fg_color="transparent")
 
         # Frame shown if no models are installed locally
-        self.ollama_no_models_frame = ctk.CTkFrame(self.ollama_online_frame, fg_color=("gray90", "gray25"), corner_radius=6)
+        self.ollama_no_models_frame = ctk.CTkFrame(self.ollama_online_frame, fg_color=COLOR_PANEL_MUTED_BG, corner_radius=CORNER_RADIUS_MD)
 
         ctk.CTkLabel(
             self.ollama_no_models_frame,
             text=AI_NO_MODELS_TITLE,
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
             text_color=COLOR_TEXT_ORANGE,
-        ).pack(anchor="w", padx=10, pady=(8, 2))
+        ).pack(anchor="w", padx=PAD_10, pady=(PAD_MD, PAD_XS))
 
         ctk.CTkLabel(
             self.ollama_no_models_frame,
             text=AI_NO_MODELS_DESC,
-            font=ctk.CTkFont(size=11),
-            text_color=("gray30", "gray80"),
-        ).pack(anchor="w", padx=10, pady=(0, 6))
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_MUTED_BODY,
+        ).pack(anchor="w", padx=PAD_10, pady=(PAD_NONE, PAD_GAP))
 
         no_models_btn_row = ctk.CTkFrame(self.ollama_no_models_frame, fg_color="transparent")
-        no_models_btn_row.pack(fill="x", padx=10, pady=(0, 8))
+        no_models_btn_row.pack(fill="x", padx=PAD_10, pady=(PAD_NONE, PAD_MD))
 
         ctk.CTkButton(
             no_models_btn_row,
             text=AI_BTN_DOWNLOAD_QWEN,
             command=lambda: webbrowser.open(OLLAMA_LIBRARY_QWEN_URL),
             fg_color=COLOR_PRIMARY_BLUE,
-            width=260,
-        ).pack(side="left", padx=(0, 8))
+            width=BTN_WIDTH_DOWNLOAD_MODEL,
+        ).pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         ctk.CTkButton(
             no_models_btn_row,
             text=AI_BTN_DOWNLOAD_LLAMA,
             command=lambda: webbrowser.open(OLLAMA_LIBRARY_LLAMA_URL),
             fg_color=COLOR_PRIMARY_BLUE,
-            width=260,
+            width=BTN_WIDTH_DOWNLOAD_MODEL,
         ).pack(side="left")
 
         # Model selection dropdown row
         model_row = ctk.CTkFrame(self.ollama_online_frame, fg_color="transparent")
-        model_row.pack(fill="x", pady=(0, 8))
+        model_row.pack(fill="x", pady=(PAD_NONE, PAD_MD))
 
-        ctk.CTkLabel(model_row, text=AI_LABEL_SELECT_MODEL, font=ctk.CTkFont(size=12, weight="bold")).pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(model_row, text=AI_LABEL_SELECT_MODEL, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD)).pack(side="left", padx=(PAD_NONE, PAD_10))
 
         self.ai_model_combo = ctk.CTkOptionMenu(
             model_row,
             values=[self.profile.ai_settings.model_name or DEFAULT_OLLAMA_MODEL],
             command=self.on_select_ai_model,
-            width=220,
+            width=COMBO_WIDTH_OLLAMA_MODEL,
         )
         self.ai_model_combo.set(self.profile.ai_settings.model_name or DEFAULT_OLLAMA_MODEL)
-        self.ai_model_combo.pack(side="left", padx=(0, 10))
+        self.ai_model_combo.pack(side="left", padx=(PAD_NONE, PAD_10))
 
-        self.ai_model_entry = ctk.CTkEntry(model_row, placeholder_text=DEFAULT_OLLAMA_MODEL, width=160)
+        self.ai_model_entry = ctk.CTkEntry(model_row, placeholder_text=DEFAULT_OLLAMA_MODEL, width=ENTRY_WIDTH_OLLAMA_MODEL)
         self.ai_model_entry.insert(0, self.profile.ai_settings.model_name)
         self.ai_model_entry.pack(side="left")
 
         # Buttons row: Create PVS-Support, Preload, Unload, Stop Server
         btns_row = ctk.CTkFrame(self.ollama_online_frame, fg_color="transparent")
-        btns_row.pack(fill="x", pady=(0, 5))
+        btns_row.pack(fill="x", pady=(PAD_NONE, PAD_CONTAINER))
 
         btn_create_pvs = ctk.CTkButton(
             btns_row,
             text=AI_BTN_CREATE_PVS_MODEL,
             command=self.on_create_pvs_model,
             fg_color=COLOR_PURPLE_DARK,
-            width=260,
+            width=BTN_WIDTH_CREATE_PVS,
         )
-        btn_create_pvs.pack(side="left", padx=(0, 8))
+        btn_create_pvs.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         btn_preload = ctk.CTkButton(
             btns_row,
             text=AI_BTN_PRELOAD_MODEL,
             command=self.on_preload_model,
             fg_color=COLOR_SUCCESS,
-            width=160,
+            width=BTN_WIDTH_PRELOAD,
         )
-        btn_preload.pack(side="left", padx=(0, 8))
+        btn_preload.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         btn_unload = ctk.CTkButton(
             btns_row,
             text=AI_BTN_UNLOAD_MODEL,
             command=self.on_unload_model,
             fg_color=COLOR_BTN_GRAY,
-            width=140,
+            width=BTN_WIDTH_ACTION,
         )
-        btn_unload.pack(side="left", padx=(0, 8))
+        btn_unload.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         btn_stop_server = ctk.CTkButton(
             btns_row,
@@ -348,32 +394,32 @@ class AiSettingsTabMixin:
             command=self.on_stop_ollama_server,
             fg_color=COLOR_DANGER,
             hover_color=COLOR_DANGER_HOVER,
-            width=140,
+            width=BTN_WIDTH_ACTION,
         )
         btn_stop_server.pack(side="left")
 
         self.ollama_action_lbl = ctk.CTkLabel(
             self.ollama_card,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
             anchor="w",
         )
-        self.ollama_action_lbl.pack(fill="x", padx=12, pady=(0, 6))
+        self.ollama_action_lbl.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_NONE, PAD_GAP))
 
         # URL Entry & Checkbox row
         url_chk_row = ctk.CTkFrame(self.tab_ai, fg_color="transparent")
-        url_chk_row.pack(fill="x", pady=(0, 8))
+        url_chk_row.pack(fill="x", pady=(PAD_NONE, PAD_MD))
 
-        ctk.CTkLabel(url_chk_row, text=AI_LABEL_OLLAMA_URL).pack(side="left", padx=(0, 5))
-        self.ai_url_entry = ctk.CTkEntry(url_chk_row, placeholder_text=DEFAULT_OLLAMA_URL, width=200)
+        ctk.CTkLabel(url_chk_row, text=AI_LABEL_OLLAMA_URL).pack(side="left", padx=(PAD_NONE, PAD_CONTAINER))
+        self.ai_url_entry = ctk.CTkEntry(url_chk_row, placeholder_text=DEFAULT_OLLAMA_URL, width=ENTRY_WIDTH_OLLAMA_URL)
         self.ai_url_entry.insert(0, self.profile.ai_settings.ollama_url)
-        self.ai_url_entry.pack(side="left", padx=(0, 15))
+        self.ai_url_entry.pack(side="left", padx=(PAD_NONE, PAD_15))
 
         self.ai_enable_chk = ctk.CTkSwitch(
             url_chk_row,
             text=AI_BTN_GLOBAL_TOGGLE,
             command=self.on_toggle_global_ai,
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
         )
         if self.profile.ai_settings.enable_ai:
             self.ai_enable_chk.select()
@@ -385,20 +431,20 @@ class AiSettingsTabMixin:
         ctk.CTkLabel(
             self.tab_ai,
             text=AI_LABEL_BASE_RULES_TITLE,
-            font=ctk.CTkFont(size=12, weight="bold"),
-        ).pack(anchor="w", pady=(5, 2))
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+        ).pack(anchor="w", pady=(PAD_CONTAINER, PAD_XS))
 
         ctk.CTkLabel(
             self.tab_ai,
             text=AI_LABEL_BASE_RULES_HINT,
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_MUTED_LABEL,
-        ).pack(anchor="w", pady=(0, 4))
+        ).pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.ai_base_rules_txt = ctk.CTkTextbox(self.tab_ai)
         if self.profile.ai_settings.base_rules:
             self.ai_base_rules_txt.insert("1.0", "\n".join(self.profile.ai_settings.base_rules))
-        self.ai_base_rules_txt.pack(fill="both", expand=True, pady=(0, 10))
+        self.ai_base_rules_txt.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_10))
 
         # Set paragraph line spacing for clear visual distinction between hard line breaks
         try:
@@ -414,16 +460,15 @@ class AiSettingsTabMixin:
     def get_modelfile_prompt_text(self) -> str:
         """Reads system rules text from ollama/Modelfile or DEFAULT_MODELFILE_PATH."""
         from pathlib import Path
-        from constants import DEFAULT_MODELFILE_PATH
         p = Path(DEFAULT_MODELFILE_PATH)
         if not p.exists():
             p = Path("ollama/Modelfile")
         if p.exists():
             try:
                 content = p.read_text(encoding="utf-8")
-                if 'SYSTEM """' in content:
-                    start = content.index('SYSTEM """') + len('SYSTEM """')
-                    end = content.find('"""', start)
+                if MODELFILE_SYSTEM_PREFIX in content:
+                    start = content.index(MODELFILE_SYSTEM_PREFIX) + len(MODELFILE_SYSTEM_PREFIX)
+                    end = content.find(MODELFILE_SYSTEM_SUFFIX, start)
                     if end != -1:
                         return content[start:end].strip()
             except Exception:
@@ -437,7 +482,7 @@ class AiSettingsTabMixin:
             return
 
         current_txt = self.ai_base_rules_txt.get("1.0", "end-1c").strip()
-        marker = "--- MODELFILE SYSTEM-REGELN ---"
+        marker = MODELFILE_SYSTEM_RULES_MARKER
 
         if use_mf:
             if mf_text not in current_txt:
@@ -456,17 +501,17 @@ class AiSettingsTabMixin:
     def on_change_ai_provider(self, value: str):
         is_gemini = "GEMINI" in value.upper()
         if is_gemini:
-            self.gemini_card.pack(fill="x", pady=(0, 10), padx=2)
+            self.gemini_card.pack(fill="x", pady=(PAD_NONE, PAD_10), padx=PAD_XS)
             self.ollama_card.pack_forget()
             if hasattr(self, "gemini_modelfile_chk_var") and self.gemini_modelfile_chk_var.get():
                 self.on_toggle_gemini_modelfile_rules()
         else:
             self.gemini_card.pack_forget()
-            self.ollama_card.pack(fill="x", pady=(0, 10), padx=2)
+            self.ollama_card.pack(fill="x", pady=(PAD_NONE, PAD_10), padx=PAD_XS)
             mf_text = self.get_modelfile_prompt_text()
             if hasattr(self, "ai_base_rules_txt"):
                 current_txt = self.ai_base_rules_txt.get("1.0", "end-1c").strip()
-                marker = "--- MODELFILE SYSTEM-REGELN ---"
+                marker = MODELFILE_SYSTEM_RULES_MARKER
                 if mf_text and mf_text in current_txt:
                     cleaned = current_txt.replace(f"\n\n{marker}\n{mf_text}", "").replace(f"{marker}\n{mf_text}", "").replace(mf_text, "").strip()
                     self.ai_base_rules_txt.delete("1.0", "end")
@@ -474,12 +519,12 @@ class AiSettingsTabMixin:
 
     def on_toggle_show_gemini_key(self):
         current = self.gemini_key_entry.cget("show")
-        if current == "*":
-            self.gemini_key_entry.configure(show="")
-            self.btn_toggle_key_show.configure(text="🔒")
+        if current == PASSWORD_CHAR_MASK:
+            self.gemini_key_entry.configure(show=PASSWORD_CHAR_SHOW)
+            self.btn_toggle_key_show.configure(text=ICON_PASSWORD_HIDE)
         else:
-            self.gemini_key_entry.configure(show="*")
-            self.btn_toggle_key_show.configure(text="👁")
+            self.gemini_key_entry.configure(show=PASSWORD_CHAR_MASK)
+            self.btn_toggle_key_show.configure(text=ICON_PASSWORD_SHOW)
 
     def on_test_gemini_key(self):
         from services.i18n_service import tr
@@ -497,7 +542,7 @@ class AiSettingsTabMixin:
             ok, msg = svc.check_gemini_status(api_key=key, model=model)
             if self.winfo_exists():
                 self.after(0, lambda: self.gemini_status_lbl.configure(
-                    text=f"✅ {msg}" if ok else f"❌ {msg}",
+                    text=f"{ICON_STATUS_SUCCESS} {msg}" if ok else f"{ICON_STATUS_ERROR} {msg}",
                     text_color=COLOR_TEXT_GREEN if ok else COLOR_TEXT_RED
                 ))
 
@@ -532,12 +577,12 @@ class AiSettingsTabMixin:
                             text_color=COLOR_TEXT_RED,
                         )
                         self.ollama_online_frame.pack_forget()
-                        self.ollama_offline_frame.pack(fill="x", padx=12, pady=(0, 10))
+                        self.ollama_offline_frame.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_NONE, PAD_10))
                         if hasattr(self, "ai_model_combo"):
                             self.ai_model_combo.configure(values=[current_model or DEFAULT_OLLAMA_MODEL])
                     else:
                         self.ollama_offline_frame.pack_forget()
-                        self.ollama_online_frame.pack(fill="x", padx=12, pady=(0, 10))
+                        self.ollama_online_frame.pack(fill="x", padx=PAD_CARD_INSET, pady=(PAD_NONE, PAD_10))
 
                         if not self.profile.ai_settings.enable_ai:
                             self.ollama_status_lbl.configure(
@@ -557,7 +602,7 @@ class AiSettingsTabMixin:
 
                         if not models:
                             if hasattr(self, "ollama_no_models_frame"):
-                                self.ollama_no_models_frame.pack(fill="x", pady=(0, 10))
+                                self.ollama_no_models_frame.pack(fill="x", pady=(PAD_NONE, PAD_10))
                         else:
                             if hasattr(self, "ollama_no_models_frame"):
                                 self.ollama_no_models_frame.pack_forget()
@@ -583,7 +628,8 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_start_ollama_server(self):
-        self.ollama_action_lbl.configure(text=AI_STATUS_STARTING, text_color="orange")
+        from services.i18n_service import tr
+        self.ollama_action_lbl.configure(text=AI_STATUS_STARTING, text_color=COLOR_TEXT_ORANGE)
         def worker():
             from services.ai_service import AiService
             url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
@@ -594,12 +640,12 @@ class AiSettingsTabMixin:
                     if not self.winfo_exists():
                         return
                     if ok:
-                        self.ollama_action_lbl.configure(text=f"✅ {msg}", text_color="green")
+                        self.ollama_action_lbl.configure(text=f"{ICON_STATUS_SUCCESS} {msg}", text_color=COLOR_TEXT_GREEN)
                         from ui.widgets.toast_notification import ToastNotification
-                        ToastNotification(self, "Ollama Server", "Ollama Server wird gestartet...")
+                        ToastNotification(self, tr("profile.ollama_server_title", "Ollama Server"), tr("profile.ollama_starting", "Ollama Server wird gestartet..."))
                     else:
-                        self.ollama_action_lbl.configure(text=f"❌ {msg}", text_color="red")
-                    self.after(1500, self.scan_ollama_status)
+                        self.ollama_action_lbl.configure(text=f"{ICON_STATUS_ERROR} {msg}", text_color=COLOR_TEXT_RED)
+                    self.after(DELAY_OLLAMA_STATUS_SCAN_MS, self.scan_ollama_status)
                 except Exception:
                     pass
             try:
@@ -610,7 +656,8 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_stop_ollama_server(self):
-        self.ollama_action_lbl.configure(text=AI_STATUS_STOPPING, text_color="orange")
+        from services.i18n_service import tr
+        self.ollama_action_lbl.configure(text=AI_STATUS_STOPPING, text_color=COLOR_TEXT_ORANGE)
         def worker():
             from services.ai_service import AiService
             url = self.ai_url_entry.get().strip() if hasattr(self, "ai_url_entry") else self.profile.ai_settings.ollama_url
@@ -620,9 +667,9 @@ class AiSettingsTabMixin:
                 try:
                     if not self.winfo_exists():
                         return
-                    self.ollama_action_lbl.configure(text=f"⚡ {msg}", text_color="gray")
+                    self.ollama_action_lbl.configure(text=f"{ICON_STATUS_FLASH} {msg}", text_color=COLOR_TEXT_GRAY)
                     from ui.widgets.toast_notification import ToastNotification
-                    ToastNotification(self, "Ollama Server", "Ollama Server wurde beendet.")
+                    ToastNotification(self, tr("profile.ollama_server_title", "Ollama Server"), tr("profile.ollama_stopped", "Ollama Server wurde beendet."))
                     self.scan_ollama_status()
                 except Exception:
                     pass
@@ -634,13 +681,14 @@ class AiSettingsTabMixin:
         threading.Thread(target=worker, daemon=True).start()
 
     def on_toggle_global_ai(self):
+        from services.i18n_service import tr
         enabled = bool(self.ai_enable_chk.get())
         self.profile.ai_settings.enable_ai = enabled
 
         if not enabled:
             self.ollama_action_lbl.configure(
                 text=AI_STATUS_UNLOADING,
-                text_color="orange",
+                text_color=COLOR_TEXT_ORANGE,
             )
             def worker():
                 from services.ai_service import AiService
@@ -655,10 +703,10 @@ class AiSettingsTabMixin:
                             return
                         self.ollama_action_lbl.configure(
                             text=AI_STATUS_UNLOADED,
-                            text_color="gray",
+                            text_color=COLOR_TEXT_GRAY,
                         )
                         from ui.widgets.toast_notification import ToastNotification
-                        ToastNotification(self, "KI-Status", "KI global deaktiviert & Modelle entladen")
+                        ToastNotification(self, tr("ai_constants.toast_ai_status_title", "KI-Status"), tr("ai_constants.toast_ai_disabled", "KI global deaktiviert & Modelle entladen"))
                         self.scan_ollama_status()
                     except Exception:
                         pass
@@ -673,10 +721,10 @@ class AiSettingsTabMixin:
         else:
             self.ollama_action_lbl.configure(
                 text=AI_STATUS_ACTIVATED,
-                text_color="green",
+                text_color=COLOR_TEXT_GREEN,
             )
             from ui.widgets.toast_notification import ToastNotification
-            ToastNotification(self, "KI-Status", "KI global aktiviert")
+            ToastNotification(self, tr("ai_constants.toast_ai_status_title", "KI-Status"), tr("ai_constants.toast_ai_enabled", "KI global aktiviert"))
             self.scan_ollama_status()
 
     def on_select_ai_model(self, selected_model: str):
@@ -685,25 +733,25 @@ class AiSettingsTabMixin:
             self.ai_model_entry.insert(0, selected_model)
         self.profile.ai_settings.model_name = selected_model
         from services.i18n_service import tr
-        self.ollama_action_lbl.configure(text=tr("profile.model_set_active", "Aktives Modell auf '{model}' gesetzt.", model=selected_model), text_color="dodgerblue")
+        self.ollama_action_lbl.configure(text=tr("profile.model_set_active", "Aktives Modell auf '{model}' gesetzt.", model=selected_model), text_color=COLOR_PRIMARY_BLUE)
 
     def on_create_pvs_model(self):
         from services.ai_service import AiService
         from services.i18n_service import tr
         url = self.ai_url_entry.get().strip() or self.profile.ai_settings.ollama_url
         svc = AiService(ollama_url=url)
-        self.ollama_action_lbl.configure(text=tr("profile.creating_pvs_model", "⏳ Erstelle 'pvs-support' Modell aus Modelfile..."), text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.creating_pvs_model", "⏳ Erstelle 'pvs-support' Modell aus Modelfile..."), text_color=COLOR_TEXT_ORANGE)
         self.update_idletasks()
 
         def worker():
             ok, msg = svc.create_pvs_support_model()
             def done():
                 if ok:
-                    self.ollama_action_lbl.configure(text=f"✅ {msg}", text_color="green")
-                    self.profile.ai_settings.model_name = "pvs-support"
+                    self.ollama_action_lbl.configure(text=f"{ICON_STATUS_SUCCESS} {msg}", text_color=COLOR_TEXT_GREEN)
+                    self.profile.ai_settings.model_name = DEFAULT_PVS_MODEL_NAME
                     self.scan_ollama_status()
                 else:
-                    self.ollama_action_lbl.configure(text=f"⚠ {msg}", text_color="red")
+                    self.ollama_action_lbl.configure(text=f"{ICON_STATUS_WARNING} {msg}", text_color=COLOR_TEXT_RED)
             self.after(0, done)
 
         import threading
@@ -715,14 +763,14 @@ class AiSettingsTabMixin:
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
         from services.i18n_service import tr
-        self.ollama_action_lbl.configure(text=tr("profile.model_loading", "⏳ Lade Modell '{model}' in den Speicher...", model=model), text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.model_loading", "⏳ Lade Modell '{model}' in den Speicher...", model=model), text_color=COLOR_TEXT_ORANGE)
         self.update_idletasks()
 
         def worker():
             ok, msg = svc.preload_model(model)
             def done():
-                color = "green" if ok else "red"
-                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                color = COLOR_TEXT_GREEN if ok else COLOR_TEXT_RED
+                self.ollama_action_lbl.configure(text=f"{ICON_STATUS_SUCCESS if ok else ICON_STATUS_WARNING} {msg}", text_color=color)
                 self.scan_ollama_status()
             self.after(0, done)
 
@@ -735,14 +783,14 @@ class AiSettingsTabMixin:
         model = self.ai_model_entry.get().strip() or self.profile.ai_settings.model_name
         svc = AiService(ollama_url=url, model_name=model)
         from services.i18n_service import tr
-        self.ollama_action_lbl.configure(text=tr("profile.model_unloading", "⏳ Entlade Modell '{model}' aus dem Speicher...", model=model), text_color="orange")
+        self.ollama_action_lbl.configure(text=tr("profile.model_unloading", "⏳ Entlade Modell '{model}' aus dem Speicher...", model=model), text_color=COLOR_TEXT_ORANGE)
         self.update_idletasks()
 
         def worker():
             ok, msg = svc.unload_model(model)
             def done():
-                color = "green" if ok else "red"
-                self.ollama_action_lbl.configure(text=f"{'✅' if ok else '⚠'} {msg}", text_color=color)
+                color = COLOR_TEXT_GREEN if ok else COLOR_TEXT_RED
+                self.ollama_action_lbl.configure(text=f"{ICON_STATUS_SUCCESS if ok else ICON_STATUS_WARNING} {msg}", text_color=color)
                 self.scan_ollama_status()
             self.after(0, done)
 

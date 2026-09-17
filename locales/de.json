@@ -624,7 +624,10 @@
     "zip_lbl": "PLZ:",
     "zip_placeholder": "12345",
     "edit_practice": "Praxis bearbeiten: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Name (A-Z)",
+    "sort_id": "Praxisnummer / ID",
+    "sort_contact": "Zeit seit letztem Kontakt"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -1360,7 +1363,9 @@
     "title_save_sig": "Signatur in Datei speichern",
     "title_load_sig": "Signatur aus Datei laden",
     "sig_saved_success": "✅ Signatur erfolgreich gespeichert!",
+    "sig_saved_error": "⚠ Fehler beim Speichern der Signatur: {error}",
     "sig_loaded_success": "✅ Signatur geladen!",
+    "sig_loaded_error": "⚠ Fehler beim Laden der Signatur: {error}",
     "status_saved": "✔ Einstellungen & Pfade gespeichert!",
     "tab_ai": "🤖 KI & NLP",
     "tab_backup": "💾 Datensicherung",
@@ -1443,7 +1448,9 @@
     "no_snippets": "Keine Textbausteine vorhanden.",
     "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt."
+    "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
+    "shortcut_conflict": "⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!"
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -1501,7 +1508,10 @@
     "new_schema_title": "🆕 Neues Formular (Schema) erstellen",
     "schema_id_lbl": "Schema-ID (optional):",
     "select_form_lbl": "Formular auswählen:",
-    "toggle_required": "Pflicht +/-"
+    "toggle_required": "Pflicht +/-",
+    "badge_required": "[PFLICHT]",
+    "badge_optional": "[OPTIONAL]",
+    "no_form": "Kein Formular"
   },
   "schemas": {
     "bug_report": {
@@ -1763,7 +1773,10 @@
     "name_placeholder": "z. B. GitLab / Dev-Ticket",
     "new_title": "📄 Neue Export-Vorlage erstellen",
     "req_fields_lbl": "Erforderliche Pflichtfelder vor Export:",
-    "target_type_lbl": "Ziel-Aktion / Typ:"
+    "target_type_lbl": "Ziel-Aktion / Typ:",
+    "no_desc": "Keine Beschreibung",
+    "no_req_fields": "Keine Pflichtfelder",
+    "req_fields_summary": "Pflichtfelder: {fields}"
   },
   "timeline": {
     "case_completed": "Fall auf erledigt gesetzt.",
@@ -1780,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Wiedervorlage fällig ({count})",
     "reminder_title": "Erinnerung"
+  },
+  "tray": {
+    "open": "Öffnen",
+    "quit": "Beenden",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} fällige Wiedervorlage(n)"
   },
   "ui_buttons": {
     "apply": "Übernehmen",
@@ -1892,5 +1911,10 @@
     "name": "Name (A-Z)",
     "id": "Praxisnummer / ID",
     "contact": "Zeit seit letztem Kontakt"
+  },
+  "theme": {
+    "dark": "Dunkel",
+    "light": "Hell",
+    "system": "System"
   }
 }

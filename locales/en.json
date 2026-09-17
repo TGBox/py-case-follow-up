@@ -624,7 +624,10 @@
     "zip_lbl": "Postal Code:",
     "zip_placeholder": "12345",
     "edit_practice": "Edit practice: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Name (A-Z)",
+    "sort_id": "Practice No. / ID",
+    "sort_contact": "Time since last contact"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -1360,7 +1363,9 @@
     "title_save_sig": "Save signature to file",
     "title_load_sig": "Load signature from file",
     "sig_saved_success": "✅ Signature saved successfully!",
+    "sig_saved_error": "⚠ Error saving signature: {error}",
     "sig_loaded_success": "✅ Signature loaded!",
+    "sig_loaded_error": "⚠ Error loading signature: {error}",
     "status_saved": "✔ Settings & paths saved!",
     "tab_ai": "🤖 AI & NLP",
     "tab_backup": "💾 Backup",
@@ -1443,7 +1448,9 @@
     "no_snippets": "No text snippets available.",
     "widths_summary": "• Cockpit: Left {left}px | Center {center}px | Right {right}px\n• Kanban Board: Min column width {board}px\n• Table: ID {id}px | Practice {prac}px | Title {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP backup created successfully: {file_count} files ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted."
+    "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted.",
+    "shortcut_conflict": "⚠ Shortcut conflict: The following hotkeys are assigned multiple times: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Shortcut conflict: Hotkeys cannot be assigned multiple times!"
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -1501,7 +1508,10 @@
     "new_schema_title": "🆕 Create New Form (Schema)",
     "schema_id_lbl": "Schema ID (optional):",
     "select_form_lbl": "Select Form:",
-    "toggle_required": "Required +/-"
+    "toggle_required": "Required +/-",
+    "badge_required": "[REQUIRED]",
+    "badge_optional": "[OPTIONAL]",
+    "no_form": "No Form"
   },
   "schemas": {
     "bug_report": {
@@ -1763,7 +1773,10 @@
     "name_placeholder": "e.g. GitLab / Dev Ticket",
     "new_title": "📄 Create New Export Template",
     "req_fields_lbl": "Required Mandatory Fields Before Export:",
-    "target_type_lbl": "Target Action / Type:"
+    "target_type_lbl": "Target Action / Type:",
+    "no_desc": "No description",
+    "no_req_fields": "No required fields",
+    "req_fields_summary": "Required fields: {fields}"
   },
   "timeline": {
     "case_completed": "Case marked as completed.",
@@ -1780,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Follow-up due ({count})",
     "reminder_title": "Reminder"
+  },
+  "tray": {
+    "open": "Open",
+    "quit": "Exit",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} due follow-up(s)"
   },
   "ui_buttons": {
     "apply": "Apply",
@@ -1892,5 +1911,10 @@
     "name": "Name (A-Z)",
     "id": "Practice No. / ID",
     "contact": "Time since last contact"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System"
   }
 }

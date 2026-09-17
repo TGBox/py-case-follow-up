@@ -28,25 +28,39 @@ import time
 from pathlib import Path
 from urllib.parse import quote, unquote
 
+from constants import (
+    HEARTBEAT_INTERVAL_SECONDS,
+    LOCK_FILENAME,
+    LOCK_STALE_SECONDS,
+    PROTOCOL_HANDLER_DESCRIPTION,
+    REQUEST_FILENAME,
+    REQUEST_MAX_AGE_SECONDS,
+    URI_SCHEME,
+)
+
 logger = logging.getLogger("SupportCockpit")
 
-URI_SCHEME = "supportcockpit"
 _CASE_URI_PREFIX = f"{URI_SCHEME}://case/"
 
-LOCK_FILENAME = "instance.lock"
-REQUEST_FILENAME = "open_case_request.json"
-
-# The app refreshes the lock every HEARTBEAT_INTERVAL_SECONDS; anything older
-# than the stale threshold counts as a dead instance. The gap between the two
-# is deliberate - a busy UI thread may well miss one beat.
-HEARTBEAT_INTERVAL_SECONDS = 30
-LOCK_STALE_SECONDS = 150
-REQUEST_MAX_AGE_SECONDS = 120
+__all__ = [
+    "HEARTBEAT_INTERVAL_SECONDS",
+    "InstanceService",
+    "LOCK_FILENAME",
+    "LOCK_STALE_SECONDS",
+    "PROTOCOL_HANDLER_DESCRIPTION",
+    "REQUEST_FILENAME",
+    "REQUEST_MAX_AGE_SECONDS",
+    "URI_SCHEME",
+    "build_case_uri",
+    "parse_case_uri",
+    "register_uri_scheme",
+    "should_register",
+]
 
 
 def build_case_uri(case_id: str) -> str:
     """URI that opens one case. This is what a notification's launch action carries."""
-    return _CASE_URI_PREFIX + quote(str(case_id), safe="")
+    return _CASE_URI_PREFIX + quote(case_id, safe="")
 
 
 def parse_case_uri(value: str | None) -> str | None:
@@ -57,7 +71,7 @@ def parse_case_uri(value: str | None) -> str | None:
     """
     if not value:
         return None
-    text = str(value).strip().strip('"')
+    text = value.strip().strip('"')
     if not text:
         return None
 
@@ -158,7 +172,7 @@ class InstanceService:
         this path, and os.replace is atomic, so it can never read a half-written
         file.
         """
-        payload = {"case_id": str(case_id), "ts": time.time()}
+        payload = {"case_id": case_id, "ts": time.time()}
         tmp_path = self.request_path.with_suffix(".tmp")
         try:
             self.workspace_dir.mkdir(parents=True, exist_ok=True)
@@ -272,7 +286,7 @@ def register_uri_scheme() -> bool:
 
         base = rf"Software\Classes\{URI_SCHEME}"
         with winreg.CreateKey(winreg.HKEY_CURRENT_USER, base) as key:
-            winreg.SetValueEx(key, None, 0, winreg.REG_SZ, "URL:Support-Cockpit Protocol")
+            winreg.SetValueEx(key, None, 0, winreg.REG_SZ, PROTOCOL_HANDLER_DESCRIPTION)
             winreg.SetValueEx(key, "URL Protocol", 0, winreg.REG_SZ, "")
         with winreg.CreateKey(winreg.HKEY_CURRENT_USER, rf"{base}\shell\open\command") as key:
             winreg.SetValueEx(key, None, 0, winreg.REG_SZ, command)

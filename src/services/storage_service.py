@@ -10,6 +10,17 @@ from collections.abc import Callable
 from datetime import datetime, date
 
 from config import AppConfig
+from constants import (
+    DAYS_PER_MONTH,
+    DAYS_PER_WEEK,
+    DEBOUNCE_DELAY_STORAGE_SAVE,
+    DEFAULT_AUTO_ARCHIVE_THRESHOLD_DAYS,
+    JSON_INDENT,
+    LOG_BACKUP_COUNT,
+    LOG_MAX_BYTES,
+    REGEX_CASES_BACKUP,
+    TIMEOUT_STORAGE_WRITE_COND,
+)
 from models.case import Case
 from models.customer import Customer
 from models.profile import UserProfile, Colleague, BackupSettings
@@ -40,7 +51,7 @@ def setup_logging(log_path: Path) -> None:
     logger.setLevel(logging.INFO)
     if not logger.handlers:
         handler = RotatingFileHandler(
-            log_path, maxBytes=5_000_000, backupCount=3, encoding="utf-8"
+            log_path, maxBytes=LOG_MAX_BYTES, backupCount=LOG_BACKUP_COUNT, encoding="utf-8"
         )
         formatter = logging.Formatter(
             "%(asctime)s [%(levelname)s] %(name)s - %(message)s"
@@ -55,7 +66,7 @@ def atomic_save_json(target_path: Path, data: Any) -> None:
     temp_path = target_path.with_name(f"{target_path.name}.tmp.json")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+            json.dump(data, f, indent=JSON_INDENT, ensure_ascii=False)
         temp_path.replace(target_path)
     except Exception as e:
         logger.error(f"Failed atomic save to {target_path}: {e}")
@@ -132,7 +143,7 @@ class DebouncedSaver:
         self._active_writes: set[Path] = set()
         self._write_cond = threading.Condition(self._lock)
 
-    def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = 0.15):
+    def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = DEBOUNCE_DELAY_STORAGE_SAVE):
         with self._lock:
             self._data[target_path] = data_or_producer
             if target_path in self._timers:
@@ -178,7 +189,7 @@ class DebouncedSaver:
 
         with self._lock:
             while self._active_writes:
-                self._write_cond.wait(timeout=0.5)
+                self._write_cond.wait(timeout=TIMEOUT_STORAGE_WRITE_COND)
 
 
 class StorageService:
@@ -313,7 +324,7 @@ class StorageService:
         logger.info(f"Archived case {case_id}")
         return True
 
-    def auto_archive_completed_cases(self, threshold_days: int = 30) -> int:
+    def auto_archive_completed_cases(self, threshold_days: int = DEFAULT_AUTO_ARCHIVE_THRESHOLD_DAYS) -> int:
         """Automatically archives cases completed >= threshold_days ago."""
         cases = self.load_cases()
         archive = self.load_archive()
@@ -377,7 +388,7 @@ class StorageService:
                 logger.warning(f"Could not load backup settings, using defaults: {e}")
                 settings = BackupSettings()
 
-        pattern = re.compile(r"^cases_(\d{4}-\d{2}-\d{2})\.json$")
+        pattern = re.compile(REGEX_CASES_BACKUP)
         backup_files: list[tuple[Path, date]] = []
 
         for p in backups_dir.iterdir():
@@ -404,8 +415,8 @@ class StorageService:
         weekly_weeks = max(0, settings.weekly_weeks)
         monthly_months = max(0, settings.monthly_months)
 
-        weekly_cutoff_days = max(daily_days, weekly_weeks * 7)
-        monthly_cutoff_days = max(weekly_cutoff_days, monthly_months * 30)
+        weekly_cutoff_days = max(daily_days, weekly_weeks * DAYS_PER_WEEK)
+        monthly_cutoff_days = max(weekly_cutoff_days, monthly_months * DAYS_PER_MONTH)
 
         # Unconditional safety: keep the single newest backup
         newest_file, _ = backup_files[-1]

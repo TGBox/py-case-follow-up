@@ -3,6 +3,28 @@ from typing import Any, Literal, cast
 import tkinter as tk
 import customtkinter as ctk
 
+from constants import (
+    COLOR_FALLBACK_TEXT_BG,
+    COLOR_SEARCH_HIGHLIGHT,
+    DEFAULT_ELLIPSIS,
+    DEFAULT_FONT_FAMILY_FALLBACK,
+    DEFAULT_FONT_SIZE_FALLBACK,
+    DEFAULT_POPUP_DISPLAY_TARGET,
+    DEFAULT_TEXT_WRAP_MAX_LINES,
+    DEFAULT_TEXT_WRAP_WIDTH,
+    FALLBACK_CHAR_PIXEL_WIDTH,
+    HIGHLIGHT_LABEL_MAX_CHARS,
+    HIGHLIGHT_LABEL_MAX_LINES,
+    MIN_WINDOW_VISIBLE_DIM,
+    MINIMIZED_WINDOW_COORD_THRESHOLD,
+    MOUSEWHEEL_DELTA_UNIT,
+    SCROLLBAR_CHECK_DELAYS_MS,
+    SCROLLBAR_HYSTERESIS_PX,
+    SCROLLBAR_MAX_FLIPS,
+    WINDOW_CENTER_FALLBACK_HEIGHT,
+    WINDOW_CENTER_FALLBACK_WIDTH,
+)
+
 
 def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
@@ -45,8 +67,8 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     # that keeps the idle queue full, so update_idletasks() never returns and the
     # app (or a test calling it) freezes. Two brakes: a dead band around the
     # decision, and a hard cap on how often one frame may flip.
-    _HYSTERESIS_PX = 24
-    _MAX_FLIPS = 12
+    _HYSTERESIS_PX = SCROLLBAR_HYSTERESIS_PX
+    _MAX_FLIPS = SCROLLBAR_MAX_FLIPS
     _flips = 0
 
     def update_scrollbar_visibility(*_args):
@@ -135,9 +157,8 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     scroll_frame.bind("<Configure>", update_scrollbar_visibility, add="+")
     scroll_frame.bind("<Map>", update_scrollbar_visibility, add="+")
     try:
-        scroll_frame.after(50, update_scrollbar_visibility)
-        scroll_frame.after(150, update_scrollbar_visibility)
-        scroll_frame.after(350, update_scrollbar_visibility)
+        for delay in SCROLLBAR_CHECK_DELAYS_MS:
+            scroll_frame.after(delay, update_scrollbar_visibility)
     except Exception:
         pass
 
@@ -337,14 +358,14 @@ def get_app_monitor_bounds(window: ctk.CTk | ctk.CTkToplevel) -> tuple[int, int,
     parent_w = top_app.winfo_width()
     parent_h = top_app.winfo_height()
 
-    if (parent_w <= 50 or parent_h <= 50 or parent_x <= -32000 or parent_y <= -32000) and last_geom:
+    if (parent_w <= MIN_WINDOW_VISIBLE_DIM or parent_h <= MIN_WINDOW_VISIBLE_DIM or parent_x <= MINIMIZED_WINDOW_COORD_THRESHOLD or parent_y <= MINIMIZED_WINDOW_COORD_THRESHOLD) and last_geom:
         parent_x, parent_y, parent_w, parent_h = last_geom
 
     # Fallback to screen dimensions if window coordinates are invalid
     screen_w = top_app.winfo_screenwidth()
     screen_h = top_app.winfo_screenheight()
 
-    if parent_w <= 50 or parent_h <= 50:
+    if parent_w <= MIN_WINDOW_VISIBLE_DIM or parent_h <= MIN_WINDOW_VISIBLE_DIM:
         return 0, 0, screen_w, screen_h
 
     return parent_x, parent_y, parent_w, parent_h
@@ -364,16 +385,16 @@ def center_window(window: ctk.CTk | ctk.CTkToplevel, width: int | None = None, h
     h = height if height is not None else window.winfo_height()
 
     if w <= 1 or h <= 1:
-        w = width or 800
-        h = height or 600
+        w = width or WINDOW_CENTER_FALLBACK_WIDTH
+        h = height or WINDOW_CENTER_FALLBACK_HEIGHT
 
     top_app = get_main_app_window(window)
-    target_setting = "APP_SCREEN"
+    target_setting = DEFAULT_POPUP_DISPLAY_TARGET
     # .profile is a custom attribute only the real app root (SupportCockpitApp)
     # has; top_app is typed generically as CTk | CTkToplevel, hence the
     # hasattr() guards.
     if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):  # pyright: ignore[reportAttributeAccessIssue]
-        target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")  # pyright: ignore[reportAttributeAccessIssue]
+        target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", DEFAULT_POPUP_DISPLAY_TARGET)  # pyright: ignore[reportAttributeAccessIssue]
 
     if target_setting == "APP_SCREEN":
         bx, by, bw, bh = get_app_monitor_bounds(window)
@@ -452,7 +473,7 @@ def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkSc
     def _scroll_canvas(delta: int):
         try:
             if delta != 0:
-                canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+                canvas.yview_scroll(int(-1 * (delta / MOUSEWHEEL_DELTA_UNIT)), "units")
         except Exception:
             pass
 
@@ -547,15 +568,15 @@ def _get_measure_func(font: Any) -> Callable:
         tk_f = tkfont.Font(font=font)
         return tk_f.measure
     except Exception:
-        return lambda s: len(s) * 7
+        return lambda s: len(s) * FALLBACK_CHAR_PIXEL_WIDTH
 
 
 def wrap_and_truncate_text(
     text: str,
     font: Any = None,
-    max_width: int = 300,
-    max_lines: int = 2,
-    ellipsis: str = "...",
+    max_width: int = DEFAULT_TEXT_WRAP_WIDTH,
+    max_lines: int = DEFAULT_TEXT_WRAP_MAX_LINES,
+    ellipsis: str = DEFAULT_ELLIPSIS,
 ) -> tuple[str, bool]:
     """Wraps text into at most `max_lines` lines matching `max_width` pixels.
 
@@ -573,7 +594,7 @@ def wrap_and_truncate_text(
         return "", False
 
     if max_width <= 0:
-        max_width = 300
+        max_width = DEFAULT_TEXT_WRAP_WIDTH
 
     # If the entire normalized text fits in a single line
     if measure(norm_text) <= max_width:
@@ -716,13 +737,13 @@ def create_highlighted_label(
     font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont,
     text_color: str | tuple[str, str],
     bg_color: str | tuple[str, str],
-    highlight_color: str | tuple[str, str] = ("#D97706", "#F59E0B"),
+    highlight_color: str | tuple[str, str] = COLOR_SEARCH_HIGHLIGHT,
     highlight_font: tuple[str, int] | tuple[str, int, str] | ctk.CTkFont | None = None,
     wrap: Literal["none", "char", "word"] = "word",
     on_click: Callable[[Any], Any] | None = None,
     scroll_frame: ctk.CTkScrollableFrame | None = None,
-    max_height_chars: int = 35,
-    max_display_lines: int = 6,
+    max_height_chars: int = HIGHLIGHT_LABEL_MAX_CHARS,
+    max_display_lines: int = HIGHLIGHT_LABEL_MAX_LINES,
 ) -> tk.Text:
     """Creates a seamless, borderless tk.Text widget with highlighted query occurrences.
 
@@ -754,7 +775,7 @@ def create_highlighted_label(
                 break
             node = getattr(node, "master", None)
         if res_bg == "transparent":
-            res_bg = "#2b2b2b" if mode == "dark" else "#ebebeb"
+            res_bg = COLOR_FALLBACK_TEXT_BG[1] if mode == "dark" else COLOR_FALLBACK_TEXT_BG[0]
     res_text = _resolve(text_color)
     res_hl = _resolve(highlight_color)
 
@@ -800,8 +821,8 @@ def create_highlighted_label(
     if highlight_font is None:
         if isinstance(font, ctk.CTkFont):
             font_any: Any = font
-            family = font_any.cget("family") if hasattr(font_any, "cget") else getattr(font_any, "_family", "Segoe UI")
-            size = font_any.cget("size") if hasattr(font_any, "cget") else getattr(font_any, "_size", 11)
+            family = font_any.cget("family") if hasattr(font_any, "cget") else getattr(font_any, "_family", DEFAULT_FONT_FAMILY_FALLBACK)
+            size = font_any.cget("size") if hasattr(font_any, "cget") else getattr(font_any, "_size", DEFAULT_FONT_SIZE_FALLBACK)
             hl_f: Any = ctk.CTkFont(family=family, size=size, weight="bold")
         elif isinstance(font, tuple) and len(font) >= 2:
             hl_f = (font[0], font[1], "bold")

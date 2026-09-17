@@ -18,8 +18,8 @@ from constants import (
     DEFAULT_DEPARTMENT,
     DEFAULT_SIGNATURE_FILENAME,
     DEFAULT_USER_COLOR,
+    ENTRY_WIDTH_COMPACT,
     ENTRY_WIDTH_MD,
-    ENTRY_WIDTH_XL,
     FILE_TYPES_SIGNATURE_EXPORT,
     FILE_TYPES_SIGNATURE_IMPORT,
     FONT_SIZE_SM,
@@ -29,6 +29,7 @@ from constants import (
     PAD_XS,
     PAD_SM,
     PAD_MD,
+    PROFILE_TAB_FIELD_WIDTH,
     USER_COLOR_PRESETS,
 )
 from models.profile import UserInfo, UserProfile
@@ -122,7 +123,7 @@ class UserSettingsTabMixin:
 
         # Row 4: Name Entry (Col 0) | Abteilung Entry (Col 1)
         self.user_name_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=ENTRY_WIDTH_MD),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.name_placeholder", "Ihr Name"), width=ENTRY_WIDTH_COMPACT),
             "profile.name_placeholder",
             "Ihr Name",
             attr="placeholder_text",
@@ -131,7 +132,7 @@ class UserSettingsTabMixin:
         self.user_name_entry.grid(row=4, column=0, sticky="ew", padx=(PAD_NONE, PAD_SM), pady=(PAD_NONE, PAD_SM))
 
         self.user_dept_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Technik"), width=ENTRY_WIDTH_MD),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.dept_placeholder", "z. B. Support, Technik"), width=ENTRY_WIDTH_COMPACT),
             "profile.dept_placeholder",
             "z. B. Support, Technik",
             attr="placeholder_text",
@@ -156,7 +157,7 @@ class UserSettingsTabMixin:
 
         # Row 6: Durchwahl Entry (Col 0) | Mobiltelefon Entry (Col 1)
         self.user_ext_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=ENTRY_WIDTH_MD),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.ext_placeholder", "z.B. 4012"), width=ENTRY_WIDTH_COMPACT),
             "profile.ext_placeholder",
             "z.B. 4012",
             attr="placeholder_text",
@@ -165,7 +166,7 @@ class UserSettingsTabMixin:
         self.user_ext_entry.grid(row=6, column=0, sticky="ew", padx=(PAD_NONE, PAD_SM), pady=(PAD_NONE, PAD_SM))
 
         self.user_mobile_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=ENTRY_WIDTH_MD),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.mobile_placeholder", "0170 / 1234567"), width=ENTRY_WIDTH_COMPACT),
             "profile.mobile_placeholder",
             "0170 / 1234567",
             attr="placeholder_text",
@@ -182,7 +183,7 @@ class UserSettingsTabMixin:
         self.user_email_lbl.grid(row=7, column=0, columnspan=2, sticky="w", pady=(PAD_XS, PAD_XS))
 
         self.user_email_entry = self.register_i18n(
-            ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=ENTRY_WIDTH_XL),
+            ctk.CTkEntry(left_col, placeholder_text=tr("profile.email_placeholder", "beispiel@support.de"), width=PROFILE_TAB_FIELD_WIDTH),
             "profile.email_placeholder",
             "beispiel@support.de",
             attr="placeholder_text",
@@ -200,7 +201,7 @@ class UserSettingsTabMixin:
 
         self.user_sig_txt = ctk.CTkTextbox(
             left_col,
-            width=ENTRY_WIDTH_XL,
+            width=PROFILE_TAB_FIELD_WIDTH,
             height=52,
             wrap="word",
             corner_radius=CORNER_RADIUS_ENTRY,
@@ -268,7 +269,7 @@ class UserSettingsTabMixin:
                 command=self.on_open_p2p_sync_dialog,
                 fg_color=COLOR_PRIMARY,
                 hover_color=COLOR_PRIMARY_HOVER,
-                width=ENTRY_WIDTH_MD,
+                width=ENTRY_WIDTH_COMPACT,
             ),
             "profile.btn_open_p2p_sync",
             "🔄 P2P-Sync öffnen...",
@@ -281,7 +282,7 @@ class UserSettingsTabMixin:
                 text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
                 text_color=("gray30", "gray70"),
-                wraplength=ENTRY_WIDTH_MD,
+                wraplength=ENTRY_WIDTH_COMPACT,
                 justify="left",
             ),
             "profile.p2p_sync_desc",

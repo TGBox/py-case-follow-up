@@ -6,7 +6,7 @@ from ui.dialogs.base_dialog import BaseDialog
 from services.i18n_service import tr
 from constants import (
     BTN_WIDTH_MD,
-    BTN_WIDTH_SM,
+    BTN_WIDTH_RECORDER,
     COLOR_DANGER,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
@@ -186,7 +186,7 @@ class ShortcutsSettingsTabMixin:
                 ctk.CTkButton(
                     row,
                     text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                    width=BTN_WIDTH_SM,
+                    width=BTN_WIDTH_RECORDER,
                     fg_color=COLOR_MUTED_GRAY_FG,
                     hover_color=COLOR_MUTED_GRAY_HOVER,
                     text_color="white",
@@ -234,7 +234,7 @@ class ShortcutsSettingsTabMixin:
                     ctk.CTkButton(
                         s_row,
                         text=tr("hotkey_recorder.button", HOTKEY_RECORDER_BUTTON),
-                        width=BTN_WIDTH_SM,
+                        width=BTN_WIDTH_RECORDER,
                         fg_color=COLOR_MUTED_GRAY_FG,
                         hover_color=COLOR_MUTED_GRAY_HOVER,
                         text_color="white",

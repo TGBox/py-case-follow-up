@@ -1,8 +1,64 @@
+import re
 import customtkinter as ctk
 
+from constants import (
+    BULLET_PREFIX_WIDTH,
+    COLOR_ACCENT_HEADING,
+    COLOR_BULLET,
+    COLOR_HELP_NAV_ACTIVE,
+    COLOR_HELP_NAV_HOVER,
+    COLOR_HELP_NAV_INACTIVE,
+    COLOR_MUTED_LABEL,
+    COLOR_SEPARATOR,
+    COLOR_SNIPPET_PREVIEW_TEXT,
+    COLOR_TABLE_BG,
+    COLOR_TABLE_HDR_BG,
+    COLOR_TABLE_ROW_ALT,
+    COLOR_TABLE_ROW_BG,
+    COLOR_TEXT_PRIMARY,
+    COLOR_USER_BTN_TEXT,
+    CORNER_RADIUS_MD,
+    CORNER_RADIUS_NONE,
+    CORNER_RADIUS_SM,
+    CORNER_RADIUS_XS,
+    CURSOR_HAND,
+    DEBOUNCE_KEY_HELP_SEARCH,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_HELP,
+    DIALOG_TITLES,
+    ENTRY_WIDTH_LG,
+    FONT_SIZE_BODY,
+    FONT_SIZE_CONFIRM,
+    FONT_SIZE_H3,
+    FONT_SIZE_HELP_TITLE,
+    FONT_SIZE_SM,
+    FONT_SIZE_TITLE_SM,
+    FONT_WEIGHT_BOLD,
+    FONT_WEIGHT_NORMAL,
+    HEIGHT_HELP_TOP_BAR,
+    HEIGHT_HR,
+    HELP_BULLET_WRAP_LEN,
+    HELP_NAV_SIDEBAR_WIDTH,
+    HELP_PARA_WRAP_LEN,
+    HELP_SNIPPET_POST_LEN,
+    HELP_SNIPPET_PRE_LEN,
+    PAD_2XL,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_TINY,
+    PAD_XL,
+    PAD_XS,
+    SEARCH_DEBOUNCE_MS,
+)
 from ui.dialogs.base_dialog import BaseDialog
-from constants import DIALOG_DIMENSIONS
-from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
+from utils.ui_utils import (
+    bind_mouse_wheel_to_canvas,
+    create_highlighted_label,
+    debounce,
+)
 
 
 # Article order for the navigation list. The texts themselves live in
@@ -85,16 +141,13 @@ HELP_ARTICLES = get_help_articles()
 class HelpDialog(BaseDialog):
     def __init__(self, parent):
         super().__init__(parent)
-        from services.i18n_service import tr
-
         w, h = DIALOG_DIMENSIONS["help"]
         self.setup_window(
             parent,
-            tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"),
+            DIALOG_TITLES["help"],
             (w, h),
-            min_size=(960, 600),
-
-            title_factory=lambda: tr("dialog_titles.help", "📖 Handbuch & Anwendungsdokumentation"),
+            min_size=DIALOG_MIN_SIZE_HELP,
+            title_factory=lambda: DIALOG_TITLES["help"],
         )
 
         # Make modal window
@@ -135,39 +188,39 @@ class HelpDialog(BaseDialog):
         from services.i18n_service import tr
 
         # Main Layout: Top search bar, Left navigation list, Right detail view
-        top_bar = ctk.CTkFrame(self, height=50, corner_radius=0)
-        top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
+        top_bar = ctk.CTkFrame(self, height=HEIGHT_HELP_TOP_BAR, corner_radius=CORNER_RADIUS_NONE)
+        top_bar.pack(fill="x", side="top", padx=PAD_MD + PAD_XS, pady=(PAD_MD + PAD_XS, PAD_CONTAINER))
 
-        self.header_lbl = self.register_i18n(ctk.CTkLabel(top_bar, text=tr("help_dialog.header", "📖 Handbuch & Hilfe"), font=ctk.CTkFont(size=16, weight="bold")), "help_dialog.header", "📖 Handbuch & Hilfe")
-        self.header_lbl.pack(side="left", padx=10)
+        self.header_lbl = self.register_i18n(ctk.CTkLabel(top_bar, text=tr("help_dialog.header", "📖 Handbuch & Hilfe"), font=ctk.CTkFont(size=FONT_SIZE_TITLE_SM, weight=FONT_WEIGHT_BOLD)), "help_dialog.header", "📖 Handbuch & Hilfe")
+        self.header_lbl.pack(side="left", padx=PAD_MD + PAD_XS)
 
-        self.search_entry = self.register_i18n(ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=320), "help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen...", attr="placeholder_text")
-        self.search_entry.pack(side="right", padx=10)
+        self.search_entry = self.register_i18n(ctk.CTkEntry(top_bar, placeholder_text=tr("help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen..."), width=ENTRY_WIDTH_LG), "help_dialog.search_placeholder", "🔍 Themen & Stichworte suchen...", attr="placeholder_text")
+        self.search_entry.pack(side="right", padx=PAD_MD + PAD_XS)
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
         body_frame = ctk.CTkFrame(self, fg_color="transparent")
-        body_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+        body_frame.pack(fill="both", expand=True, padx=PAD_MD + PAD_XS, pady=(PAD_CONTAINER, PAD_MD + PAD_XS))
 
         # Left Sidebar (Article list)
-        left_frame = ctk.CTkFrame(body_frame, width=280)
-        left_frame.pack(side="left", fill="y", padx=(0, 5), pady=0)
+        left_frame = ctk.CTkFrame(body_frame, width=HELP_NAV_SIDEBAR_WIDTH)
+        left_frame.pack(side="left", fill="y", padx=(PAD_NONE, PAD_CONTAINER), pady=PAD_NONE)
         left_frame.pack_propagate(False)
 
-        self.nav_title_lbl = self.register_i18n(ctk.CTkLabel(left_frame, text=tr("help_dialog.nav_title", "Themenübersicht"), font=ctk.CTkFont(size=13, weight="bold")), "help_dialog.nav_title", "Themenübersicht")
-        self.nav_title_lbl.pack(anchor="w", padx=10, pady=(10, 5))
+        self.nav_title_lbl = self.register_i18n(ctk.CTkLabel(left_frame, text=tr("help_dialog.nav_title", "Themenübersicht"), font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD)), "help_dialog.nav_title", "Themenübersicht")
+        self.nav_title_lbl.pack(anchor="w", padx=PAD_MD + PAD_XS, pady=(PAD_MD + PAD_XS, PAD_CONTAINER))
 
         self.nav_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
-        self.nav_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        self.nav_scroll.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
 
         # Right Detail View (Article Content)
         right_frame = ctk.CTkFrame(body_frame)
-        right_frame.pack(side="right", fill="both", expand=True, padx=(5, 0), pady=0)
+        right_frame.pack(side="right", fill="both", expand=True, padx=(PAD_CONTAINER, PAD_NONE), pady=PAD_NONE)
 
-        self.article_title_lbl = ctk.CTkLabel(right_frame, text="", font=ctk.CTkFont(size=18, weight="bold"), anchor="w")
-        self.article_title_lbl.pack(fill="x", padx=15, pady=(15, 5))
+        self.article_title_lbl = ctk.CTkLabel(right_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_HELP_TITLE, weight=FONT_WEIGHT_BOLD), anchor="w")
+        self.article_title_lbl.pack(fill="x", padx=PAD_XL - 1, pady=(PAD_XL - 1, PAD_CONTAINER))
 
         self.content_scroll = ctk.CTkScrollableFrame(right_frame, fg_color="transparent")
-        self.content_scroll.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+        self.content_scroll.pack(fill="both", expand=True, padx=PAD_MD + PAD_XS, pady=(PAD_CONTAINER, PAD_MD + PAD_XS))
 
         self.render_nav_list()
 
@@ -178,7 +231,7 @@ class HelpDialog(BaseDialog):
             w.destroy()
 
         if not self.filtered_articles:
-            self.register_i18n(ctk.CTkLabel(self.nav_scroll, text=tr("help_dialog.no_topics", "Keine Themen gefunden."), text_color="gray"), "help_dialog.no_topics", "Keine Themen gefunden.").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.nav_scroll, text=tr("help_dialog.no_topics", "Keine Themen gefunden."), text_color=COLOR_MUTED_LABEL), "help_dialog.no_topics", "Keine Themen gefunden.").pack(pady=PAD_2XL)
             return
 
         active_id = self.active_article["id"] if self.active_article else None
@@ -187,7 +240,7 @@ class HelpDialog(BaseDialog):
 
         for art in self.filtered_articles:
             is_active = art["id"] == active_id
-            fg_color = ("gray75", "gray30") if is_active else ("gray85", "gray20")
+            fg_color = COLOR_HELP_NAV_ACTIVE if is_active else COLOR_HELP_NAV_INACTIVE
 
             if not query:
                 btn = ctk.CTkButton(
@@ -195,17 +248,17 @@ class HelpDialog(BaseDialog):
                     text=art["title"],
                     anchor="w",
                     fg_color=fg_color,
-                    hover_color=("gray70", "gray35"),
-                    text_color=("black", "white") if is_active else ("gray10", "gray90"),
+                    hover_color=COLOR_HELP_NAV_HOVER,
+                    text_color=COLOR_TEXT_PRIMARY if is_active else COLOR_USER_BTN_TEXT,
                     command=lambda a_id=art["id"]: self.select_article(a_id)
                 )
-                btn.pack(fill="x", pady=3, padx=2)
+                btn.pack(fill="x", pady=PAD_SM - 1, padx=PAD_XS)
             else:
-                card = ctk.CTkFrame(self.nav_scroll, fg_color=fg_color, corner_radius=6, cursor="hand2")
-                card.pack(fill="x", pady=3, padx=2)
+                card = ctk.CTkFrame(self.nav_scroll, fg_color=fg_color, corner_radius=CORNER_RADIUS_MD, cursor=CURSOR_HAND)
+                card.pack(fill="x", pady=PAD_SM - 1, padx=PAD_XS)
 
                 def on_enter(e, c=card):
-                    c.configure(fg_color=("gray70", "gray35"))
+                    c.configure(fg_color=COLOR_HELP_NAV_HOVER)
 
                 def on_leave(e, c=card, col=fg_color):
                     c.configure(fg_color=col)
@@ -226,19 +279,19 @@ class HelpDialog(BaseDialog):
                     card,
                     text=art["title"],
                     query=query,
-                    font=ctk.CTkFont(size=12, weight="bold" if is_active else "normal"),
-                    text_color=("black", "white") if is_active else ("gray10", "gray90"),
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD if is_active else FONT_WEIGHT_NORMAL),
+                    text_color=COLOR_TEXT_PRIMARY if is_active else COLOR_USER_BTN_TEXT,
                     bg_color=fg_color,
                     wrap="none",
                     on_click=on_click,
                     scroll_frame=self.nav_scroll,
                 )
-                title_lbl.pack(fill="x", padx=8, pady=(4, 2) if has_content_match else (6, 6))
+                title_lbl.pack(fill="x", padx=PAD_MD, pady=(PAD_SM, PAD_XS) if has_content_match else (CORNER_RADIUS_MD, CORNER_RADIUS_MD))
 
                 if has_content_match:
                     raw_content = art.get("content", "")
-                    start = max(0, idx - 20)
-                    end = min(len(raw_content), idx + len(query) + 30)
+                    start = max(0, idx - HELP_SNIPPET_PRE_LEN)
+                    end = min(len(raw_content), idx + len(query) + HELP_SNIPPET_POST_LEN)
                     snippet = raw_content[start:end].replace("\n", " ").strip()
                     if start > 0:
                         snippet = f"...{snippet}"
@@ -249,16 +302,14 @@ class HelpDialog(BaseDialog):
                         card,
                         text=snippet,
                         query=query,
-                        font=ctk.CTkFont(size=11),
-                        text_color=("gray40", "gray70"),
+                        font=ctk.CTkFont(size=FONT_SIZE_SM),
+                        text_color=COLOR_SNIPPET_PREVIEW_TEXT,
                         bg_color=fg_color,
-                        # The snippet is ~50+ chars and the nav column is 280px
-                        # wide; wrap="none" clipped the tail with no indication.
                         wrap="word",
                         on_click=on_click,
                         scroll_frame=self.nav_scroll,
                     )
-                    snip_lbl.pack(fill="x", padx=8, pady=(0, 4))
+                    snip_lbl.pack(fill="x", padx=PAD_MD, pady=(PAD_NONE, PAD_SM))
 
                 bind_mouse_wheel_to_canvas(card, self.nav_scroll)
 
@@ -274,8 +325,6 @@ class HelpDialog(BaseDialog):
         self.render_nav_list()
 
     def render_markdown(self, markdown_text: str):
-        import re
-
         for w in self.content_scroll.winfo_children():
             w.destroy()
 
@@ -294,27 +343,27 @@ class HelpDialog(BaseDialog):
             if not table_rows:
                 return
 
-            table_frame = ctk.CTkFrame(self.content_scroll, fg_color=("gray85", "gray20"), corner_radius=6)
-            table_frame.pack(fill="x", padx=10, pady=8)
+            table_frame = ctk.CTkFrame(self.content_scroll, fg_color=COLOR_TABLE_BG, corner_radius=CORNER_RADIUS_MD)
+            table_frame.pack(fill="x", padx=PAD_MD + PAD_XS, pady=PAD_MD)
 
             header_cols = [clean_inline(c) for c in table_rows[0].strip("|").split("|")]
             data_rows = table_rows[2:] if len(table_rows) > 2 and "---" in table_rows[1] else table_rows[1:]
 
             # Header Frame
-            hdr_frame = ctk.CTkFrame(table_frame, fg_color=("gray70", "gray30"), corner_radius=4)
-            hdr_frame.pack(fill="x", padx=4, pady=(4, 2))
+            hdr_frame = ctk.CTkFrame(table_frame, fg_color=COLOR_TABLE_HDR_BG, corner_radius=CORNER_RADIUS_SM)
+            hdr_frame.pack(fill="x", padx=PAD_SM, pady=(PAD_SM, PAD_XS))
             for col_txt in header_cols:
-                ctk.CTkLabel(hdr_frame, text=col_txt.strip(), font=ctk.CTkFont(size=12, weight="bold"), anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=4)
+                ctk.CTkLabel(hdr_frame, text=col_txt.strip(), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD), anchor="w").pack(side="left", fill="x", expand=True, padx=PAD_MD, pady=PAD_SM)
 
             # Data Rows
             for r_idx, r_line in enumerate(data_rows):
                 r_cols = [clean_inline(c) for c in r_line.strip("|").split("|")]
-                r_bg = ("gray90", "gray22") if r_idx % 2 == 0 else ("gray85", "gray25")
-                row_frame = ctk.CTkFrame(table_frame, fg_color=r_bg, corner_radius=2)
-                row_frame.pack(fill="x", padx=4, pady=1)
+                r_bg = COLOR_TABLE_ROW_ALT if r_idx % 2 == 0 else COLOR_TABLE_ROW_BG
+                row_frame = ctk.CTkFrame(table_frame, fg_color=r_bg, corner_radius=CORNER_RADIUS_XS)
+                row_frame.pack(fill="x", padx=PAD_SM, pady=PAD_TINY)
 
                 for col_txt in r_cols:
-                    ctk.CTkLabel(row_frame, text=col_txt.strip(), font=ctk.CTkFont(size=11), anchor="w").pack(side="left", fill="x", expand=True, padx=8, pady=4)
+                    ctk.CTkLabel(row_frame, text=col_txt.strip(), font=ctk.CTkFont(size=FONT_SIZE_SM), anchor="w").pack(side="left", fill="x", expand=True, padx=PAD_MD, pady=PAD_SM)
 
             table_rows = []
             in_table = False
@@ -335,21 +384,21 @@ class HelpDialog(BaseDialog):
 
             # Horizontal rule
             if stripped in ("---", "***", "___"):
-                sep = ctk.CTkFrame(self.content_scroll, height=2, fg_color=("gray75", "gray35"))
-                sep.pack(fill="x", padx=10, pady=10)
+                sep = ctk.CTkFrame(self.content_scroll, height=HEIGHT_HR, fg_color=COLOR_SEPARATOR)
+                sep.pack(fill="x", padx=PAD_MD + PAD_XS, pady=PAD_MD + PAD_XS)
                 continue
 
             # Headings
             if stripped.startswith("### "):
                 txt = clean_inline(stripped[4:])
-                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=15, weight="bold"), text_color=("dodgerblue", "#4dabf7"), anchor="w")
-                lbl.pack(fill="x", padx=10, pady=(12, 4))
+                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=FONT_SIZE_H3, weight=FONT_WEIGHT_BOLD), text_color=COLOR_ACCENT_HEADING, anchor="w")
+                lbl.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_LG, PAD_SM))
                 continue
 
             if stripped.startswith("#### "):
                 txt = clean_inline(stripped[5:])
-                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=13, weight="bold"), text_color=("gray10", "gray90"), anchor="w")
-                lbl.pack(fill="x", padx=10, pady=(8, 2))
+                lbl = ctk.CTkLabel(self.content_scroll, text=txt, font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD), text_color=COLOR_USER_BTN_TEXT, anchor="w")
+                lbl.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD, PAD_XS))
                 continue
 
             # Lists (unordered or ordered)
@@ -362,28 +411,26 @@ class HelpDialog(BaseDialog):
                 clean_body = clean_inline(raw_body)
 
                 row = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
-                row.pack(fill="x", padx=15, pady=2)
+                row.pack(fill="x", padx=PAD_XL - 1, pady=PAD_XS)
 
-                bullet_lbl = ctk.CTkLabel(row, text=prefix, font=ctk.CTkFont(size=12, weight="bold"), text_color=("dodgerblue", "cyan"), anchor="nw", width=20)
+                bullet_lbl = ctk.CTkLabel(row, text=prefix, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD), text_color=COLOR_BULLET, anchor="nw", width=BULLET_PREFIX_WIDTH)
                 bullet_lbl.pack(side="left", anchor="nw")
 
-                txt_lbl = ctk.CTkLabel(row, text=clean_body, font=ctk.CTkFont(size=12), anchor="w", justify="left", wraplength=560)
+                txt_lbl = ctk.CTkLabel(row, text=clean_body, font=ctk.CTkFont(size=FONT_SIZE_BODY), anchor="w", justify="left", wraplength=HELP_BULLET_WRAP_LEN)
                 txt_lbl.pack(side="left", fill="x", expand=True)
                 continue
 
             # Standard Paragraph
             clean_para = clean_inline(stripped)
-            para_lbl = ctk.CTkLabel(self.content_scroll, text=clean_para, font=ctk.CTkFont(size=12), anchor="w", justify="left", wraplength=580)
-            para_lbl.pack(fill="x", padx=10, pady=3)
+            para_lbl = ctk.CTkLabel(self.content_scroll, text=clean_para, font=ctk.CTkFont(size=FONT_SIZE_BODY), anchor="w", justify="left", wraplength=HELP_PARA_WRAP_LEN)
+            para_lbl.pack(fill="x", padx=PAD_MD + PAD_XS, pady=PAD_SM - 1)
 
         if in_table:
             flush_table()
 
     def _on_search_keyrelease(self, event=None):
         """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern."""
-        from constants import SEARCH_DEBOUNCE_MS
-        from utils.ui_utils import debounce
-        debounce(self, "help_search", SEARCH_DEBOUNCE_MS, self.on_search_changed)
+        debounce(self, DEBOUNCE_KEY_HELP_SEARCH, SEARCH_DEBOUNCE_MS, self.on_search_changed)
 
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()
@@ -400,3 +447,4 @@ class HelpDialog(BaseDialog):
             self.select_article(self.active_article["id"])
 
         self.render_nav_list()
+

@@ -624,7 +624,10 @@
     "zip_lbl": "Postnr:",
     "zip_placeholder": "12345",
     "edit_practice": "Redigera mottagning: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Namn (A-Ö)",
+    "sort_id": "Mottagningsnummer / ID",
+    "sort_contact": "Tid sedan senaste kontakt"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -1360,7 +1363,9 @@
     "title_save_sig": "Spara signatur till fil",
     "title_load_sig": "Läs in signatur från fil",
     "sig_saved_success": "✅ Signaturen har sparats!",
+    "sig_saved_error": "⚠ Fel vid sparande av signatur: {error}",
     "sig_loaded_success": "✅ Signaturen har lästs in!",
+    "sig_loaded_error": "⚠ Fel vid inläsning av signatur: {error}",
     "status_saved": "✔ Inställningar & sökvägar sparade!",
     "tab_ai": "🤖 AI & NLP",
     "tab_backup": "💾 Säkerhetskopiering",
@@ -1443,7 +1448,9 @@
     "no_snippets": "Inga textavsnitt tillgängliga.",
     "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px",
     "zip_backup_success": "✅ ZIP-säkerhetskopia skapad: {file_count} filer ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade."
+    "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade.",
+    "shortcut_conflict": "⚠ Genvägskonflikt: Följande snabbtangenter är tilldelade flera gånger: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Genvägskonflikt: Snabbtangenter får inte tilldelas flera gånger!"
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -1501,7 +1508,10 @@
     "new_schema_title": "🆕 Skapa nytt formulär (Schema)",
     "schema_id_lbl": "Schema-ID (valfritt):",
     "select_form_lbl": "Välj formulär:",
-    "toggle_required": "Obligatorisk +/-"
+    "toggle_required": "Obligatorisk +/-",
+    "badge_required": "[OBLIGATORISK]",
+    "badge_optional": "[VALFRITT]",
+    "no_form": "Inget formulär"
   },
   "schemas": {
     "bug_report": {
@@ -1763,7 +1773,10 @@
     "name_placeholder": "t.ex. GitLab / Utvecklarärende",
     "new_title": "📄 Skapa ny exportmall",
     "req_fields_lbl": "Obligatoriska fält före export:",
-    "target_type_lbl": "Målåtgärd / Typ:"
+    "target_type_lbl": "Målåtgärd / Typ:",
+    "no_desc": "Ingen beskrivning",
+    "no_req_fields": "Inga obligatoriska fält",
+    "req_fields_summary": "Obligatoriska fält: {fields}"
   },
   "timeline": {
     "case_completed": "Ärendet markerat som klart.",
@@ -1780,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Uppföljning förfallen ({count})",
     "reminder_title": "Påminnelse"
+  },
+  "tray": {
+    "open": "Öppna",
+    "quit": "Avsluta",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} förfallen uppföljning(ar)"
   },
   "ui_buttons": {
     "apply": "Verkställ",
@@ -1892,5 +1911,10 @@
     "name": "Namn (A-Ö)",
     "id": "Mottagningsnummer / ID",
     "contact": "Tid sedan senaste kontakt"
+  },
+  "theme": {
+    "dark": "Mörk",
+    "light": "Ljus",
+    "system": "System"
   }
 }

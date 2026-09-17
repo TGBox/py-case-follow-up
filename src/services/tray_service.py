@@ -1,19 +1,38 @@
 """System Tray service for minimize-to-tray with notification badge counter."""
 
+from collections.abc import Callable
+import logging
 import sys
 import threading
-import logging
-from collections.abc import Callable
 
 from PIL import Image, ImageDraw, ImageFont  # type: ignore
-
 import pystray  # type: ignore
 
-logger = logging.getLogger("SupportCockpit")
+from constants import (
+    APP_ID_NOTIFICATION,
+    APP_NAME,
+    NOTIFICATION_DURATION_SHORT,
+    TRAY_BADGE_COLOR,
+    TRAY_BADGE_FONT_NAME,
+    TRAY_BADGE_FONT_SIZE_LG,
+    TRAY_BADGE_FONT_SIZE_SM,
+    TRAY_BADGE_MAX_COUNT,
+    TRAY_BADGE_OFFSET,
+    TRAY_BADGE_OVERFLOW_TEXT,
+    TRAY_BADGE_RADIUS,
+    TRAY_BASE_RADIUS,
+    TRAY_BASE_RECT,
+    TRAY_BG_COLOR,
+    TRAY_CROSS_COLOR,
+    TRAY_CROSS_HBAR,
+    TRAY_CROSS_VBAR,
+    TRAY_ICON_SIZE,
+    TRAY_IMAGE_MODE,
+    TRAY_TRANSPARENT_PIXEL,
+)
+from services.i18n_service import tr
 
-# Icon dimensions
-_ICON_SIZE = 64
-_BADGE_RADIUS = 12
+logger = logging.getLogger("SupportCockpit")
 
 
 def _create_tray_icon_image(badge_count: int = 0) -> Image.Image:  # pyright: ignore[reportInvalidTypeForm]
@@ -28,30 +47,29 @@ def _create_tray_icon_image(badge_count: int = 0) -> Image.Image:  # pyright: ig
     The base icon is a medical-cross style icon matching the app's 🩺 theme.
     When badge_count > 0, a red circle with the count is drawn in the top-right corner.
     """
-    img = Image.new("RGBA", (_ICON_SIZE, _ICON_SIZE), (0, 0, 0, 0))
+    img = Image.new(TRAY_IMAGE_MODE, (TRAY_ICON_SIZE, TRAY_ICON_SIZE), TRAY_TRANSPARENT_PIXEL)
     draw = ImageDraw.Draw(img)
 
     # Base icon: rounded teal/green square with a white cross
-    bg_color = (38, 130, 130, 255)  # Teal
-    draw.rounded_rectangle([4, 4, 60, 60], radius=12, fill=bg_color)
+    draw.rounded_rectangle(TRAY_BASE_RECT, radius=TRAY_BASE_RADIUS, fill=TRAY_BG_COLOR)
 
     # White cross in the center
-    cross_color = (255, 255, 255, 255)
-    draw.rectangle([26, 14, 38, 50], fill=cross_color)  # vertical bar
-    draw.rectangle([14, 26, 50, 38], fill=cross_color)  # horizontal bar
+    draw.rectangle(TRAY_CROSS_VBAR, fill=TRAY_CROSS_COLOR)  # vertical bar
+    draw.rectangle(TRAY_CROSS_HBAR, fill=TRAY_CROSS_COLOR)  # horizontal bar
 
     # Badge overlay
     if badge_count > 0:
-        badge_x = _ICON_SIZE - _BADGE_RADIUS - 2
-        badge_y = _BADGE_RADIUS + 2
+        badge_x = TRAY_ICON_SIZE - TRAY_BADGE_RADIUS - TRAY_BADGE_OFFSET
+        badge_y = TRAY_BADGE_RADIUS + TRAY_BADGE_OFFSET
         draw.ellipse(
-            [badge_x - _BADGE_RADIUS, badge_y - _BADGE_RADIUS,
-             badge_x + _BADGE_RADIUS, badge_y + _BADGE_RADIUS],
-            fill=(220, 38, 38, 255),  # Red
+            [badge_x - TRAY_BADGE_RADIUS, badge_y - TRAY_BADGE_RADIUS,
+             badge_x + TRAY_BADGE_RADIUS, badge_y + TRAY_BADGE_RADIUS],
+            fill=TRAY_BADGE_COLOR,
         )
-        badge_text = str(badge_count) if badge_count <= 99 else "99+"
+        badge_text = str(badge_count) if badge_count <= TRAY_BADGE_MAX_COUNT else TRAY_BADGE_OVERFLOW_TEXT
         try:
-            font = ImageFont.truetype("arial.ttf", 13 if len(badge_text) <= 2 else 10)
+            font_size = TRAY_BADGE_FONT_SIZE_LG if len(badge_text) <= 2 else TRAY_BADGE_FONT_SIZE_SM
+            font = ImageFont.truetype(TRAY_BADGE_FONT_NAME, font_size)
         except OSError:
             font = ImageFont.load_default()
         bbox = draw.textbbox((0, 0), badge_text, font=font)
@@ -60,7 +78,7 @@ def _create_tray_icon_image(badge_count: int = 0) -> Image.Image:  # pyright: ig
         draw.text(
             (badge_x - tw // 2, badge_y - th // 2 - 1),
             badge_text,
-            fill=(255, 255, 255, 255),
+            fill=TRAY_CROSS_COLOR,
             font=font,
         )
 
@@ -92,14 +110,14 @@ class TrayService:
             return
 
         menu = pystray.Menu(
-            pystray.MenuItem("Öffnen", self._handle_restore, default=True),
+            pystray.MenuItem(tr("tray.open", "Öffnen"), self._handle_restore, default=True),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Beenden", self._handle_quit),
+            pystray.MenuItem(tr("tray.quit", "Beenden"), self._handle_quit),
         )
 
         image = _create_tray_icon_image(self._badge_count)
         self._icon = pystray.Icon(
-            name="SupportCockpit",
+            name=APP_NAME,
             icon=image,
             title=self._get_tooltip(),
             menu=menu,
@@ -135,9 +153,11 @@ class TrayService:
         """
         if self._icon and type(self._icon).__name__ == "DummyIcon":
             try:
-                self._icon.notify(message, title)  # pyright: ignore[reportAttributeAccessIssue]
-                logger.info(f"Mock tray notification recorded: {title}")
-                return True
+                notify_fn = getattr(self._icon, "notify", None)
+                if callable(notify_fn):
+                    notify_fn(message, title)
+                    logger.info(f"Mock tray notification recorded: {title}")
+                    return True
             except Exception:
                 pass
 
@@ -145,10 +165,10 @@ class TrayService:
             try:
                 from winotify import Notification  # type: ignore
                 toast = Notification(
-                    app_id="Support-Cockpit",
+                    app_id=APP_ID_NOTIFICATION,
                     title=title,
                     msg=message,
-                    duration="short",
+                    duration=NOTIFICATION_DURATION_SHORT,
                     **({"launch": launch} if launch else {}),
                 )
                 toast.show()
@@ -157,17 +177,17 @@ class TrayService:
             except Exception as e:
                 logger.debug(f"winotify toast failed: {e}")
 
-        if self._icon and hasattr(self._icon, "notify"):
-            try:
-                # notify() exists on pystray's real platform-specific Icon
-                # backend (win32/appindicator/xorg) at runtime, guarded here by
-                # hasattr(); pyright only resolves pystray's generic base Icon
-                # type, which doesn't declare it.
-                self._icon.notify(message, title)  # pyright: ignore[reportAttributeAccessIssue]
-                logger.info(f"Native tray notification sent via icon: {title}")
-                return True
-            except Exception as e:
-                logger.warning(f"Could not send native tray notification via icon: {e}")
+        if self._icon:
+            notify_fn = getattr(self._icon, "notify", None)
+            if callable(notify_fn):
+                try:
+                    # notify() exists on pystray's real platform-specific Icon
+                    # backend (win32/appindicator/xorg) at runtime.
+                    notify_fn(message, title)
+                    logger.info(f"Native tray notification sent via icon: {title}")
+                    return True
+                except Exception as e:
+                    logger.warning(f"Could not send native tray notification via icon: {e}")
 
         return False
 
@@ -184,8 +204,8 @@ class TrayService:
 
     def _get_tooltip(self) -> str:
         if self._badge_count > 0:
-            return f"Support-Cockpit — {self._badge_count} fällige Wiedervorlage(n)"
-        return "Support-Cockpit"
+            return tr("tray.tooltip_due", "Support-Cockpit — {count} fällige Wiedervorlage(n)", count=self._badge_count)
+        return tr("tray.tooltip_default", "Support-Cockpit")
 
     def _handle_restore(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_restore:
@@ -194,3 +214,4 @@ class TrayService:
     def _handle_quit(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_quit:
             self._on_quit()
+

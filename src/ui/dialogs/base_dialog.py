@@ -16,6 +16,8 @@ from typing import Any
 
 import customtkinter as ctk
 
+from constants import MAX_I18N_WIDGETS_REGISTRY
+
 logger = logging.getLogger("SupportCockpit")
 
 # Widget classes whose content counts as user input for the unsaved-changes guard.
@@ -134,7 +136,7 @@ class BaseDialog(ctk.CTkToplevel):
             registry = self._i18n_widgets = []
         # Rows in list views are destroyed and rebuilt constantly; drop dead
         # entries now and then so the registry cannot grow without bound.
-        if len(registry) > 400:
+        if len(registry) > MAX_I18N_WIDGETS_REGISTRY:
             self._prune_i18n_widgets()
             registry = self._i18n_widgets
         registry.append((widget, attr, key, default, fmt))
@@ -327,7 +329,7 @@ class BaseDialog(ctk.CTkToplevel):
             if key in baseline:
                 if value != baseline[key]:
                     return True
-            elif str(value).strip():
+            elif value.strip():
                 # A field that did not exist at snapshot time (e.g. a repeatable
                 # block the user added) and already carries content.
                 return True

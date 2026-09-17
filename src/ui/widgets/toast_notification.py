@@ -1,9 +1,37 @@
 import inspect
-import sys
 import logging
-import customtkinter as ctk
+import sys
 from collections.abc import Callable
-from constants import TOAST_DURATION_DEFAULT_MS
+import customtkinter as ctk
+
+from constants import (
+    BORDER_WIDTH_TOAST,
+    BTN_HEIGHT_LG,
+    BTN_WIDTH_ACTION_SM,
+    COLOR_TOAST_BG,
+    COLOR_TOAST_BORDER,
+    COLOR_TOAST_BTN_HOVER,
+    COLOR_TOAST_MSG,
+    CORNER_RADIUS_CARD,
+    DEFAULT_POPUP_DISPLAY_TARGET,
+    FONT_SIZE_BODY,
+    FONT_SIZE_CONFIRM,
+    FONT_SIZE_SM,
+    FONT_WEIGHT_BOLD,
+    PAD_LG,
+    PAD_MD,
+    PAD_XS,
+    SYSTEM_APP_ID,
+    TOAST_DURATION_DEFAULT_MS,
+    TOAST_HEIGHT,
+    TOAST_OFFSET_X,
+    TOAST_OFFSET_Y,
+    TOAST_WIDTH_ACTION,
+    TOAST_WIDTH_DEFAULT,
+    WINDOW_STATE_ICONIC,
+    WINOTIFY_DURATION_SHORT,
+)
+from services.i18n_service import tr
 
 logger = logging.getLogger("SupportCockpit")
 
@@ -21,7 +49,6 @@ class ToastNotification(ctk.CTkToplevel):
 
     def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None, launch_uri: str | None = None):
         super().__init__(parent)
-        from services.i18n_service import tr
         self.title(tr("toast.reminder_title", "Erinnerung"))
         self.on_open = on_open
         self.launch_uri = launch_uri
@@ -54,50 +81,50 @@ class ToastNotification(ctk.CTkToplevel):
 
         self.overrideredirect(True)
 
-        width = 420 if on_open else 360
-        height = 84
+        width = TOAST_WIDTH_ACTION if on_open else TOAST_WIDTH_DEFAULT
+        height = TOAST_HEIGHT
 
-        target_setting = "APP_SCREEN"
+        target_setting = DEFAULT_POPUP_DISPLAY_TARGET
         if hasattr(top_app, "profile") and hasattr(top_app.profile, "ui_settings"):
-            target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", "APP_SCREEN")
+            target_setting = getattr(top_app.profile.ui_settings, "popup_display_target", DEFAULT_POPUP_DISPLAY_TARGET)
 
-        if target_setting == "APP_SCREEN":
+        if target_setting == DEFAULT_POPUP_DISPLAY_TARGET:
             from utils.ui_utils import get_app_monitor_bounds
             bx, by, bw, bh = get_app_monitor_bounds(self)
-            x = max(0, bx + bw - width - 20)
-            y = max(0, by + bh - height - 60)
+            x = max(0, bx + bw - width - TOAST_OFFSET_X)
+            y = max(0, by + bh - height - TOAST_OFFSET_Y)
         else:
             screen_w = self.winfo_screenwidth()
             screen_h = self.winfo_screenheight()
-            x = screen_w - width - 20
-            y = screen_h - height - 60
+            x = screen_w - width - TOAST_OFFSET_X
+            y = screen_h - height - TOAST_OFFSET_Y
 
         self.geometry(f"{width}x{height}+{x}+{y}")
 
-        frame = ctk.CTkFrame(self, fg_color=("gray90", "gray20"), border_width=2, border_color="dodgerblue", corner_radius=8)
+        frame = ctk.CTkFrame(self, fg_color=COLOR_TOAST_BG, border_width=BORDER_WIDTH_TOAST, border_color=COLOR_TOAST_BORDER, corner_radius=CORNER_RADIUS_CARD)
         frame.pack(fill="both", expand=True)
 
         if on_open:
             btn_open = ctk.CTkButton(
                 frame,
                 text=tr("common.open", "👁 Öffnen"),
-                width=95,
-                height=32,
-                font=ctk.CTkFont(size=12, weight="bold"),
-                fg_color="dodgerblue",
-                hover_color="deepskyblue",
+                width=BTN_WIDTH_ACTION_SM,
+                height=BTN_HEIGHT_LG,
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                fg_color=COLOR_TOAST_BORDER,
+                hover_color=COLOR_TOAST_BTN_HOVER,
                 command=self.handle_open,
             )
-            btn_open.pack(side="right", padx=(6, 12), pady=12)
+            btn_open.pack(side="right", padx=(PAD_MD - PAD_XS, PAD_LG), pady=PAD_LG)
 
         content_frame = ctk.CTkFrame(frame, fg_color="transparent")
-        content_frame.pack(side="left", fill="both", expand=True, padx=(12, 6), pady=8)
+        content_frame.pack(side="left", fill="both", expand=True, padx=(PAD_LG, PAD_MD - PAD_XS), pady=PAD_MD)
 
-        lbl_title = ctk.CTkLabel(content_frame, text=title, font=ctk.CTkFont(size=13, weight="bold"), text_color="dodgerblue", anchor="w")
-        lbl_title.pack(anchor="w", pady=(0, 2))
+        lbl_title = ctk.CTkLabel(content_frame, text=title, font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD), text_color=COLOR_TOAST_BORDER, anchor="w")
+        lbl_title.pack(anchor="w", pady=(0, PAD_XS))
 
-        lbl_msg = ctk.CTkLabel(content_frame, text=message, font=ctk.CTkFont(size=11), text_color=("gray10", "white"), anchor="w")
-        lbl_msg.pack(anchor="w", pady=(0, 2))
+        lbl_msg = ctk.CTkLabel(content_frame, text=message, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TOAST_MSG, anchor="w")
+        lbl_msg.pack(anchor="w", pady=(0, PAD_XS))
 
         if on_open:
             try:
@@ -147,10 +174,10 @@ class ToastNotification(ctk.CTkToplevel):
         try:
             from winotify import Notification  # type: ignore
             toast = Notification(
-                app_id="Support-Cockpit",
+                app_id=SYSTEM_APP_ID,
                 title=title,
                 msg=message,
-                duration="short",
+                duration=WINOTIFY_DURATION_SHORT,
                 **({"launch": launch_uri} if launch_uri else {}),
             )
             toast.show()
@@ -191,7 +218,7 @@ class ToastNotification(ctk.CTkToplevel):
                     # declare it, hence the hasattr() guard above.
                     top.bring_to_foreground()  # pyright: ignore[reportAttributeAccessIssue]
                 elif top:
-                    if top.state() == "iconic" or not top.winfo_viewable():
+                    if top.state() == WINDOW_STATE_ICONIC or not top.winfo_viewable():
                         top.deiconify()
                     top.lift()
                     top.focus_force()
@@ -206,3 +233,4 @@ class ToastNotification(ctk.CTkToplevel):
             self.destroy()
         except Exception:
             pass
+

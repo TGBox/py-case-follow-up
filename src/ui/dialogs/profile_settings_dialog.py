@@ -2,7 +2,21 @@ from typing import Any
 from collections.abc import Callable
 import customtkinter as ctk
 
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_WIDTH_MD,
+    BTN_WIDTH_XL,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    COLOR_SUCCESS,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_DIMENSIONS,
+    DIALOG_TITLES,
+    FONT_SIZE_TITLE,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+)
 from models.profile import UserProfile
 from services.i18n_service import tr
 from services.storage_service import StorageService
@@ -44,7 +58,7 @@ class ProfileSettingsDialog(
             parent,
             tr("profile.title", DIALOG_TITLES["profile_settings"]),
             (w, h),
-            min_size=(920, 780),
+            min_size=DIALOG_MIN_DIMENSIONS["profile_settings"],
             title_factory=lambda: tr("profile.title", DIALOG_TITLES["profile_settings"]),
         )
 
@@ -55,19 +69,19 @@ class ProfileSettingsDialog(
 
     def create_widgets(self) -> None:
         # Top Header
-        top_bar = ctk.CTkFrame(self, height=45, corner_radius=0)
-        top_bar.pack(fill="x", side="top", padx=10, pady=(10, 5))
+        top_bar = ctk.CTkFrame(self, height=45, corner_radius=PAD_NONE)
+        top_bar.pack(fill="x", side="top", padx=PAD_MD, pady=(PAD_MD, PAD_SM))
 
         self.top_header_lbl = self.register_i18n(
-            ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=16, weight="bold")),
+            ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight="bold")),
             "profile.header",
             "⚙ Profil & Anwendungseinstellungen",
         )
-        self.top_header_lbl.pack(side="left", padx=10)
+        self.top_header_lbl.pack(side="left", padx=PAD_MD)
 
         # Tabview
         self.tabview = ctk.CTkTabview(self)
-        self.tabview.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+        self.tabview.pack(fill="both", expand=True, padx=PAD_MD, pady=(PAD_SM, PAD_MD))
 
         self._tab_keys = [
             ("tab_user", "profile.tab_user", "👤 Benutzerprofil"),
@@ -105,55 +119,56 @@ class ProfileSettingsDialog(
 
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
-        bottom_bar.pack(fill="x", side="bottom", padx=15, pady=10)
+        bottom_bar.pack(fill="x", side="bottom", padx=PAD_LG, pady=PAD_MD)
 
         self.close_btn = self.register_i18n(
             ctk.CTkButton(
                 bottom_bar,
                 text=tr("common.close", "Schließen"),
                 command=self.on_close,
-                fg_color="gray40",
-                hover_color="gray50",
-                width=120,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+                width=BTN_WIDTH_MD,
             ),
             "common.close",
             "Schließen",
         )
-        self.close_btn.pack(side="right", padx=5)
+        self.close_btn.pack(side="right", padx=PAD_SM)
 
         self.save_btn = self.register_i18n(
             ctk.CTkButton(
                 bottom_bar,
                 text=tr("profile.save_btn", "💾 Einstellungen Speichern"),
                 command=self.save_settings,
-                fg_color="forestgreen",
-                width=180,
+                fg_color=COLOR_SUCCESS,
+                hover_color=COLOR_SUCCESS,
+                width=BTN_WIDTH_XL,
             ),
             "profile.save_btn",
             "💾 Einstellungen Speichern",
         )
-        self.save_btn.pack(side="right", padx=5)
+        self.save_btn.pack(side="right", padx=PAD_SM)
 
-        self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color="green")
-        self.status_lbl.pack(side="left", padx=5)
+        self.status_lbl = ctk.CTkLabel(bottom_bar, text="", text_color=COLOR_SUCCESS)
+        self.status_lbl.pack(side="left", padx=PAD_SM)
 
     def setup_user_tab(self) -> None:
         from utils.ui_utils import enable_auto_hiding_scrollbar
         self.user_scroll = ctk.CTkScrollableFrame(self.tab_user, fg_color="transparent")
-        self.user_scroll.pack(fill="both", expand=True, padx=5, pady=5)
+        self.user_scroll.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
         enable_auto_hiding_scrollbar(self.user_scroll)
 
         # 2-Column Side-by-Side Container
         cols_container = ctk.CTkFrame(self.user_scroll, fg_color="transparent")
-        cols_container.pack(fill="both", expand=True, padx=5, pady=5)
+        cols_container.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
         cols_container.columnconfigure(0, weight=1, uniform="user_cols")
         cols_container.columnconfigure(1, weight=1, uniform="user_cols")
 
         left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        left_col.grid(row=0, column=0, sticky="nsew", padx=(0, 15))
+        left_col.grid(row=0, column=0, sticky="nsew", padx=(PAD_NONE, PAD_LG))
 
         right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        right_col.grid(row=0, column=1, sticky="nsew", padx=(15, 0))
+        right_col.grid(row=0, column=1, sticky="nsew", padx=(PAD_LG, PAD_NONE))
 
         self.setup_user_section(left_col)
         self.setup_ui_section(right_col)
@@ -244,7 +259,7 @@ class ProfileSettingsDialog(
         self.storage_service.save_profile(self.profile, sync=True)
         self.storage_service.apply_profile_paths(self.profile)
         self.refresh_ui_labels()
-        self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color="green")
+        self.status_lbl.configure(text=tr("profile.saved_success", "✅ Einstellungen & Pfade gespeichert!"), text_color=COLOR_SUCCESS)
 
         if self.on_profile_updated:
             self.on_profile_updated()

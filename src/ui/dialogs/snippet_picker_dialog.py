@@ -1,13 +1,48 @@
 import customtkinter as ctk
-
-from ui.dialogs.base_dialog import BaseDialog
 from collections.abc import Callable
+
+from constants import (
+    BTN_WIDTH_QUIT,
+    COLOR_BTN_GRAY,
+    COLOR_PILL_ACTIVE,
+    COLOR_PILL_HOVER,
+    COLOR_SNIPPET_CARD_BG,
+    COLOR_SNIPPET_CARD_SEL,
+    COLOR_SNIPPET_PREVIEW_TEXT,
+    COLOR_TEXT_PRIMARY,
+    COMBO_WIDTH_CATEGORY,
+    CORNER_RADIUS_MD,
+    CURSOR_HAND,
+    DEBOUNCE_KEY_SNIPPET_SEARCH,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_SNIPPET_PICKER,
+    DIALOG_TITLES,
+    ENTRY_WIDTH_LG,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_XS,
+    FONT_WEIGHT_BOLD,
+    PAD_2XL,
+    PAD_CONTAINER,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XL,
+    PAD_XS,
+    SEARCH_DEBOUNCE_MS,
+    SNIPPET_PICKER_COL0_MIN_WIDTH,
+    SNIPPET_PICKER_COL1_MIN_WIDTH,
+    SNIPPET_PREVIEW_MAX_LEN,
+)
 from models.snippet import Snippet
 from services.snippet_service import SnippetService
-from constants import DIALOG_DIMENSIONS
-from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
-from constants import SEARCH_DEBOUNCE_MS
-from utils.ui_utils import debounce
+from ui.dialogs.base_dialog import BaseDialog
+from utils.ui_utils import (
+    bind_mouse_wheel_to_canvas,
+    create_highlighted_label,
+    debounce,
+    enable_auto_hiding_scrollbar,
+)
 
 
 class SnippetPickerDialog(BaseDialog):
@@ -24,15 +59,13 @@ class SnippetPickerDialog(BaseDialog):
         self.on_snippet_selected = on_snippet_selected
         self.selected_snippet: Snippet | None = None
 
-        from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["snippet_picker"]
         self.setup_window(
             parent,
-            tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"),
+            DIALOG_TITLES["snippet_picker"],
             (w, h),
-            min_size=(680, 480),
-
-            title_factory=lambda: tr("dialog_titles.snippet_picker", "🧩 Textbaustein auswählen & einfügen"),
+            min_size=DIALOG_MIN_SIZE_SNIPPET_PICKER,
+            title_factory=lambda: DIALOG_TITLES["snippet_picker"],
         )
 
         self.create_widgets()
@@ -40,70 +73,69 @@ class SnippetPickerDialog(BaseDialog):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+        main_frame.pack(fill="both", expand=True, padx=PAD_XL - 1, pady=PAD_XL - 1)
 
         # Header & Search Controls
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        hdr_frame.pack(fill="x", pady=(0, 10))
+        hdr_frame.pack(fill="x", pady=(PAD_NONE, PAD_MD + PAD_XS))
 
         from services.i18n_service import tr
 
         self.search_entry = self.register_i18n(ctk.CTkEntry(
-            hdr_frame, placeholder_text=tr("snippet_picker.search", "🔍 Textbaustein suchen..."), width=320
+            hdr_frame, placeholder_text=tr("snippet_picker.search", "🔍 Textbaustein suchen..."), width=ENTRY_WIDTH_LG
         ), "snippet_picker.search", "🔍 Textbaustein suchen...", attr="placeholder_text")
-        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
-        self.search_entry.bind("<KeyRelease>", lambda e: debounce(self, "snippet_search", SEARCH_DEBOUNCE_MS, self.refresh_snippet_list))
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_MD))
+        self.search_entry.bind("<KeyRelease>", lambda e: debounce(self, DEBOUNCE_KEY_SNIPPET_SEARCH, SEARCH_DEBOUNCE_MS, self.refresh_snippet_list))
 
         self.cat_combo = ctk.CTkOptionMenu(
             hdr_frame,
             values=self.service.get_categories(),
             command=lambda v: self.refresh_snippet_list(),
-            width=160,
+            width=COMBO_WIDTH_CATEGORY,
         )
         self.cat_combo.pack(side="right")
 
         # 2-Column Content Layout (Left: Snippets List, Right: Content Preview)
         content_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        content_frame.pack(fill="both", expand=True, pady=(0, 10))
-        content_frame.grid_columnconfigure(0, weight=1, minsize=300)
-        content_frame.grid_columnconfigure(1, weight=1, minsize=340)
+        content_frame.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_MD + PAD_XS))
+        content_frame.grid_columnconfigure(0, weight=1, minsize=SNIPPET_PICKER_COL0_MIN_WIDTH)
+        content_frame.grid_columnconfigure(1, weight=1, minsize=SNIPPET_PICKER_COL1_MIN_WIDTH)
         content_frame.grid_rowconfigure(0, weight=1)
 
         # Left List Container
-        from utils.ui_utils import enable_auto_hiding_scrollbar
         self.list_scroll = ctk.CTkScrollableFrame(content_frame)
-        self.list_scroll.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        self.list_scroll.grid(row=0, column=0, sticky="nsew", padx=(PAD_NONE, PAD_MD))
         enable_auto_hiding_scrollbar(self.list_scroll)
 
         # Right Preview Container
         preview_box = ctk.CTkFrame(content_frame)
         preview_box.grid(row=0, column=1, sticky="nsew")
 
-        self.register_i18n(ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=12, weight="bold")), "snippet_picker.preview", "Vorschau des Textbausteins:").pack(anchor="w", padx=10, pady=(10, 4))
+        self.register_i18n(ctk.CTkLabel(preview_box, text=tr("snippet_picker.preview", "Vorschau des Textbausteins:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD)), "snippet_picker.preview", "Vorschau des Textbausteins:").pack(anchor="w", padx=PAD_MD + PAD_XS, pady=(PAD_MD + PAD_XS, PAD_SM))
 
         self.preview_textbox = ctk.CTkTextbox(preview_box)
-        self.preview_textbox.pack(fill="both", expand=True, padx=10, pady=(0, 10))
+        self.preview_textbox.pack(fill="both", expand=True, padx=PAD_MD + PAD_XS, pady=(PAD_NONE, PAD_MD + PAD_XS))
 
         # Bottom Action Bar
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(5, 0))
+        btn_frame.pack(fill="x", pady=(PAD_CONTAINER, PAD_NONE))
 
         self.insert_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen"),
-            fg_color="dodgerblue",
-            hover_color="deepskyblue",
+            fg_color=COLOR_PILL_ACTIVE,
+            hover_color=COLOR_PILL_HOVER,
             command=self.on_click_insert,
             state="disabled",
         ), "snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen")
-        self.insert_btn.pack(side="right", padx=(6, 0))
+        self.insert_btn.pack(side="right", padx=(CORNER_RADIUS_MD, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("common.cancel", "Abbrechen"),
-            fg_color="gray50",
+            fg_color=COLOR_BTN_GRAY,
             command=self.destroy,
-            width=90,
+            width=BTN_WIDTH_QUIT,
         ), "common.cancel", "Abbrechen").pack(side="right")
 
     def refresh_snippet_list(self):
@@ -116,19 +148,19 @@ class SnippetPickerDialog(BaseDialog):
             widget.destroy()
 
         if not snippets:
-            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("snippet_picker.no_snippets", "Keine Textbausteine gefunden.")), "snippet_picker.no_snippets", "Keine Textbausteine gefunden.").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("snippet_picker.no_snippets", "Keine Textbausteine gefunden.")), "snippet_picker.no_snippets", "Keine Textbausteine gefunden.").pack(pady=PAD_2XL)
             return
 
         for snip in snippets:
             is_sel = self.selected_snippet and self.selected_snippet.snippet_id == snip.snippet_id
-            bg = ("gray80", "gray25") if is_sel else ("gray90", "gray15")
+            bg = COLOR_SNIPPET_CARD_SEL if is_sel else COLOR_SNIPPET_CARD_BG
 
-            card = ctk.CTkFrame(self.list_scroll, fg_color=bg, corner_radius=6, cursor="hand2")
-            card.pack(fill="x", pady=4, padx=4)
+            card = ctk.CTkFrame(self.list_scroll, fg_color=bg, corner_radius=CORNER_RADIUS_MD, cursor=CURSOR_HAND)
+            card.pack(fill="x", pady=PAD_SM, padx=PAD_SM)
             card.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
             hdr_row = ctk.CTkFrame(card, fg_color="transparent")
-            hdr_row.pack(fill="x", padx=8, pady=(6, 2))
+            hdr_row.pack(fill="x", padx=PAD_MD, pady=(CORNER_RADIUS_MD, PAD_XS))
             hdr_row.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
 
             title_text = f"{snip.title} ⌨ {snip.shortcut}" if snip.shortcut else snip.title
@@ -137,38 +169,38 @@ class SnippetPickerDialog(BaseDialog):
                     hdr_row,
                     text=title_text,
                     query=query.strip(),
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color=("black", "white"),
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                    text_color=COLOR_TEXT_PRIMARY,
                     bg_color=bg,
                     wrap="none",
                     on_click=lambda e, s=snip: self.select_snippet(s),
                     scroll_frame=self.list_scroll,
                 )
             else:
-                title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=12, weight="bold"), anchor="w")
+                title_lbl = ctk.CTkLabel(hdr_row, text=title_text, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD), anchor="w")
                 title_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
             title_lbl.pack(side="left", fill="x", expand=True)
 
-            cat_lbl = ctk.CTkLabel(hdr_row, text=snip.category, font=ctk.CTkFont(size=10), text_color="dodgerblue")
+            cat_lbl = ctk.CTkLabel(hdr_row, text=snip.category, font=ctk.CTkFont(size=FONT_SIZE_XS), text_color=COLOR_PILL_ACTIVE)
             cat_lbl.pack(side="right")
 
-            preview_str = snip.content.replace("\n", " ")[:60] + "..." if len(snip.content) > 60 else snip.content.replace("\n", " ")
+            preview_str = snip.content.replace("\n", " ")[:SNIPPET_PREVIEW_MAX_LEN] + "..." if len(snip.content) > SNIPPET_PREVIEW_MAX_LEN else snip.content.replace("\n", " ")
             if query and query.strip() and query.strip().lower() in preview_str.lower():
                 body_lbl = create_highlighted_label(
                     card,
                     text=preview_str,
                     query=query.strip(),
-                    font=ctk.CTkFont(size=11),
-                    text_color=("gray40", "gray70"),
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
+                    text_color=COLOR_SNIPPET_PREVIEW_TEXT,
                     bg_color=bg,
                     wrap="word",
                     on_click=lambda e, s=snip: self.select_snippet(s),
                     scroll_frame=self.list_scroll,
                 )
             else:
-                body_lbl = ctk.CTkLabel(card, text=preview_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), anchor="w")
+                body_lbl = ctk.CTkLabel(card, text=preview_str, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_SNIPPET_PREVIEW_TEXT, anchor="w")
                 body_lbl.bind("<Button-1>", lambda e, s=snip: self.select_snippet(s))
-            body_lbl.pack(fill="x", padx=8, pady=(0, 6))
+            body_lbl.pack(fill="x", padx=PAD_MD, pady=(PAD_NONE, CORNER_RADIUS_MD))
 
             bind_mouse_wheel_to_canvas(card, self.list_scroll)
 
@@ -183,3 +215,4 @@ class SnippetPickerDialog(BaseDialog):
         if self.selected_snippet:
             self.on_snippet_selected(self.selected_snippet.content)
             self.destroy()
+

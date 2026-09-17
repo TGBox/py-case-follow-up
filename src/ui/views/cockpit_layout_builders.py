@@ -15,7 +15,36 @@ delegiert - reines Verschieben von Code, keine Verhaltensaenderung.
 import customtkinter as ctk
 import tkinter as tk
 from enums import ACTOR_DISPLAY
-from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT, COLOR_WARNING_ORANGE
+from constants import (
+    BTN_WIDTH_ACTION_SM,
+    BTN_WIDTH_MD,
+    COLOR_AI_PURPLE,
+    COLOR_AI_PURPLE_HOVER,
+    COLOR_CARD_BG,
+    COLOR_DANGER,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    COLOR_PANED_PANE_BG,
+    COLOR_PRIMARY,
+    COLOR_SASH_DARK,
+    COLOR_SASH_LIGHT,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_WARNING_ORANGE,
+    CORNER_RADIUS_CARD,
+    CORNER_RADIUS_MD,
+    DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_USER_COLOR,
+    ENTRY_WIDTH_NUMERIC,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_TITLE,
+    PAD_MD,
+    PAD_SM,
+    PAD_XS,
+    TOOLBAR_BREAK_WIDTH,
+    TOOLTIP_SHORT_DELAY_MS,
+)
 
 from typing import TYPE_CHECKING, Any, cast
 from collections.abc import Callable
@@ -71,8 +100,8 @@ class CockpitLayoutBuilderMixin:
         elif self.app_config and hasattr(self.app_config, "column_widths"):
             widths = self.app_config.column_widths
 
-        w_left = widths.get("cockpit_left", 300)
-        w_right = widths.get("cockpit_right", 320)
+        w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
+        w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
 
         is_dark = ctk.get_appearance_mode() == "Dark"
         sash_bg = COLOR_SASH_DARK if is_dark else COLOR_SASH_LIGHT
@@ -89,14 +118,14 @@ class CockpitLayoutBuilderMixin:
             handlesize=0,
             showhandle=False,
         )
-        self.paned.pack(fill="both", expand=True, padx=2, pady=2)
+        self.paned.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
         self.paned.bind("<ButtonRelease-1>", self.on_paned_sash_released)
         self.paned.bind("<Configure>", self._on_paned_configure, add="+")
         return w_left, w_right
 
     def _build_left_pane(self):
         # 1. Left Pane: Case List
-        user_color = getattr(self.profile.user, "user_color", "#3b82f6") if hasattr(self, "profile") and hasattr(self.profile, "user") else "#3b82f6"
+        user_color = getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR) if hasattr(self, "profile") and hasattr(self.profile, "user") else DEFAULT_USER_COLOR
         color_marker_enabled = getattr(self.profile.user, "color_marker_enabled", False) if hasattr(self, "profile") and hasattr(self.profile, "user") else False
 
         self.left_frame = CaseListWidget(
@@ -104,7 +133,7 @@ class CockpitLayoutBuilderMixin:
             on_case_selected=self.on_select_case_from_list,
             on_search_changed=self.on_search_changed,
             on_toggle_deep_search=lambda active: self.on_search_changed(self.left_frame.search_entry.get()),
-            bg_color=("gray92", "#2b2b2b"),
+            bg_color=COLOR_PANED_PANE_BG,
             current_user_name=self.author_name,
             user_color=user_color,
             color_marker_enabled=color_marker_enabled,
@@ -112,11 +141,11 @@ class CockpitLayoutBuilderMixin:
 
     def _build_center_pane(self):
         # 2. Center Pane: Case Details & Dynamic Form
-        self.center_frame = ctk.CTkFrame(self.paned, bg_color=("gray92", "#2b2b2b"))
+        self.center_frame = ctk.CTkFrame(self.paned, bg_color=COLOR_PANED_PANE_BG)
 
         # Unified Cockpit Header Card Frame
-        self.header_card = ctk.CTkFrame(self.center_frame, fg_color=("gray85", "gray20"), corner_radius=8)
-        self.header_card.pack(fill="x", padx=8, pady=(8, 6))
+        self.header_card = ctk.CTkFrame(self.center_frame, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_CARD)
+        self.header_card.pack(fill="x", padx=PAD_MD, pady=(PAD_MD, CORNER_RADIUS_MD))
         self._build_title_row()
         self._build_info_row()
         self._build_toolbar_row()
@@ -129,21 +158,21 @@ class CockpitLayoutBuilderMixin:
             attachment_service=self.attachment_service,
             on_manage_module_tags=self.on_manage_module_tags,
         )
-        self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
+        self.form_widget.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
 
         self._loaded_tab_case_ids: dict[str, str] = {}
 
     def _build_title_row(self):
         # Row 1: Dedicated Full-Width Case Title Row (prevents button overlaps)
         self.title_row = ctk.CTkFrame(self.header_card, fg_color="transparent")
-        self.title_row.pack(fill="x", padx=10, pady=(8, 4))
+        self.title_row.pack(fill="x", padx=PAD_MD, pady=(PAD_MD, PAD_SM))
 
         from services.i18n_service import tr
 
         self.case_title_label = ctk.CTkLabel(
             self.title_row,
             text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"),
-            font=ctk.CTkFont(size=15, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight="bold"),
             anchor="w",
             justify="left",
         )
@@ -152,17 +181,17 @@ class CockpitLayoutBuilderMixin:
     def _build_info_row(self):
         # Row 2: Customer & Status Info Row
         self.info_row = ctk.CTkFrame(self.header_card, fg_color="transparent")
-        self.info_row.pack(fill="x", padx=10, pady=(2, 6))
+        self.info_row.pack(fill="x", padx=PAD_MD, pady=(PAD_XS, CORNER_RADIUS_MD))
         self.info_bar = self.info_row
 
         # Left Column: Customer details & Wiedervorlage deadline
         self.info_left_frame = ctk.CTkFrame(self.info_row, fg_color="transparent")
         self.info_left_frame.pack(side="left", fill="both", expand=True)
 
-        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=12, weight="bold"), anchor="w", height=0)
+        self.kunde_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"), anchor="w", height=0)
         self.kunde_label.pack(fill="x", anchor="w")
 
-        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=11), anchor="w", height=0)
+        self.ansprechpartner_label = ctk.CTkLabel(self.info_left_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_SM), anchor="w", height=0)
 
         # Multi-line Wiedervorlage container in Cockpit Center Pane
         self.wiedervorlage_frame = ctk.CTkFrame(self.info_left_frame, fg_color="transparent")
@@ -172,7 +201,7 @@ class CockpitLayoutBuilderMixin:
         self.wv_hdr_label = ctk.CTkLabel(
             self.wiedervorlage_frame,
             text=tr("cockpit.followup_at", "🔔 Nachfragen am:"),
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
             text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
@@ -181,7 +210,7 @@ class CockpitLayoutBuilderMixin:
         self.wv_date_label = ctk.CTkLabel(
             self.wiedervorlage_frame,
             text="",
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
             text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
@@ -190,7 +219,7 @@ class CockpitLayoutBuilderMixin:
         self.wv_time_label = ctk.CTkLabel(
             self.wiedervorlage_frame,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
@@ -199,7 +228,7 @@ class CockpitLayoutBuilderMixin:
         self.wv_note_label = ctk.CTkLabel(
             self.wiedervorlage_frame,
             text="",
-            font=ctk.CTkFont(size=11),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_WARNING_ORANGE,
             anchor="w",
             justify="left",
@@ -214,10 +243,10 @@ class CockpitLayoutBuilderMixin:
         self.wiedervorlage_tooltip = CTkTooltip(
             self.wiedervorlage_frame,
             self._get_wiedervorlage_tooltip_text,
-            delay_ms=250,
+            delay_ms=TOOLTIP_SHORT_DELAY_MS,
         )
         for _lbl in (self.wv_hdr_label, self.wv_date_label, self.wv_time_label, self.wv_note_label):
-            CTkTooltip(_lbl, self._get_wiedervorlage_tooltip_text, delay_ms=250)
+            CTkTooltip(_lbl, self._get_wiedervorlage_tooltip_text, delay_ms=TOOLTIP_SHORT_DELAY_MS)
 
         self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
@@ -228,34 +257,34 @@ class CockpitLayoutBuilderMixin:
         from services.i18n_service import tr
 
         # Retained as non-packed widget for backwards compatibility
-        self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=95, fg_color="darkred")
+        self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=BTN_WIDTH_ACTION_SM, fg_color=COLOR_DANGER)
 
         self._info_row_horizontal = True
         self.info_row.bind("<Configure>", self._on_info_row_configure, add="+")
 
     def _build_toolbar_row(self):
         # Row 3: Integrated Action Toolbar
-        self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=("gray80", "gray25"), corner_radius=6)
-        self.toolbar_row.pack(fill="x", padx=8, pady=(2, 8))
+        self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=("gray80", "gray25"), corner_radius=CORNER_RADIUS_MD)
+        self.toolbar_row.pack(fill="x", padx=PAD_MD, pady=(PAD_XS, PAD_MD))
 
         self.toolbar_left = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
-        self.toolbar_left.pack(side="left", padx=4, pady=4)
+        self.toolbar_left.pack(side="left", padx=PAD_SM, pady=PAD_SM)
 
         from services.i18n_service import tr
 
-        self.followup_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.followup", "🔔 Wiedervorlage"), command=self.open_followup_dialog, width=115, fg_color="darkblue")
-        self.followup_btn.pack(side="left", padx=3)
+        self.followup_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.followup", "🔔 Wiedervorlage"), command=self.open_followup_dialog, width=BTN_WIDTH_MD, fg_color=COLOR_PRIMARY)
+        self.followup_btn.pack(side="left", padx=PAD_XS)
 
-        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.note", "📝 Notiz"), command=self.focus_timeline_note, width=80, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40"))
-        self.add_note_btn.pack(side="left", padx=3)
+        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.note", "📝 Notiz"), command=self.focus_timeline_note, width=ENTRY_WIDTH_NUMERIC + 10, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER)
+        self.add_note_btn.pack(side="left", padx=PAD_XS)
 
         # Retained as non-packed widgets for backwards compatibility with tests and callers
-        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=130, state="disabled", fg_color="#6366f1", hover_color="#4f46e5")
-        self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=95, state="disabled", fg_color="forestgreen", hover_color="darkgreen")
+        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=130, state="disabled", fg_color=COLOR_AI_PURPLE, hover_color=COLOR_AI_PURPLE_HOVER)
+        self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=BTN_WIDTH_ACTION_SM, state="disabled", fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER)
 
         # Right Side of Toolbar: Handover + Complete + Save + Integrated Dropdown Menu for Utilities
         self.toolbar_right = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
-        self.toolbar_right.pack(side="right", padx=4, pady=4)
+        self.toolbar_right.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
         self.actor_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
@@ -264,19 +293,19 @@ class CockpitLayoutBuilderMixin:
             width=105,
         )
         self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
-        self.actor_combo.pack(side="left", padx=3)
+        self.actor_combo.pack(side="left", padx=PAD_XS)
 
         self.complete_btn = ctk.CTkButton(
             self.toolbar_right,
             text=tr("cockpit.complete", "✓ Erledigt"),
             command=self.on_toggle_complete,
-            width=95,
-            fg_color="green",
+            width=BTN_WIDTH_ACTION_SM,
+            fg_color=COLOR_SUCCESS,
         )
-        self.complete_btn.pack(side="left", padx=3)
+        self.complete_btn.pack(side="left", padx=PAD_XS)
 
-        self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "💾 Speichern"), command=self.on_click_save, width=95, state="disabled")
-        self.save_btn.pack(side="left", padx=3)
+        self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "💾 Speichern"), command=self.on_click_save, width=BTN_WIDTH_ACTION_SM, state="disabled")
+        self.save_btn.pack(side="left", padx=PAD_XS)
 
         self.more_actions_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
@@ -293,7 +322,7 @@ class CockpitLayoutBuilderMixin:
             button_color=("gray60", "gray40"),
         )
         self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
-        self.more_actions_combo.pack(side="left", padx=3)
+        self.more_actions_combo.pack(side="left", padx=PAD_XS)
 
         # Aliases for export, print, convert_schema buttons to maintain backward compatibility
         self.export_btn = self.more_actions_combo
@@ -303,7 +332,7 @@ class CockpitLayoutBuilderMixin:
         # Responsive layout: re-arrange toolbar buttons when center pane is too narrow
         self._toolbar_horizontal = True
         # Minimum width (px) for all left and right toolbar buttons side-by-side
-        self._TOOLBAR_BREAK_WIDTH = 640
+        self._TOOLBAR_BREAK_WIDTH = TOOLBAR_BREAK_WIDTH
         self.toolbar_row.bind("<Configure>", self._on_toolbar_row_configure, add="+")
 
     # ------------------------------------------------------------------ #
@@ -443,7 +472,7 @@ class CockpitLayoutBuilderMixin:
     def _build_right_pane(self):
         from services.i18n_service import tr
         # 3. Right Pane: Tabbed Sidebar
-        self.right_tabview = ctk.CTkTabview(self.paned, bg_color=("gray92", "#2b2b2b"), command=self._on_sidebar_tab_changed)
+        self.right_tabview = ctk.CTkTabview(self.paned, bg_color=COLOR_PANED_PANE_BG, command=self._on_sidebar_tab_changed)
 
         t_title = tr("cockpit.tab_timeline", "Zeitleiste")
         t_attach = tr("cockpit.tab_attachments", "Anhänge")
@@ -469,7 +498,7 @@ class CockpitLayoutBuilderMixin:
             if "Wiki" in btns:
                 btns["Wiki"].configure(text=t_wiki)
 
-        user_color = getattr(self.profile.user, "user_color", "#3b82f6") if hasattr(self, "profile") and hasattr(self.profile, "user") else "#3b82f6"
+        user_color = getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR) if hasattr(self, "profile") and hasattr(self.profile, "user") else DEFAULT_USER_COLOR
         color_marker_enabled = getattr(self.profile.user, "color_marker_enabled", False) if hasattr(self, "profile") and hasattr(self.profile, "user") else False
 
         self.timeline_widget = TimelineWidget(

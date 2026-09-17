@@ -2,12 +2,31 @@ import customtkinter as ctk
 from typing import Any
 from collections.abc import Callable
 from constants import (
-    TOOLTIP_DEFAULT_DELAY_MS,
-    TOOLTIP_POINTER_OFFSET_X,
-    TOOLTIP_POINTER_OFFSET_Y,
+    ANCHOR_WEST,
+    BORDER_WIDTH_TOOLTIP,
     COLOR_TOOLTIP_BG,
     COLOR_TOOLTIP_BORDER,
     COLOR_TOOLTIP_TEXT,
+    CORNER_RADIUS_CARD,
+    EVENT_BUTTON_1,
+    EVENT_BUTTON_2,
+    EVENT_BUTTON_3,
+    EVENT_BUTTON_PRESS,
+    EVENT_BUTTON_RELEASE_1,
+    EVENT_DESTROY,
+    EVENT_ENTER,
+    EVENT_FOCUS_OUT,
+    EVENT_LEAVE,
+    EVENT_UNMAP,
+    FONT_SIZE_SM,
+    JUSTIFY_LEFT,
+    PAD_10,
+    PAD_MD,
+    PAD_XS,
+    TOOLTIP_DEFAULT_DELAY_MS,
+    TOOLTIP_POINTER_OFFSET_X,
+    TOOLTIP_POINTER_OFFSET_Y,
+    WINDOW_ATTR_TOPMOST,
 )
 
 
@@ -52,7 +71,7 @@ class CTkTooltip:
                 pass
 
         try:
-            widget.bind("<Enter>", _on_first_enter, add="+")
+            widget.bind(EVENT_ENTER, _on_first_enter, add="+")
         except Exception:
             pass
 
@@ -72,15 +91,15 @@ class CTkTooltip:
 
     def _bind_events(self, w):
         try:
-            w.bind("<Enter>", self.on_enter, add="+")
-            w.bind("<Leave>", self.on_leave, add="+")
-            w.bind("<FocusOut>", self.on_leave, add="+")
-            w.bind("<Unmap>", self.on_leave, add="+")
-            w.bind("<Button-1>", self.on_click, add="+")
-            w.bind("<Button-2>", self.on_click, add="+")
-            w.bind("<Button-3>", self.on_click, add="+")
-            w.bind("<ButtonRelease-1>", self.on_click, add="+")
-            w.bind("<Destroy>", self.on_destroy, add="+")
+            w.bind(EVENT_ENTER, self.on_enter, add="+")
+            w.bind(EVENT_LEAVE, self.on_leave, add="+")
+            w.bind(EVENT_FOCUS_OUT, self.on_leave, add="+")
+            w.bind(EVENT_UNMAP, self.on_leave, add="+")
+            w.bind(EVENT_BUTTON_1, self.on_click, add="+")
+            w.bind(EVENT_BUTTON_2, self.on_click, add="+")
+            w.bind(EVENT_BUTTON_3, self.on_click, add="+")
+            w.bind(EVENT_BUTTON_RELEASE_1, self.on_click, add="+")
+            w.bind(EVENT_DESTROY, self.on_destroy, add="+")
         except Exception:
             pass
 
@@ -141,14 +160,14 @@ class CTkTooltip:
             toplevel = self.widget.winfo_toplevel()
             self.tooltip_window = ctk.CTkToplevel(toplevel)
             self.tooltip_window.wm_overrideredirect(True)
-            self.tooltip_window.attributes("-topmost", True)
+            self.tooltip_window.attributes(WINDOW_ATTR_TOPMOST, True)
             self.tooltip_window.geometry(f"+{x}+{y}")
 
             # Bind to top level window focus out / unmap to auto dismiss floating tooltip
             try:
-                toplevel.bind("<FocusOut>", lambda e: CTkTooltip.dismiss_all(), add="+")
-                toplevel.bind("<Unmap>", lambda e: CTkTooltip.dismiss_all(), add="+")
-                toplevel.bind("<ButtonPress>", lambda e: CTkTooltip.dismiss_all(), add="+")
+                toplevel.bind(EVENT_FOCUS_OUT, lambda e: CTkTooltip.dismiss_all(), add="+")
+                toplevel.bind(EVENT_UNMAP, lambda e: CTkTooltip.dismiss_all(), add="+")
+                toplevel.bind(EVENT_BUTTON_PRESS, lambda e: CTkTooltip.dismiss_all(), add="+")
             except Exception:
                 pass
 
@@ -156,20 +175,20 @@ class CTkTooltip:
                 self.tooltip_window,
                 fg_color=COLOR_TOOLTIP_BG,
                 border_color=COLOR_TOOLTIP_BORDER,
-                border_width=1,
-                corner_radius=8,
+                border_width=BORDER_WIDTH_TOOLTIP,
+                corner_radius=CORNER_RADIUS_CARD,
             )
-            frame.pack(fill="both", expand=True, padx=2, pady=2)
+            frame.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
 
             lbl = ctk.CTkLabel(
                 frame,
                 text=text,
-                justify="left",
-                anchor="w",
-                font=ctk.CTkFont(size=11),
+                justify=JUSTIFY_LEFT,
+                anchor=ANCHOR_WEST,
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
                 text_color=COLOR_TOOLTIP_TEXT,
             )
-            lbl.pack(padx=10, pady=8)
+            lbl.pack(padx=PAD_10, pady=PAD_MD)
 
             CTkTooltip._active_tooltips.add(self)
         except Exception:

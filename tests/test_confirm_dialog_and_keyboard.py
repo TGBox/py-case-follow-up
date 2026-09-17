@@ -38,7 +38,7 @@ def test_confirm_dialog_init_and_confirm(app_root):
 
     # Trigger confirm
     dialog.on_confirm()
-    assert dialog.result == True
+    assert dialog.result is True
     dialog.destroy()
 
 
@@ -53,7 +53,7 @@ def test_confirm_dialog_cancel_button(app_root):
     )
     assert dialog.result is False
     dialog.request_close()
-    assert dialog.result == False
+    assert dialog.result is False
     dialog.destroy()
 
 
@@ -69,7 +69,7 @@ def test_confirm_dialog_info_mode(app_root):
     assert dialog.result is False
     # No cancel button added
     dialog.on_confirm()
-    assert dialog.result == True
+    assert dialog.result is True
     dialog.destroy()
 
 

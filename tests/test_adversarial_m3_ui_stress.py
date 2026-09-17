@@ -300,13 +300,13 @@ class TestHeadlessUIViewsDynamicUpdates:
         # Switch to English
         get_i18n().current_language = "en"
         board.refresh_ui_labels()
-        assert board.collapsed_states.get("hotline") is True
+        assert board.collapsed_states.get("hotline") == True
         assert "Development (1)" in board.col_headers["dev"].cget("text") or "Developer (1)" in board.col_headers["dev"].cget("text")
         assert "Follow-up (1)" in board.col_headers["followup"].cget("text")
 
         # Expand hotline column in English
         board.toggle_column_collapse("hotline")
-        assert board.collapsed_states.get("hotline") is False
+        assert board.collapsed_states.get("hotline") == False
         assert "Hotline (1)" in board.col_headers["hotline"].cget("text")
 
         # Switch to Swedish

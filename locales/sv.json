@@ -1079,12 +1079,12 @@
     "scoring": {
       "title": "📊 Automatisk Brådskandescoring",
       "category": "Arbetsflöde",
-      "content": "### 📊 Automatisk Brådskandescoring\n\nBeräknar poäng baserat på prioritet, VIP-status, väntetid och inaktivitet för att prioritera akuta ärenden."
+      "content": "### 📊 Automatisk Brådskandescoring\n\nBeräknar poäng baserat på prioritet, VIP-status, väntetid och inaktivitet för att prioritera akuta ärenden. Anpassa VIP-bonuspoäng under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "shortcuts": {
       "title": "⌨ Tangentbordsgenvägar",
       "category": "Genvägar",
-      "content": "### ⌨ Tangentbordsgenvägar\n\nÖversikt över alla snabbknappar (`Ctrl+N`, `Ctrl+S`, `Ctrl+V`, `Ctrl+M`, `Ctrl+W`, `F1`)."
+      "content": "### ⌨ Tangentbordsgenvägar\n\nÖversikt över alla snabbknappar (`Ctrl+N`, `Ctrl+S`, `Ctrl+V`, `Ctrl+M`, `Ctrl+W`, `F1`). Alla snabbknappar och makron kan anpassas under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "snippets_manager": {
       "title": "📝 Textmallar & Snippet Manager",
@@ -1099,7 +1099,7 @@
     "storage_paths": {
       "title": "📁 Lagringsplatser & Portabel drift",
       "category": "Konfiguration",
-      "content": "### 📁 Lagringsplatser & Portabel drift\n\nAnpassa datamappar för portabel drift och nätverksenheter."
+      "content": "### 📁 Lagringsplatser & Portabel drift\n\nAnpassa datamappar för portabel drift och nätverksenheter under `⚙ Profil & inställningar` -> fliken `📁 Lagringsplats & Dataexport` (vänstra kolumnen för sökvägar och automatisk gallring, högra kolumnen för ZIP-säkerhetskopia)."
     },
     "template_editor": {
       "title": "📄 Exportmall-redigerare (Jinja2)",
@@ -1108,18 +1108,18 @@
     },
     "ui_customization": {
       "category": "Användargränssnitt",
-      "content": "### 📅 Datumvisning, kolumnbredder & personlig färgmarkering\n\n#### 1. 📅 Datumvisning & kalenderväljare\n- Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- En interaktiv kalenderväljare är tillgänglig för alla datumfält med snabbval (*+ 1 dag*, *+ 1 vecka*).\n\n#### 2. 🎨 Personlig medarbetarfärgmarkering\n- Under **⚙ Profil & inställningar** (`👤`) -> fliken **👤 Användare** kan varje medarbetare välja en personlig färg.\n- **Diskreta färgbrickor**: När markering är aktiv visas en diskret, svart inramad färgbricka (`10x10 pixlar`):\n  - I ärendelistan bredvid ärende-ID.\n  - I rubriken på Kanban-korten.\n  - I tidslinjekorten nere till höger bredvid handläggarens namn.\n- Ger snabb visuell överblick utan att störa den övriga designen.\n\n#### 3. 📐 Individuella kolumnbredder\n- Kolumnbredder i Cockpit och på Kanban-tavlan kan anpassas via knappen **📐 Kolumner** i toppmenyn och sparas automatiskt i din användarprofil (`user_config.json`).",
+      "content": "### 📅 Datumvisning, kolumnbredder & personlig färgmarkering\n\n#### 1. 📅 Datumvisning & kalenderväljare\n- Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- En interaktiv kalenderväljare är tillgänglig för alla datumfält med snabbval (*+ 1 dag*, *+ 1 vecka*).\n\n#### 2. 🎨 Personlig medarbetarfärgmarkering\n- Under **⚙ Profil & inställningar** (`👤`) -> fliken **👤 Användarprofil** kan varje medarbetare välja en personlig färg.\n- **Diskreta färgbrickor**: När markering är aktiv visas en diskret, svart inramad färgbricka (`10x10 pixlar`):\n  - I ärendelistan bredvid ärende-ID.\n  - I rubriken på Kanban-korten.\n  - I tidslinjekorten nere till höger bredvid handläggarens namn.\n- Ger snabb visuell överblick utan att störa den övriga designen.\n\n#### 3. 📐 Individuella kolumnbredder\n- Kolumnbredder i Cockpit och på Kanban-tavlan kan anpassas via knappen **📐 Kolumner** i toppmenyn.\n- Under **⚙ Profil & inställningar** -> fliken **👤 Användarprofil** (högra kolumnen) kan sparade kolumnbredder när som helst återställas till fabriksinställningar via **↻ Återställ alla kolumnbredder**.",
       "title": "📅 Datumformat, kolumnbredder & färgmarkering"
     },
     "wiki": {
       "title": "📚 BookStack Offline Wiki",
       "category": "Wiki",
-      "content": "### 📚 BookStack Offline Wiki\n\nSök och läs BookStack-artiklar direkt i Cockpit med offline-cache och synk."
+      "content": "### 📚 BookStack Offline Wiki\n\nSök och läs BookStack-artiklar direkt i Cockpit med offline-cache och synk. Konfigurera serveranslutning och autentisering under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "zip_backup_restore": {
       "title": "📦 Komplett ZIP-säkerhetskopia",
       "category": "Konfiguration",
-      "content": "### 📦 Komplett ZIP-säkerhetskopia\n\nSkapa och återställ kompletta ZIP-arkiv för alla data och bilagor."
+      "content": "### 📦 Komplett ZIP-säkerhetskopia\n\nSkapa och återställ kompletta ZIP-arkiv för alla data och bilagor under `⚙ Profil & inställningar` -> fliken `📁 Lagringsplats & Dataexport` (högra sektionen)."
     },
     "first_steps": {
       "title": "🐣 Kom igång & Snabbstartsguide",
@@ -1139,7 +1139,7 @@
     "faq_troubleshooting": {
       "title": "❓ Vanliga frågor & Felsökning (FAQ)",
       "category": "Genvägar",
-      "content": "### ❓ Vanliga frågor & Felsökning (FAQ)\n\nLösningar på vanliga frågor om AI-status, datorbyte och kolumnbredder."
+      "content": "### ❓ Vanliga frågor & Felsökning (FAQ)\n\nLösningar på vanliga frågor om AI-status (`🤖 AI & NLP`), datorbyte och ZIP-backup (`📁 Lagringsplats & Dataexport`), anpassade kortkommandon (`🧩 Övrigt`) och återställning av kolumnbredder (`👤 Användarprofil`)."
     }
   },
   "help_dialog": {

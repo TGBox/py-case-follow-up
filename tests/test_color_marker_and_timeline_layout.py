@@ -3,13 +3,13 @@ from unittest.mock import MagicMock
 import customtkinter as ctk
 
 from models.profile import UserInfo, UserProfile
-from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
+from models.case import Case, CaseCustomer, Classification, TimelineEntry
 from ui.widgets.timeline_widget import TimelineWidget
 from ui.widgets.case_list_widget import CaseListWidget
 from ui.views.board_view import KanbanCardWidget
 from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 from services.storage_service import StorageService
-from services.i18n_service import get_i18n, tr
+from services.i18n_service import get_i18n
 
 
 @pytest.fixture(autouse=True)

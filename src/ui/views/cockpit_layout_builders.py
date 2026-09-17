@@ -367,7 +367,7 @@ class CockpitLayoutBuilderMixin:
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
-        from enums import ACTOR_DISPLAY, get_actor_display
+        from enums import ACTOR_DISPLAY
 
         if hasattr(self, "more_actions_combo"):
             self.more_actions_combo.configure(values=[

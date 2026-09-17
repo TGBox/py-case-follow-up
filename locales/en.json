@@ -232,6 +232,7 @@
     "banner_print": "<strong>Case File Print View</strong> — Print dialog is opening. Select your printer or 'Save as PDF'.",
     "banner_view": "<strong>Case File View</strong> — Overview for case {case_id}.",
     "btn_print_pdf": "🖨 Print / Save as PDF",
+    "header_case_metadata": "Case Metadata",
     "header_customer_data": "Customer & Practice Data",
     "header_form_fields": "Form Fields & Details",
     "header_timeline": "History & Timeline",

@@ -362,8 +362,9 @@ class UserSettingsTabMixin:
 
     def on_open_p2p_sync_dialog(self) -> None:
         parent = getattr(self, "master", None) or getattr(self, "_parent", None)
-        if hasattr(parent, "open_p2p_dialog"):
-            parent.open_p2p_dialog()
+        open_fn = getattr(parent, "open_p2p_dialog", None)
+        if callable(open_fn):
+            open_fn()
         else:
             from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
             from services.p2p_sync_service import P2PSyncService

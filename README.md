@@ -149,8 +149,9 @@ Das fertige Executable wird im Verzeichnis `dist/py-case-follow-up.exe` erzeugt.
 Das Repository enthält einen `pre-push` Hook in `.githooks/pre-push`, der vor jedem `git push`:
 
 1. Automatisch eine frische `.exe` Datei anhand des Spec-Files baut.
-2. Die gesamte Testsuite (`uv run pytest --no-cov`) ausführt und verifiziert.
-3. Den Push abbricht, falls Build oder Tests fehlschlagen.
+2. Die statische Typenprüfung (`uvx pyright src`) durchführt.
+3. Die gesamte Testsuite (`uv run pytest --no-cov`) ausführt und verifiziert.
+4. Den Push abbricht, falls Build, Typecheck oder Tests fehlschlagen.
 
 Um den Hook für Ihr lokales Git-Repository zu aktivieren:
 

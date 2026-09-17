@@ -191,8 +191,10 @@ class BoardView(ctk.CTkFrame):
         self._pending_cases: dict[str, list[Case]] = {}
         self._rendered_counts: dict[str, int] = {}
         self.collapsed_states: dict[str, bool] = {
-            "support": False,
+            "hotline": False,
+            "tech": False,
             "dev": False,
+            "customer": False,
             "followup": False,
             "completed": False,
         }
@@ -204,15 +206,21 @@ class BoardView(ctk.CTkFrame):
             elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):
                 self.collapsed_states.update(self.app_config.ui_settings.board_collapsed)
 
+        # Map legacy "support" key if present
+        if "support" in self.collapsed_states:
+            self.collapsed_states["hotline"] = self.collapsed_states.pop("support")
+
         self.create_board()
 
     def _columns_def(self) -> list[tuple[str, str]]:
         from services.i18n_service import tr
         return [
-            ("support", tr("board.col_support_header", "📥 Support / In Bearbeitung")),
-            ("dev", tr("board.col_dev_header", "💻 Entwickler / Dev-Team")),
-            ("followup", tr("board.col_followup_header", "🔔 Wiedervorlage / Warten")),
-            ("completed", tr("board.col_completed_header", "✓ Erledigte Fälle")),
+            ("hotline", tr("board.col_hotline_header", "📞 Hotline")),
+            ("tech", tr("board.col_tech_header", "🔧 Technik")),
+            ("dev", tr("board.col_dev_header", "💻 Entwicklung")),
+            ("customer", tr("board.col_customer_header", "👤 Kunde")),
+            ("followup", tr("board.col_followup_header", "🔔 Wiedervorlage")),
+            ("completed", tr("board.col_completed_header", "✓ Erledigt")),
         ]
 
     def create_board(self):
@@ -270,7 +278,7 @@ class BoardView(ctk.CTkFrame):
             self.col_headers[col_key] = lbl
         else:
             # Expanded full column
-            self.grid_columnconfigure(idx, weight=1, minsize=220)
+            self.grid_columnconfigure(idx, weight=1, minsize=170)
             col_frame = ctk.CTkFrame(self)
             col_frame.grid(row=0, column=idx, sticky="nsew", padx=4, pady=4)
             self.col_frames[col_key] = col_frame
@@ -363,8 +371,10 @@ class BoardView(ctk.CTkFrame):
 
     def refresh_board(self):
         col_cases: dict[str, list[Case]] = {
-            "support": [],
+            "hotline": [],
+            "tech": [],
             "dev": [],
+            "customer": [],
             "followup": [],
             "completed": [],
         }
@@ -374,15 +384,21 @@ class BoardView(ctk.CTkFrame):
                 col_cases["completed"].append(c)
             elif c.workflow_status.followup_at:
                 col_cases["followup"].append(c)
-            elif c.workflow_status.current_actor in (Actor.DEVELOPMENT.value, Actor.TECH.value):
+            elif c.workflow_status.current_actor in (Actor.DEVELOPMENT.value, "DEVELOPMENT", "DATA_DEVELOPMENT"):
                 col_cases["dev"].append(c)
+            elif c.workflow_status.current_actor in (Actor.TECH.value, "TECH", "DATA_TECH"):
+                col_cases["tech"].append(c)
+            elif c.workflow_status.current_actor in (Actor.CUSTOMER.value, "CUSTOMER", "DATA_CUSTOMER"):
+                col_cases["customer"].append(c)
             else:
-                col_cases["support"].append(c)
+                col_cases["hotline"].append(c)
 
         from services.i18n_service import tr
         titles = {
-            "support": f"📥 {tr('board.title_support', 'Support')} ({len(col_cases['support'])})",
-            "dev": f"💻 {tr('board.title_dev', 'Entwickler')} ({len(col_cases['dev'])})",
+            "hotline": f"📞 {tr('board.title_hotline', 'Hotline')} ({len(col_cases['hotline'])})",
+            "tech": f"🔧 {tr('board.title_tech', 'Technik')} ({len(col_cases['tech'])})",
+            "dev": f"💻 {tr('board.title_dev', 'Entwicklung')} ({len(col_cases['dev'])})",
+            "customer": f"👤 {tr('board.title_customer', 'Kunde')} ({len(col_cases['customer'])})",
             "followup": f"🔔 {tr('board.title_followup', 'Wiedervorlage')} ({len(col_cases['followup'])})",
             "completed": f"✓ {tr('board.title_completed', 'Erledigt')} ({len(col_cases['completed'])})",
         }

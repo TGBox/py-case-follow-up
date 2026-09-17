@@ -11,6 +11,7 @@ class UserSettingsTabMixin:
     """Mixin for User Profile management, personal data, and signature export/import."""
 
     if TYPE_CHECKING:
+        master: Any
         profile: Any
         storage_service: Any
         status_lbl: ctk.CTkLabel
@@ -206,6 +207,59 @@ class UserSettingsTabMixin:
         )
         self.btn_load_sig.pack(side="left")
 
+        # Section 4: P2P-Kollegen-Synchronisation
+        self.p2p_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(left_col, text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"), font=ctk.CTkFont(size=14, weight="bold")),
+            "profile.p2p_sync_header",
+            "P2P-Kollegen-Synchronisation",
+        )
+        self.p2p_hdr_lbl.pack(anchor="w", pady=(14, 4))
+
+        self.p2p_desc_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                left_col,
+                text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
+                font=ctk.CTkFont(size=11),
+                text_color=("gray30", "gray70"),
+                wraplength=380,
+                justify="left",
+            ),
+            "profile.p2p_sync_desc",
+            "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
+        )
+        self.p2p_desc_lbl.pack(anchor="w", pady=(0, 8))
+
+        self.btn_open_p2p = self.register_i18n(
+            ctk.CTkButton(
+                left_col,
+                text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."),
+                command=self.on_open_p2p_sync_dialog,
+                fg_color="#2563eb",
+                hover_color="#1d4ed8",
+                width=200,
+            ),
+            "profile.btn_open_p2p_sync",
+            "🔄 P2P-Sync öffnen...",
+        )
+        self.btn_open_p2p.pack(anchor="w", pady=(0, 10))
+
+    def on_open_p2p_sync_dialog(self) -> None:
+        parent = getattr(self, "master", None) or getattr(self, "_parent", None)
+        if hasattr(parent, "open_p2p_dialog"):
+            parent.open_p2p_dialog()
+        else:
+            from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
+            from services.p2p_sync_service import P2PSyncService
+            p2p_service = getattr(parent, "p2p_service", None) or getattr(parent, "p2p_sync_service", None) or P2PSyncService(self.storage_service)
+            colleagues = getattr(parent, "colleagues", None) or self.storage_service.load_colleagues()
+            on_sync_completed = getattr(parent, "on_p2p_sync_completed", lambda: None)
+            P2PDiffDialog(
+                self,
+                colleagues=colleagues,
+                p2p_service=p2p_service,
+                on_sync_completed=on_sync_completed,
+            )
+
     def on_export_signature(self) -> None:
         from tkinter import filedialog
         current_sig = self.user_sig_txt.get("1.0", "end-1c") if hasattr(self, "user_sig_txt") else ""
@@ -378,3 +432,9 @@ class UserSettingsTabMixin:
             self.btn_save_sig.configure(text=tr("profile.btn_export_signature", "💾 Signatur speichern..."))
         if hasattr(self, "btn_load_sig"):
             self.btn_load_sig.configure(text=tr("profile.btn_import_signature", "📂 Signatur laden..."))
+        if hasattr(self, "p2p_hdr_lbl"):
+            self.p2p_hdr_lbl.configure(text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"))
+        if hasattr(self, "p2p_desc_lbl"):
+            self.p2p_desc_lbl.configure(text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."))
+        if hasattr(self, "btn_open_p2p"):
+            self.btn_open_p2p.configure(text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."))

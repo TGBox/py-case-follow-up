@@ -310,17 +310,24 @@ class DialogLaunchersMixin:
         self.cockpit_view.on_select_case_from_list(new_case)
 
     def open_export_dialog(self, case: Case | None = None, event=None):
-        target_case = case or self.active_case
+        target_case = case or self.active_case or getattr(getattr(self, "cockpit_view", None), "current_case", None)
         if not target_case:
             return
-        ExportDialog(
-            self,
-            case=target_case,
-            templates=self.templates,
-            schemas=self.schemas,
-            export_service=self.export_service,
-            on_case_updated=self.on_case_updated,
-        )
+        kwargs = {
+            "case": target_case,
+            "templates": self.templates,
+            "schemas": self.schemas,
+            "export_service": self.export_service,
+            "on_case_updated": self.on_case_updated,
+        }
+        import inspect
+        try:
+            sig = inspect.signature(ExportDialog.__init__)
+            if "attachment_service" in sig.parameters or any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+                kwargs["attachment_service"] = getattr(self, "attachment_service", None)
+        except Exception:
+            pass
+        ExportDialog(self, **kwargs)
 
     def open_case_print_dialog(self, case: Case | None = None):
         target_case = case or self.active_case

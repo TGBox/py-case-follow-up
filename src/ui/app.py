@@ -764,7 +764,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         # App Actions Shortcuts
         safe_bind(shortcuts.new_case, lambda e: self.open_new_case_dialog())
-        safe_bind(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
+        safe_bind(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case or getattr(getattr(self, "cockpit_view", None), "current_case", None)))
         safe_bind(shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search() if hasattr(self, "cockpit_view") else None)
         safe_bind(shortcuts.save_case, lambda e: self.cockpit_view.on_click_save() if hasattr(self, "cockpit_view") else None)
         safe_bind(shortcuts.search_customer, lambda e: self.cockpit_view.focus_customer_search() if hasattr(self, "cockpit_view") else None)

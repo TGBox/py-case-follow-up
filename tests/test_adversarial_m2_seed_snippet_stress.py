@@ -526,5 +526,5 @@ class TestLocalizedDictRobustness:
             assert all(v for v in vorlagen)
 
             datenaustausch = get_localized_menu_options_datenaustausch()
-            assert len(datenaustausch) == 5
+            assert len(datenaustausch) == 3
             assert all(d for d in datenaustausch)

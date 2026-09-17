@@ -35,13 +35,13 @@ class ExportDialog(BaseDialog):
         w, h = DIALOG_DIMENSIONS.get("export", (820, 720))
         # Ensure window is large enough for both tabs
         w = max(w, 820)
-        h = max(h, 720)
+        h = max(h, 860)
 
         self.setup_window(
             parent,
             tr("export_dialog.dialog_title", "Export & Übergabe — {case_id}", case_id=case.case_id),
             (w, h),
-            min_size=(760, 640),
+            min_size=(760, 720),
             title_factory=lambda: tr("export_dialog.dialog_title", "Export & Übergabe — {case_id}", case_id=case.case_id),
         )
 

@@ -148,6 +148,30 @@ def get_actor_val_from_display(display: str) -> str:
     for k in ACTOR_DISPLAY:
         if get_actor_display(k) == display or ACTOR_DISPLAY[k] == display:
             return k
+    legacy_map = {
+        "support / hotline": "SUPPORT",
+        "support": "SUPPORT",
+        "hotline": "SUPPORT",
+        "data-al support / hotline": "SUPPORT",
+        "data-al hotline": "SUPPORT",
+        "data-al support": "SUPPORT",
+        "technik": "TECH",
+        "tech": "TECH",
+        "tech support": "TECH",
+        "data-al technik": "TECH",
+        "data-al tech": "TECH",
+        "entwicklung": "DEVELOPMENT",
+        "development": "DEVELOPMENT",
+        "utveckling": "DEVELOPMENT",
+        "data-al entwicklung": "DEVELOPMENT",
+        "kunde": "CUSTOMER",
+        "customer": "CUSTOMER",
+        "kund": "CUSTOMER",
+        "data-al kunde": "CUSTOMER",
+    }
+    disp_lower = display.lower().strip()
+    if disp_lower in legacy_map:
+        return legacy_map[disp_lower]
     return display
 
 

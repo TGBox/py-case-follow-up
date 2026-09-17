@@ -25,16 +25,10 @@ DISPLAY_CHANNEL_NAMES = LocalizedDict("channels", {
 })
 
 DISPLAY_ACTOR_NAMES = LocalizedDict("actors", {
-    "SUPPORT": "Support / Hotline",
-    "HOTLINE": "Hotline",
-    "DEVELOPMENT": "Entwicklung",
+    "SUPPORT": "Hotline",
     "TECH": "Technik",
+    "DEVELOPMENT": "Entwicklung",
     "CUSTOMER": "Kunde",
-    "DATA_SUPPORT": "Data-AL Support / Hotline",
-    "DATA_HOTLINE": "Data-AL Hotline",
-    "DATA_DEVELOPMENT": "Data-AL Entwicklung",
-    "DATA_TECH": "Data-AL Technik",
-    "DATA_CUSTOMER": "Data-AL Kunde",
 })
 
 DISPLAY_LAYOUT_NAMES = LocalizedDict("layouts", {
@@ -120,14 +114,12 @@ def get_localized_menu_options_datenaustausch() -> list[str]:
     return [
         tr("menu.opt_email_import", "📥 E-Mail Import"),
         tr("menu.opt_cobra", "🐍 Cobra CRM Import"),
-        tr("menu.opt_export", "📤 Export (Strg+E)"),
-        tr("menu.opt_zip", "📦 ZIP-Backup"),
-        tr("menu.opt_p2p", "🔄 P2P-Sync"),
+        tr("menu.opt_export", "📤 Export & Übergabe (Strg+E)"),
     ]
 
 MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "👥 Mitarbeiter", "🧩 Programmbereiche", "🏷 Tags"]
 MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine"]
-MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "🐍 Cobra CRM Import", "📤 Export (Strg+E)", "📦 ZIP-Backup", "🔄 P2P-Sync"]
+MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "🐍 Cobra CRM Import", "📤 Export & Übergabe (Strg+E)"]
 
 # --- Button Labels & UI Action Texts ---
 UI_BUTTON_TEXTS = LocalizedDict("ui_buttons", {

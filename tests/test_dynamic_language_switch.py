@@ -137,15 +137,15 @@ class TestDynamicLanguageSwitchCore:
         i18n = get_i18n()
 
         i18n.current_language = "de"
-        assert "Support" in get_actor_display("SUPPORT")
+        assert "Hotline" in get_actor_display("SUPPORT")
         assert "Entwicklung" in get_actor_display("DEVELOPMENT")
 
         i18n.current_language = "en"
-        assert "Support" in get_actor_display("SUPPORT")
+        assert "Hotline" in get_actor_display("SUPPORT")
         assert "Development" in get_actor_display("DEVELOPMENT")
 
         i18n.current_language = "sv"
-        assert "Support" in get_actor_display("SUPPORT")
+        assert "Hotline" in get_actor_display("SUPPORT")
         assert "Utveckling" in get_actor_display("DEVELOPMENT")
 
     def test_enum_layout_display_helpers_across_languages(self):
@@ -249,19 +249,19 @@ class TestDynamicLanguageSwitchHeadlessUI:
         # German
         get_i18n().current_language = "de"
         board.create_board()
-        assert "Support" in tr("board.col_support")
+        assert "Hotline" in tr("board.col_support")
         assert tr("board.col_completed") == "✓ Erledigte Fälle"
 
         # English
         get_i18n().current_language = "en"
         board.create_board()
-        assert "Support" in tr("board.col_support")
+        assert "Hotline" in tr("board.col_support")
         assert tr("board.col_completed") == "✓ Completed Cases"
 
         # Swedish
         get_i18n().current_language = "sv"
         board.create_board()
-        assert "Support" in tr("board.col_support")
+        assert "Hotline" in tr("board.col_support")
         assert tr("board.col_completed") == "✓ Avslutade ärenden"
 
     def test_table_view_column_map_dynamic_resolution(self):
@@ -361,7 +361,7 @@ class TestDynamicLanguageSwitchHeadlessUI:
         # 1. Switch to English
         get_i18n().current_language = "en"
         cockpit.refresh_ui_labels()
-        btns_c = cockpit.right_tabview._segmented_button._buttons_dict
+        btns_c = getattr(cockpit.right_tabview, "_segmented_button")._buttons_dict
         assert btns_c["Zeitleiste"].cget("text") == "Timeline"
         assert btns_c["Anhänge"].cget("text") == "Attachments"
         assert btns_c["Wiki"].cget("text") == "Wiki / Knowledge Base"
@@ -393,7 +393,7 @@ class TestDynamicLanguageSwitchHeadlessUI:
 
         get_i18n().current_language = "en"
         tv.refresh_ui_labels()
-        btns_tv = tv.detail_tabview._segmented_button._buttons_dict
+        btns_tv = getattr(tv.detail_tabview, "_segmented_button")._buttons_dict
         assert "Form & Fill" in btns_tv["📝 Formular & Ausfüllen"].cget("text")
         assert "Timeline" in btns_tv["🕒 Zeitleiste"].cget("text")
         assert "Attachments" in btns_tv["📎 Anhänge"].cget("text")

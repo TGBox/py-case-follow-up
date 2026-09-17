@@ -274,6 +274,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
+        if self.on_case_selected:
+            self.on_case_selected(case)
 
         self._update_title_label()
         self.print_btn.configure(state="normal")
@@ -327,14 +329,20 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
-        if choice.startswith("📧"):
-            self.on_copy_practice_email()
-        elif choice.startswith("📤"):
+        if choice.startswith("📤"):
             self.on_click_export()
-        elif choice.startswith("🖨"):
-            self.on_click_print()
+        elif choice.startswith("✉"):
+            self.on_click_email_calendar()
+        elif choice.startswith("📅"):
+            self.on_click_calendar()
+        elif choice.startswith("📦"):
+            self.on_click_archive()
         elif choice.startswith("🔄"):
             self.open_convert_schema_dialog()
+        elif choice.startswith("📧"):
+            self.on_copy_practice_email()
+        elif choice.startswith("🖨"):
+            self.on_click_print()
         if hasattr(self, "more_actions_combo"):
             from services.i18n_service import tr
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))

@@ -174,3 +174,9 @@ def test_refresh_ui_labels_updates_more_actions_dropdown_and_toolbar_buttons(coc
     assert cockpit.followup_btn.cget("text") == tr("cockpit.followup", "🔔 Wiedervorlage")
     assert cockpit.save_btn.cget("text") == tr("cockpit.save", "💾 Speichern")
     assert cockpit.archive_btn.cget("text") == tr("cockpit.archive", "📦 Archivieren")
+
+
+def test_actor_combo_and_complete_btn_in_toolbar(cockpit):
+    """Verify actor_combo (Übergabe) and complete_btn (Erledigt) are placed in toolbar_right."""
+    assert cockpit.actor_combo.master == cockpit.toolbar_right
+    assert cockpit.complete_btn.master == cockpit.toolbar_right

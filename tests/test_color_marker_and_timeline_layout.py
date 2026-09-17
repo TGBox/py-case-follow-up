@@ -116,6 +116,19 @@ def test_timeline_widget_redesigned_card_layout(headless_root):
     felipe_tiles = find_colored_frames(felipe_card)
     assert len(felipe_tiles) == 0, "Expected 0 colored tiles for Felipe's note"
 
+    # Verify author label does not contain person icon 👤
+    def find_all_label_texts(parent):
+        found = []
+        for child in parent.winfo_children():
+            if isinstance(child, ctk.CTkLabel):
+                found.append(child.cget("text"))
+            found.extend(find_all_label_texts(child))
+        return found
+
+    daniel_labels = find_all_label_texts(daniel_card)
+    assert "Daniel Rösch" in daniel_labels
+    assert not any("👤" in t for t in daniel_labels), "Person icon 👤 should be removed from timeline card"
+
     # Test toggling color_marker_enabled off
     widget.set_user_color_settings(user_color="#ef4444", color_marker_enabled=False)
     cards_disabled = widget.scroll_frame.winfo_children()

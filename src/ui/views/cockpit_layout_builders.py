@@ -221,35 +221,15 @@ class CockpitLayoutBuilderMixin:
 
         self.info_left_frame.bind("<Configure>", self._on_info_frame_configure, add="+")
 
-        # Right Column: Status Controls (Actor, Erledigen, Archivieren)
+        # Status Frame reference retained for backwards compatibility
         self.status_right_frame = ctk.CTkFrame(self.info_row, fg_color="transparent")
-        self.status_right_frame.pack(side="right", anchor="e")
         self.info_right_frame = self.status_right_frame
 
         from services.i18n_service import tr
 
-        self.actor_combo = ctk.CTkOptionMenu(
-            self.status_right_frame,
-            values=list(ACTOR_DISPLAY.values()),
-            command=self.on_actor_changed,
-            width=110,
-        )
-        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
-        self.actor_combo.pack(side="top", anchor="e", padx=2, pady=(0, 2))
-
-        self.complete_btn = ctk.CTkButton(
-            self.status_right_frame,
-            text=tr("cockpit.complete", "✓ Erledigt"),
-            command=self.on_toggle_complete,
-            width=110,
-            fg_color="green",
-        )
-        self.complete_btn.pack(side="top", anchor="e", padx=2, pady=(2, 0))
-
         # Retained as non-packed widget for backwards compatibility
         self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=95, fg_color="darkred")
 
-        # Responsive layout: stack vertically when not enough horizontal space
         self._info_row_horizontal = True
         self.info_row.bind("<Configure>", self._on_info_row_configure, add="+")
 
@@ -273,9 +253,27 @@ class CockpitLayoutBuilderMixin:
         self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=130, state="disabled", fg_color="#6366f1", hover_color="#4f46e5")
         self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=95, state="disabled", fg_color="forestgreen", hover_color="darkgreen")
 
-        # Right Side of Toolbar: Save Button + Integrated Dropdown Menu for Utilities
+        # Right Side of Toolbar: Handover + Complete + Save + Integrated Dropdown Menu for Utilities
         self.toolbar_right = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
         self.toolbar_right.pack(side="right", padx=4, pady=4)
+
+        self.actor_combo = ctk.CTkOptionMenu(
+            self.toolbar_right,
+            values=list(ACTOR_DISPLAY.values()),
+            command=self.on_actor_changed,
+            width=105,
+        )
+        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
+        self.actor_combo.pack(side="left", padx=3)
+
+        self.complete_btn = ctk.CTkButton(
+            self.toolbar_right,
+            text=tr("cockpit.complete", "✓ Erledigt"),
+            command=self.on_toggle_complete,
+            width=95,
+            fg_color="green",
+        )
+        self.complete_btn.pack(side="left", padx=3)
 
         self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "💾 Speichern"), command=self.on_click_save, width=95, state="disabled")
         self.save_btn.pack(side="left", padx=3)
@@ -290,7 +288,7 @@ class CockpitLayoutBuilderMixin:
                 tr("cockpit.convert_form", "🔄 Formular umwandeln"),
             ],
             command=self.on_more_actions_selected,
-            width=180,
+            width=165,
             fg_color=("gray70", "gray35"),
             button_color=("gray60", "gray40"),
         )
@@ -304,8 +302,8 @@ class CockpitLayoutBuilderMixin:
 
         # Responsive layout: re-arrange toolbar buttons when center pane is too narrow
         self._toolbar_horizontal = True
-        # Minimum width (px) for all left toolbar buttons side-by-side
-        self._TOOLBAR_BREAK_WIDTH = 480
+        # Minimum width (px) for all left and right toolbar buttons side-by-side
+        self._TOOLBAR_BREAK_WIDTH = 640
         self.toolbar_row.bind("<Configure>", self._on_toolbar_row_configure, add="+")
 
     # ------------------------------------------------------------------ #
@@ -328,7 +326,7 @@ class CockpitLayoutBuilderMixin:
             for btn in (self.followup_btn, self.add_note_btn):
                 btn.pack_forget()
                 btn.pack(side="left", padx=3)
-            for w in (self.save_btn, self.more_actions_combo):
+            for w in (self.actor_combo, self.complete_btn, self.save_btn, self.more_actions_combo):
                 w.pack_forget()
                 w.pack(side="left", padx=3)
         else:
@@ -340,30 +338,13 @@ class CockpitLayoutBuilderMixin:
             for btn in (self.followup_btn, self.add_note_btn):
                 btn.pack_forget()
                 btn.pack(side="top", fill="x", pady=1)
-            for w in (self.save_btn, self.more_actions_combo):
+            for w in (self.actor_combo, self.complete_btn, self.save_btn, self.more_actions_combo):
                 w.pack_forget()
                 w.pack(side="top", fill="x", pady=1)
 
     def _on_info_row_configure(self, event: Any) -> None:
-        """Re-pack info-row status buttons vertically when the row is too narrow."""
-        available = event.width
-        _INFO_BREAK_WIDTH = 260
-        want_horizontal = available >= _INFO_BREAK_WIDTH
-        if want_horizontal == self._info_row_horizontal:
-            return
-        self._info_row_horizontal = want_horizontal
-        if want_horizontal:
-            self.status_right_frame.pack_forget()
-            self.status_right_frame.pack(side="right", anchor="e")
-            for w in (self.actor_combo, self.complete_btn):
-                w.pack_forget()
-                w.pack(side="top", anchor="e", padx=2, pady=1)
-        else:
-            self.status_right_frame.pack_forget()
-            self.status_right_frame.pack(side="top", fill="x", pady=(2, 0))
-            for w in (self.actor_combo, self.complete_btn):
-                w.pack_forget()
-                w.pack(side="top", fill="x", pady=1, padx=2)
+        """Kept for configure callback compatibility."""
+        pass
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr

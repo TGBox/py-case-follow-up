@@ -15,11 +15,15 @@ def test_pre_push_hook_exists_and_configured():
     assert "pyinstaller" in content.lower()
     assert "py-case-follow-up.spec" in content
 
+    # Verify static typecheck via pyright
+    assert "pyright" in content
+
     # Verify running tests
     assert "pytest" in content
 
-    # Verify build step occurs before test execution step
+    # Verify build step occurs before typecheck and test execution step
     build_idx = content.find("uv run pyinstaller")
+    typecheck_idx = content.find("uvx pyright")
     test_idx = content.find("uv run pytest")
-    assert build_idx != -1 and test_idx != -1
-    assert build_idx < test_idx, "Executable build must be executed before running pytest tests"
+    assert build_idx != -1 and typecheck_idx != -1 and test_idx != -1
+    assert build_idx < typecheck_idx < test_idx, "Executable build, typecheck, and test execution must follow proper order"

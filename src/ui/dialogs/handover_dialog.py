@@ -19,9 +19,11 @@ class HandoverDialog(BaseDialog):
         case: Case,
         colleagues: list[Colleague] | None = None,
         on_handover_confirmed: Callable[[str, str, str, str], None] | None = None,
+        target_actor: str | None = None,
     ):
         super().__init__(parent)
         self.case = case
+        self.target_actor = target_actor
         self.colleagues = list(colleagues) if colleagues else []
         if not self.colleagues:
             storage = getattr(parent, "storage_service", None)
@@ -92,7 +94,8 @@ class HandoverDialog(BaseDialog):
         self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.new_actor", "Neue verantwortliche Stelle *:"), font=ctk.CTkFont(weight="bold")), "handover_dialog.new_actor", "Neue verantwortliche Stelle *:").pack(anchor="w", pady=(4, 2))
         actor_options = [get_actor_display(a) for a in ACTOR_DISPLAY]
         self.actor_combo = ctk.CTkOptionMenu(main_frame, values=actor_options, width=320)
-        self.actor_combo.set(curr_actor if curr_actor in actor_options else actor_options[0])
+        initial_actor = self.target_actor if (self.target_actor and self.target_actor in actor_options) else curr_actor
+        self.actor_combo.set(initial_actor if initial_actor in actor_options else actor_options[0])
         self.actor_combo.pack(anchor="w", fill="x", pady=(0, 12))
 
         # 2. Handover Channel / Medium Dropdown

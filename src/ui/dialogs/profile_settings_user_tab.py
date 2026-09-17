@@ -243,6 +243,123 @@ class UserSettingsTabMixin:
         )
         self.btn_open_p2p.pack(anchor="w", pady=(0, 10))
 
+        # Section 5: Persönliche Farbmarkierung
+        self.color_marker_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(left_col, text=tr("profile.color_marker_header", "Persönliche Farbmarkierung"), font=ctk.CTkFont(size=14, weight="bold")),
+            "profile.color_marker_header",
+            "Persönliche Farbmarkierung",
+        )
+        self.color_marker_hdr_lbl.pack(anchor="w", pady=(14, 4))
+
+        self.selected_user_color: str = getattr(self.profile.user, "user_color", "#3b82f6") or "#3b82f6"
+
+        self.color_marker_switch = self.register_i18n(
+            ctk.CTkSwitch(
+                left_col,
+                text=tr("profile.color_marker_enable", "Eigene Einträge & Fälle farblich hervorheben"),
+                command=self.on_toggle_color_marker,
+            ),
+            "profile.color_marker_enable",
+            "Eigene Einträge & Fälle farblich hervorheben",
+        )
+        if getattr(self.profile.user, "color_marker_enabled", False):
+            self.color_marker_switch.select()
+        else:
+            self.color_marker_switch.deselect()
+        self.color_marker_switch.pack(anchor="w", pady=(0, 8))
+
+        palette_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        palette_frame.pack(anchor="w", pady=(0, 8))
+
+        self._color_presets = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4"]
+        self._preset_buttons = []
+        for color in self._color_presets:
+            btn = ctk.CTkButton(
+                palette_frame,
+                text="",
+                width=24,
+                height=24,
+                corner_radius=4,
+                fg_color=color,
+                hover_color=color,
+                border_width=2 if color.lower() == self.selected_user_color.lower() else 1,
+                border_color="#ffffff" if color.lower() == self.selected_user_color.lower() else "#18181b",
+                command=lambda c=color: self.set_selected_user_color(c),
+            )
+            btn.pack(side="left", padx=(0, 6))
+            self._preset_buttons.append((color, btn))
+
+        self.btn_pick_color = self.register_i18n(
+            ctk.CTkButton(
+                palette_frame,
+                text=tr("profile.color_marker_select", "Farbe wählen..."),
+                width=130,
+                command=self.on_pick_custom_color,
+                fg_color=("gray45", "gray35"),
+                hover_color=("gray35", "gray45"),
+                text_color="white",
+            ),
+            "profile.color_marker_select",
+            "Farbe wählen...",
+        )
+        self.btn_pick_color.pack(side="left", padx=(6, 0))
+
+        preview_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        preview_frame.pack(anchor="w", pady=(0, 10))
+
+        self.preview_lbl = self.register_i18n(
+            ctk.CTkLabel(preview_frame, text=tr("profile.color_marker_preview", "Vorschau:"), font=ctk.CTkFont(size=12)),
+            "profile.color_marker_preview",
+            "Vorschau:",
+        )
+        self.preview_lbl.pack(side="left", padx=(0, 8))
+
+        self.preview_tile = ctk.CTkFrame(
+            preview_frame,
+            width=14,
+            height=14,
+            corner_radius=2,
+            fg_color=self.selected_user_color,
+            border_width=1,
+            border_color="#18181b",
+        )
+        self.preview_tile.pack(side="left", padx=(0, 6), pady=2)
+
+        self.preview_sample_lbl = ctk.CTkLabel(
+            preview_frame,
+            text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})",
+            font=ctk.CTkFont(size=11),
+            text_color=("gray30", "gray70"),
+        )
+        self.preview_sample_lbl.pack(side="left")
+
+    def on_toggle_color_marker(self) -> None:
+        if hasattr(self, "color_marker_switch"):
+            self.profile.user.color_marker_enabled = bool(self.color_marker_switch.get())
+
+    def set_selected_user_color(self, color: str) -> None:
+        self.selected_user_color = color
+        self.profile.user.user_color = color
+        if hasattr(self, "preview_tile"):
+            self.preview_tile.configure(fg_color=color)
+        if hasattr(self, "_preset_buttons"):
+            for c, btn in self._preset_buttons:
+                is_selected = (c.lower() == color.lower())
+                btn.configure(
+                    border_width=2 if is_selected else 1,
+                    border_color="#ffffff" if is_selected else "#18181b",
+                )
+
+    def on_pick_custom_color(self) -> None:
+        from tkinter import colorchooser
+        res = colorchooser.askcolor(
+            color=getattr(self, "selected_user_color", "#3b82f6"),
+            title=tr("profile.color_marker_select", "Farbe wählen..."),
+            parent=cast(tk.Misc, self),
+        )
+        if res and res[1]:
+            self.set_selected_user_color(res[1])
+
     def on_open_p2p_sync_dialog(self) -> None:
         parent = getattr(self, "master", None) or getattr(self, "_parent", None)
         if hasattr(parent, "open_p2p_dialog"):
@@ -399,6 +516,20 @@ class UserSettingsTabMixin:
             self.user_sig_txt.delete("1.0", "end")
             self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
 
+        if hasattr(self, "color_marker_switch"):
+            if getattr(self.profile.user, "color_marker_enabled", False):
+                self.color_marker_switch.select()
+            else:
+                self.color_marker_switch.deselect()
+
+        if hasattr(self, "preview_tile"):
+            self.set_selected_user_color(getattr(self.profile.user, "user_color", "#3b82f6"))
+
+        if hasattr(self, "preview_sample_lbl"):
+            self.preview_sample_lbl.configure(
+                text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})"
+            )
+
         if hasattr(self, "reload_ui_fields"):
             self.reload_ui_fields()
 
@@ -415,6 +546,10 @@ class UserSettingsTabMixin:
         self.profile.user.mobile = self.user_mobile_entry.get().strip()
         if hasattr(self, "user_sig_txt"):
             self.profile.user.email_signature = self.user_sig_txt.get("1.0", "end-1c").strip()
+        if hasattr(self, "color_marker_switch"):
+            self.profile.user.color_marker_enabled = bool(self.color_marker_switch.get())
+        if hasattr(self, "selected_user_color"):
+            self.profile.user.user_color = self.selected_user_color
         return True
 
     def refresh_user_tab_labels(self) -> None:
@@ -438,3 +573,15 @@ class UserSettingsTabMixin:
             self.p2p_desc_lbl.configure(text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."))
         if hasattr(self, "btn_open_p2p"):
             self.btn_open_p2p.configure(text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."))
+        if hasattr(self, "color_marker_hdr_lbl"):
+            self.color_marker_hdr_lbl.configure(text=tr("profile.color_marker_header", "Persönliche Farbmarkierung"))
+        if hasattr(self, "color_marker_switch"):
+            self.color_marker_switch.configure(text=tr("profile.color_marker_enable", "Eigene Einträge & Fälle farblich hervorheben"))
+        if hasattr(self, "btn_pick_color"):
+            self.btn_pick_color.configure(text=tr("profile.color_marker_select", "Farbe wählen..."))
+        if hasattr(self, "preview_lbl"):
+            self.preview_lbl.configure(text=tr("profile.color_marker_preview", "Vorschau:"))
+        if hasattr(self, "preview_sample_lbl"):
+            self.preview_sample_lbl.configure(
+                text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})"
+            )

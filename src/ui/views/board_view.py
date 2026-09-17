@@ -19,6 +19,9 @@ class KanbanCardWidget(ctk.CTkFrame):
         on_open_followup: Callable[[Case], None],
         on_toggle_complete: Callable[[Case], None],
         on_change_actor: Callable[[Case], None],
+        current_user_name: str = "",
+        user_color: str | None = None,
+        color_marker_enabled: bool = False,
     ):
         super().__init__(parent, corner_radius=8, fg_color=COLOR_CARD_BG, border_width=1, border_color=COLOR_CARD_BORDER)
         self.case = case
@@ -27,6 +30,9 @@ class KanbanCardWidget(ctk.CTkFrame):
         self.on_open_followup = on_open_followup
         self.on_toggle_complete = on_toggle_complete
         self.on_change_actor = on_change_actor
+        self.current_user_name = current_user_name
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
 
         self.create_card()
 
@@ -34,6 +40,26 @@ class KanbanCardWidget(ctk.CTkFrame):
         # Header: ID + Urgency Score Badge
         header_frame = ctk.CTkFrame(self, fg_color="transparent")
         header_frame.pack(fill="x", padx=10, pady=(8, 2))
+
+        is_user_case = bool(
+            self.current_user_name
+            and (
+                (self.case.assigned_to and self.case.assigned_to.strip().lower() == self.current_user_name.strip().lower())
+                or (self.case.created_by and self.case.created_by.strip().lower() == self.current_user_name.strip().lower())
+                or any(t.author and t.author.strip().lower() == self.current_user_name.strip().lower() for t in self.case.timeline)
+            )
+        )
+        if is_user_case and self.color_marker_enabled and self.user_color:
+            tile = ctk.CTkFrame(
+                header_frame,
+                width=10,
+                height=10,
+                corner_radius=2,
+                fg_color=self.user_color,
+                border_width=1,
+                border_color="#18181b",
+            )
+            tile.pack(side="left", padx=(0, 4), pady=2)
 
         id_lbl = ctk.CTkLabel(
             header_frame, text=self.case.case_id, font=ctk.CTkFont(weight="bold", size=13)
@@ -176,6 +202,9 @@ class BoardView(ctk.CTkFrame):
         on_toggle_complete: Callable[[Case], None],
         on_change_actor: Callable[[Case], None],
         app_config: Any | None = None,
+        current_user_name: str = "",
+        user_color: str | None = None,
+        color_marker_enabled: bool = False,
     ):
         super().__init__(parent, fg_color="transparent")
         self.on_select_case = on_select_case
@@ -184,6 +213,9 @@ class BoardView(ctk.CTkFrame):
         self.on_toggle_complete = on_toggle_complete
         self.on_change_actor = on_change_actor
         self.app_config = app_config
+        self.current_user_name = current_user_name
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
 
         self.cases: list[Case] = []
         self._col_signatures: dict[str, list] = {}
@@ -211,6 +243,14 @@ class BoardView(ctk.CTkFrame):
             self.collapsed_states["hotline"] = self.collapsed_states.pop("support")
 
         self.create_board()
+
+    def set_user_color_settings(self, current_user_name: str, user_color: str | None, color_marker_enabled: bool):
+        self.current_user_name = current_user_name
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
+        self._col_signatures.clear()
+        if self.cases:
+            self.refresh_board()
 
     def _columns_def(self) -> list[tuple[str, str]]:
         from services.i18n_service import tr
@@ -455,6 +495,9 @@ class BoardView(ctk.CTkFrame):
             on_open_followup=self.on_open_followup,
             on_toggle_complete=self.on_toggle_complete,
             on_change_actor=self.on_change_actor,
+            current_user_name=self.current_user_name,
+            user_color=self.user_color,
+            color_marker_enabled=self.color_marker_enabled,
         )
         card.pack(fill="x", pady=4, padx=2)
 

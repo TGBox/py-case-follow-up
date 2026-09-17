@@ -3,7 +3,7 @@ from collections.abc import Callable
 from models.case import TimelineEntry
 from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
 from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
-from utils.datetime_utils import now_iso
+from utils.datetime_utils import now_iso, format_german_date, format_german_time
 
 
 class TimelineWidget(ctk.CTkFrame):
@@ -13,14 +13,24 @@ class TimelineWidget(ctk.CTkFrame):
         author_name: str,
         on_timeline_updated: Callable[[list[TimelineEntry]], None],
         on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
+        user_color: str | None = None,
+        color_marker_enabled: bool = False,
     ):
         super().__init__(parent)
         self.author_name = author_name
         self.on_timeline_updated = on_timeline_updated
         self.on_open_snippet_picker = on_open_snippet_picker
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
         self.timeline_entries: list[TimelineEntry] = []
 
         self.create_widgets()
+
+    def set_user_color_settings(self, user_color: str | None, color_marker_enabled: bool):
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
+        if self.timeline_entries:
+            self.load_timeline(self.timeline_entries)
 
     def create_widgets(self):
         from services.i18n_service import tr
@@ -111,19 +121,53 @@ class TimelineWidget(ctk.CTkFrame):
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x", padx=8, pady=(4, 2))
 
-            header_str = f"👤 {entry.author}  [{get_channel_display(entry.channel)}]"
-            ctk.CTkLabel(top_row, text=header_str, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left")
-            from utils.datetime_utils import format_german_datetime
-            formatted_ts = format_german_datetime(entry.timestamp, include_seconds=True)
-            ctk.CTkLabel(top_row, text=formatted_ts, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
+            channel_text = get_channel_display(entry.channel)
+            ctk.CTkLabel(top_row, text=channel_text, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left", anchor="nw")
+
+            dt_col = ctk.CTkFrame(top_row, fg_color="transparent")
+            dt_col.pack(side="right", anchor="ne")
+            formatted_d = format_german_date(entry.timestamp)
+            formatted_t = format_german_time(entry.timestamp, include_seconds=True, with_uhr=True)
+            ctk.CTkLabel(dt_col, text=formatted_d, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(anchor="e")
+            ctk.CTkLabel(dt_col, text=formatted_t, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(anchor="e")
 
             note_lbl = ctk.CTkLabel(card, text=entry.note, anchor="w", justify="left", font=ctk.CTkFont(size=12), wraplength=300)
-            note_lbl.pack(fill="x", padx=10, pady=(0, 6))
+            note_lbl.pack(fill="x", padx=10, pady=(2, 4))
 
             if entry.status_change:
                 from services.i18n_service import tr
                 sc_lbl = ctk.CTkLabel(card, text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change), font=ctk.CTkFont(size=10), text_color="dodgerblue")
                 sc_lbl.pack(anchor="w", padx=10, pady=(0, 4))
+
+            bottom_row = ctk.CTkFrame(card, fg_color="transparent")
+            bottom_row.pack(fill="x", padx=8, pady=(2, 4))
+
+            author_frame = ctk.CTkFrame(bottom_row, fg_color="transparent")
+            author_frame.pack(side="right", anchor="e")
+
+            is_own_entry = bool(
+                self.author_name
+                and entry.author
+                and entry.author.strip().lower() == self.author_name.strip().lower()
+            )
+            if is_own_entry and self.color_marker_enabled and self.user_color:
+                color_tile = ctk.CTkFrame(
+                    author_frame,
+                    width=10,
+                    height=10,
+                    corner_radius=2,
+                    fg_color=self.user_color,
+                    border_width=1,
+                    border_color="#18181b",
+                )
+                color_tile.pack(side="left", padx=(0, 5), pady=1)
+
+            ctk.CTkLabel(
+                author_frame,
+                text=f"👤 {entry.author}",
+                font=ctk.CTkFont(size=10),
+                text_color=("gray45", "gray65"),
+            ).pack(side="left")
 
         from utils.ui_utils import bind_mouse_wheel_to_canvas
         bind_mouse_wheel_to_canvas(self.scroll_frame)

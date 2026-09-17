@@ -137,12 +137,10 @@ def test_refresh_ui_labels_shows_complete_text_for_open_case(cockpit):
 
 
 def test_refresh_ui_labels_sets_actor_combo_to_current_actor(cockpit):
-    from enums import get_actor_display
-
     case = _make_case(current_actor=Actor.DEVELOPMENT)
     cockpit.current_case = case
     cockpit.refresh_ui_labels()
-    assert cockpit.actor_combo.get() == get_actor_display(Actor.DEVELOPMENT)
+    assert cockpit.actor_combo.get() == tr("cockpit.handover_action", "Übergabe")
 
 
 def test_refresh_ui_labels_shows_customer_info_with_vip_marker(cockpit):

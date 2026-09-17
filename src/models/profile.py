@@ -22,6 +22,8 @@ class UserInfo:
     email: str = ""
     mobile: str = ""
     email_signature: str = ""
+    user_color: str = "#3b82f6"
+    color_marker_enabled: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -35,6 +37,8 @@ class UserInfo:
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),
             email_signature=data.get("email_signature", ""),
+            user_color=data.get("user_color", "#3b82f6"),
+            color_marker_enabled=bool(data.get("color_marker_enabled", False)),
         )
 
 

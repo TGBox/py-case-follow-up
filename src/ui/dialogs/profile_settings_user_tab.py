@@ -320,28 +320,31 @@ class UserSettingsTabMixin:
             "profile.color_marker_select",
             "Farbe wählen...",
         )
-        self.btn_pick_color.pack(side="left", padx=(4, 8))
+        self.btn_pick_color.pack(side="left", padx=(4, 0))
+
+        preview_row_frame = ctk.CTkFrame(left_col, fg_color="transparent")
+        preview_row_frame.grid(row=17, column=0, columnspan=2, sticky="w", pady=(3, 4))
 
         self.preview_lbl = self.register_i18n(
-            ctk.CTkLabel(color_row_frame, text=tr("profile.color_marker_preview", "Vorschau:"), font=ctk.CTkFont(size=11)),
+            ctk.CTkLabel(preview_row_frame, text=tr("profile.color_marker_preview", "Vorschau:"), font=ctk.CTkFont(size=11)),
             "profile.color_marker_preview",
             "Vorschau:",
         )
-        self.preview_lbl.pack(side="left", padx=(0, 4))
+        self.preview_lbl.pack(side="left", padx=(0, 6))
 
         self.preview_tile = ctk.CTkFrame(
-            color_row_frame,
-            width=14,
-            height=14,
-            corner_radius=2,
+            preview_row_frame,
+            width=16,
+            height=16,
+            corner_radius=3,
             fg_color=self.selected_user_color,
             border_width=1,
             border_color="#18181b",
         )
-        self.preview_tile.pack(side="left", padx=(0, 4), pady=2)
+        self.preview_tile.pack(side="left", padx=(0, 6), pady=2)
 
         self.preview_sample_lbl = ctk.CTkLabel(
-            color_row_frame,
+            preview_row_frame,
             text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})",
             font=ctk.CTkFont(size=11),
             text_color=("gray30", "gray70"),

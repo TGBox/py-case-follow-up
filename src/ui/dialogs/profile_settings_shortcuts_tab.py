@@ -160,12 +160,10 @@ class ShortcutsSettingsTabMixin:
         for attr_name, label_text in HOTKEY_ACTION_LABELS:
             row = ctk.CTkFrame(right_col, fg_color="transparent")
             row.pack(fill="x", pady=1)
-            ctk.CTkLabel(row, text=label_text, width=160, anchor="w").pack(side="left")
 
             val = getattr(self.profile.shortcuts, attr_name, "")
             entry = ctk.CTkEntry(row, width=110)
             entry.insert(0, val)
-            entry.pack(side="left", padx=(5, 5))
             self.shortcut_entries[attr_name] = entry
 
             rec_btn = self.register_i18n(
@@ -181,8 +179,11 @@ class ShortcutsSettingsTabMixin:
                 "hotkey_recorder.button",
                 HOTKEY_RECORDER_BUTTON,
             )
-            rec_btn.pack(side="left")
+            rec_btn.pack(side="right", padx=(5, 0))
             self.rec_buttons.append(rec_btn)
+
+            entry.pack(side="right", padx=(5, 5))
+            ctk.CTkLabel(row, text=label_text, anchor="w").pack(side="left", fill="x", expand=True)
 
             entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
@@ -209,12 +210,8 @@ class ShortcutsSettingsTabMixin:
                 s_row = ctk.CTkFrame(right_col, fg_color="transparent")
                 s_row.pack(fill="x", pady=1)
 
-                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:22]} ({snip.snippet_id}):", width=160, anchor="w")
-                title_lbl.pack(side="left")
-
                 s_entry = ctk.CTkEntry(s_row, width=110)
                 s_entry.insert(0, snip.shortcut or "")
-                s_entry.pack(side="left", padx=(5, 5))
                 self.snippet_shortcut_entries.append((snip, s_entry))
 
                 s_rec_btn = self.register_i18n(
@@ -230,8 +227,13 @@ class ShortcutsSettingsTabMixin:
                     "hotkey_recorder.button",
                     HOTKEY_RECORDER_BUTTON,
                 )
-                s_rec_btn.pack(side="left")
+                s_rec_btn.pack(side="right", padx=(5, 0))
                 self.rec_buttons.append(s_rec_btn)
+
+                s_entry.pack(side="right", padx=(5, 5))
+
+                title_lbl = ctk.CTkLabel(s_row, text=f"{snip.title[:24]} ({snip.snippet_id}):", anchor="w")
+                title_lbl.pack(side="left", fill="x", expand=True)
 
                 s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 

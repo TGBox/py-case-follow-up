@@ -1019,12 +1019,12 @@
     "basics": {
       "title": "🚀 Grundläggande & 4 Vyer",
       "category": "Grundläggande",
-      "content": "### 🚀 Grundläggande gränssnitt & vyer\n\nSupport Cockpit erbjuder 4 specialiserade arbetsvyer som du när som helst kan växla mellan via menyn eller snabbknappar:\n\n#### 1. 🎛 Cockpit-vy (Standard, `Ctrl + 1`)\n- **Tredelad huvudlayout**:\n  - **Vänster**: Ärendelista med sökfält, snabbfilter och brådskandebadgar.\n  - **Mitten**: Ärendedetaljer, dynamiska formulärfält, snabbåtgärder och tidslinje.\n  - **Höger**: Flikcontainer med *Tidslinje*, *Bilagor & Skärmklipp* samt *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban-tavla (`Ctrl + 2`)\n- Ärendeöversikt sorterad efter statuskolumner (*Ny*, *Åtgärd krävs*, *Väntar*, *Pågår*, *Slutförd*).\n\n#### 3. 📊 Tabellmatris (`Ctrl + 3`)\n- Kompakt tabellvy för snabb sökning, sortering och hantering av stora volymer.\n\n#### 4. 📈 Analys & Nyckeltal (`Ctrl + 4`)\n- Statistisk instrumentpanel med nyckeltal för öppna ärenden, förfallotider, handläggningstider och belastning."
+      "content": "### 🚀 Grundläggande gränssnitt & vyer\n\nSupport Cockpit erbjuder 4 specialiserade arbetsvyer som du när som helst kan växla mellan via menyn eller snabbknappar:\n\n#### 1. 🎛 Cockpit-vy (Standard, `Ctrl + 1`)\n- **Tredelad huvudlayout**:\n  - **Vänster**: Ärendelista med sökfält, snabbfilter (`[🔥 Brådskande]`, `[🔔 Uppföljningar]`, `[🏢 Internt]`), brådskandebadgar och personlig färgmarkering.\n  - **Mitten**: Ärendedetaljer, dynamiska formulärfält, snabbåtgärder (E-post & AI, Kalender, Uppföljning, Notering) och överlämningsområdet direkt ovanför Klart-knappen.\n  - **Höger**: Flikcontainer med *Tidslinje* (överskådliga kort med noteringskanal uppe till vänster, klockslag uppe till höger och handläggare nere till höger), *Bilagor & Skärmklipp* samt *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban-tavla (`Ctrl + 2`)\n- Fullständig översikt över 4 avdelningskolumner och 2 processkolumner (**6 kolumner**):\n  - 📞 **Hotline** (`hotline`)\n  - 🔧 **Teknik** (`tech`)\n  - 💻 **Utveckling** (`dev`)\n  - 👤 **Kund** (`customer`)\n  - 🔔 **Uppföljning** (`followup`)\n  - ✓ **Klart** (`completed`)\n- Varje kolumn kan fällas ihop och visar antal ärenden i rubriken.\n\n#### 3. 📊 Tabellmatris (`Ctrl + 3`)\n- Kompakt tabellvy för snabb sökning, sortering och hantering av stora volymer.\n\n#### 4. 📈 Analys & Nyckeltal (`Ctrl + 4`)\n- Statistisk instrumentpanel med nyckeltal för öppna ärenden, förfallotider, handläggningstider och belastning."
     },
     "case_print_reporting": {
-      "title": "🖨 Utskriftsvy, PDF & Bilder",
+      "title": "🖨 Ärendeutskrift & Kompakt A4 PDF-export",
       "category": "Export",
-      "content": "### 🖨 Utskriftsvy, PDF & Bilder\n\nSkapa utskriftsvänliga rapporter inklusive alla skärmklipp och tidslinjenoteringar."
+      "content": "### 🖨 Ärendeutskrift & Kompakt A4 PDF-export\n\nSkapa utrymmesoptimerade ärenderapporter som ryms på **en enda A4-sida** för standardärenden.\n\n#### 1. Kompakt 2-kolumners layout\n- **Horisontell gruppering**: Ärendemetadata (vänster) och kunddata (höger) placeras sida vid sida.\n- **2-kolumners fältraster**: Korta formulärfält delar upp två kolumner för att spara vertikalt utrymme. Längre texter spänner över hela bredden.\n- **Kompakt tidslinje**: Diskreta kort med reducerade marginaler eliminerar onödigt tomrum.\n\n#### 2. DIN A4-format (@page)\n- Inbyggd `@page { size: A4 portrait; margin: 8mm 10mm; }` säkerställer korrekta utskriftsmarginaler i webbläsaren.\n- Automatiskt skydd mot sidbrytning inuti tabeller och kort (`page-break-inside: avoid;`).\n\n#### 3. Användning:\n1. I Cockpit, öppna **⚙ Fler åtgärder...** -> **📤 Export & överlämning** och välj fliken **Skriv ut & akt**.\n2. Anpassa kryssrutorna efter behov.\n3. Klicka på **🖨 Öppna i webbläsare & skriv ut** eller **💾 Spara som HTML**."
     },
     "cobra_crm_import": {
       "title": "🐍 Cobra CRM Import",
@@ -1042,14 +1042,14 @@
       "content": "### 🔌 E-postimport (IMAP) & Webhooks\n\nImportera e-post automatiskt och skicka REST webhooks till Jira / GitLab."
     },
     "export": {
-      "title": "📤 Exportmotor & Mallar",
+      "title": "📤 Export & överlämning (Mallar & Utskrift)",
       "category": "Export",
-      "content": "### 📤 Exportmotor & Mallar\n\nExportera ärenden till Markdown, HTML eller PDF för biljettsystem och e-post."
+      "content": "### 📤 Samlad dialog: Export & överlämning (`Ctrl + E`)\n\nDen enhetliga dialogen **`📤 Export & överlämning`** sammanför mallbaserad export och utskriftsrapporter i två flikar:\n\n#### Flik 1: Export & mallar (Standard)\n1. Välj en mall (*Standard överlämning*, *Kundsammanfattning*, *Utvecklarrapport*).\n2. Välj utdataformat (*Markdown*, *HTML / Text*, *PDF*).\n3. Kopiera till urklipp (**📋 Kopiera till urklipp**) eller spara som fil (**💾 Spara fil**).\n\n#### Flik 2: Skriv ut & akt\n- Selektiv utskrift av ärendeakt.\n- Välj önskade avsnitt eller enskilda tidslinjeanteckningar.\n- Öppna den optimerade A4-rapporten i webbläsaren (**🖨 Öppna i webbläsare & skriv ut**) eller spara som HTML/PDF (**💾 Spara**)."
     },
     "handover_followup": {
-      "title": "🔔 Överlämningar & Återupptaganden",
+      "title": "🔔 Ansvarsöverlämning & Uppföljningar",
       "category": "Arbetsflöde",
-      "content": "### 🔔 Överlämningar & Återupptaganden\n\nLogga överlämningar i tidslinjen och schemalägg påminnelser med kalenderväljaren."
+      "content": "### 🔔 Ansvarsöverlämning & Uppföljningar\n\nSäkerställ att inga ärenden glöms bort och att överlämningar är spårbara.\n\n#### 1. Överlämningsmeny i Cockpit\n- Direkt ovanför knappen **`✓ Klart`** finns rullgardinsmenyn **`Överlämning`**.\n- Välj målavdelning direkt:\n  - 📞 **Hotline**\n  - 🔧 **Teknik**\n  - 💻 **Utveckling**\n  - 👤 **Kund**\n- Vid klick öppnas överlämningsdialogen med förvald avdelning, och menyn återgår omedelbart till texten *\"Överlämning\"*.\n- **Kollega & frånvarovarning**: Tilldela en kollega. Om personen är markerad som frånvarande visas en visuell varning omedelbart.\n- Överlämningen loggas i tidslinjen med tidsstämpel och handläggare.\n\n#### 2. Schemalägg uppföljning & påminnelse\n1. Klicka på **🔔 Uppföljning** i Cockpit.\n2. Välj datum med kalenderväljaren eller snabbknapparna (`+ 1 dag`, `+ 2 dagar`, `+ 1 vecka`).\n3. Ange en kort påminnelsenotering.\n4. **Ärendelistevisning**: Aktiva uppföljningar markeras på tre rader med relativ förfallostatus (`(förfaller idag)`, `(imorgon)`, `(försenad med X dagar)`)."
     },
     "internal_cases": {
       "title": "🏢 Interna ärenden & uppgifter",
@@ -1108,8 +1108,8 @@
     },
     "ui_customization": {
       "category": "Användargränssnitt",
-      "content": "### 📅 Datumvisning & användaranpassningar\n\n- **Standardformat**: Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- **Grafisk kalenderväljare**: Klicka på kalenderikonen bredvid datumfält för att öppna den grafiska datumväljaren med snabbval (*Idag 11:30*, *Idag 16:30*, *Imorgon 08:00*, *+ 1 dag*, *+ 1 vecka*).\n- **Kolumnbredder**: Kolumnbredder i tabellvyn kan justeras genom att dra i kolumnrubrikerna. Bredderna sparas automatiskt i din profil och kan återställas under **Inställningar** vid behov.",
-      "title": "📅 Datumformat, kalender & kolumnbredder"
+      "content": "### 📅 Datumvisning, kolumnbredder & personlig färgmarkering\n\n#### 1. 📅 Datumvisning & kalenderväljare\n- Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- En interaktiv kalenderväljare är tillgänglig för alla datumfält med snabbval (*+ 1 dag*, *+ 1 vecka*).\n\n#### 2. 🎨 Personlig medarbetarfärgmarkering\n- Under **⚙ Profil & inställningar** (`👤`) -> fliken **👤 Användare** kan varje medarbetare välja en personlig färg.\n- **Diskreta färgbrickor**: När markering är aktiv visas en diskret, svart inramad färgbricka (`10x10 pixlar`):\n  - I ärendelistan bredvid ärende-ID.\n  - I rubriken på Kanban-korten.\n  - I tidslinjekorten nere till höger bredvid handläggarens namn.\n- Ger snabb visuell överblick utan att störa den övriga designen.\n\n#### 3. 📐 Individuella kolumnbredder\n- Kolumnbredder i Cockpit och på Kanban-tavlan kan anpassas via knappen **📐 Kolumner** i toppmenyn och sparas automatiskt i din användarprofil (`user_config.json`).",
+      "title": "📅 Datumformat, kolumnbredder & färgmarkering"
     },
     "wiki": {
       "title": "📚 BookStack Offline Wiki",

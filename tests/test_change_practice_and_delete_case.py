@@ -6,7 +6,7 @@ import pytest
 
 from config import AppConfig
 from enums import Channel
-from models.case import Case, CaseCustomer, Classification, TimelineEntry, WorkflowStatus
+from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from models.customer import Customer
 from services.storage_service import StorageService
 from ui.app_dialogs import DialogLaunchersMixin

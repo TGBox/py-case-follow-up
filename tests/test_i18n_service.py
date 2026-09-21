@@ -77,11 +77,11 @@ def test_dynamic_language_switch_updates_dialog_and_cockpit(tmp_path: Path):
     # Switch to Swedish
     get_i18n().current_language = "sv"
     assert get_i18n().current_language == "sv"
-    assert get_i18n().tr("cockpit.save") == "Spara"
-    assert get_i18n().tr("cockpit.archive") == "Arkivera"
-    assert get_i18n().tr("cockpit.complete") == "Klar"
+    assert get_i18n().tr("cockpit.save") == "💾 Spara"
+    assert get_i18n().tr("cockpit.archive") == "📦 Arkivera"
+    assert get_i18n().tr("cockpit.complete") == "✓ Klar"
 
     # Switch back to German
     get_i18n().current_language = "de"
-    assert get_i18n().tr("cockpit.save") == "Speichern"
+    assert get_i18n().tr("cockpit.save") == "💾 Speichern"
 

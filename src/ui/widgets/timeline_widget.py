@@ -86,7 +86,7 @@ class TimelineWidget(ctk.CTkFrame):
 
         self.snip_btn = ctk.CTkButton(
             ctrl_row,
-            text=tr("cockpit.snippets_btn", "❖ Textbaustein"),
+            text=tr("cockpit.snippets_btn", "📝 Textbaustein"),
             width=BTN_WIDTH_SM + 10,
             fg_color=COLOR_MUTED_GRAY_FG,
             hover_color=COLOR_PURPLE_DARK,
@@ -114,7 +114,7 @@ class TimelineWidget(ctk.CTkFrame):
         if hasattr(self, "ctrl_lbl"):
             self.ctrl_lbl.configure(text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"))
         if hasattr(self, "snip_btn"):
-            self.snip_btn.configure(text=tr("cockpit.snippets_btn", "❖ Textbaustein"))
+            self.snip_btn.configure(text=tr("cockpit.snippets_btn", "📝 Textbaustein"))
         if hasattr(self, "add_btn"):
             self.add_btn.configure(text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"))
         if hasattr(self, "channel_combo"):

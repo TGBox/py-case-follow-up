@@ -254,18 +254,18 @@ class AiSettingsTabMixin:
 
         self.ollama_status_lbl = self.register_i18n(ctk.CTkLabel(
             status_row,
-            text=tr("profile.checking_ollama", "Prüfe Ollama-Status..."),
+            text=tr("profile.checking_ollama", "🔍 Prüfe Ollama-Status..."),
             font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
-        ), "profile.checking_ollama", "Prüfe Ollama-Status...")
+        ), "profile.checking_ollama", "🔍 Prüfe Ollama-Status...")
         self.ollama_status_lbl.pack(side="left")
 
         self.btn_refresh_ollama = self.register_i18n(ctk.CTkButton(
             status_row,
-            text=tr("profile.scan_ollama_btn", "Status & Modelle scannen"),
+            text=tr("profile.scan_ollama_btn", "🔄 Status & Modelle scannen"),
             command=self.scan_ollama_status,
             width=BTN_WIDTH_SCAN_OLLAMA,
             fg_color=COLOR_BTN_GRAY30,
-        ), "profile.scan_ollama_btn", "Status & Modelle scannen")
+        ), "profile.scan_ollama_btn", "🔄 Status & Modelle scannen")
         self.btn_refresh_ollama.pack(side="right")
 
         # Download / Offline Frame (shown if offline)

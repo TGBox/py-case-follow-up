@@ -186,7 +186,7 @@ class EditTemplateDialog(BaseDialog):
         from services.i18n_service import tr
 
         # Live Preview Panel
-        preview_btn = self.register_i18n(ctk.CTkButton(scroll_frame, text=tr("template_editor.preview_btn", "Live-Vorschau rendern"), command=self.render_preview, fg_color=COLOR_PRIMARY_BLUE), "template_editor.preview_btn", "Live-Vorschau rendern")
+        preview_btn = self.register_i18n(ctk.CTkButton(scroll_frame, text=tr("template_editor.preview_btn", "👁 Live-Vorschau rendern"), command=self.render_preview, fg_color=COLOR_PRIMARY_BLUE), "template_editor.preview_btn", "👁 Live-Vorschau rendern")
         preview_btn.pack(anchor="w", pady=PAD_SM)
 
         self.preview_textbox = ctk.CTkTextbox(scroll_frame, height=TEXTBOX_HEIGHT_PREVIEW, font=ctk.CTkFont(family=FONT_FAMILY_MONO, size=FONT_SIZE_SM))
@@ -197,7 +197,7 @@ class EditTemplateDialog(BaseDialog):
         bottom_bar = ctk.CTkFrame(self, height=HEIGHT_BOTTOM_BAR, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=PAD_15, pady=PAD_10)
 
-        self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("ui_buttons.save_template", "Vorlage Speichern"), command=self.save, fg_color=COLOR_SUCCESS, width=BTN_WIDTH_TAG_APPLY), "ui_buttons.save_template", "Vorlage Speichern").pack(side="right", padx=PAD_CONTAINER)
+        self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("ui_buttons.save_template", "💾 Vorlage Speichern"), command=self.save, fg_color=COLOR_SUCCESS, width=BTN_WIDTH_TAG_APPLY), "ui_buttons.save_template", "💾 Vorlage Speichern").pack(side="right", padx=PAD_CONTAINER)
         self.register_i18n(ctk.CTkButton(bottom_bar, text=tr("common.cancel", "Abbrechen"), command=self.destroy, fg_color=COLOR_BTN_CANCEL, hover_color=COLOR_BTN_CANCEL_HOVER, width=BTN_WIDTH_CANCEL), "common.cancel", "Abbrechen").pack(side="left", padx=PAD_CONTAINER)
 
     def render_preview(self):
@@ -271,11 +271,11 @@ class TemplateManagerDialog(BaseDialog):
         from services.i18n_service import tr
         self.setup_window(
             parent,
-            tr("dialog_titles.template_mgmt", "Export-Vorlagen verwalten"),
+            tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"),
             (w, h),
             min_size=DIALOG_MIN_SIZE_TEMPLATE_MGMT,
 
-            title_factory=lambda: tr("dialog_titles.template_mgmt", "Export-Vorlagen verwalten"),
+            title_factory=lambda: tr("dialog_titles.template_mgmt", "📄 Export-Vorlagen verwalten"),
         )
 
         self.create_widgets()
@@ -286,7 +286,7 @@ class TemplateManagerDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=HEIGHT_TOP_BAR, corner_radius=CORNER_RADIUS_NONE)
         top_bar.pack(fill="x", side="top", padx=PAD_10, pady=(PAD_10, PAD_CONTAINER))
 
-        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("template_mgmt.header", "Export-Vorlagen-Verwaltung"), font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight=FONT_WEIGHT_BOLD)), "template_mgmt.header", "Export-Vorlagen-Verwaltung").pack(side="left", padx=PAD_10)
+        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("template_mgmt.header", "📄 Export-Vorlagen-Verwaltung"), font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight=FONT_WEIGHT_BOLD)), "template_mgmt.header", "📄 Export-Vorlagen-Verwaltung").pack(side="left", padx=PAD_10)
 
         btn_new = self.register_i18n(ctk.CTkButton(top_bar, text=tr("template_mgmt.new_template", "+ Neue Vorlage"), command=self.on_add_template, fg_color=COLOR_SUCCESS, width=BTN_WIDTH_ACTION), "template_mgmt.new_template", "+ Neue Vorlage")
         btn_new.pack(side="right", padx=PAD_CONTAINER)
@@ -309,8 +309,8 @@ class TemplateManagerDialog(BaseDialog):
     def _get_toggle_defaults_text(self) -> str:
         from services.i18n_service import tr
         if self.storage_service.has_default_templates():
-            return tr("template_mgmt.remove_defaults", "Standard-Vorlagen entfernen")
-        return tr("template_mgmt.add_defaults", "Standard-Vorlagen laden")
+            return tr("template_mgmt.remove_defaults", "➖ Standard-Vorlagen entfernen")
+        return tr("template_mgmt.add_defaults", "➕ Standard-Vorlagen laden")
 
     def on_toggle_default_templates(self):
         self.templates, is_added = self.storage_service.toggle_default_templates()
@@ -343,16 +343,16 @@ class TemplateManagerDialog(BaseDialog):
             top_row = ctk.CTkFrame(card, fg_color="transparent")
             top_row.pack(fill="x", padx=PAD_10, pady=(PAD_GAP, PAD_XS))
 
-            name_lbl = ctk.CTkLabel(top_row, text=tmpl.display_name, font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD, size=FONT_SIZE_CONFIRM))
+            name_lbl = ctk.CTkLabel(top_row, text=f"📄 {tmpl.display_name}", font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD, size=FONT_SIZE_CONFIRM))
             name_lbl.pack(side="left")
 
             id_lbl = ctk.CTkLabel(top_row, text=f"[{tmpl.template_id}]", font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_MUTED_LABEL)
             id_lbl.pack(side="left", padx=PAD_MD)
 
-            btn_del = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.delete", "Löschen"), width=BTN_WIDTH_SM, fg_color=COLOR_DANGER, command=lambda t=tmpl: self.confirm_delete_template(t)), "common.delete", "Löschen")
+            btn_del = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.delete", "🗑 Löschen"), width=BTN_WIDTH_SM, fg_color=COLOR_DANGER, command=lambda t=tmpl: self.confirm_delete_template(t)), "common.delete", "🗑 Löschen")
             btn_del.pack(side="right", padx=PAD_SM)
 
-            btn_edit = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.edit", "Bearbeiten"), width=BTN_WIDTH_FILTER_DEEP, command=lambda t=tmpl: self.on_edit_template(t)), "common.edit", "Bearbeiten")
+            btn_edit = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.edit", "✏ Bearbeiten"), width=BTN_WIDTH_FILTER_DEEP, command=lambda t=tmpl: self.on_edit_template(t)), "common.edit", "✏ Bearbeiten")
             btn_edit.pack(side="right", padx=PAD_SM)
 
             is_already_saved = any(
@@ -361,9 +361,9 @@ class TemplateManagerDialog(BaseDialog):
             )
 
             if is_already_saved:
-                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.already_in_real_data", "In Realdaten enthalten"), width=BTN_WIDTH_ADOPT, state="disabled", fg_color=COLOR_BTN_GRAY), "template_mgmt.already_in_real_data", "In Realdaten enthalten")
+                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), width=BTN_WIDTH_ADOPT, state="disabled", fg_color=COLOR_BTN_GRAY), "template_mgmt.already_in_real_data", "✓ In Realdaten enthalten")
             else:
-                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.adopt_to_real_data", "Zu Realdaten übernehmen"), width=BTN_WIDTH_NEW_COLLEAGUE, fg_color=COLOR_PRIMARY_BLUE, command=lambda t=tmpl: self.on_adopt_template(t)), "template_mgmt.adopt_to_real_data", "Zu Realdaten übernehmen")
+                btn_adopt = self.register_i18n(ctk.CTkButton(top_row, text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), width=BTN_WIDTH_NEW_COLLEAGUE, fg_color=COLOR_PRIMARY_BLUE, command=lambda t=tmpl: self.on_adopt_template(t)), "template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen")
             btn_adopt.pack(side="right", padx=PAD_SM)
 
             desc_txt = tmpl.description or tr("template_mgmt.no_desc", "Keine Beschreibung")
@@ -399,7 +399,7 @@ class TemplateManagerDialog(BaseDialog):
             self,
             tr("confirm.delete_template", "Export-Vorlage „{name}“ wirklich dauerhaft löschen?", name=tmpl.display_name),
             title=tr("confirm.delete_title", "Löschen bestätigen"),
-            confirm_text=tr("confirm.yes_delete", "Ja, löschen"),
+            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
         ):
             self.on_delete_template(tmpl)
 

@@ -99,7 +99,7 @@ class FieldRendererMixin:
             from services.i18n_service import tr
             ctk.CTkButton(
                 label_row,
-                text=tr("dynamic_form.manage_tags", "Programmbereiche verwalten"),
+                text=tr("dynamic_form.manage_tags", "⚙ Programmbereiche verwalten"),
                 width=BTN_WIDTH_MANAGE_TAGS,
                 height=BTN_HEIGHT_MANAGE_TAGS,
                 fg_color=COLOR_BTN_MANAGE_TAGS,

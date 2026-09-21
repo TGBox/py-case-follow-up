@@ -97,12 +97,12 @@ class CustomerFormBuilderMixin:
 
         cobra_btn = self.register_i18n(ctk.CTkButton(
             top_bar,
-            text=tr("customer_mgmt.cobra_import_btn", "Cobra CRM Import..."),
+            text=tr("customer_mgmt.cobra_import_btn", "🐍 Cobra CRM Import..."),
             command=self.on_click_cobra_import,
             fg_color=COLOR_MAGENTA_HOVER,
             hover_color=COLOR_PURPLE_HOVER,
             width=BTN_WIDTH_COBRA_IMPORT,
-        ), "customer_mgmt.cobra_import_btn", "Cobra CRM Import...")
+        ), "customer_mgmt.cobra_import_btn", "🐍 Cobra CRM Import...")
         cobra_btn.pack(side="right", padx=PAD_SM + 1)
 
     def _build_customer_list_panel(self, body_frame: ctk.CTkFrame):
@@ -114,7 +114,7 @@ class CustomerFormBuilderMixin:
         left_frame.pack(side="left", fill="y", padx=(PAD_NONE, PAD_SM + 1), pady=PAD_NONE)
         left_frame.pack_propagate(False)
 
-        self.search_entry = self.register_i18n(ctk.CTkEntry(left_frame, placeholder_text=tr("customer_mgmt.search_placeholder", "Praxis / ID suchen...")), "customer_mgmt.search_placeholder", "Praxis / ID suchen...", attr="placeholder_text")
+        self.search_entry = self.register_i18n(ctk.CTkEntry(left_frame, placeholder_text=tr("customer_mgmt.search_placeholder", "🔍 Praxis / ID suchen...")), "customer_mgmt.search_placeholder", "🔍 Praxis / ID suchen...", attr="placeholder_text")
         self.search_entry.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD + PAD_XS, PAD_SM))
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
@@ -134,13 +134,13 @@ class CustomerFormBuilderMixin:
         self.sort_asc_var = True
         self.sort_dir_btn = self.register_i18n(ctk.CTkButton(
             sort_bar,
-            text=tr("customer_mgmt.sort_asc", "Aufst."),
+            text=tr("customer_mgmt.sort_asc", "↑ Aufst."),
             width=BTN_WIDTH_SORT_DIR,
             fg_color=COLOR_BTN_SECONDARY,
             hover_color=COLOR_BTN_SECONDARY_HOVER,
             font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
             command=self.toggle_sort_direction,
-        ), "customer_mgmt.sort_asc", "Aufst.")
+        ), "customer_mgmt.sort_asc", "↑ Aufst.")
         self.sort_dir_btn.pack(side="right")
 
         self.list_scroll = ctk.CTkScrollableFrame(left_frame, fg_color="transparent")
@@ -157,7 +157,7 @@ class CustomerFormBuilderMixin:
         btn_row = ctk.CTkFrame(right_container, fg_color=COLOR_CARD_BG_ALT, height=HEIGHT_SAVE_BAR, corner_radius=CORNER_RADIUS_CARD)
         btn_row.pack(side="bottom", fill="x", padx=PAD_NONE, pady=(PAD_MD - PAD_XS, PAD_NONE))
 
-        self.save_btn = self.register_i18n(ctk.CTkButton(btn_row, text=tr("customer_mgmt.save_practice_btn", "Praxis Speichern"), command=self.save_current_customer, fg_color=COLOR_SUCCESS_ALT, width=BTN_WIDTH_TAG_APPLY), "customer_mgmt.save_practice_btn", "Praxis Speichern")
+        self.save_btn = self.register_i18n(ctk.CTkButton(btn_row, text=tr("customer_mgmt.save_practice_btn", "💾 Praxis Speichern"), command=self.save_current_customer, fg_color=COLOR_SUCCESS_ALT, width=BTN_WIDTH_TAG_APPLY), "customer_mgmt.save_practice_btn", "💾 Praxis Speichern")
         self.save_btn.pack(side="left", padx=PAD_MD + PAD_XS, pady=PAD_MD)
 
         self.status_lbl = ctk.CTkLabel(btn_row, text="", text_color=COLOR_SUCCESS, font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD))
@@ -333,12 +333,12 @@ class CustomerFormBuilderMixin:
 
         open_web_btn = self.register_i18n(ctk.CTkButton(
             web_sub,
-            text=tr("customer_mgmt.open_website_btn", "Öffnen"),
+            text=tr("customer_mgmt.open_website_btn", "🔗 Öffnen"),
             width=BTN_WIDTH_OPEN_WEB,
             fg_color=COLOR_BTN_SECONDARY,
             hover_color=COLOR_WIKI_LINK,
             command=self.open_website_in_browser,
-        ), "customer_mgmt.open_website_btn", "Öffnen")
+        ), "customer_mgmt.open_website_btn", "🔗 Öffnen")
         open_web_btn.pack(side="right")
 
         # VM Number Column

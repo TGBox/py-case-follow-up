@@ -177,7 +177,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         ftr = ctk.CTkFrame(self, fg_color="transparent")
         ftr.pack(fill="x", padx=PAD_LG, pady=(PAD_SM, PAD_MD + PAD_XS))
 
-        ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "Übernehmen & Schließen"), fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER, command=self.apply_and_close).pack(side="right")
+        ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "✓ Übernehmen & Schließen"), fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER, command=self.apply_and_close).pack(side="right")
 
     def _on_tag_search_keyrelease(self, event=None):
         """Debounces the tag filter so the checkbox list is rebuilt once per typing pause."""

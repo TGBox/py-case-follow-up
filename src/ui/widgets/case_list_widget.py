@@ -117,7 +117,7 @@ class CaseListWidget(ctk.CTkFrame):
         search_frame.pack(fill="x", padx=PAD_MD + PAD_XS, pady=PAD_MD + PAD_XS)
 
         self.search_entry = ctk.CTkEntry(
-            search_frame, placeholder_text=tr("cockpit.search_placeholder", "Suche / Token (z. B. vip:true status:open)...")
+            search_frame, placeholder_text=tr("cockpit.search_placeholder", "🔍 Suche / Token (z. B. vip:true status:open)...")
         )
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
@@ -128,14 +128,14 @@ class CaseListWidget(ctk.CTkFrame):
 
         self.qfilter_all_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_all", "Alle"), width=BTN_WIDTH_FILTER_ALL, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter(""))
         self.qfilter_all_btn.pack(side="left", padx=PAD_XS)
-        self.qfilter_urgent_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "Dringend"), width=BTN_WIDTH_SM, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true"))
+        self.qfilter_urgent_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "🔥 Dringend"), width=BTN_WIDTH_SM, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true"))
         self.qfilter_urgent_btn.pack(side="left", padx=PAD_XS)
-        self.qfilter_followup_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "Wiedervorlage"), width=BTN_WIDTH_FILTER_FOLLOWUP, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due"))
+        self.qfilter_followup_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=BTN_WIDTH_FILTER_FOLLOWUP, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due"))
         self.qfilter_followup_btn.pack(side="left", padx=PAD_XS)
 
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
-            text=tr("cockpit.filter_deep", "Tiefensuche"),
+            text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
             width=BTN_WIDTH_FILTER_DEEP,
             fg_color=COLOR_DEEP_SEARCH_INACTIVE,
             hover_color=COLOR_DEEP_SEARCH_ACTIVE,
@@ -160,15 +160,15 @@ class CaseListWidget(ctk.CTkFrame):
     def refresh_ui_labels(self):
         from services.i18n_service import tr
         if hasattr(self, "search_entry"):
-            self.search_entry.configure(placeholder_text=tr("cockpit.search_placeholder", "Suche / Token (z. B. vip:true status:open)..."))
+            self.search_entry.configure(placeholder_text=tr("cockpit.search_placeholder", "🔍 Suche / Token (z. B. vip:true status:open)..."))
         if hasattr(self, "qfilter_all_btn"):
             self.qfilter_all_btn.configure(text=tr("cockpit.filter_all", "Alle"))
         if hasattr(self, "qfilter_urgent_btn"):
-            self.qfilter_urgent_btn.configure(text=tr("cockpit.filter_urgent", "Dringend"))
+            self.qfilter_urgent_btn.configure(text=tr("cockpit.filter_urgent", "🔥 Dringend"))
         if hasattr(self, "qfilter_followup_btn"):
-            self.qfilter_followup_btn.configure(text=tr("cockpit.filter_followup", "Wiedervorlage"))
+            self.qfilter_followup_btn.configure(text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"))
         if hasattr(self, "deep_btn"):
-            self.deep_btn.configure(text=tr("cockpit.filter_deep", "Tiefensuche"))
+            self.deep_btn.configure(text=tr("cockpit.filter_deep", "🔍 Tiefensuche"))
         self.render_list()
 
     def _on_widget_configure(self, event=None):

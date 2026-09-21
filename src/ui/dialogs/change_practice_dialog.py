@@ -21,6 +21,7 @@ from constants import (
     BTN_WIDTH_MD,
     COLOR_BTN_CANCEL,
     COLOR_DANGER,
+    COLOR_MUTED_LABEL,
     COLOR_PRIMARY,
     COLOR_PRIMARY_HOVER,
     COLOR_SUCCESS,
@@ -96,7 +97,7 @@ class ChangePracticeDialog(BaseDialog):
             main,
             text=tr("change_practice.current", "Aktuelle Praxis: {name}", name=current_name),
             anchor="w",
-            text_color=("gray50", "gray60"),
+            text_color=COLOR_MUTED_LABEL,
         ).pack(fill="x", pady=(PAD_NONE, PAD_SM))
 
         # Customer search row

@@ -115,6 +115,9 @@ AI_PROVIDER_CHOICES = [
     ("profile.provider_ollama", "OLLAMA (Lokal)"),
     ("profile.provider_gemini", "GOOGLE GEMINI (Cloud)"),
 ]
+#: Program values in the same order as the labels above. The selector shows
+#: translated captions, so its position - not its text - identifies the provider.
+AI_PROVIDER_KEYS = ("OLLAMA", "GEMINI")
 
 
 class AiSettingsTabMixin:
@@ -131,6 +134,7 @@ class AiSettingsTabMixin:
         # Provided by BaseDialog once mixed into ProfileSettingsDialog.
         register_i18n: Callable[..., Any]
         retranslate_choices: Callable[..., Any]
+        selected_choice_index: Callable[..., int]
         winfo_exists: Callable[[], bool]
         after: Callable[..., Any]
         update_idletasks: Callable[[], None]
@@ -499,7 +503,13 @@ class AiSettingsTabMixin:
                 self.ai_base_rules_txt.insert("1.0", cleaned)
 
     def on_change_ai_provider(self, value: str):
-        is_gemini = "GEMINI" in value.upper()
+        # value is the translated caption the selector just switched to. Its
+        # *position* among the current captions identifies the provider, so this
+        # keeps working in every language - unlike the substring match on
+        # "GEMINI" that used to stand here and only held because the brand name
+        # survives translation.
+        index = self.selected_choice_index(self.ai_provider_seg, value=value)
+        is_gemini = AI_PROVIDER_KEYS[min(index, len(AI_PROVIDER_KEYS) - 1)] == "GEMINI"
         if is_gemini:
             self.gemini_card.pack(fill="x", pady=(PAD_NONE, PAD_10), padx=PAD_XS)
             self.ollama_card.pack_forget()
@@ -859,7 +869,7 @@ class AiSettingsTabMixin:
                 self.ai_base_rules_txt.insert("1.0", "\n".join(rules))
 
     def save_ai_settings(self) -> bool:
-        provider_val = "GEMINI" if "GEMINI" in self.ai_provider_seg.get().upper() else "OLLAMA"
+        provider_val = AI_PROVIDER_KEYS[self.selected_choice_index(self.ai_provider_seg)]
         self.profile.ai_settings.provider = provider_val
         self.profile.ai_settings.ollama_url = self.ai_url_entry.get().strip()
         self.profile.ai_settings.model_name = self.ai_model_entry.get().strip()

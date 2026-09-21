@@ -299,6 +299,43 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         status_tag = f"  [{tr('cockpit.status_completed_tag', '✓ ERLEDIGT')}]" if self.current_case.workflow_status.is_completed else ""
         self.case_title_label.configure(text=f"{self.current_case.case_id}: {self.current_case.classification.title}{status_tag}")
 
+    def clear_current_case(self) -> None:
+        """Empties the detail pane after the open case disappeared.
+
+        Deleting a case used to leave every panel showing it until the user
+        clicked another one, because nothing reset the pane - the caller only
+        set current_case to None, which the individual panels never see.
+        """
+        from services.i18n_service import tr
+
+        self.current_case = None
+
+        self.case_title_label.configure(text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"))
+        self.kunde_label.configure(text="")
+        self.ansprechpartner_label.configure(text="")
+
+        for widget in (
+            self.print_btn, self.email_btn, self.cal_btn,
+            self.export_btn, self.save_btn, self.convert_schema_btn,
+        ):
+            try:
+                widget.configure(state="disabled")
+            except Exception:
+                pass
+
+        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
+        self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+
+        self._update_wiedervorlage_display()
+
+        # The sidebar caches which case each tab last rendered; without this the
+        # tab would consider itself up to date and keep the deleted case around.
+        self._loaded_tab_case_ids.clear()
+
+        self.form_widget.load_schema(None, {}, [], case=None)
+        self.timeline_widget.load_timeline([])
+        self.attachment_widget.load_attachments(None)
+
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
         if self.on_case_selected:

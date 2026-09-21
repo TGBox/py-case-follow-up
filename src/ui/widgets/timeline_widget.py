@@ -28,7 +28,9 @@ from constants import (
     PAD_SM,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
-    TIMELINE_NOTE_TEXTBOX_PAD_Y,
+    TIMELINE_NOTE_WRAP_DEFAULT,
+    TIMELINE_NOTE_WRAP_INSET,
+    TIMELINE_NOTE_WRAP_MIN,
     USER_COLOR_TILE_SIZE,
 )
 from utils.datetime_utils import now_iso, format_german_date, format_german_time
@@ -133,59 +135,35 @@ class TimelineWidget(ctk.CTkFrame):
             self.note_textbox.insert("end", f"{sep}{text}")
 
     @staticmethod
-    def _count_display_lines(textbox: ctk.CTkTextbox) -> int:
-        """Number of wrapped lines the note currently occupies.
+    def _bind_note_wraplength(note_lbl: ctk.CTkLabel, column) -> None:
+        """Keeps a note label wrapping at the width its column actually has.
 
-        Text.count("displaylines") returns the number of line *breaks* between
-        the two indices, and Tk reports that as None for 0, a bare int on newer
-        Pythons or a 1-tuple on older ones - so all three shapes are normalised
-        before the first line is added back on.
+        wraplength is a pixel value, so it cannot be expressed as "fill the
+        column" - it has to be recomputed whenever the column is resized. The
+        label's own height follows from the wrapped text, which is what makes
+        the note show in full instead of scrolling inside a fixed box.
         """
-        raw = textbox._textbox.count("1.0", "end - 1 chars", "displaylines")
-        if raw is None:
-            breaks = 0
-        elif isinstance(raw, (tuple, list)):
-            breaks = int(raw[0]) if raw else 0
-        else:
-            breaks = int(raw)
-        return max(1, breaks + 1)
-
-    def _bind_note_autosize(self, note_tb: ctk.CTkTextbox, note_font: ctk.CTkFont) -> None:
-        """Grows a note box to its full text and keeps it there.
-
-        The previous version measured from the *card's* Configure event and set
-        an explicit width, so the very first pass wrapped against a width the
-        box did not have yet and came out one or two lines short - the rest of
-        the note ended up hidden behind the textbox's own scrolling. Measuring
-        the box itself, only once it actually has a width, and deriving the line
-        height from the font instead of dlineinfo() (which returns None while
-        the widget is still unmapped) removes both failure modes.
-        """
-        font_line_height = note_font.metrics("linespace")
         applied: list[int] = [-1]
 
-        def _fit_height(_event: Any = None) -> None:
+        def _fit_wrap(event: Any = None) -> None:
             try:
-                if not note_tb.winfo_exists() or note_tb.winfo_width() <= 1:
+                if not note_lbl.winfo_exists():
                     return
-                lines = self._count_display_lines(note_tb)
-                # dlineinfo reports the rendered line box including spacing, but
-                # only once the widget is mapped - the font metric covers the
-                # first pass, when it is not.
-                rendered = note_tb._textbox.dlineinfo("1.0")
-                line_height = rendered[3] if rendered else font_line_height
-                needed = lines * line_height + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2
-                # Only touch the geometry on a real change; configure() inside a
-                # Configure handler would otherwise bounce back and forth.
-                if needed != applied[0]:
-                    applied[0] = needed
-                    note_tb.configure(height=needed)
+                available = event.width if event is not None else column.winfo_width()
+                if available <= 1:
+                    return
+                wrap = max(TIMELINE_NOTE_WRAP_MIN, available - TIMELINE_NOTE_WRAP_INSET)
+                # Re-wrapping changes the label's height, which resizes the
+                # column and fires this again - only act on a real width change.
+                if wrap != applied[0]:
+                    applied[0] = wrap
+                    note_lbl.configure(wraplength=wrap)
             except Exception:
                 pass
 
-        note_tb.bind("<Configure>", _fit_height, add="+")
+        column.bind("<Configure>", _fit_wrap, add="+")
         try:
-            note_tb.after_idle(_fit_height)
+            note_lbl.after_idle(_fit_wrap)
         except Exception:
             pass
 
@@ -269,21 +247,23 @@ class TimelineWidget(ctk.CTkFrame):
                 height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
-            note_font = ctk.CTkFont(size=FONT_SIZE_BODY)
-            note_tb = ctk.CTkTextbox(
+            # A label, not a textbox: a CTkTextbox is a scrolling viewport, so it
+            # has to be told its height, and every attempt to compute that height
+            # from wrapped-line counts left the last lines hidden behind a
+            # scrollbar-less scroll area. A wrapping label has no viewport - it
+            # requests exactly the height its wrapped text needs, so the card
+            # grows with the note instead of cutting it off.
+            note_lbl = ctk.CTkLabel(
                 left_col,
-                font=note_font,
-                fg_color="transparent",
-                border_width=0,
-                wrap="word",
-                height=note_font.metrics("linespace") + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2,
-                activate_scrollbars=False,
+                text=entry.note,
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                anchor="w",
+                justify="left",
+                wraplength=TIMELINE_NOTE_WRAP_DEFAULT,
             )
-            note_tb.insert("1.0", entry.note)
-            note_tb.configure(state="disabled")
-            note_tb.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
+            note_lbl.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
 
-            self._bind_note_autosize(note_tb, note_font)
+            self._bind_note_wraplength(note_lbl, left_col)
 
             if entry.status_change:
                 from services.i18n_service import tr

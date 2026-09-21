@@ -448,7 +448,9 @@ COLOR_BORDER_DARK = "#18181b"
 TIMELINE_NOTE_WRAP_DEFAULT = 280
 TIMELINE_NOTE_WRAP_MIN = 180
 TIMELINE_NOTE_WRAP_OFFSET = 120
-TIMELINE_NOTE_TEXTBOX_PAD_Y = 4
+#: Horizontal breathing room between a timeline note and the edge of
+#: its column, subtracted from the column width to get the wrap length.
+TIMELINE_NOTE_WRAP_INSET = 12
 TOOLBAR_BREAK_WIDTH = 640
 BTN_WIDTH_ACTION_SM = 95
 TOOLTIP_SHORT_DELAY_MS = 250

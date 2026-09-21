@@ -28,7 +28,7 @@ from constants import (
     PAD_SM,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
-    TIMELINE_NOTE_WRAP_DEFAULT,
+    TIMELINE_NOTE_TEXTBOX_PAD_Y,
     TIMELINE_NOTE_WRAP_MIN,
     TIMELINE_NOTE_WRAP_OFFSET,
     USER_COLOR_TILE_SIZE,
@@ -214,23 +214,34 @@ class TimelineWidget(ctk.CTkFrame):
                 height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
-            note_lbl = ctk.CTkLabel(
+            note_tb = ctk.CTkTextbox(
                 left_col,
-                text=entry.note,
-                anchor="w",
-                justify="left",
                 font=ctk.CTkFont(size=FONT_SIZE_BODY),
-                wraplength=TIMELINE_NOTE_WRAP_DEFAULT,
+                fg_color="transparent",
+                border_width=0,
+                wrap="word",
+                height=1,
+                activate_scrollbars=False,
             )
-            note_lbl.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
+            note_tb.insert("1.0", entry.note)
+            note_tb.configure(state="disabled")
+            note_tb.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
 
-            def _make_wrap_updater(target_lbl: ctk.CTkLabel):
-                def _update_wrap(event: Any) -> None:
-                    target_wrap = max(TIMELINE_NOTE_WRAP_MIN, event.width - TIMELINE_NOTE_WRAP_OFFSET)
-                    target_lbl.configure(wraplength=target_wrap)
-                return _update_wrap
+            def _make_resize_handler(target_tb: ctk.CTkTextbox):
+                def _on_resize(event: Any) -> None:
+                    avail_width = max(TIMELINE_NOTE_WRAP_MIN, event.width - TIMELINE_NOTE_WRAP_OFFSET)
+                    target_tb.configure(width=avail_width)
+                    # Count wrapped lines to set exact height
+                    target_tb.configure(state="normal")
+                    line_count = (target_tb._textbox.count("1.0", "end", "displaylines") or (1,))[0]
+                    target_tb.configure(state="disabled")
+                    line_height = target_tb._textbox.dlineinfo("1.0")
+                    if line_height:
+                        new_height = line_count * line_height[3] + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2
+                        target_tb.configure(height=max(new_height, line_height[3]))
+                return _on_resize
 
-            card.bind("<Configure>", _make_wrap_updater(note_lbl), add="+")
+            card.bind("<Configure>", _make_resize_handler(note_tb), add="+")
 
             if entry.status_change:
                 from services.i18n_service import tr

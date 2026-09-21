@@ -128,16 +128,18 @@ class WikiSyncService:
         """Synchronizes articles from BookStack REST API according to configured sync mode.
         Accepts optional mock_client for unit testing.
         """
+        from services.i18n_service import tr
+
         api_url = normalize_url(self.settings.api_url)
         if not api_url and not mock_client:
-            return False, "Wiki API URL is not configured."
+            return False, tr("wiki.err_no_api_url", "Wiki-API-URL ist nicht konfiguriert.")
 
         token_id = resolve_secret(self.settings.token_id)
         token_secret = resolve_secret(self.settings.token_secret)
 
         if not token_id or not token_secret:
             if not mock_client:
-                return False, "BookStack API tokens are missing in environment variables."
+                return False, tr("wiki.err_missing_tokens", "BookStack-API-Tokens fehlen in den Umgebungsvariablen.")
 
         headers = {
             "Authorization": f"Token {token_id}:{token_secret}",
@@ -207,7 +209,7 @@ class WikiSyncService:
                     """, (page_id, title, content or title))
 
             conn.commit()
-            return True, f"Successfully synced {len(pages_data)} pages."
+            return True, tr("wiki.sync_success", "{count} Artikel synchronisiert.", count=len(pages_data))
 
         except Exception as e:
             logger.error(f"Wiki sync failed safely: {e}")
@@ -216,7 +218,7 @@ class WikiSyncService:
                     conn.rollback()
                 except Exception as rollback_err:
                     logger.warning(f"Wiki sync rollback failed: {rollback_err}")
-            return False, f"Wiki Sync Error: {e}"
+            return False, tr("wiki.sync_error", "Wiki-Sync-Fehler: {error}", error=e)
         finally:
             # Without this, an aborted sync left an open transaction on the
             # SQLite file and could lock out later reads.

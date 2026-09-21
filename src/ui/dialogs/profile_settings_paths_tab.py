@@ -24,7 +24,8 @@ from constants import (
     DEFAULT_BACKUP_WEEKLY_WEEKS,
     DEFAULT_BACKUP_ZIP_FILENAME,
     ENTRY_WIDTH_NUMERIC,
-    FILE_TYPES_ZIP,
+    get_file_types_data_file,
+    get_file_types_zip,
     FILENAME_APP_PROFILE,
     FILENAME_ARCHIVE,
     FILENAME_CASES,
@@ -424,7 +425,7 @@ class PathsSettingsTabMixin:
                 entry.insert(0, str(path))
 
     def on_browse_file(self, entry_widget: ctk.CTkEntry, file_pattern: str) -> None:
-        chosen = filedialog.askopenfilename(title=tr("profile.browse_file_title", "Datei auswählen"), filetypes=[("Datendatei", file_pattern), ("Alle Dateien", "*.*")])
+        chosen = filedialog.askopenfilename(title=tr("profile.browse_file_title", "Datei auswählen"), filetypes=get_file_types_data_file(file_pattern))
         if chosen:
             entry_widget.delete(0, "end")
             entry_widget.insert(0, chosen)
@@ -443,7 +444,7 @@ class PathsSettingsTabMixin:
         dest_file = filedialog.asksaveasfilename(
             title=tr("profile.save_zip_title", "Datensicherung als ZIP speichern"),
             defaultextension=".zip",
-            filetypes=FILE_TYPES_ZIP,
+            filetypes=get_file_types_zip(),
             initialfile=DEFAULT_BACKUP_ZIP_FILENAME,
             parent=cast(tk.Misc, self),
         )
@@ -465,7 +466,7 @@ class PathsSettingsTabMixin:
     def on_click_import_zip(self) -> None:
         zip_file = filedialog.askopenfilename(
             title=tr("profile.select_zip_title", "Datensicherung (ZIP-Datei) auswählen"),
-            filetypes=FILE_TYPES_ZIP,
+            filetypes=get_file_types_zip(),
             parent=cast(tk.Misc, self),
         )
         if not zip_file:

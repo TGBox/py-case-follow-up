@@ -28,6 +28,7 @@ from constants import (
     FONT_SIZE_BODY,
     FONT_SIZE_HEADER_BAR,
     FONT_SIZE_SM,
+    ICS_FILENAME_TEMPLATE_CALLBACK,
     PAD_10,
     PAD_15,
     PAD_CONTAINER,
@@ -37,6 +38,7 @@ from constants import (
     PAD_TINY,
     PAD_XS,
     TEXTBOX_HEIGHT_EMAIL_CALENDAR_BODY,
+    get_file_types_ics,
 )
 
 
@@ -241,8 +243,8 @@ class EmailCalendarDialog(BaseDialog):
         from services.i18n_service import tr
         file_path = filedialog.asksaveasfilename(
             title=tr("email_calendar.save_ics_title", "Kalenderdatei (.ics) speichern"),
-            initialfile=f"Rueckruf_{self.case.case_id}.ics",
-            filetypes=[("iCalendar-Dateien (*.ics)", "*.ics"), ("Alle Dateien", "*.*")],
+            initialfile=ICS_FILENAME_TEMPLATE_CALLBACK.format(case_id=self.case.case_id),
+            filetypes=get_file_types_ics(),
         )
         if not file_path:
             return

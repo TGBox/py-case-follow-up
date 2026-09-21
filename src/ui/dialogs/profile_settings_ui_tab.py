@@ -14,6 +14,7 @@ from constants import (
     PAD_NONE,
     PAD_SM,
     PAD_XS,
+    POPUP_DISPLAY_TARGETS,
     PROFILE_TAB_FIELD_WIDTH,
 )
 from enums import get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
@@ -67,6 +68,7 @@ class UiSettingsTabMixin:
         on_profile_updated: Callable[[], None] | None
         register_i18n: Callable[..., Any]
         retranslate_choices: Callable[..., Any]
+        selected_choice_index: Callable[..., int]
         _initial_font_scale: float
         _saved: bool
 
@@ -279,8 +281,14 @@ class UiSettingsTabMixin:
         if hasattr(self, "os_popup_switch"):
             self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
         if hasattr(self, "popup_target_combo"):
-            val = self.popup_target_combo.get()
-            self.profile.ui_settings.popup_display_target = "PRIMARY_SCREEN" if "Hauptbildschirm" in val else "APP_SCREEN"
+            # The menu shows translated labels; matching them against German text
+            # picked APP_SCREEN for every non-German UI. The position is what
+            # actually identifies the target, and POPUP_DISPLAY_TARGETS is kept
+            # in the same order as POPUP_TARGET_CHOICES.
+            index = self.selected_choice_index(self.popup_target_combo)
+            self.profile.ui_settings.popup_display_target = POPUP_DISPLAY_TARGETS[
+                min(index, len(POPUP_DISPLAY_TARGETS) - 1)
+            ]
         return True
 
     def refresh_ui_tab_labels(self) -> None:

@@ -463,7 +463,11 @@
     "select_valid": "Välj ett giltigt målformulär.",
     "case_info": "Ärende-ID: {case_id} — {title}",
     "current_form": "Aktuellt formulär: {schema_name}",
-    "notice_text": "ℹ Säkerhetskopiering:\nVid omvandling överförs tidigare angiven formulärinformation som en ny anteckning till tidslinjen så att inget innehåll går förlorat. Gemensamma fält (t.ex. programområde) överförs till det nya formuläret."
+    "notice_text": "ℹ Säkerhetskopiering:\nVid omvandling överförs tidigare angiven formulärinformation som en ny anteckning till tidslinjen så att inget innehåll går förlorat. Gemensamma fält (t.ex. programområde) överförs till det nya formuläret.",
+    "no_schemas": "Inga formulär",
+    "backup_item": "• {label}: {value}",
+    "timeline_note": "🔄 Formuläret konverterades från '{old_schema}' till '{new_schema}'.",
+    "timeline_note_with_data": "🔄 Formuläret konverterades från '{old_schema}' till '{new_schema}'.\n--- Sparade formulärdata ---\n{data}"
   },
   "customer_form": {
     "btn_add_contact": "+ Lägg till kontakt",
@@ -942,6 +946,19 @@
     "mail_kunden_rueckmeldung_name": "E-post till mottagning: Lösningssammanfattning"
   },
   "file_types": {
+    "all_files": "Alla filer",
+    "all_files_pattern": "Alla filer (*.*)",
+    "cobra_export": "Cobra-/CSV-filer (*.csv, *.txt, *.json)",
+    "data_file": "Datafil",
+    "html_file": "HTML-fil (*.html)",
+    "html_htm_file": "HTML-fil (*.html, *.htm)",
+    "html_report": "HTML-rapport (för PDF-utskrift)",
+    "ics": "iCalendar-filer (*.ics)",
+    "markdown": "Markdown",
+    "markdown_file": "Markdown (*.md)",
+    "signature_combined": "Text- och webbfiler (*.txt, *.html, *.md)",
+    "text": "Text",
+    "text_file": "Textfil (*.txt)",
     "zip_archive": "ZIP-arkiv"
   },
   "followup": {
@@ -1857,10 +1874,14 @@
     "articles_found": "Wiki-artiklar hittades",
     "articles_found_count": "{count} wiki-artiklar hittades",
     "enter_query": "Ange ett sökord.",
+    "err_missing_tokens": "BookStack API-tokens saknas i miljövariablerna.",
+    "err_no_api_url": "Wiki-API-URL är inte konfigurerad.",
     "header": "BookStack Offline-wiki",
     "no_results": "Inga matchande artiklar i offline-indexet.",
     "search_placeholder": "📖 Sök i wiki (t.ex. ERR_DB_902)...",
     "sync_btn": "🔄 Wiki-synk",
+    "sync_error": "Wiki sync error: {error}",
+    "sync_success": "{count} artiklar synkroniserade.",
     "syncing": "⏳ Synkroniserar wiki i bakgrunden..."
   },
   "zip_import": {

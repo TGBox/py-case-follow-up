@@ -25,7 +25,6 @@ from constants import (
     DIALOG_MIN_DIMENSIONS,
     ENTRY_WIDTH_SHORTCUT,
     FILE_EXT_HTML,
-    FILE_TYPES_HTML_REPORT,
     FONT_SIZE_TITLE,
     PAD_LG,
     PAD_MD,
@@ -36,6 +35,7 @@ from constants import (
     REPORT_FILENAME_TEMPLATE,
     REPORT_PRINT_FILENAME_TEMPLATE,
     SCROLL_HEIGHT_PRINT_TIMELINE,
+    get_file_types_html_report,
 )
 
 
@@ -196,7 +196,7 @@ class CasePrintDialog(BaseDialog):
             title=tr("case_print.save_dialog_title", "Fallbericht speichern"),
             defaultextension=FILE_EXT_HTML,
             initialfile=REPORT_FILENAME_TEMPLATE.format(case_id=self.case.case_id),
-            filetypes=FILE_TYPES_HTML_REPORT,
+            filetypes=get_file_types_html_report(),
         )
         if not file_path:
             return

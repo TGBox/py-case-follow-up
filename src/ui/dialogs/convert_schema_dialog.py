@@ -86,19 +86,19 @@ class ConvertSchemaDialog(BaseDialog):
         info_inner = ctk.CTkFrame(info_box, fg_color="transparent")
         info_inner.pack(fill="x", padx=PAD_10, pady=PAD_MD)
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             info_inner,
-            text=f"Fall-ID: {self.case.case_id} — {self.case.classification.title}",
+            text=tr("convert_schema.case_info", "Fall-ID: {case_id} — {title}", case_id=self.case.case_id, title=self.case.classification.title),
             font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
             anchor="w",
-        ).pack(fill="x")
+        ), "convert_schema.case_info", "Fall-ID: {case_id} — {title}", case_id=self.case.case_id, title=self.case.classification.title).pack(fill="x")
 
-        ctk.CTkLabel(
+        self.register_i18n(ctk.CTkLabel(
             info_inner,
-            text=f"Aktuelles Formular: {curr_schema_name}",
+            text=tr("convert_schema.current_form", "Aktuelles Formular: {schema_name}", schema_name=curr_schema_name),
             text_color=COLOR_TEXT_GRAY,
             anchor="w",
-        ).pack(fill="x", pady=(PAD_XS, PAD_NONE))
+        ), "convert_schema.current_form", "Aktuelles Formular: {schema_name}", schema_name=curr_schema_name).pack(fill="x", pady=(PAD_XS, PAD_NONE))
 
         # Target Schema selection
         self.register_i18n(ctk.CTkLabel(
@@ -106,7 +106,7 @@ class ConvertSchemaDialog(BaseDialog):
         ), "convert_schema.select_target", "Neues Ziel-Formular auswählen:").pack(anchor="w", pady=(PAD_SM, PAD_XS))
 
         schema_options = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
-        self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_options if schema_options else ["Keine Schemas"])
+        self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_options if schema_options else [tr("convert_schema.no_schemas", "Keine Schemas")])
         self.schema_combo.pack(fill="x", pady=(PAD_NONE, PAD_LG))
 
         # Pre-select first non-current schema if available
@@ -118,15 +118,15 @@ class ConvertSchemaDialog(BaseDialog):
         notice_frame = ctk.CTkFrame(main_frame, fg_color=COLOR_NOTICE_INFO_BG)
         notice_frame.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
-        notice_text = (
+        notice_default = (
             "ℹ Datensicherung:\n"
             "Beim Umwandeln werden bisher eingegebene Formular-Informationen als neue "
             "Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. "
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
         )
-        ctk.CTkLabel(
-            notice_frame, text=notice_text, font=ctk.CTkFont(size=FONT_SIZE_SM), justify="left", wraplength=CONVERT_NOTICE_WRAPLENGTH
-        ).pack(padx=PAD_10, pady=PAD_MD, anchor="w")
+        self.register_i18n(ctk.CTkLabel(
+            notice_frame, text=tr("convert_schema.notice_text", notice_default), font=ctk.CTkFont(size=FONT_SIZE_SM), justify="left", wraplength=CONVERT_NOTICE_WRAPLENGTH
+        ), "convert_schema.notice_text", notice_default).pack(padx=PAD_10, pady=PAD_MD, anchor="w")
 
         self.error_label = ctk.CTkLabel(main_frame, text="", text_color=COLOR_TEXT_RED)
         self.error_label.pack(anchor="w", pady=(PAD_NONE, PAD_CONTAINER))
@@ -169,18 +169,21 @@ class ConvertSchemaDialog(BaseDialog):
                     f_obj = next((f for f in self.current_schema.fields if f.field_id == k), None)
                     if f_obj:
                         label = f_obj.label
-                backup_items.append(f"• {label}: {v}")
+                backup_items.append(tr("convert_schema.backup_item", "• {label}: {value}", label=label, value=v))
 
         curr_schema_name = self.current_schema.display_name if self.current_schema else self.case.classification.schema_id
         if backup_items:
             data_summary = "\n".join(backup_items)
-            timeline_note = (
-                f"🔄 Formular umgewandelt von '{curr_schema_name}' zu '{target_schema.display_name}'.\n"
-                f"--- Gesicherte Formular-Daten ---\n{data_summary}"
+            timeline_note = tr(
+                "convert_schema.timeline_note_with_data",
+                "🔄 Formular umgewandelt von '{old_schema}' zu '{new_schema}'.\n--- Gesicherte Formular-Daten ---\n{data}",
+                old_schema=curr_schema_name, new_schema=target_schema.display_name, data=data_summary,
             )
         else:
-            timeline_note = (
-                f"🔄 Formular umgewandelt von '{curr_schema_name}' zu '{target_schema.display_name}'."
+            timeline_note = tr(
+                "convert_schema.timeline_note",
+                "🔄 Formular umgewandelt von '{old_schema}' zu '{new_schema}'.",
+                old_schema=curr_schema_name, new_schema=target_schema.display_name,
             )
 
         self.case.timeline.append(

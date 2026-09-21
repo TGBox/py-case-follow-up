@@ -23,8 +23,8 @@ from constants import (
     DIALOG_DIMENSIONS,
     DIALOG_MIN_DIMENSIONS,
     ENTRY_WIDTH_XL,
-    FILE_TYPES_HTML_REPORT,
-    FILE_TYPES_MARKDOWN_EXPORT,
+    get_file_types_html_report,
+    get_file_types_markdown_export,
     FONT_SIZE_TITLE,
     LABEL_WIDTH_LG,
     PAD_NONE,
@@ -444,7 +444,7 @@ class ExportDialog(BaseDialog):
 
         file_path = filedialog.asksaveasfilename(
             defaultextension=".md",
-            filetypes=FILE_TYPES_MARKDOWN_EXPORT,
+            filetypes=get_file_types_markdown_export(),
             initialfile=f"export_{self.case.case_id}.md",
         )
         if file_path:
@@ -520,7 +520,7 @@ class ExportDialog(BaseDialog):
             title=tr("case_print.save_dialog_title", "Fallbericht speichern"),
             defaultextension=".html",
             initialfile=f"Fallbericht_{self.case.case_id}.html",
-            filetypes=FILE_TYPES_HTML_REPORT,
+            filetypes=get_file_types_html_report(),
         )
         if not file_path:
             return

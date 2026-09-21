@@ -166,6 +166,22 @@ class BaseDialog(ctk.CTkToplevel):
         except Exception as err:
             logger.warning(f"Could not refresh choices of {type(widget).__name__}: {err}")
 
+    def selected_choice_index(self, widget, fallback: int = 0) -> int:
+        """Position of an OptionMenu's current selection within its own values.
+
+        The visible labels come from tr(...), so matching them against German
+        literals silently breaks as soon as the UI runs in English or Swedish.
+        The position carries the same information and is language independent -
+        it also survives retranslate_choices(), which restores the selection by
+        index for exactly that reason.
+        """
+        try:
+            values = list(widget.cget("values"))
+            return values.index(widget.get())
+        except Exception as err:
+            logger.warning(f"Could not resolve selection of {type(widget).__name__}: {err}")
+            return fallback
+
     def _prune_i18n_widgets(self) -> None:
         registry = getattr(self, "_i18n_widgets", None)
         if not registry:

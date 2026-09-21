@@ -1,4 +1,4 @@
-﻿"""Dialog zum nachträglichen Wechseln der Praxis eines bestehenden Falls.
+"""Dialog zum nachträglichen Wechseln der Praxis eines bestehenden Falls.
 
 Der Dialog bietet:
   - SearchableCombobox über alle bekannten Kunden (analog NewCaseDialog)

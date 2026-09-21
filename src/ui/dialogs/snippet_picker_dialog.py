@@ -122,12 +122,12 @@ class SnippetPickerDialog(BaseDialog):
 
         self.insert_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen"),
+            text=tr("snippet_picker.insert_btn", "Ausgewählten Baustein einfügen"),
             fg_color=COLOR_PILL_ACTIVE,
             hover_color=COLOR_PILL_HOVER,
             command=self.on_click_insert,
             state="disabled",
-        ), "snippet_picker.insert_btn", "🧩 Ausgewählten Baustein einfügen")
+        ), "snippet_picker.insert_btn", "Ausgewählten Baustein einfügen")
         self.insert_btn.pack(side="right", padx=(CORNER_RADIUS_MD, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(

@@ -146,7 +146,7 @@ class TableView(ctk.CTkFrame):
 
         self.detail_title_label = ctk.CTkLabel(
             bottom_header,
-            text=tr("table.details_header", "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"),
+            text=tr("table.details_header", "Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"),
             font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight="bold"),
             anchor="w",
         )
@@ -154,7 +154,7 @@ class TableView(ctk.CTkFrame):
 
         self.save_btn = ctk.CTkButton(
             bottom_header,
-            text=tr("table.save_btn", "💾 Ändern & Speichern"),
+            text=tr("table.save_btn", "Ändern & Speichern"),
             command=self.on_click_save,
             fg_color=COLOR_SUCCESS,
             width=BTN_WIDTH_SAVE_TABLE,
@@ -167,14 +167,14 @@ class TableView(ctk.CTkFrame):
         self.detail_tabview.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=(PAD_NONE, PAD_CONTAINER))
 
         from services.i18n_service import tr
-        t_form = tr("table.tab_form", "📝 Formular & Ausfüllen")
-        t_timeline = tr("table.tab_timeline", "🕒 Zeitleiste")
-        t_attachments = tr("table.tab_attachments", "📎 Anhänge")
+        t_form = tr("table.tab_form", "Formular & Ausfüllen")
+        t_timeline = tr("table.tab_timeline", "Zeitleiste")
+        t_attachments = tr("table.tab_attachments", "Anhänge")
 
         self._detail_tab_names = {
-            "form": "📝 Formular & Ausfüllen",
-            "timeline": "🕒 Zeitleiste",
-            "attachments": "📎 Anhänge",
+            "form": "Formular & Ausfüllen",
+            "timeline": "Zeitleiste",
+            "attachments": "Anhänge",
         }
 
         tab_form = self.detail_tabview.add("📝 Formular & Ausfüllen")
@@ -417,13 +417,13 @@ class TableView(ctk.CTkFrame):
         self.render_rows(force=True)
         if self.selected_case:
             self.detail_title_label.configure(
-                text=tr("table.case_details_header", "📋 Falldetails: {id} - {practice} ({title})", id=self.selected_case.case_id, practice=self.selected_case.customer.practice_name, title=self.selected_case.classification.title)
+                text=tr("table.case_details_header", "Falldetails: {id} - {practice} ({title})", id=self.selected_case.case_id, practice=self.selected_case.customer.practice_name, title=self.selected_case.classification.title)
             )
         else:
             self.detail_title_label.configure(
-                text=tr("table.details_header", "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)")
+                text=tr("table.details_header", "Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)")
             )
-        self.save_btn.configure(text=tr("table.save_btn", "💾 Ändern & Speichern"))
+        self.save_btn.configure(text=tr("table.save_btn", "Ändern & Speichern"))
 
         if hasattr(self, "detail_tabview") and hasattr(self.detail_tabview, "_segmented_button") and hasattr(self.detail_tabview._segmented_button, "_buttons_dict"):  # pyright: ignore[reportAttributeAccessIssue]
             btns = self.detail_tabview._segmented_button._buttons_dict  # pyright: ignore[reportAttributeAccessIssue]

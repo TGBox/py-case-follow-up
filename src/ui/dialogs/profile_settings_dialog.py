@@ -75,9 +75,9 @@ class ProfileSettingsDialog(
         top_bar.pack(fill="x", side="top", padx=PAD_MD, pady=(PAD_MD, PAD_SM))
 
         self.top_header_lbl = self.register_i18n(
-            ctk.CTkLabel(top_bar, text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight="bold")),
+            ctk.CTkLabel(top_bar, text=tr("profile.header", "Profil & Anwendungseinstellungen"), font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight="bold")),
             "profile.header",
-            "⚙ Profil & Anwendungseinstellungen",
+            "Profil & Anwendungseinstellungen",
         )
         self.top_header_lbl.pack(side="left", padx=PAD_MD)
 
@@ -86,10 +86,10 @@ class ProfileSettingsDialog(
         self.tabview.pack(fill="both", expand=True, padx=PAD_MD, pady=(PAD_SM, PAD_MD))
 
         self._tab_keys = [
-            ("tab_user", "profile.tab_user", "👤 Benutzerprofil"),
-            ("tab_paths", "profile.tab_paths", "📁 Speicherort & Datenexport"),
-            ("tab_ai", "profile.tab_ai", "🤖 KI & NLP"),
-            ("tab_scoring", "profile.tab_misc", "🧩 Sonstiges"),
+            ("tab_user", "profile.tab_user", "Benutzerprofil"),
+            ("tab_paths", "profile.tab_paths", "Speicherort & Datenexport"),
+            ("tab_ai", "profile.tab_ai", "KI & NLP"),
+            ("tab_scoring", "profile.tab_misc", "Sonstiges"),
         ]
         self._tab_name_map = {}
         for tab_id, key, default in self._tab_keys:
@@ -140,14 +140,14 @@ class ProfileSettingsDialog(
         self.save_btn = self.register_i18n(
             ctk.CTkButton(
                 bottom_bar,
-                text=tr("profile.save_btn", "💾 Einstellungen Speichern"),
+                text=tr("profile.save_btn", "Einstellungen Speichern"),
                 command=self.save_settings,
                 fg_color=COLOR_SUCCESS,
                 hover_color=COLOR_SUCCESS,
                 width=BTN_WIDTH_XL,
             ),
             "profile.save_btn",
-            "💾 Einstellungen Speichern",
+            "Einstellungen Speichern",
         )
         self.save_btn.pack(side="right", padx=PAD_SM)
 
@@ -187,9 +187,9 @@ class ProfileSettingsDialog(
     def refresh_ui_labels(self) -> None:
         super().refresh_ui_labels()
         if hasattr(self, "top_header_lbl"):
-            self.top_header_lbl.configure(text=tr("profile.header", "⚙ Profil & Anwendungseinstellungen"))
+            self.top_header_lbl.configure(text=tr("profile.header", "Profil & Anwendungseinstellungen"))
         if hasattr(self, "save_btn"):
-            self.save_btn.configure(text=tr("profile.save_btn", "💾 Einstellungen Speichern"))
+            self.save_btn.configure(text=tr("profile.save_btn", "Einstellungen Speichern"))
         if hasattr(self, "close_btn"):
             self.close_btn.configure(text=tr("common.close", "Schließen"))
 

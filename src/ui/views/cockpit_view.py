@@ -324,7 +324,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 pass
 
         self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
-        self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+        self.complete_btn.configure(text=tr("cockpit.complete", "Erledigt"))
 
         self._update_wiedervorlage_display()
 
@@ -352,18 +352,18 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         from services.i18n_service import tr
         vip_str = VIP_TAG_DISPLAY if case.customer.is_vip else ""
         if case.is_internal:
-            self.kunde_label.configure(text=f"🏢 {tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({case.customer.customer_id}){vip_str}")
+            self.kunde_label.configure(text=f"{tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({case.customer.customer_id}){vip_str}")
         else:
-            self.kunde_label.configure(text=f"🏥 {tr('cockpit.customer', 'Kunde')}: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
+            self.kunde_label.configure(text=f"{tr('cockpit.customer', 'Kunde')}: {case.customer.practice_name} ({case.customer.customer_id}){vip_str}")
 
         full_addr = getattr(case.customer, "full_address", "")
-        addr_str = f" | 🏠 {full_addr}" if full_addr else ""
-        self.ansprechpartner_label.configure(text=f"👤 {tr('cockpit.contact_person', 'Ansprechpartner')}: {case.customer.contact_person}{addr_str}")
+        addr_str = f" | {full_addr}" if full_addr else ""
+        self.ansprechpartner_label.configure(text=f"{tr('cockpit.contact_person', 'Ansprechpartner')}: {case.customer.contact_person}{addr_str}")
 
         self._update_wiedervorlage_display()
 
         self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
-        self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
+        self.complete_btn.configure(text=tr("cockpit.reopen", "Wieder öffnen") if case.workflow_status.is_completed else tr("cockpit.complete", "Erledigt"))
 
         # Reset sidebar loaded tabs cache for new case
         self._loaded_tab_case_ids.clear()
@@ -374,8 +374,15 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             SchemaService.update_case_completion(case, schema)
         self.form_widget.load_schema(schema, case.form_data, case.missing_required_fields, case=case)
 
-        # Lazy load active sidebar tab content on-demand
-        self._on_sidebar_tab_changed()
+        # Retain active sidebar tab
+        tabs_widget = getattr(self, "sidebar_tabs", getattr(self, "right_tabview", None))
+        curr_tab = tabs_widget.get() if tabs_widget else ""
+        tl_tab = tr("cockpit.tab_timeline", DEFAULT_SIDEBAR_TAB_TIMELINE)
+        att_tab = tr("cockpit.tab_attachments", DEFAULT_SIDEBAR_TAB_ATTACHMENTS)
+        if curr_tab in (tl_tab, DEFAULT_SIDEBAR_TAB_TIMELINE):
+            self.timeline_widget.load_timeline(self.current_case.timeline)
+        elif curr_tab in (att_tab, DEFAULT_SIDEBAR_TAB_ATTACHMENTS):
+            self.attachment_widget.load_attachments(self.current_case)
 
     def _on_sidebar_tab_changed(self, tab_name: str | None = None):
         if not self.current_case:
@@ -393,29 +400,30 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
-        if choice.startswith("📤"):
-            self.on_click_export()
-        elif choice.startswith("✉"):
-            self.on_click_email_calendar()
-        elif choice.startswith("📅"):
-            self.on_click_calendar()
-        elif choice.startswith("📦"):
-            self.on_click_archive()
-        elif choice.startswith("🔄"):
-            self.open_convert_schema_dialog()
-        elif choice.startswith("📧"):
+        choice_lower = choice.lower()
+        if choice.startswith("📧") or "praxis-e-mail" in choice_lower or "kopieren" in choice_lower:
             self.on_copy_practice_email()
-        elif choice.startswith("🖨"):
+        elif choice.startswith("📤") or "export" in choice_lower:
+            self.on_click_export()
+        elif choice.startswith("✉") or "e-mail" in choice_lower or "ki" in choice_lower or "ai" in choice_lower:
+            self.on_click_email_calendar()
+        elif choice.startswith("📅") or "kalender" in choice_lower or "calendar" in choice_lower:
+            self.on_click_calendar()
+        elif choice.startswith("📦") or "archiv" in choice_lower:
+            self.on_click_archive()
+        elif choice.startswith("🔄") or "formular" in choice_lower or "schema" in choice_lower:
+            self.open_convert_schema_dialog()
+        elif choice.startswith("🖨") or "druck" in choice_lower or "print" in choice_lower:
             self.on_click_print()
-        elif choice.startswith("🏥"):
+        elif choice.startswith("🏥") or "praxis" in choice_lower:
             if self.current_case:
                 self.on_change_practice(self.current_case)
-        elif choice.startswith("🗑"):
+        elif choice.startswith("🗑") or "lösch" in choice_lower or "delete" in choice_lower:
             if self.current_case:
                 self.on_delete_case(self.current_case)
         if hasattr(self, "more_actions_combo"):
             from services.i18n_service import tr
-            self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
+            self.more_actions_combo.set(tr("cockpit.more_actions", "Weitere Aktionen..."))
 
     def on_copy_practice_email(self):
         if not self.current_case or not self.current_case.customer:
@@ -570,7 +578,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.current_case.timeline.append(entry)
             self.timeline_widget.load_timeline(self.current_case.timeline)
 
-            self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if new_state else tr("cockpit.complete", "✓ Erledigen"))
+            self.complete_btn.configure(text=tr("cockpit.reopen", "Wieder öffnen") if new_state else tr("cockpit.complete", "Erledigen"))
             self._update_title_label()
             self._update_wiedervorlage_display()
             self.on_click_save()

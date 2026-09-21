@@ -193,7 +193,7 @@ class UiSettingsTabMixin:
         self.btn_reset_widths = self.register_i18n(
             ctk.CTkButton(
                 right_col,
-                text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
+                text=tr("profile.reset_widths_btn", "Alle Spaltenbreiten auf Standard zurücksetzen"),
                 command=self.on_reset_column_widths,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
@@ -201,7 +201,7 @@ class UiSettingsTabMixin:
                 width=PROFILE_TAB_FIELD_WIDTH,
             ),
             "profile.reset_widths_btn",
-            "↻ Alle Spaltenbreiten auf Standard zurücksetzen",
+            "Alle Spaltenbreiten auf Standard zurücksetzen",
         )
         self.btn_reset_widths.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
@@ -320,7 +320,7 @@ class UiSettingsTabMixin:
         if hasattr(self, "col_widths_hdr_lbl"):
             self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
         if hasattr(self, "btn_reset_widths"):
-            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"))
+            self.btn_reset_widths.configure(text=tr("profile.reset_widths_btn", "Alle Spaltenbreiten auf Standard zurücksetzen"))
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
             self.widths_label.configure(text=self._build_widths_str(widths))

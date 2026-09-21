@@ -164,11 +164,11 @@ class HandoverDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("handover_dialog.confirm_btn", "🤝 Übergabe bestätigen"),
+            text=tr("handover_dialog.confirm_btn", "Übergabe bestätigen"),
             fg_color=COLOR_SUCCESS,
             command=self.on_confirm,
             width=LABEL_WIDTH_LG,
-        ), "handover_dialog.confirm_btn", "🤝 Übergabe bestätigen").pack(side="right")
+        ), "handover_dialog.confirm_btn", "Übergabe bestätigen").pack(side="right")
 
     def on_colleague_selected(self, selected_text: str):
         self.absence_warn_lbl.configure(text="")

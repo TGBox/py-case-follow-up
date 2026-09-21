@@ -105,13 +105,13 @@ class EmailImportDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             hdr_frame,
-            text=tr("email_import.refresh_btn", "🔄 Posteingang aktualisieren"),
+            text=tr("email_import.refresh_btn", "Posteingang aktualisieren"),
             width=BTN_WIDTH_REFRESH_INBOX,
             height=BTN_HEIGHT_MD,
             fg_color=COLOR_MUTED_GRAY_FG,
             hover_color=COLOR_MUTED_GRAY_HOVER,
             command=self.refresh_emails,
-        ), "email_import.refresh_btn", "🔄 Posteingang aktualisieren").pack(side="right")
+        ), "email_import.refresh_btn", "Posteingang aktualisieren").pack(side="right")
 
         # Info label
         self.info_lbl = self.register_i18n(ctk.CTkLabel(
@@ -254,12 +254,12 @@ class EmailImportDialog(BaseDialog):
             if matched_case:
                 self.register_i18n(ctk.CTkButton(
                     act_row,
-                    text=tr("email_import.append_btn", "📌 An Fall [{case_id}] anhängen", case_id=matched_case.case_id),
+                    text=tr("email_import.append_btn", "An Fall [{case_id}] anhängen", case_id=matched_case.case_id),
                     fg_color=COLOR_SUCCESS_HOVER,
                     hover_color=COLOR_SUCCESS,
                     height=BTN_HEIGHT_MD,
                     command=lambda m=mail, c=matched_case, i=idx: self.append_to_case(m, c, i),
-                ), "email_import.append_btn", "📌 An Fall [{case_id}] anhängen", case_id=matched_case.case_id).pack(side="left", padx=(PAD_NONE, PAD_GAP))
+                ), "email_import.append_btn", "An Fall [{case_id}] anhängen", case_id=matched_case.case_id).pack(side="left", padx=(PAD_NONE, PAD_GAP))
 
             self.register_i18n(ctk.CTkButton(
                 act_row,

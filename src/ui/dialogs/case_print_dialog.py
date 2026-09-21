@@ -113,30 +113,30 @@ class CasePrintDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("ui_buttons.print_pdf", "🖨 PDF-Bericht drucken"),
+            text=tr("ui_buttons.print_pdf", "PDF-Bericht drucken"),
             fg_color=COLOR_SUCCESS,
             hover_color=COLOR_SUCCESS_HOVER,
             command=self.generate_and_print_pdf,
             width=BTN_WIDTH_PRINT,
-        ), "ui_buttons.print_pdf", "🖨 PDF-Bericht drucken").pack(side="right", padx=(PAD_MD, PAD_NONE))
+        ), "ui_buttons.print_pdf", "PDF-Bericht drucken").pack(side="right", padx=(PAD_MD, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("case_print.html_report_btn", "🌐 HTML-Bericht"),
+            text=tr("case_print.html_report_btn", "HTML-Bericht"),
             fg_color=COLOR_PRIMARY,
             hover_color=COLOR_PRIMARY_HOVER,
             command=self.generate_and_open_html,
             width=BTN_WIDTH_HTML,
-        ), "case_print.html_report_btn", "🌐 HTML-Bericht").pack(side="right", padx=(PAD_MD, PAD_NONE))
+        ), "case_print.html_report_btn", "HTML-Bericht").pack(side="right", padx=(PAD_MD, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("case_print.save_btn", "💾 Speichern..."),
+            text=tr("case_print.save_btn", "Speichern..."),
             fg_color=COLOR_MUTED_GRAY_FG,
             hover_color=COLOR_MUTED_GRAY_HOVER,
             command=self.generate_and_save_file,
             width=ENTRY_WIDTH_SHORTCUT,
-        ), "case_print.save_btn", "💾 Speichern...").pack(side="right")
+        ), "case_print.save_btn", "Speichern...").pack(side="right")
 
     def safe_destroy(self):
         try:

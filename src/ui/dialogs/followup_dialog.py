@@ -199,22 +199,22 @@ class FollowupDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             bottom_frame,
-            text=tr("followup.save_btn", "💾 Wiedervorlage Speichern"),
+            text=tr("followup.save_btn", "Wiedervorlage Speichern"),
             command=self.on_save,
             fg_color=COLOR_SUCCESS,
             height=BTN_HEIGHT_ACTION,
             width=BTN_WIDTH_SAVE_FOLLOWUP,
-        ), "followup.save_btn", "💾 Wiedervorlage Speichern").pack(side="right", padx=(PAD_SM, PAD_NONE))
+        ), "followup.save_btn", "Wiedervorlage Speichern").pack(side="right", padx=(PAD_SM, PAD_NONE))
 
         if self.case.workflow_status.followup_at:
             self.register_i18n(ctk.CTkButton(
                 bottom_frame,
-                text=tr("ui_buttons.clear", "❌ Entfernen"),
+                text=tr("ui_buttons.clear", "Entfernen"),
                 command=self.on_clear,
                 fg_color=COLOR_DARKRED,
                 height=BTN_HEIGHT_ACTION,
                 width=BTN_WIDTH_CLEAR_FOLLOWUP,
-            ), "ui_buttons.clear", "❌ Entfernen").pack(side="right", padx=PAD_SM)
+            ), "ui_buttons.clear", "Entfernen").pack(side="right", padx=PAD_SM)
 
         self.register_i18n(ctk.CTkButton(
             bottom_frame,

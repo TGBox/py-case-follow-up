@@ -266,7 +266,7 @@ class CockpitLayoutBuilderMixin:
         from services.i18n_service import tr
 
         # Retained as non-packed widget for backwards compatibility
-        self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "📦 Archivieren"), command=self.on_click_archive, width=BTN_WIDTH_ACTION_SM, fg_color=COLOR_DANGER)
+        self.archive_btn = ctk.CTkButton(self.status_right_frame, text=tr("cockpit.archive", "Archivieren"), command=self.on_click_archive, width=BTN_WIDTH_ACTION_SM, fg_color=COLOR_DANGER)
 
         self._info_row_horizontal = True
         self.info_row.bind("<Configure>", self._on_info_row_configure, add="+")
@@ -281,15 +281,15 @@ class CockpitLayoutBuilderMixin:
 
         from services.i18n_service import tr
 
-        self.followup_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.followup", "🔔 Wiedervorlage"), command=self.open_followup_dialog, width=BTN_WIDTH_MD, fg_color=COLOR_PRIMARY)
+        self.followup_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.followup", "Wiedervorlage"), command=self.open_followup_dialog, width=BTN_WIDTH_MD, fg_color=COLOR_PRIMARY)
         self.followup_btn.pack(side="left", padx=PAD_XS)
 
-        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.note", "📝 Notiz"), command=self.focus_timeline_note, width=ENTRY_WIDTH_NUMERIC + 10, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER)
+        self.add_note_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.note", "Notiz"), command=self.focus_timeline_note, width=ENTRY_WIDTH_NUMERIC + 10, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER)
         self.add_note_btn.pack(side="left", padx=PAD_XS)
 
         # Retained as non-packed widgets for backwards compatibility with tests and callers
-        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=BTN_WIDTH_EMAIL_AI, state="disabled", fg_color=COLOR_AI_PURPLE, hover_color=COLOR_AI_PURPLE_HOVER)
-        self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=BTN_WIDTH_ACTION_SM, state="disabled", fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER)
+        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "E-Mail & KI"), command=self.on_click_email, width=BTN_WIDTH_EMAIL_AI, state="disabled", fg_color=COLOR_AI_PURPLE, hover_color=COLOR_AI_PURPLE_HOVER)
+        self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "Kalender"), command=self.on_click_calendar, width=BTN_WIDTH_ACTION_SM, state="disabled", fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER)
 
         # Right Side of Toolbar: Handover + Complete + Save + Integrated Dropdown Menu for Utilities
         self.toolbar_right = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
@@ -306,33 +306,33 @@ class CockpitLayoutBuilderMixin:
 
         self.complete_btn = ctk.CTkButton(
             self.toolbar_right,
-            text=tr("cockpit.complete", "✓ Erledigt"),
+            text=tr("cockpit.complete", "Erledigt"),
             command=self.on_toggle_complete,
             width=BTN_WIDTH_ACTION_SM,
             fg_color=COLOR_SUCCESS,
         )
         self.complete_btn.pack(side="left", padx=PAD_XS)
 
-        self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "💾 Speichern"), command=self.on_click_save, width=BTN_WIDTH_ACTION_SM, state="disabled")
+        self.save_btn = ctk.CTkButton(self.toolbar_right, text=tr("cockpit.save", "Speichern"), command=self.on_click_save, width=BTN_WIDTH_ACTION_SM, state="disabled")
         self.save_btn.pack(side="left", padx=PAD_XS)
 
         self.more_actions_combo = ctk.CTkOptionMenu(
             self.toolbar_right,
             values=[
-                tr("cockpit.export_handover", "📤 Export & Übergabe"),
-                tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"),
-                tr("cockpit.calendar", "📅 Kalender"),
-                tr("cockpit.archive", "📦 Archivieren"),
-                tr("cockpit.convert_form", "🔄 Formular umwandeln"),
-                tr("cockpit.change_practice", "🏥 Praxis wechseln"),
-                tr("cockpit.delete_case", "🗑 Fall löschen"),
+                tr("cockpit.export_handover", "Export & Übergabe"),
+                tr("cockpit.email_ai", "E-Mail & KI"),
+                tr("cockpit.calendar", "Kalender"),
+                tr("cockpit.archive", "Archivieren"),
+                tr("cockpit.convert_form", "Formular umwandeln"),
+                tr("cockpit.change_practice", "Praxis wechseln"),
+                tr("cockpit.delete_case", "Fall löschen"),
             ],
             command=self.on_more_actions_selected,
             width=COMBO_WIDTH_MORE_ACTIONS,
             fg_color=COLOR_HELP_NAV_HOVER,
             button_color=COLOR_TOOLTIP_BORDER,
         )
-        self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
+        self.more_actions_combo.set(tr("cockpit.more_actions", "Weitere Aktionen..."))
         self.more_actions_combo.pack(side="left", padx=PAD_XS)
 
         # Aliases for export, print, convert_schema buttons to maintain backward compatibility
@@ -392,41 +392,41 @@ class CockpitLayoutBuilderMixin:
 
         if hasattr(self, "more_actions_combo"):
             self.more_actions_combo.configure(values=[
-                tr("cockpit.export_handover", "📤 Export & Übergabe"),
-                tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"),
-                tr("cockpit.calendar", "📅 Kalender"),
-                tr("cockpit.archive", "📦 Archivieren"),
-                tr("cockpit.convert_form", "🔄 Formular umwandeln"),
-                tr("cockpit.change_practice", "🏥 Praxis wechseln"),
-                tr("cockpit.delete_case", "🗑 Fall löschen"),
+                tr("cockpit.export_handover", "Export & Übergabe"),
+                tr("cockpit.email_ai", "E-Mail & KI"),
+                tr("cockpit.calendar", "Kalender"),
+                tr("cockpit.archive", "Archivieren"),
+                tr("cockpit.convert_form", "Formular umwandeln"),
+                tr("cockpit.change_practice", "Praxis wechseln"),
+                tr("cockpit.delete_case", "Fall löschen"),
             ])
-            self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
+            self.more_actions_combo.set(tr("cockpit.more_actions", "Weitere Aktionen..."))
 
         if hasattr(self, "complete_btn"):
             if getattr(self, "current_case", None):
-                self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
+                self.complete_btn.configure(text=tr("cockpit.reopen", "Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "Erledigt"))
             else:
-                self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+                self.complete_btn.configure(text=tr("cockpit.complete", "Erledigt"))
 
         if hasattr(self, "archive_btn"):
-            self.archive_btn.configure(text=tr("cockpit.archive", "📦 Archivieren"))
+            self.archive_btn.configure(text=tr("cockpit.archive", "Archivieren"))
 
         if hasattr(self, "followup_btn"):
-            self.followup_btn.configure(text=tr("cockpit.followup", "🔔 Wiedervorlage"))
+            self.followup_btn.configure(text=tr("cockpit.followup", "Wiedervorlage"))
 
         if hasattr(self, "add_note_btn"):
-            self.add_note_btn.configure(text=tr("cockpit.note", "📝 Notiz"))
+            self.add_note_btn.configure(text=tr("cockpit.note", "Notiz"))
         if hasattr(self, "save_btn"):
-            self.save_btn.configure(text=tr("cockpit.save", "💾 Speichern"))
+            self.save_btn.configure(text=tr("cockpit.save", "Speichern"))
         if hasattr(self, "archive_btn"):
-            self.archive_btn.configure(text=tr("cockpit.archive", "📦 Archivieren"))
+            self.archive_btn.configure(text=tr("cockpit.archive", "Archivieren"))
         if hasattr(self, "wv_hdr_label"):
-            self.wv_hdr_label.configure(text=tr("cockpit.followup_at", "🔔 Nachfragen am:"))
+            self.wv_hdr_label.configure(text=tr("cockpit.followup_at", "Nachfragen am:"))
         if hasattr(self, "complete_btn"):
             if getattr(self, "current_case", None):
-                self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
+                self.complete_btn.configure(text=tr("cockpit.reopen", "Wieder öffnen") if self.current_case.workflow_status.is_completed else tr("cockpit.complete", "Erledigt"))
             else:
-                self.complete_btn.configure(text=tr("cockpit.complete", "✓ Erledigt"))
+                self.complete_btn.configure(text=tr("cockpit.complete", "Erledigt"))
         if hasattr(self, "actor_combo"):
             self.actor_combo.configure(values=list(ACTOR_DISPLAY.values()))
             self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
@@ -435,7 +435,7 @@ class CockpitLayoutBuilderMixin:
                 if hasattr(self, "_update_title_label"):
                     self._update_title_label()
                 else:
-                    status_tag = f"  [{tr('cockpit.status_completed_tag', '✓ ERLEDIGT')}]" if self.current_case.workflow_status.is_completed else ""
+                    status_tag = f"  [{tr('cockpit.status_completed_tag', 'ERLEDIGT')}]" if self.current_case.workflow_status.is_completed else ""
                     self.case_title_label.configure(text=f"{self.current_case.case_id}: {self.current_case.classification.title}{status_tag}")
             else:
                 self.case_title_label.configure(text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"))
@@ -486,6 +486,7 @@ class CockpitLayoutBuilderMixin:
         from services.i18n_service import tr
         # 3. Right Pane: Tabbed Sidebar
         self.right_tabview = ctk.CTkTabview(self.paned, bg_color=COLOR_PANED_PANE_BG, command=self._on_sidebar_tab_changed)
+        self.sidebar_tabs = self.right_tabview
 
         t_title = tr("cockpit.tab_timeline", "Zeitleiste")
         t_attach = tr("cockpit.tab_attachments", "Anhänge")

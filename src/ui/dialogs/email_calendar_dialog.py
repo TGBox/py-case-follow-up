@@ -126,12 +126,12 @@ class EmailCalendarDialog(BaseDialog):
         if self.snippet_service:
             self.register_i18n(ctk.CTkButton(
                 body_hdr_row,
-                text=tr("email_calendar.snippet_btn", "🧩 Textbaustein"),
+                text=tr("email_calendar.snippet_btn", "Textbaustein"),
                 width=BTN_WIDTH_MD,
                 fg_color=COLOR_BTN_SECONDARY,
                 hover_color=COLOR_MAGENTA_HOVER,
                 command=self.open_snippet_picker,
-            ), "email_calendar.snippet_btn", "🧩 Textbaustein").pack(side="right")
+            ), "email_calendar.snippet_btn", "Textbaustein").pack(side="right")
 
         self.body_textbox = ctk.CTkTextbox(content_scroll, height=TEXTBOX_HEIGHT_EMAIL_CALENDAR_BODY)
         if self.draft_data.get("body"):
@@ -154,21 +154,21 @@ class EmailCalendarDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             row1_btns,
-            text=tr("email_calendar.open_mailto", "✉ Im Mail-Client öffnen"),
+            text=tr("email_calendar.open_mailto", "Im Mail-Client öffnen"),
             fg_color=COLOR_PRIMARY_BLUE,
             hover_color=COLOR_DEEPSKYBLUE_HOVER,
             command=self.on_open_mailto,
             height=BTN_HEIGHT_LG,
-        ), "email_calendar.open_mailto", "✉ Im Mail-Client öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
+        ), "email_calendar.open_mailto", "Im Mail-Client öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row1_btns,
-            text=tr("ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren"),
+            text=tr("ui_buttons.copy_clipboard", "Text in Zwischenablage kopieren"),
             fg_color=COLOR_BTN_SECONDARY,
             hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=self.on_copy_text,
             height=BTN_HEIGHT_LG,
-        ), "ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren").pack(side="left", padx=(PAD_NONE, PAD_MD))
+        ), "ui_buttons.copy_clipboard", "Text in Zwischenablage kopieren").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         # Row 2: Calendar Actions & Close
         row2_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
@@ -176,21 +176,21 @@ class EmailCalendarDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,
-            text=tr("email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen"),
+            text=tr("email_calendar.open_ics", ".ics Kalenderdatei öffnen"),
             fg_color=COLOR_SUCCESS,
             hover_color=COLOR_SUCCESS_HOVER,
             command=self.on_open_ics,
             height=BTN_HEIGHT_LG,
-        ), "email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
+        ), "email_calendar.open_ics", ".ics Kalenderdatei öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,
-            text=tr("email_calendar.save_ics", "💾 .ics Datei speichern..."),
+            text=tr("email_calendar.save_ics", ".ics Datei speichern..."),
             fg_color=COLOR_BTN_SECONDARY,
             hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=self.on_save_ics,
             height=BTN_HEIGHT_LG,
-        ), "email_calendar.save_ics", "💾 .ics Datei speichern...").pack(side="left", padx=(PAD_NONE, PAD_MD))
+        ), "email_calendar.save_ics", ".ics Datei speichern...").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,

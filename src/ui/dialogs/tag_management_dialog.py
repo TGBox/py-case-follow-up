@@ -49,8 +49,8 @@ from utils.ui_utils import (
 #: to preselect one. Same order, so the tab position maps onto a value without
 #: ever comparing the translated tab caption.
 TAG_TAB_CHOICES = [
-    ("tag_mgmt.tab_tags", "🏷 Allgemeine Tags"),
-    ("tag_mgmt.tab_modules", "🧩 Programmbereiche"),
+    ("tag_mgmt.tab_tags", "Allgemeine Tags"),
+    ("tag_mgmt.tab_modules", "Programmbereiche"),
 ]
 TAG_TAB_KEYS = ("tags", "modules")
 
@@ -95,7 +95,7 @@ class TagManagementDialog(BaseDialog):
         top_bar = ctk.CTkFrame(self, height=HEIGHT_HEADER_BAR, corner_radius=CORNER_RADIUS_NONE)
         top_bar.pack(fill="x", side="top", padx=PAD_MD + PAD_XS, pady=(PAD_MD + PAD_XS, PAD_CONTAINER))
 
-        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("tag_mgmt.header", "🏷 System-Tags & Programmbereiche"), font=ctk.CTkFont(size=FONT_SIZE_TITLE_SM, weight=FONT_WEIGHT_BOLD)), "tag_mgmt.header", "🏷 System-Tags & Programmbereiche").pack(side="left", padx=PAD_MD + PAD_XS)
+        self.register_i18n(ctk.CTkLabel(top_bar, text=tr("tag_mgmt.header", "System-Tags & Programmbereiche"), font=ctk.CTkFont(size=FONT_SIZE_TITLE_SM, weight=FONT_WEIGHT_BOLD)), "tag_mgmt.header", "System-Tags & Programmbereiche").pack(side="left", padx=PAD_MD + PAD_XS)
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=PAD_XL - 1, pady=(PAD_CONTAINER, PAD_MD + PAD_XS))
@@ -123,7 +123,7 @@ class TagManagementDialog(BaseDialog):
         add_box1 = ctk.CTkFrame(tab_tags)
         add_box1.pack(fill="x", pady=PAD_CONTAINER, padx=PAD_CONTAINER)
 
-        self.search_tag_entry = self.register_i18n(ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...")), "tag_mgmt.search_tags_placeholder", "🔍 Tags durchsuchen...", attr="placeholder_text")
+        self.search_tag_entry = self.register_i18n(ctk.CTkEntry(add_box1, placeholder_text=tr("tag_mgmt.search_tags_placeholder", "Tags durchsuchen...")), "tag_mgmt.search_tags_placeholder", "Tags durchsuchen...", attr="placeholder_text")
         self.search_tag_entry.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD, PAD_SM))
         self.search_tag_entry.bind("<KeyRelease>", lambda e: debounce(self, DEBOUNCE_KEY_TAG_SEARCH, SEARCH_DEBOUNCE_MS, self.render_tags_list))
 
@@ -144,7 +144,7 @@ class TagManagementDialog(BaseDialog):
         add_box2 = ctk.CTkFrame(tab_modules)
         add_box2.pack(fill="x", pady=PAD_CONTAINER, padx=PAD_CONTAINER)
 
-        self.search_mod_entry = self.register_i18n(ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...")), "tag_mgmt.search_modules_placeholder", "🔍 Programmbereiche durchsuchen...", attr="placeholder_text")
+        self.search_mod_entry = self.register_i18n(ctk.CTkEntry(add_box2, placeholder_text=tr("tag_mgmt.search_modules_placeholder", "Programmbereiche durchsuchen...")), "tag_mgmt.search_modules_placeholder", "Programmbereiche durchsuchen...", attr="placeholder_text")
         self.search_mod_entry.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD, PAD_SM))
         self.search_mod_entry.bind("<KeyRelease>", lambda e: debounce(self, DEBOUNCE_KEY_MODULE_SEARCH, SEARCH_DEBOUNCE_MS, self.render_modules_list))
 
@@ -204,10 +204,10 @@ class TagManagementDialog(BaseDialog):
                 row = ctk.CTkFrame(self.tags_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=PAD_XS, padx=PAD_CONTAINER)
 
-                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER, width=BTN_WIDTH_QUIT, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "🗑 Löschen")
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "Löschen"), fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER, width=BTN_WIDTH_QUIT, command=lambda t=tag: self.confirm_delete_tag(t)), "common.delete", "Löschen")
                 del_btn.pack(side="right", padx=PAD_CONTAINER, pady=PAD_SM - 1)
 
-                tag_text = f"🏷  {tag}"
+                tag_text = tag
                 if raw_query and query in tag.lower():
                     lbl = create_highlighted_label(
                         row,
@@ -232,17 +232,17 @@ class TagManagementDialog(BaseDialog):
 
         new_tag = self.new_tag_entry.get().strip()
         if not new_tag:
-            self.status_lbl.configure(text=tr("tag_mgmt.tag_empty", "⚠ Tag Name darf nicht leer sein!"), text_color=COLOR_DANGER)
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_empty", "Tag Name darf nicht leer sein!"), text_color=COLOR_DANGER)
             return
 
         if new_tag in self.profile.available_tags:
-            self.status_lbl.configure(text=tr("tag_mgmt.tag_exists", "⚠ Tag existiert bereits!"), text_color=COLOR_DANGER)
+            self.status_lbl.configure(text=tr("tag_mgmt.tag_exists", "Tag existiert bereits!"), text_color=COLOR_DANGER)
             return
 
         self.profile.available_tags.append(new_tag)
         self.storage_service.save_profile(self.profile)
         self.new_tag_entry.delete(0, "end")
-        self.status_lbl.configure(text=tr("tag_mgmt.tag_added", "✅ Tag erfolgreich hinzugefügt!"), text_color=COLOR_SUCCESS)
+        self.status_lbl.configure(text=tr("tag_mgmt.tag_added", "Tag erfolgreich hinzugefügt!"), text_color=COLOR_SUCCESS)
 
         self.render_tags_list()
         if self.on_tags_updated:
@@ -256,7 +256,7 @@ class TagManagementDialog(BaseDialog):
             self,
             tr("confirm.delete_tag", "Tag „{name}“ wirklich dauerhaft entfernen?", name=tag_name),
             title=tr("confirm.delete_title", "Löschen bestätigen"),
-            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+            confirm_text=tr("confirm.yes_delete", "Ja, löschen"),
         ):
             self.on_delete_tag(tag_name)
 
@@ -289,10 +289,10 @@ class TagManagementDialog(BaseDialog):
                 row = ctk.CTkFrame(self.modules_scroll, fg_color=row_bg)
                 row.pack(fill="x", pady=PAD_XS, padx=PAD_CONTAINER)
 
-                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "🗑 Löschen"), fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER, width=BTN_WIDTH_QUIT, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "🗑 Löschen")
+                del_btn = self.register_i18n(ctk.CTkButton(row, text=tr("common.delete", "Löschen"), fg_color=COLOR_DANGER, hover_color=COLOR_DANGER_HOVER, width=BTN_WIDTH_QUIT, command=lambda m=mod: self.confirm_delete_module(m)), "common.delete", "Löschen")
                 del_btn.pack(side="right", padx=PAD_CONTAINER, pady=PAD_SM - 1)
 
-                mod_text = f"🧩  {mod}"
+                mod_text = mod
                 if raw_query and query in mod.lower():
                     lbl = create_highlighted_label(
                         row,
@@ -316,17 +316,17 @@ class TagManagementDialog(BaseDialog):
         from services.i18n_service import tr
         new_mod = self.new_mod_entry.get().strip()
         if not new_mod:
-            self.status_lbl.configure(text=tr("tag_mgmt.module_empty", "⚠ Programmbereich darf nicht leer sein!"), text_color=COLOR_DANGER)
+            self.status_lbl.configure(text=tr("tag_mgmt.module_empty", "Programmbereich darf nicht leer sein!"), text_color=COLOR_DANGER)
             return
 
         if new_mod in self.profile.available_module_tags:
-            self.status_lbl.configure(text=tr("tag_mgmt.module_exists", "⚠ Programmbereich existiert bereits!"), text_color=COLOR_DANGER)
+            self.status_lbl.configure(text=tr("tag_mgmt.module_exists", "Programmbereich existiert bereits!"), text_color=COLOR_DANGER)
             return
 
         self.profile.available_module_tags.append(new_mod)
         self.storage_service.save_profile(self.profile)
         self.new_mod_entry.delete(0, "end")
-        self.status_lbl.configure(text=tr("tag_mgmt.module_added", "✅ Programmbereich erfolgreich hinzugefügt!"), text_color=COLOR_SUCCESS)
+        self.status_lbl.configure(text=tr("tag_mgmt.module_added", "Programmbereich erfolgreich hinzugefügt!"), text_color=COLOR_SUCCESS)
 
         self.render_modules_list()
         if self.on_tags_updated:
@@ -340,7 +340,7 @@ class TagManagementDialog(BaseDialog):
             self,
             tr("confirm.delete_module", "Programmbereich „{name}“ wirklich dauerhaft entfernen?", name=mod_name),
             title=tr("confirm.delete_title", "Löschen bestätigen"),
-            confirm_text=tr("confirm.yes_delete", "🗑 Ja, löschen"),
+            confirm_text=tr("confirm.yes_delete", "Ja, löschen"),
         ):
             self.on_delete_module(mod_name)
 
@@ -349,7 +349,7 @@ class TagManagementDialog(BaseDialog):
         if mod_name in self.profile.available_module_tags:
             self.profile.available_module_tags.remove(mod_name)
             self.storage_service.save_profile(self.profile)
-            self.status_lbl.configure(text=tr("tag_mgmt.module_deleted", "✅ Programmbereich '{name}' gelöscht.", name=mod_name), text_color=COLOR_SUCCESS)
+            self.status_lbl.configure(text=tr("tag_mgmt.module_deleted", "Programmbereich '{name}' gelöscht.", name=mod_name), text_color=COLOR_SUCCESS)
             self.render_modules_list()
             if self.on_tags_updated:
                 self.on_tags_updated()

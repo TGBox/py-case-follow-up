@@ -2,6 +2,7 @@ from pathlib import Path
 from models.profile import WikiSettings
 from services.wiki_sync_service import WikiSyncService
 from services.storage_service import AppConfig
+from services.i18n_service import tr
 
 
 class MockBookStackClient:
@@ -42,7 +43,9 @@ def test_wiki_sync_service_search_and_offline_cache(tmp_path: Path):
     success, msg = wiki_service.sync_from_bookstack(mock_client=mock_client)
 
     assert success is True
-    assert "2 pages" in msg
+    # Die Erfolgsmeldung ist uebersetzt - gegen den Locale-Key pruefen statt
+    # gegen einen festen Wortlaut, sonst bricht der Test bei jeder Sprache.
+    assert msg == tr("wiki.sync_success", "{count} Artikel synchronisiert.", count=2)
 
     # Search in offline SQLite database
     res_zuzahlung = wiki_service.search("Zuzahlung")

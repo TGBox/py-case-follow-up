@@ -3,6 +3,7 @@ from config import AppConfig
 from enums import SyncMode
 from models.profile import WikiSettings
 from services.wiki_sync_service import WikiSyncService
+from services.i18n_service import tr
 
 
 class MockBookStackClient:
@@ -27,7 +28,9 @@ def test_wiki_sync_metadata(tmp_path: Path):
     success, msg = service.sync_from_bookstack(mock_client=mock_client)
 
     assert success is True
-    assert "2 pages" in msg
+    # Die Erfolgsmeldung ist uebersetzt - gegen den Locale-Key pruefen statt
+    # gegen einen festen Wortlaut, sonst bricht der Test bei jeder Sprache.
+    assert msg == tr("wiki.sync_success", "{count} Artikel synchronisiert.", count=2)
 
     results = service.search("Abrechnung")
     assert len(results) >= 1

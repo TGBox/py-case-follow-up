@@ -52,7 +52,7 @@ window.addEventListener('DOMContentLoaded', function() {{
         else tr("case_print.banner_view", "<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {case_id}.", case_id=case.case_id)
     )
 
-    btn_print_pdf_txt = tr("case_print.btn_print_pdf", "Drucken / Als PDF speichern")
+    btn_print_pdf_txt = tr("case_print.btn_print_pdf", "🖨 Drucken / Als PDF speichern")
     hdr_meta = tr("case_print.header_case_metadata", "Fall-Metadaten")
     hdr_customer = tr("case_print.header_customer_data", "Kunden- & Praxisdaten")
     hdr_fields = tr("case_print.header_form_fields", "Formularfelder & Details")

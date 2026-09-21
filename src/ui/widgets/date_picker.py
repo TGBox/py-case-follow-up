@@ -331,7 +331,7 @@ class CalendarDialog(ctk.CTkToplevel):
         btn_cancel.pack(side="left")
 
         btn_apply = ctk.CTkButton(
-            action_frame, text=tr("ui_buttons.apply", "Übernehmen"), fg_color=COLOR_SUCCESS,
+            action_frame, text=tr("ui_buttons.apply", "✓ Übernehmen"), fg_color=COLOR_SUCCESS,
             command=self.on_apply, width=BTN_WIDTH_APPLY, height=BTN_HEIGHT_MD
         )
         btn_apply.pack(side="right")
@@ -547,7 +547,7 @@ class DatePickerWidget(ctk.CTkFrame):
                 self.entry.insert(0, formatted)
 
         self.cal_btn = ctk.CTkButton(
-            self, text=tr("cockpit.calendar", "Kalender"), width=BTN_WIDTH_CALENDAR, command=self.open_calendar, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
+            self, text=tr("cockpit.calendar", "📅 Kalender"), width=BTN_WIDTH_CALENDAR, command=self.open_calendar, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
         )
         self.cal_btn.pack(side="right")
 
@@ -580,7 +580,7 @@ class DatePickerWidget(ctk.CTkFrame):
     def refresh_ui_labels(self):
         from services.i18n_service import tr
         if hasattr(self, "cal_btn"):
-            self.cal_btn.configure(text=tr("cockpit.calendar", "Kalender"))
+            self.cal_btn.configure(text=tr("cockpit.calendar", "📅 Kalender"))
         if hasattr(self, "entry") and not self.get():
             ph = tr("date_picker.placeholder_datetime", "DD.MM.YYYY HH:MM") if self.include_time else tr("date_picker.placeholder_date", "DD.MM.YYYY")
             self.entry.configure(placeholder_text=ph)

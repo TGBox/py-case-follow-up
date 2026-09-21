@@ -397,13 +397,13 @@ class TestI18nServiceBehaviorAndFallback:
         service = I18nService()
 
         service.current_language = "de"
-        assert service.tr("cockpit.save") == "Speichern"
+        assert service.tr("cockpit.save") == "💾 Speichern"
 
         service.current_language = "en"
-        assert service.tr("cockpit.save") == "Save"
+        assert service.tr("cockpit.save") == "💾 Save"
 
         service.current_language = "sv"
-        assert service.tr("cockpit.save") == "Spara"
+        assert service.tr("cockpit.save") == "💾 Spara"
 
         # Restore default
         service.current_language = "de"

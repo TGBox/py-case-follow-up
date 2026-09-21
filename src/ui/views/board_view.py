@@ -193,7 +193,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
         self.cockpit_btn = ctk.CTkButton(
             self.action_frame,
-            text=tr("board.cockpit_btn", "Cockpit"),
+            text=tr("board.cockpit_btn", "🎯 Cockpit"),
             command=lambda: self.on_switch_to_cockpit(self.case),
             width=BTN_WIDTH_CARD_ACTION,
             height=BTN_HEIGHT_SM,
@@ -204,7 +204,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
         self.handover_btn = ctk.CTkButton(
             self.action_frame,
-            text=tr("board.handover", "Übergeben"),
+            text=tr("board.handover", "👤 Übergeben"),
             command=lambda: self.on_change_actor(self.case),
             width=BTN_WIDTH_SM,
             height=BTN_HEIGHT_SM,
@@ -213,7 +213,7 @@ class KanbanCardWidget(ctk.CTkFrame):
 
         self.remind_btn = ctk.CTkButton(
             self.action_frame,
-            text=tr("board.remind", "Erinnere"),
+            text=tr("board.remind", "🔔 Erinnere"),
             command=lambda: self.on_open_followup(self.case),
             width=BTN_WIDTH_BOARD_REMIND,
             height=BTN_HEIGHT_SM,
@@ -222,9 +222,9 @@ class KanbanCardWidget(ctk.CTkFrame):
         )
 
         comp_text = (
-            tr("cockpit.complete", "Erledigt")
+            tr("cockpit.complete", "✓ Erledigt")
             if not self.case.workflow_status.is_completed
-            else tr("board.reopen", "Öffnen")
+            else tr("board.reopen", "✓ Öffnen")
         )
         comp_color = COLOR_SUCCESS if not self.case.workflow_status.is_completed else COLOR_COMPLETED_GRAY
         self.complete_btn = ctk.CTkButton(
@@ -348,12 +348,12 @@ class BoardView(ctk.CTkFrame):
 
     def _columns_def(self) -> list[tuple[str, str]]:
         return [
-            ("hotline", tr("board.col_hotline_header", "Hotline")),
-            ("tech", tr("board.col_tech_header", "Technik")),
-            ("dev", tr("board.col_dev_header", "Entwicklung")),
-            ("customer", tr("board.col_customer_header", "Kunde")),
-            ("followup", tr("board.col_followup_header", "Wiedervorlage")),
-            ("completed", tr("board.col_completed_header", "Erledigt")),
+            ("hotline", tr("board.col_hotline_header", "📞 Hotline")),
+            ("tech", tr("board.col_tech_header", "🔧 Technik")),
+            ("dev", tr("board.col_dev_header", "💻 Entwicklung")),
+            ("customer", tr("board.col_customer_header", "👤 Kunde")),
+            ("followup", tr("board.col_followup_header", "🔔 Wiedervorlage")),
+            ("completed", tr("board.col_completed_header", "✓ Erledigt")),
         ]
 
     def create_board(self):
@@ -391,7 +391,7 @@ class BoardView(ctk.CTkFrame):
             # Expand button
             btn_exp = ctk.CTkButton(
                 col_frame,
-                text=tr("board.expand_btn", "+"),
+                text=tr("board.expand_btn", "▶"),
                 width=BTN_HEIGHT_MD,
                 height=BTN_HEIGHT_MD,
                 command=lambda k=col_key: self.toggle_column_collapse(k),
@@ -429,7 +429,7 @@ class BoardView(ctk.CTkFrame):
             # Collapse button
             btn_col = ctk.CTkButton(
                 header_frame,
-                text=tr("board.collapse_btn", "Zuklappen"),
+                text=tr("board.collapse_btn", "◀ Zuklappen"),
                 width=BTN_WIDTH_SM,
                 height=BTN_HEIGHT_SM,
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
@@ -526,12 +526,12 @@ class BoardView(ctk.CTkFrame):
 
         from services.i18n_service import tr
         titles = {
-            "hotline": f"{tr('board.title_hotline', 'Hotline')} ({len(col_cases['hotline'])})",
-            "tech": f"{tr('board.title_tech', 'Technik')} ({len(col_cases['tech'])})",
-            "dev": f"{tr('board.title_dev', 'Entwicklung')} ({len(col_cases['dev'])})",
-            "customer": f"{tr('board.title_customer', 'Kunde')} ({len(col_cases['customer'])})",
-            "followup": f"{tr('board.title_followup', 'Wiedervorlage')} ({len(col_cases['followup'])})",
-            "completed": f"{tr('board.title_completed', 'Erledigt')} ({len(col_cases['completed'])})",
+            "hotline": f"📞 {tr('board.title_hotline', 'Hotline')} ({len(col_cases['hotline'])})",
+            "tech": f"🔧 {tr('board.title_tech', 'Technik')} ({len(col_cases['tech'])})",
+            "dev": f"💻 {tr('board.title_dev', 'Entwicklung')} ({len(col_cases['dev'])})",
+            "customer": f"👤 {tr('board.title_customer', 'Kunde')} ({len(col_cases['customer'])})",
+            "followup": f"🔔 {tr('board.title_followup', 'Wiedervorlage')} ({len(col_cases['followup'])})",
+            "completed": f"✓ {tr('board.title_completed', 'Erledigt')} ({len(col_cases['completed'])})",
         }
 
         for k, title in titles.items():

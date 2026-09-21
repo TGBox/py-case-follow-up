@@ -120,7 +120,7 @@ class FollowupFlyoutDialog(BaseDialog):
                 top_row = ctk.CTkFrame(card, fg_color=COLOR_TRANSPARENT)
                 top_row.pack(fill="x", padx=PAD_10, pady=(PAD_GAP, PAD_XS))
 
-                btn_select = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.open", "Öffnen"), width=BTN_WIDTH_SM, command=lambda c=case: self.select_case(c)), "common.open", "Öffnen")
+                btn_select = self.register_i18n(ctk.CTkButton(top_row, text=tr("common.open", "👁 Öffnen"), width=BTN_WIDTH_SM, command=lambda c=case: self.select_case(c)), "common.open", "👁 Öffnen")
                 btn_select.pack(side="right", padx=(PAD_MD, PAD_NONE))
 
                 title_str = f"[{case.case_id}] {case.classification.title}"
@@ -145,7 +145,7 @@ class FollowupFlyoutDialog(BaseDialog):
                 btn_apply = self.register_i18n(
                     ctk.CTkButton(
                         picker_row,
-                        text=tr("ui_buttons.apply", "Übernehmen"),
+                        text=tr("ui_buttons.apply", "✓ Übernehmen"),
                         width=BTN_WIDTH_ACTION_SM,
                         fg_color=COLOR_SUCCESS,
                         hover_color=COLOR_SUCCESS_HOVER,
@@ -153,7 +153,7 @@ class FollowupFlyoutDialog(BaseDialog):
                         command=lambda c=case, p=None: None,
                     ),
                     "ui_buttons.apply",
-                    "Übernehmen",
+                    "✓ Übernehmen",
                 )
                 btn_apply.pack(side="right")
 
@@ -173,7 +173,7 @@ class FollowupFlyoutDialog(BaseDialog):
                 self.register_i18n(ctk.CTkButton(act_row1, text=tr("followup.preset_2h", "+ 2 Std."), width=BTN_WIDTH_SM, fg_color=COLOR_PRESET_BTN, hover_color=COLOR_PRESET_BTN_HOVER, command=lambda p=picker: self.bump_hours(p, FOLLOWUP_PRESET_HOURS_2)), "followup.preset_2h", "+ 2 Std.").pack(side="left", padx=PAD_XS)
                 self.register_i18n(ctk.CTkButton(act_row1, text=tr("followup.preset_today_1630", "Heute 16:30"), width=BTN_WIDTH_PRESET_110, fg_color=COLOR_PRESET_BTN, hover_color=COLOR_PRESET_BTN_HOVER, command=lambda p=picker: self.set_field_today_1630(p)), "followup.preset_today_1630", "Heute 16:30").pack(side="left", padx=PAD_XS)
 
-                self.register_i18n(ctk.CTkButton(act_row1, text=tr("cockpit.complete", "Erledigt"), width=BTN_WIDTH_ACTION_SM, fg_color=COLOR_SUCCESS, command=lambda c=case: self.complete_followup(c)), "cockpit.complete", "Erledigt").pack(side="right", padx=PAD_XS)
+                self.register_i18n(ctk.CTkButton(act_row1, text=tr("cockpit.complete", "✓ Erledigt"), width=BTN_WIDTH_ACTION_SM, fg_color=COLOR_SUCCESS, command=lambda c=case: self.complete_followup(c)), "cockpit.complete", "✓ Erledigt").pack(side="right", padx=PAD_XS)
 
                 # Row 2: Daily & Weekly shifts (Morgen 08:00, +1 Tag, +1 Woche)
                 act_row2 = ctk.CTkFrame(act_frame, fg_color=COLOR_TRANSPARENT)

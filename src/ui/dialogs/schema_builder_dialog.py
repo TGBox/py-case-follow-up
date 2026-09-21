@@ -239,13 +239,13 @@ class SchemaBuilderDialog(BaseDialog):
         self.adopt_schema_btn = self.register_i18n(
             ctk.CTkButton(
                 top_frame,
-                text=tr("schema_builder.adopt_schema", "Zu Realdaten übernehmen"),
+                text=tr("schema_builder.adopt_schema", "📥 Zu Realdaten übernehmen"),
                 command=self.on_adopt_schema,
                 fg_color=COLOR_PRIMARY_BLUE,
                 width=BTN_WIDTH_ADOPT_SCHEMA,
             ),
             "schema_builder.adopt_schema",
-            "Zu Realdaten übernehmen",
+            "📥 Zu Realdaten übernehmen",
         )
         self.adopt_schema_btn.pack(side="left", padx=(PAD_NONE, PAD_GAP))
 
@@ -262,14 +262,14 @@ class SchemaBuilderDialog(BaseDialog):
         del_schema_btn = self.register_i18n(
             ctk.CTkButton(
                 top_frame,
-                text=tr("common.delete", "Löschen"),
+                text=tr("common.delete", "🗑 Löschen"),
                 command=self.confirm_delete_schema,
                 fg_color=COLOR_DANGER,
                 hover_color=COLOR_DARKRED_HOVER,
                 width=BTN_WIDTH_DELETE_SCHEMA,
             ),
             "common.delete",
-            "Löschen",
+            "🗑 Löschen",
         )
         del_schema_btn.pack(side="right")
 
@@ -414,8 +414,8 @@ class SchemaBuilderDialog(BaseDialog):
         storage_service = getattr(self.master, "storage_service", None)
         has_defaults = storage_service.has_default_schemas() if storage_service else False
         if has_defaults:
-            return tr("schema_builder.remove_defaults", "Standard-Formulare entfernen")
-        return tr("schema_builder.add_defaults", "Standard-Formulare laden")
+            return tr("schema_builder.remove_defaults", "➖ Standard-Formulare entfernen")
+        return tr("schema_builder.add_defaults", "➕ Standard-Formulare laden")
 
     def on_toggle_default_schemas(self):
         storage_service = getattr(self.master, "storage_service", None)
@@ -481,7 +481,7 @@ class SchemaBuilderDialog(BaseDialog):
     def check_adopt_status(self):
         storage_service = getattr(self.master, "storage_service", None)
         if not storage_service or not self.selected_schema:
-            self.adopt_schema_btn.configure(state="disabled", text=tr("template_mgmt.adopt_to_real_data", "Zu Realdaten übernehmen"), fg_color=COLOR_BTN_CANCEL)
+            self.adopt_schema_btn.configure(state="disabled", text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), fg_color=COLOR_BTN_CANCEL)
             return
 
         saved_schemas = storage_service.load_schemas()
@@ -494,9 +494,9 @@ class SchemaBuilderDialog(BaseDialog):
                         break
 
         if is_already_saved:
-            self.adopt_schema_btn.configure(text=tr("template_mgmt.already_in_real_data", "In Realdaten enthalten"), state="disabled", fg_color=COLOR_BTN_CANCEL)
+            self.adopt_schema_btn.configure(text=tr("template_mgmt.already_in_real_data", "✓ In Realdaten enthalten"), state="disabled", fg_color=COLOR_BTN_CANCEL)
         else:
-            self.adopt_schema_btn.configure(text=tr("template_mgmt.adopt_to_real_data", "Zu Realdaten übernehmen"), state="normal", fg_color=COLOR_PRIMARY_BLUE)
+            self.adopt_schema_btn.configure(text=tr("template_mgmt.adopt_to_real_data", "📥 Zu Realdaten übernehmen"), state="normal", fg_color=COLOR_PRIMARY_BLUE)
 
     def on_adopt_schema(self):
         storage_service = getattr(self.master, "storage_service", None)

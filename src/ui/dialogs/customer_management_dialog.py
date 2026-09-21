@@ -221,7 +221,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         from services.i18n_service import tr
         self.sort_asc_var = not getattr(self, "sort_asc_var", True)
         if hasattr(self, "sort_dir_btn"):
-            self.sort_dir_btn.configure(text=tr("customer_mgmt.sort_asc", "Aufst.") if self.sort_asc_var else tr("customer_mgmt.sort_desc", "Abst."))
+            self.sort_dir_btn.configure(text=tr("customer_mgmt.sort_asc", "↑ Aufst.") if self.sort_asc_var else tr("customer_mgmt.sort_desc", "↓ Abst."))
         self.on_sort_changed()
 
     def _get_customer_last_contact_ts(self, customer: Customer) -> str:

@@ -124,9 +124,9 @@ class PathsSettingsTabMixin:
         self.ws_entry.bind("<Return>", lambda e: self.on_workspace_entry_changed())
 
         btn_browse_ws = self.register_i18n(
-            ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "Ordner wählen"), command=self.on_browse_workspace, width=BTN_WIDTH_MD),
+            ctk.CTkButton(ws_frame, text=tr("profile.browse_folder", "📁 Ordner wählen"), command=self.on_browse_workspace, width=BTN_WIDTH_MD),
             "profile.browse_folder",
-            "Ordner wählen",
+            "📁 Ordner wählen",
         )
         btn_browse_ws.pack(side="right")
 
@@ -188,9 +188,9 @@ class PathsSettingsTabMixin:
 
         # Reset button
         btn_reset_paths = self.register_i18n(
-            ctk.CTkButton(left_col, text=tr("profile.reset_paths_btn", "Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER, width=BTN_WIDTH_WIDE),
+            ctk.CTkButton(left_col, text=tr("profile.reset_paths_btn", "🔄 Einzelpfade auf Standard zurücksetzen"), command=self.on_reset_paths, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER, width=BTN_WIDTH_WIDE),
             "profile.reset_paths_btn",
-            "Einzelpfade auf Standard zurücksetzen",
+            "🔄 Einzelpfade auf Standard zurücksetzen",
         )
         btn_reset_paths.pack(anchor="w", pady=(PAD_MD, PAD_LG))
 
@@ -198,11 +198,11 @@ class PathsSettingsTabMixin:
         self.register_i18n(
             ctk.CTkLabel(
                 left_col,
-                text=tr("profile.retention_title", "Automatische Backup-Aufbewahrung (Retention)"),
+                text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
                 font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
             ),
             "profile.retention_title",
-            "Automatische Backup-Aufbewahrung (Retention)",
+            "🔄 Automatische Backup-Aufbewahrung (Retention)",
         ).pack(anchor="w", pady=(PAD_MD, PAD_SM))
 
         self.register_i18n(
@@ -265,14 +265,14 @@ class PathsSettingsTabMixin:
         btn_prune = self.register_i18n(
             ctk.CTkButton(
                 retention_card,
-                text=tr("profile.retention_prune_now_btn", "Jetzt alte Backups bereinigen"),
+                text=tr("profile.retention_prune_now_btn", "🧹 Jetzt alte Backups bereinigen"),
                 command=self.on_click_prune_backups,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
                 width=BTN_WIDTH_WIDE,
             ),
             "profile.retention_prune_now_btn",
-            "Jetzt alte Backups bereinigen",
+            "🧹 Jetzt alte Backups bereinigen",
         )
         btn_prune.pack(anchor="w", padx=PAD_MD, pady=(PAD_NONE, PAD_MD))
 
@@ -282,11 +282,11 @@ class PathsSettingsTabMixin:
         self.register_i18n(
             ctk.CTkLabel(
                 right_col,
-                text=tr("profile.backup_title", "Komplett-Datensicherung & ZIP-Archivierung"),
+                text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
                 font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
             ),
             "profile.backup_title",
-            "Komplett-Datensicherung & ZIP-Archivierung",
+            "📦 Komplett-Datensicherung & ZIP-Archivierung",
         ).pack(anchor="w", pady=(PAD_SM, PAD_SM))
 
         desc_str = tr(
@@ -336,13 +336,13 @@ class PathsSettingsTabMixin:
         btn_export = self.register_i18n(
             ctk.CTkButton(
                 exp_card,
-                text=tr("profile.backup_exp_btn", "Komplett-Backup als ZIP exportieren..."),
+                text=tr("profile.backup_exp_btn", "📦 Komplett-Backup als ZIP exportieren..."),
                 command=self.on_click_export_zip,
                 fg_color=COLOR_INFO,
                 width=BTN_WIDTH_WIDE,
             ),
             "profile.backup_exp_btn",
-            "Komplett-Backup als ZIP exportieren...",
+            "📦 Komplett-Backup als ZIP exportieren...",
         )
         btn_export.pack(anchor="w", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
 
@@ -377,13 +377,13 @@ class PathsSettingsTabMixin:
         btn_import = self.register_i18n(
             ctk.CTkButton(
                 imp_card,
-                text=tr("profile.backup_imp_btn", "Datensicherung aus ZIP importieren..."),
+                text=tr("profile.backup_imp_btn", "📥 Datensicherung aus ZIP importieren..."),
                 command=self.on_click_import_zip,
                 fg_color=COLOR_SUCCESS,
                 width=BTN_WIDTH_WIDE,
             ),
             "profile.backup_imp_btn",
-            "Datensicherung aus ZIP importieren...",
+            "📥 Datensicherung aus ZIP importieren...",
         )
         btn_import.pack(anchor="w", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
 

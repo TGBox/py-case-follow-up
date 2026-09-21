@@ -77,9 +77,18 @@ from constants import (
     WINDOW_STATE_ICONIC,
     WINDOW_STATE_ZOOMED,
     get_localized_menu_options_datenaustausch,
+    COLOR_ICON_WHITE,
+    ICON_KEY_BELL,
+    ICON_KEY_HELP,
+    ICON_KEY_QUIT,
+    ICON_KEY_THEME,
+    ICON_KEY_USER,
+    ICON_SIZE_HEADER,
     get_localized_menu_options_stammdaten,
     get_localized_menu_options_vorlagen,
 )
+
+from utils.icon_utils import get_icon
 
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
@@ -407,15 +416,34 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Right side: User, Bell Badge, Help, Theme & Quit
-        quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=BTN_WIDTH_QUIT, fg_color=COLOR_QUIT_BTN, hover_color=COLOR_QUIT_BTN_HOVER)
+        quit_btn = ctk.CTkButton(
+            menu_frame,
+            text=tr("menu.quit", "Beenden"),
+            image=get_icon(ICON_KEY_QUIT, size=ICON_SIZE_HEADER),
+            compound="left",
+            command=self.on_quit_app,
+            width=BTN_WIDTH_QUIT,
+            fg_color=COLOR_QUIT_BTN,
+            hover_color=COLOR_QUIT_BTN_HOVER,
+        )
         quit_btn.pack(side="right", padx=PAD_GAP, pady=PAD_SM)
 
-        theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=BTN_WIDTH_SM, fg_color=COLOR_THEME_BTN)
+        theme_btn = ctk.CTkButton(
+            menu_frame,
+            text=tr("menu.theme", "Theme"),
+            image=get_icon(ICON_KEY_THEME, size=ICON_SIZE_HEADER),
+            compound="left",
+            command=self.toggle_theme,
+            width=BTN_WIDTH_SM,
+            fg_color=COLOR_THEME_BTN,
+        )
         theme_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
         self.help_btn = ctk.CTkButton(
             menu_frame,
-            text=tr("common.help_btn", "❓ Hilfe"),
+            text=tr("common.help_btn", "Hilfe"),
+            image=get_icon(ICON_KEY_HELP, size=ICON_SIZE_HEADER),
+            compound="left",
             command=self.open_help_dialog,
             width=BTN_WIDTH_HELP,
             fg_color=COLOR_MUTED_GRAY_FG,
@@ -425,7 +453,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.bell_btn = ctk.CTkButton(
             menu_frame,
-            text="🔔 0",
+            text="0",
+            image=get_icon(
+                ICON_KEY_BELL,
+                size=ICON_SIZE_HEADER,
+                light_color=COLOR_ICON_WHITE,
+                dark_color=COLOR_ICON_WHITE,
+            ),
+            compound="left",
             command=self.open_followup_flyout,
             width=BTN_WIDTH_XS,
             fg_color=COLOR_BELL_BTN,
@@ -435,7 +470,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.user_btn = ctk.CTkButton(
             menu_frame,
-            text=f"👤 {self.profile.user.name}",
+            text=f"{self.profile.user.name}",
+            image=get_icon(ICON_KEY_USER, size=ICON_SIZE_HEADER),
+            compound="left",
             font=ctk.CTkFont(weight="bold"),
             command=self.open_profile_settings_dialog,
             width=BTN_WIDTH_USER,
@@ -990,7 +1027,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         due_count = len(due_cases)
         if due_count > 0:
-            self.bell_btn.configure(text=f"🔔 {due_count}", fg_color=COLOR_BELL_BTN_HOVER)
+            self.bell_btn.configure(text=f"{due_count}", fg_color=COLOR_BELL_BTN_HOVER)
             last_count = getattr(self, "_last_notified_due_count", None)
             if last_count is None or due_count > last_count:
                 top_case = due_cases[0]
@@ -1009,7 +1046,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                         logger.warning(f"Could not display toast notification: {e}")
             self._last_notified_due_count = due_count
         else:
-            self.bell_btn.configure(text="🔔 0", fg_color=COLOR_BELL_BTN)
+            self.bell_btn.configure(text="0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0
 
         # Update tray icon badge (guard: may be called before tray_service is initialized)

@@ -5,7 +5,42 @@ from typing import Any
 from collections.abc import Callable
 from models.customer import Customer, Contact
 from services.customer_service import CustomerService
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_HEIGHT_MANAGE_TAGS,
+    BTN_WIDTH_SM,
+    CHECKBOX_TAG_WIDTH,
+    COLOR_BTN_GRAY_40,
+    COLOR_DANGER,
+    COLOR_DROPDOWN_MISSING_BTN,
+    COLOR_HELP_NAV_ACTIVE,
+    COLOR_HELP_NAV_INACTIVE,
+    COLOR_LABEL_GRAY60,
+    COLOR_MUTED_LABEL,
+    COLOR_REPEATABLE_CARD_BG,
+    COLOR_SEARCH_HIGHLIGHT,
+    COLOR_SUBTITLE_MUTED,
+    COLOR_SUCCESS,
+    COLOR_TEXT_PRIMARY,
+    COLOR_WARNING,
+    CORNER_RADIUS_MD,
+    CURSOR_HAND,
+    DEBOUNCE_KEY_CUSTOMER_SEARCH,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_CUSTOMER_MGMT,
+    DIALOG_TITLES,
+    FONT_SIZE_BODY,
+    FONT_SIZE_CONFIRM,
+    FONT_SIZE_SM,
+    FONT_SIZE_XS,
+    FONT_WEIGHT_BOLD,
+    PAD_2XL,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_TINY,
+    PAD_XS,
+    SEARCH_DEBOUNCE_MS,
+)
 from ui.dialogs.customer_form_builders import CustomerFormBuilderMixin
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 
@@ -21,8 +56,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             parent,
             DIALOG_TITLES["customer_mgmt"],
             (w, h),
-            min_size=(900, 600),
-
+            min_size=DIALOG_MIN_SIZE_CUSTOMER_MGMT,
             title_factory=lambda: DIALOG_TITLES["customer_mgmt"],
         )
 
@@ -46,7 +80,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         # Body: Left list, Right edit form
         body_frame = ctk.CTkFrame(self, fg_color="transparent")
-        body_frame.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+        body_frame.pack(fill="both", expand=True, padx=PAD_MD + PAD_XS, pady=(PAD_SM + 1, PAD_MD + PAD_XS))
 
         self._build_customer_list_panel(body_frame)
         self._build_customer_form_panel(body_frame)
@@ -56,13 +90,13 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         from services.i18n_service import tr
         url = self.website_entry.get().strip()
         if not url:
-            self.status_lbl.configure(text=tr("customer_mgmt.no_website", "⚠ Keine Webseite eingetragen!"), text_color="orange")
+            self.status_lbl.configure(text=tr("customer_mgmt.no_website", "⚠ Keine Webseite eingetragen!"), text_color=COLOR_WARNING)
             return
         if not (url.startswith("http://") or url.startswith("https://")):
             url = "https://" + url
         import webbrowser
         webbrowser.open(url)
-        self.status_lbl.configure(text=tr("customer_mgmt.website_opened", "🌐 Webseite geöffnet: {url}", url=url), text_color="green")
+        self.status_lbl.configure(text=tr("customer_mgmt.website_opened", "🌐 Webseite geöffnet: {url}", url=url), text_color=COLOR_SUCCESS)
 
     def render_contact_rows(self, contacts: list[Contact]):
         for r in list(self.contact_rows):
@@ -80,13 +114,13 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         c_data = contact or Contact()
         row_idx = len(self.contact_rows) + 1
 
-        card = ctk.CTkFrame(self.contacts_container, corner_radius=6, fg_color=("gray85", "gray22"))
-        card.pack(fill="x", pady=5)
+        card = ctk.CTkFrame(self.contacts_container, corner_radius=CORNER_RADIUS_MD, fg_color=COLOR_REPEATABLE_CARD_BG)
+        card.pack(fill="x", pady=PAD_SM + 1)
 
         # Card header
         header = ctk.CTkFrame(card, fg_color="transparent")
-        header.pack(fill="x", padx=10, pady=(6, 2))
-        num_lbl = self.register_i18n(ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=11, weight="bold"), text_color="gray60"), "customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx)
+        header.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD - PAD_XS, PAD_XS))
+        num_lbl = self.register_i18n(ctk.CTkLabel(header, text=tr("customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx), font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD), text_color=COLOR_LABEL_GRAY60), "customer_mgmt.contact_num", "Kontakt #{num}", num=row_idx)
         num_lbl.pack(side="left")
 
         row_dict: dict[str, Any] = {"frame": card, "num_lbl": num_lbl}
@@ -94,29 +128,29 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         remove_btn = self.register_i18n(ctk.CTkButton(
             header,
             text=tr("customer_mgmt.remove_contact", "🗑 Entfernen"),
-            width=80,
-            height=22,
-            fg_color="gray40",
-            hover_color="darkred",
+            width=BTN_WIDTH_SM,
+            height=BTN_HEIGHT_MANAGE_TAGS,
+            fg_color=COLOR_BTN_GRAY_40,
+            hover_color=COLOR_DROPDOWN_MISSING_BTN,
             command=lambda: self.remove_contact_row(row_dict),
         ), "customer_mgmt.remove_contact", "🗑 Entfernen")
         remove_btn.pack(side="right")
 
         # Name & Role row
         r1 = ctk.CTkFrame(card, fg_color="transparent")
-        r1.pack(fill="x", padx=10, pady=(0, 4))
+        r1.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_NONE, PAD_SM))
 
         left_r1 = ctk.CTkFrame(r1, fg_color="transparent")
-        left_r1.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        self.register_i18n(ctk.CTkLabel(left_r1, text=tr("customer_mgmt.name_req", "Name *:")), "customer_mgmt.name_req", "Name *:").pack(anchor="w", pady=(0, 1))
+        left_r1.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_SM))
+        self.register_i18n(ctk.CTkLabel(left_r1, text=tr("customer_mgmt.name_req", "Name *:")), "customer_mgmt.name_req", "Name *:").pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
         name_entry = self.register_i18n(ctk.CTkEntry(left_r1, placeholder_text=tr("quick_customer.contact_placeholder", "z.B. Dr. Hans Weber")), "quick_customer.contact_placeholder", "z.B. Dr. Hans Weber", attr="placeholder_text")
         name_entry.insert(0, c_data.name)
         name_entry.pack(fill="x")
         row_dict["name_entry"] = name_entry
 
         right_r1 = ctk.CTkFrame(r1, fg_color="transparent")
-        right_r1.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        self.register_i18n(ctk.CTkLabel(right_r1, text=tr("customer_mgmt.role_lbl", "Rolle / Funktion:")), "customer_mgmt.role_lbl", "Rolle / Funktion:").pack(anchor="w", pady=(0, 1))
+        right_r1.pack(side="right", fill="x", expand=True, padx=(PAD_SM, PAD_NONE))
+        self.register_i18n(ctk.CTkLabel(right_r1, text=tr("customer_mgmt.role_lbl", "Rolle / Funktion:")), "customer_mgmt.role_lbl", "Rolle / Funktion:").pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
         role_entry = self.register_i18n(ctk.CTkEntry(right_r1, placeholder_text=tr("customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung...")), "customer_mgmt.role_placeholder", "z.B. Praxisinhaber, Abrechnung...", attr="placeholder_text")
         role_entry.insert(0, c_data.role)
         role_entry.pack(fill="x")
@@ -124,19 +158,19 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         # Email & Phone row
         r2 = ctk.CTkFrame(card, fg_color="transparent")
-        r2.pack(fill="x", padx=10, pady=(0, 4))
+        r2.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_NONE, PAD_SM))
 
         left_r2 = ctk.CTkFrame(r2, fg_color="transparent")
-        left_r2.pack(side="left", fill="x", expand=True, padx=(0, 4))
-        self.register_i18n(ctk.CTkLabel(left_r2, text=tr("customer_mgmt.email_lbl", "E-Mail:")), "customer_mgmt.email_lbl", "E-Mail:").pack(anchor="w", pady=(0, 1))
+        left_r2.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_SM))
+        self.register_i18n(ctk.CTkLabel(left_r2, text=tr("customer_mgmt.email_lbl", "E-Mail:")), "customer_mgmt.email_lbl", "E-Mail:").pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
         email_entry = self.register_i18n(ctk.CTkEntry(left_r2, placeholder_text=tr("customer_mgmt.email_placeholder", "weber@praxis.de")), "customer_mgmt.email_placeholder", "weber@praxis.de", attr="placeholder_text")
         email_entry.insert(0, c_data.email)
         email_entry.pack(fill="x")
         row_dict["email_entry"] = email_entry
 
         right_r2 = ctk.CTkFrame(r2, fg_color="transparent")
-        right_r2.pack(side="right", fill="x", expand=True, padx=(4, 0))
-        self.register_i18n(ctk.CTkLabel(right_r2, text=tr("customer_mgmt.phone_lbl", "Telefon:")), "customer_mgmt.phone_lbl", "Telefon:").pack(anchor="w", pady=(0, 1))
+        right_r2.pack(side="right", fill="x", expand=True, padx=(PAD_SM, PAD_NONE))
+        self.register_i18n(ctk.CTkLabel(right_r2, text=tr("customer_mgmt.phone_lbl", "Telefon:")), "customer_mgmt.phone_lbl", "Telefon:").pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
         phone_entry = self.register_i18n(ctk.CTkEntry(right_r2, placeholder_text=tr("customer_mgmt.phone_placeholder", "030 / 1234567")), "customer_mgmt.phone_placeholder", "030 / 1234567", attr="placeholder_text")
         phone_entry.insert(0, c_data.phone)
         phone_entry.pack(fill="x")
@@ -144,8 +178,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         # Note row
         r3 = ctk.CTkFrame(card, fg_color="transparent")
-        r3.pack(fill="x", padx=10, pady=(0, 8))
-        self.register_i18n(ctk.CTkLabel(r3, text=tr("customer_mgmt.note_lbl", "Notiz:")), "customer_mgmt.note_lbl", "Notiz:").pack(anchor="w", pady=(0, 1))
+        r3.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_NONE, PAD_MD))
+        self.register_i18n(ctk.CTkLabel(r3, text=tr("customer_mgmt.note_lbl", "Notiz:")), "customer_mgmt.note_lbl", "Notiz:").pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
         note_entry = self.register_i18n(ctk.CTkEntry(r3, placeholder_text=tr("customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag")), "customer_mgmt.note_placeholder", "z.B. Erreichbar Mo-Do Vormittag", attr="placeholder_text")
         note_entry.insert(0, c_data.note)
         note_entry.pack(fill="x")
@@ -229,7 +263,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             w.destroy()
 
         if not self.filtered_customers:
-            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color="gray"), "customer_mgmt.no_practices", "Keine Praxen gefunden.").pack(pady=20)
+            self.register_i18n(ctk.CTkLabel(self.list_scroll, text=tr("customer_mgmt.no_practices", "Keine Praxen gefunden."), text_color=COLOR_MUTED_LABEL), "customer_mgmt.no_practices", "Keine Praxen gefunden.").pack(pady=PAD_2XL)
             return
 
         query = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
@@ -237,10 +271,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
 
         for c in self.filtered_customers:
             is_selected = self.selected_customer and self.selected_customer.customer_id == c.customer_id
-            fg_color = ("gray75", "gray30") if is_selected else ("gray85", "gray20")
+            fg_color = COLOR_HELP_NAV_ACTIVE if is_selected else COLOR_HELP_NAV_INACTIVE
 
-            btn_frame = ctk.CTkFrame(self.list_scroll, fg_color=fg_color, corner_radius=6, cursor="hand2")
-            btn_frame.pack(fill="x", pady=3, padx=2)
+            btn_frame = ctk.CTkFrame(self.list_scroll, fg_color=fg_color, corner_radius=CORNER_RADIUS_MD, cursor=CURSOR_HAND)
+            btn_frame.pack(fill="x", pady=PAD_XS + 1, padx=PAD_XS)
             btn_frame.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
             # Fixed-width star slot (24px) for perfect left alignment across all items
@@ -248,16 +282,16 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
             star_lbl = ctk.CTkLabel(
                 btn_frame,
                 text=star_txt,
-                width=24,
-                font=ctk.CTkFont(size=13),
+                width=CHECKBOX_TAG_WIDTH,
+                font=ctk.CTkFont(size=FONT_SIZE_CONFIRM),
                 anchor="center",
             )
-            star_lbl.pack(side="left", padx=(6, 2), pady=6)
+            star_lbl.pack(side="left", padx=(PAD_MD - PAD_XS, PAD_XS), pady=PAD_MD - PAD_XS)
             star_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
             # Right label column for name & ID (always starts at exact same x offset)
             txt_box = ctk.CTkFrame(btn_frame, fg_color="transparent")
-            txt_box.pack(side="left", fill="x", expand=True, padx=(2, 6), pady=4)
+            txt_box.pack(side="left", fill="x", expand=True, padx=(PAD_XS, PAD_MD - PAD_XS), pady=PAD_SM)
             txt_box.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
 
             if q_lower and q_lower in c.practice_name.lower():
@@ -265,10 +299,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
                     txt_box,
                     text=c.practice_name,
                     query=query,
-                    font=ctk.CTkFont(size=12, weight="bold"),
-                    text_color=("black", "white"),
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                    text_color=COLOR_TEXT_PRIMARY,
                     bg_color=fg_color,
-                    highlight_color=("#D97706", "#F59E0B"),
+                    highlight_color=COLOR_SEARCH_HIGHLIGHT,
                     wrap="none",
                     on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
                     scroll_frame=self.list_scroll,
@@ -277,10 +311,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
                 name_lbl = ctk.CTkLabel(
                     txt_box,
                     text=c.practice_name,
-                    font=ctk.CTkFont(size=12, weight="bold"),
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
                     anchor="w",
                     justify="left",
-                    text_color=("black", "white"),
+                    text_color=COLOR_TEXT_PRIMARY,
                 )
                 name_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
             name_lbl.pack(fill="x", anchor="w")
@@ -290,10 +324,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
                     txt_box,
                     text=f"(ID: {c.customer_id})",
                     query=query,
-                    font=ctk.CTkFont(size=11),
-                    text_color=("gray40", "gray70"),
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
+                    text_color=COLOR_MUTED_LABEL,
                     bg_color=fg_color,
-                    highlight_color=("#D97706", "#F59E0B"),
+                    highlight_color=COLOR_SEARCH_HIGHLIGHT,
                     wrap="none",
                     on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
                     scroll_frame=self.list_scroll,
@@ -302,10 +336,10 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
                 sub_lbl = ctk.CTkLabel(
                     txt_box,
                     text=f"(ID: {c.customer_id})",
-                    font=ctk.CTkFont(size=11),
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
                     anchor="w",
                     justify="left",
-                    text_color=("gray40", "gray70"),
+                    text_color=COLOR_MUTED_LABEL,
                 )
                 sub_lbl.bind("<Button-1>", lambda e, cid=c.customer_id: self.select_customer(cid))
             sub_lbl.pack(fill="x", anchor="w")
@@ -317,15 +351,15 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
                         txt_box,
                         text=match_summary,
                         query=query,
-                        font=ctk.CTkFont(size=10),
-                        text_color=("gray45", "gray65"),
+                        font=ctk.CTkFont(size=FONT_SIZE_XS),
+                        text_color=COLOR_SUBTITLE_MUTED,
                         bg_color=fg_color,
-                        highlight_color=("#D97706", "#F59E0B"),
+                        highlight_color=COLOR_SEARCH_HIGHLIGHT,
                         wrap="word",
                         on_click=lambda e, cid=c.customer_id: self.select_customer(cid),
                         scroll_frame=self.list_scroll,
                     )
-                    match_lbl.pack(fill="x", anchor="w", pady=(1, 0))
+                    match_lbl.pack(fill="x", anchor="w", pady=(PAD_TINY, PAD_NONE))
 
             bind_mouse_wheel_to_canvas(btn_frame, self.list_scroll)
 
@@ -484,7 +518,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         name = self.name_entry.get().strip()
 
         if not cust_id or not name:
-            self.status_lbl.configure(text=tr("customer_mgmt.missing_id_name", "⚠ ID und Praxisname erforderlich!"), text_color="red")
+            self.status_lbl.configure(text=tr("customer_mgmt.missing_id_name", "⚠ ID und Praxisname erforderlich!"), text_color=COLOR_DANGER)
             return
 
         website = self.website_entry.get().strip()
@@ -558,7 +592,7 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         self.customers = self.customer_service.get_all_customers()
         self.selected_customer = customer
 
-        self.status_lbl.configure(text=tr("customer_mgmt.saved_msg", "✅ Praxis gespeichert!"), text_color="green")
+        self.status_lbl.configure(text=tr("customer_mgmt.saved_msg", "✅ Praxis gespeichert!"), text_color=COLOR_SUCCESS)
         self.on_search_changed()
         self.select_customer(cust_id)
 
@@ -572,9 +606,8 @@ class CustomerManagementDialog(CustomerFormBuilderMixin, BaseDialog):
         Praxen samt Neuaufbau der Trefferliste aus, und der zweite Tastendruck
         kam erst danach ueberhaupt an.
         """
-        from constants import SEARCH_DEBOUNCE_MS
         from utils.ui_utils import debounce
-        debounce(self, "customer_search", SEARCH_DEBOUNCE_MS, self.on_search_changed)
+        debounce(self, DEBOUNCE_KEY_CUSTOMER_SEARCH, SEARCH_DEBOUNCE_MS, self.on_search_changed)
 
     def on_search_changed(self, event=None):
         query = self.search_entry.get().strip().lower()

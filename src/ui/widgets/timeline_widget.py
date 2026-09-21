@@ -1,9 +1,36 @@
 import customtkinter as ctk
+from typing import Any
 from collections.abc import Callable
 from models.case import TimelineEntry
 from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
-from constants import COLOR_CARD_BG, COLOR_CARD_BORDER
-from utils.datetime_utils import now_iso
+from constants import (
+    BTN_WIDTH_ACTION,
+    BTN_WIDTH_SM,
+    COLOR_BORDER_DARK,
+    COLOR_CARD_BG,
+    COLOR_CARD_BORDER,
+    COLOR_INFO,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_LABEL,
+    COLOR_PURPLE_DARK,
+    COMBO_WIDTH_SM,
+    CORNER_RADIUS_MD,
+    CORNER_RADIUS_XS,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_SIZE_XS,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+    TEXTBOX_HEIGHT_SM,
+    TIMELINE_NOTE_WRAP_DEFAULT,
+    TIMELINE_NOTE_WRAP_MIN,
+    TIMELINE_NOTE_WRAP_OFFSET,
+    USER_COLOR_TILE_SIZE,
+)
+from utils.datetime_utils import now_iso, format_german_date, format_german_time
 
 
 class TimelineWidget(ctk.CTkFrame):
@@ -13,60 +40,70 @@ class TimelineWidget(ctk.CTkFrame):
         author_name: str,
         on_timeline_updated: Callable[[list[TimelineEntry]], None],
         on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
+        user_color: str | None = None,
+        color_marker_enabled: bool = False,
     ):
         super().__init__(parent)
         self.author_name = author_name
         self.on_timeline_updated = on_timeline_updated
         self.on_open_snippet_picker = on_open_snippet_picker
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
         self.timeline_entries: list[TimelineEntry] = []
 
         self.create_widgets()
+
+    def set_user_color_settings(self, user_color: str | None, color_marker_enabled: bool):
+        self.user_color = user_color
+        self.color_marker_enabled = color_marker_enabled
+        if self.timeline_entries:
+            self.load_timeline(self.timeline_entries)
 
     def create_widgets(self):
         from services.i18n_service import tr
 
         # Header
-        self.hdr_lbl = ctk.CTkLabel(self, text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"), font=ctk.CTkFont(size=14, weight="bold"))
-        self.hdr_lbl.pack(anchor="w", padx=10, pady=(10, 5))
+        self.hdr_lbl = ctk.CTkLabel(self, text=tr("cockpit.timeline_title", "Verlauf & Timeline Notizen"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"))
+        self.hdr_lbl.pack(anchor="w", padx=PAD_MD, pady=(PAD_MD, PAD_SM))
 
         # Scrollable list
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.scroll_frame.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
         from utils.ui_utils import enable_auto_hiding_scrollbar
         enable_auto_hiding_scrollbar(self.scroll_frame)
 
         # Input Area for New Note
         input_frame = ctk.CTkFrame(self)
-        input_frame.pack(fill="x", padx=5, pady=5)
+        input_frame.pack(fill="x", padx=PAD_SM, pady=PAD_SM)
 
         ctrl_row = ctk.CTkFrame(input_frame, fg_color="transparent")
-        ctrl_row.pack(fill="x", padx=5, pady=(5, 2))
+        ctrl_row.pack(fill="x", padx=PAD_SM, pady=(PAD_SM, PAD_XS))
 
-        self.ctrl_lbl = ctk.CTkLabel(ctrl_row, text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"), font=ctk.CTkFont(size=11, weight="bold"))
+        self.ctrl_lbl = ctk.CTkLabel(ctrl_row, text=tr("cockpit.add_new_note", "Neue Notiz hinzufügen:"), font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"))
         self.ctrl_lbl.pack(side="left")
 
         self.snip_btn = ctk.CTkButton(
             ctrl_row,
             text=tr("cockpit.snippets_btn", "📝 Textbaustein"),
-            width=110,
-            fg_color="gray30",
-            hover_color="darkmagenta",
+            width=BTN_WIDTH_SM + 10,
+            fg_color=COLOR_MUTED_GRAY_FG,
+            hover_color=COLOR_PURPLE_DARK,
             command=self.on_click_snippet,
         )
         self.snip_btn.pack(side="right")
 
-        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=200)
+        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=COMBO_WIDTH_SM)
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
-        self.channel_combo.pack(anchor="w", padx=5, pady=(0, 5))
+        self.channel_combo.pack(anchor="w", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
-        self.note_textbox = ctk.CTkTextbox(input_frame, height=60)
-        self.note_textbox.pack(fill="x", padx=5, pady=(0, 5))
+        self.note_textbox = ctk.CTkTextbox(input_frame, height=TEXTBOX_HEIGHT_SM)
+        self.note_textbox.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
 
-        self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=140)
-        self.add_btn.pack(side="right", padx=5, pady=(0, 5))
+        self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=BTN_WIDTH_ACTION)
+        self.add_btn.pack(side="right", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr
@@ -101,29 +138,107 @@ class TimelineWidget(ctk.CTkFrame):
 
         if not self.timeline_entries:
             from services.i18n_service import tr
-            ctk.CTkLabel(self.scroll_frame, text=tr("timeline.no_notes", "Keine Notizen vorhanden.")).pack(pady=10)
+            ctk.CTkLabel(self.scroll_frame, text=tr("timeline.no_notes", "Keine Notizen vorhanden.")).pack(pady=PAD_MD)
             return
 
         for entry in reversed(self.timeline_entries):
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=6, border_width=1, border_color=COLOR_CARD_BORDER)
-            card.pack(fill="x", pady=4, padx=4)
+            card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_MD, border_width=1, border_color=COLOR_CARD_BORDER)
+            card.pack(fill="x", pady=PAD_XS, padx=PAD_SM)
 
-            top_row = ctk.CTkFrame(card, fg_color="transparent")
-            top_row.pack(fill="x", padx=8, pady=(4, 2))
+            content_row = ctk.CTkFrame(card, fg_color="transparent")
+            content_row.pack(fill="x", padx=PAD_MD, pady=(PAD_SM, PAD_SM))
 
-            header_str = f"👤 {entry.author}  [{get_channel_display(entry.channel)}]"
-            ctk.CTkLabel(top_row, text=header_str, font=ctk.CTkFont(weight="bold", size=11)).pack(side="left")
-            from utils.datetime_utils import format_german_datetime
-            formatted_ts = format_german_datetime(entry.timestamp, include_seconds=True)
-            ctk.CTkLabel(top_row, text=formatted_ts, font=ctk.CTkFont(size=10), text_color=("gray40", "gray70")).pack(side="right")
+            # Right Column: Date, Time (directly below date), Author & color marker (no person icon)
+            right_col = ctk.CTkFrame(content_row, fg_color="transparent")
+            right_col.pack(side="right", anchor="ne", padx=(PAD_SM, PAD_NONE))
 
-            note_lbl = ctk.CTkLabel(card, text=entry.note, anchor="w", justify="left", font=ctk.CTkFont(size=12), wraplength=300)
-            note_lbl.pack(fill="x", padx=10, pady=(0, 6))
+            formatted_d = format_german_date(entry.timestamp)
+            formatted_t = format_german_time(entry.timestamp, include_seconds=True, with_uhr=True)
+
+            ctk.CTkLabel(
+                right_col,
+                text=formatted_d,
+                font=ctk.CTkFont(size=FONT_SIZE_XS),
+                text_color=COLOR_MUTED_LABEL,
+                height=13,
+            ).pack(anchor="e")
+
+            ctk.CTkLabel(
+                right_col,
+                text=formatted_t,
+                font=ctk.CTkFont(size=FONT_SIZE_XS),
+                text_color=COLOR_MUTED_LABEL,
+                height=13,
+            ).pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+
+            author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+            author_frame.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+
+            is_own_entry = bool(
+                self.author_name
+                and entry.author
+                and entry.author.strip().lower() == self.author_name.strip().lower()
+            )
+            if is_own_entry and self.color_marker_enabled and self.user_color:
+                color_tile = ctk.CTkFrame(
+                    author_frame,
+                    width=USER_COLOR_TILE_SIZE,
+                    height=USER_COLOR_TILE_SIZE,
+                    corner_radius=CORNER_RADIUS_XS,
+                    fg_color=self.user_color,
+                    border_width=1,
+                    border_color=COLOR_BORDER_DARK,
+                )
+                color_tile.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+            ctk.CTkLabel(
+                author_frame,
+                text=entry.author,
+                font=ctk.CTkFont(size=FONT_SIZE_XS),
+                text_color=("gray45", "gray65"),
+                height=13,
+            ).pack(side="left")
+
+            # Left Column: Channel Title, Note text (directly below title), Status change
+            left_col = ctk.CTkFrame(content_row, fg_color="transparent")
+            left_col.pack(side="left", fill="both", expand=True)
+
+            channel_text = get_channel_display(entry.channel)
+            ctk.CTkLabel(
+                left_col,
+                text=channel_text,
+                font=ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
+                height=15,
+            ).pack(anchor="w")
+
+            note_lbl = ctk.CTkLabel(
+                left_col,
+                text=entry.note,
+                anchor="w",
+                justify="left",
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                wraplength=TIMELINE_NOTE_WRAP_DEFAULT,
+            )
+            note_lbl.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
+
+            def _make_wrap_updater(target_lbl: ctk.CTkLabel):
+                def _update_wrap(event: Any) -> None:
+                    target_wrap = max(TIMELINE_NOTE_WRAP_MIN, event.width - TIMELINE_NOTE_WRAP_OFFSET)
+                    target_lbl.configure(wraplength=target_wrap)
+                return _update_wrap
+
+            card.bind("<Configure>", _make_wrap_updater(note_lbl), add="+")
 
             if entry.status_change:
                 from services.i18n_service import tr
-                sc_lbl = ctk.CTkLabel(card, text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change), font=ctk.CTkFont(size=10), text_color="dodgerblue")
-                sc_lbl.pack(anchor="w", padx=10, pady=(0, 4))
+                sc_lbl = ctk.CTkLabel(
+                    left_col,
+                    text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change),
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    text_color=COLOR_INFO,
+                    height=13,
+                )
+                sc_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 
         from utils.ui_utils import bind_mouse_wheel_to_canvas
         bind_mouse_wheel_to_canvas(self.scroll_frame)

@@ -8,7 +8,7 @@
     "DATA_TECH": "Data-AL Tech Support",
     "DEVELOPMENT": "Development",
     "HOTLINE": "Hotline",
-    "SUPPORT": "Support / Hotline",
+    "SUPPORT": "Hotline",
     "TECH": "Tech Support",
     "data_customer": "Customer",
     "data_development": "Development",
@@ -17,7 +17,7 @@
     "data_tech": "Tech",
     "dev": "Development",
     "practice": "Customer",
-    "support_team": "Support / Hotline",
+    "support_team": "Hotline",
     "third_party": "Tech"
   },
   "ai_constants": {
@@ -130,13 +130,19 @@
     "cockpit_btn": "🎯 Cockpit",
     "col_completed": "✓ Completed Cases",
     "col_completed_header": "✓ Completed Cases",
+    "col_customer": "👤 Customer ({count})",
+    "col_customer_header": "👤 Customer",
     "col_dev": "💻 Developer ({count})",
-    "col_dev_header": "💻 Developer / Dev Team",
+    "col_dev_header": "💻 Development",
     "col_done": "✓ Completed ({count})",
     "col_followup": "🔔 Follow-up ({count})",
-    "col_followup_header": "🔔 Follow-up / Waiting",
-    "col_support": "📥 Support ({count})",
-    "col_support_header": "📥 Support / In Progress",
+    "col_followup_header": "🔔 Follow-up",
+    "col_hotline": "📞 Hotline ({count})",
+    "col_hotline_header": "📞 Hotline",
+    "col_support": "📥 Hotline ({count})",
+    "col_support_header": "📥 Hotline",
+    "col_tech": "🔧 Tech Support ({count})",
+    "col_tech_header": "🔧 Tech Support",
     "collapse_btn": "◀ Collapse",
     "expand_btn": "▶",
     "handover": "👤 Hand Over",
@@ -145,9 +151,12 @@
     "score": "Score",
     "score_label": "Score {score}",
     "title_completed": "Completed",
-    "title_dev": "Developer",
+    "title_customer": "Customer",
+    "title_dev": "Development",
     "title_followup": "Follow-up",
-    "title_support": "Support"
+    "title_hotline": "Hotline",
+    "title_support": "Hotline",
+    "title_tech": "Tech Support"
   },
   "board_columns": {
     "ACTION_REQUIRED": "Action required",
@@ -223,6 +232,7 @@
     "banner_print": "<strong>Case File Print View</strong> — Print dialog is opening. Select your printer or 'Save as PDF'.",
     "banner_view": "<strong>Case File View</strong> — Overview for case {case_id}.",
     "btn_print_pdf": "🖨 Print / Save as PDF",
+    "header_case_metadata": "Case Metadata",
     "header_customer_data": "Customer & Practice Data",
     "header_form_fields": "Form Fields & Details",
     "header_timeline": "History & Timeline",
@@ -341,12 +351,14 @@
     "email_copied_msg": "Practice email '{email}' copied to clipboard.",
     "email_copied_title": "📋 Email Copied",
     "export_case": "📤 Export Case",
+    "export_handover": "📤 Export & Handover",
     "filter_all": "All",
     "filter_deep": "🔍 Deep Search",
     "filter_followup": "🔔 Follow-up",
     "filter_urgent": "🔥 Urgent",
     "followup": "🔔 Follow-up",
     "followup_at": "🔔 Follow up on:",
+    "handover_action": "Handover",
     "internal_task_title": "INTERNAL TASK / CASE",
     "more_actions": "⚙ More Actions...",
     "no_email_msg": "No email address is registered for this practice.",
@@ -612,7 +624,10 @@
     "zip_lbl": "Postal Code:",
     "zip_placeholder": "12345",
     "edit_practice": "Edit practice: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Name (A-Z)",
+    "sort_id": "Practice No. / ID",
+    "sort_contact": "Time since last contact"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -902,6 +917,7 @@
   },
   "export_dialog": {
     "copy_btn": "Copy to clipboard",
+    "dialog_title": "Export & Handover — {case_id}",
     "export_for": "Export for case",
     "force_export_chk": "Export despite incomplete data ([MISSING: ...] placeholder)",
     "manage_templates_btn": "🛠 Manage Templates",
@@ -909,6 +925,8 @@
     "preview_header": "Preview of exported text:",
     "save_file_btn": "Save to file...",
     "select_template": "Select template:",
+    "tab_export": "Export & Templates",
+    "tab_print": "Print & Case File",
     "window_title": "{base_title} — {case_id}",
     "file_saved": "💾 File saved: {name}",
     "export_for_case": "Export for case {case_id}"
@@ -1004,12 +1022,12 @@
     "basics": {
       "title": "🚀 Basics & 4 Layout Views",
       "category": "Basics",
-      "content": "### 🚀 User Interface Basics & Layouts\n\nSupport Cockpit offers 4 specialized workspace layouts that you can switch between anytime via the **Layout** menu or shortcuts:\n\n#### 1. 🎛 Cockpit View (Default, `Ctrl + 1`)\n- **Tri-pane Main Layout**:\n  - **Left**: Case list with search bar, quick filters (`[🔥 Urgent]`, `[🔔 Follow-ups]`, `[🏢 Internal]`), and urgency score badges.\n  - **Middle**: Case details, dynamic form fields, quick action buttons (Email, Calendar, Follow-up, Note), and timeline entries.\n  - **Right**: Tab container with *Timeline*, *Attachments & Screenshots*, and *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban Board (`Ctrl + 2`)\n- Case overview grouped by status columns:\n  - *New*, *Action Required*, *Waiting*, *In Progress*, *Completed*.\n- Ideal for team standup meetings and workload distribution.\n\n#### 3. 📊 Tabular Matrix (`Ctrl + 3`)\n- Compact tabular view of all cases for fast searching, sorting, and bulk management.\n\n#### 4. 📈 Analytics & Metrics (`Ctrl + 4`)\n- Statistical dashboard showing open cases, overdue deadlines, resolution times, VIP ratios, and workload."
+      "content": "### 🚀 User Interface Basics & Layouts\n\nSupport Cockpit offers 4 specialized workspace layouts that you can switch between anytime via the **Layout** menu or shortcuts:\n\n#### 1. 🎛 Cockpit View (Default, `Ctrl + 1`)\n- **Tri-pane Main Layout**:\n  - **Left**: Case list with search bar, quick filters (`[🔥 Urgent]`, `[🔔 Follow-ups]`, `[🏢 Internal]`), urgency score badges, and personal color markers.\n  - **Middle**: Case details, dynamic form fields, and integrated action toolbar (Follow-up, Note, Handover dropdown, Done, Save, More Actions).\n  - **Right**: Tab container with *Timeline* (compact cards with note type and content on the left, date, time and author without person icon on the right), *Attachments & Screenshots*, and *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban Board (`Ctrl + 2`)\n- Complete overview across all 4 department columns and 2 process columns (**6 columns**):\n  - 📞 **Hotline** (`hotline`)\n  - 🔧 **Tech** (`tech`)\n  - 💻 **Development** (`dev`)\n  - 👤 **Customer** (`customer`)\n  - 🔔 **Follow-up** (`followup`)\n  - ✓ **Completed** (`completed`)\n- Each column can be collapsed individually and displays a case counter in its header.\n\n#### 3. 📊 Tabular Matrix (`Ctrl + 3`)\n- Compact tabular view of all cases for fast searching, sorting, and bulk management.\n\n#### 4. 📈 Analytics & Metrics (`Ctrl + 4`)\n- Statistical dashboard showing open cases, overdue deadlines, resolution times, VIP ratios, and workload."
     },
     "case_print_reporting": {
-      "title": "🖨 Case Print View, PDF & Images",
+      "title": "🖨 Case Print View & Compact A4 PDF Export",
       "category": "Export",
-      "content": "### 🖨 Case Print View, PDF & Image Reports\n\nCreate printable complete case dossiers including all screenshots and timeline entries.\n\n#### Step-by-Step Guide:\n1. Click **🖨 Print** in the Cockpit (under `⚙ More Actions...`).\n2. **Configure Options**: Choose sections to include (customer data, form fields, timeline, images).\n3. **Images at Page End**: All screenshots (`.png`, `.jpg`) are embedded automatically at the end of the report.\n4. **Print or Save as PDF**:\n   - Click **🖨 Open in Browser & Print** to view in browser and trigger system print dialog.\n   - Or click **💾 Save as HTML/PDF** to store locally."
+      "content": "### 🖨 Case Print View & Compact A4 PDF Export\n\nGenerate highly space-optimized case reports engineered to fit on **a single A4 page** for standard cases.\n\n#### 1. Compact 2-Column Layout\n- **Horizontal Grouping**: Case metadata (left) and customer/practice details (right) are placed side-by-side to minimize vertical height.\n- **2-Column Fields Grid**: Short form fields share two columns to save space. Longer responses automatically span across the full width.\n- **Compact Timeline**: Flat cards with reduced padding and clean headers eliminate wasted whitespace.\n\n#### 2. DIN A4 Page Setup (@page)\n- Embedded `@page { size: A4 portrait; margin: 8mm 10mm; }` guarantees proper print margins when printing or saving as PDF in browsers.\n- Automatic page-break avoidance (`page-break-inside: avoid;`) prevents tables, cards, and screenshots from being split across page boundaries.\n\n#### 3. How to Use:\n1. In the Cockpit, open **⚙ More Actions...** -> **📤 Export & Handover** and switch to the **Print & Case File** tab (or click the print icon).\n2. Toggle options and uncheck individual timeline entries or attachments if desired.\n3. Click **🖨 Open in Browser & Print** (opens browser with system print/PDF dialog) or **💾 Save as HTML**."
     },
     "cobra_crm_import": {
       "title": "🐍 Cobra CRM Practice & Customer Import",
@@ -1027,14 +1045,14 @@
       "content": "### 🔌 Email Import (IMAP) & REST Webhooks (Jira/GitLab)\n\nConnect Support Cockpit to your mailboxes and ticketing systems.\n\n#### 1. 📬 Automatic Email Import (IMAP)\n- **Functionality**: Queries your support mailbox via IMAP at configurable intervals.\n- **Automated Case Drafts**: Incoming emails are listed as unconfirmed drafts in Cockpit. Review and assign them with one click.\n\n#### 2. 🔗 REST Webhooks (GitLab, Jira, Custom APIs)\n- **Outbound Webhooks**: Configure target URLs under `⚙ Profile & Settings` -> `🔌 Webhooks`.\n- **Payloads**: Sends structured JSON payloads upon case creation, update, or completion."
     },
     "export": {
-      "title": "📤 Export Engine & Ticket Protocols",
+      "title": "📤 Export & Handover (Templates & Print)",
       "category": "Export",
-      "content": "### 📤 Export Engine & Ticket Protocols\n\nGenerate clean handover protocols, emails, or documentation in one click.\n\n#### Step-by-Step Guide:\n1. Select the case in Cockpit.\n2. Click **📤 Export** (or press `Ctrl + E`).\n3. **Select Template**: Choose a template (*Standard Handover*, *Customer Summary*, *Developer Bug Report*).\n4. **Select Output Format**:\n   - **Markdown**: Ideal for Jira, GitHub, Redmine, BookStack.\n   - **HTML / Text**: Ideal for email drafts.\n   - **PDF**: For print and archiving.\n5. Click **📋 Copy to Clipboard** or **💾 Save as File**."
+      "content": "### 📤 Consolidated Dialog: Export & Handover (`Ctrl + E`)\n\nThe unified **`📤 Export & Handover`** dialog combines template-based exports and printable case reports in two organized tabs:\n\n#### Tab 1: Export & Templates (Default)\n1. Select a template (*Standard Handover*, *Customer Summary*, *Developer Bug Report*).\n2. Choose output format (*Markdown*, *HTML / Text*, *PDF*).\n3. Copy the protocol to the clipboard (**📋 Copy to Clipboard**) or save to disk (**💾 Save as File**).\n\n#### Tab 2: Print & Case File\n- Provides selective case report printing.\n- Customize included sections or individual timeline notes.\n- Open the space-optimized A4 report in the browser (**🖨 Open in Browser & Print**) or save as static HTML/PDF (**💾 Save**)."
     },
     "handover_followup": {
-      "title": "🔔 Case Handovers & Follow-up Reminders",
+      "title": "🔔 Responsibility Handover & Follow-ups",
       "category": "Workflow",
-      "content": "### 🔔 Case Handovers & Follow-up Reminders\n\nEnsure no case is forgotten and handovers remain fully traceable.\n\n#### 1. Change Assignee (Actor)\n- Change the **Assignee (Actor)** dropdown in the Cockpit (e.g. from *Support* to *Development*).\n- The system automatically logs the change with timestamp and author in the timeline (*ASSIGNEE: Support -> Development*).\n\n#### 2. Schedule Follow-up & Reminder\n1. Click **🔔 Follow-up** in the Cockpit (or in the pop-up after changing assignee).\n2. Select a date using the calendar picker or quick buttons (`+ 1 Day`, `+ 2 Days`, `+ 1 Week`).\n3. Enter a short reminder note (e.g. *\"Check with developer regarding Ticket #402\"*).\n4. **Case List Highlight**: Active follow-ups are highlighted with 3 lines showing relative due status (`(due today)`, `(tomorrow)`, `(overdue by X days)`)."
+      "content": "### 🔔 Responsibility Handover & Follow-ups\n\nEnsure no case is forgotten and handovers remain fully traceable.\n\n#### 1. Handover Dropdown in Cockpit\n- In the bottom action toolbar right next to the **`✓ Completed`** button sits the **`Handover`** dropdown menu.\n- Select the desired target department directly:\n  - 📞 **Hotline**\n  - 🔧 **Tech**\n  - 💻 **Development**\n  - 👤 **Customer**\n- Selecting an option opens the Handover Dialog pre-filled with the department, while the dropdown immediately resets to *\"Handover\"*.\n- **Assign Colleague & Absence Warning**: Assign a specific colleague. If the colleague is flagged as absent (vacation/sick), the system displays an immediate visual warning.\n- The handover is logged permanently in the timeline with timestamp and author.\n\n#### 2. Schedule Follow-up & Reminder\n1. Click **🔔 Follow-up** in the Cockpit (or in the pop-up after changing assignee).\n2. Select a date using the calendar picker or quick buttons (`+ 1 Day`, `+ 2 Days`, `+ 1 Week`).\n3. Enter a short reminder note (e.g. *\"Check with developer regarding Ticket #402\"*).\n4. **Case List Highlight**: Active follow-ups are highlighted with 3 lines showing relative due status (`(due today)`, `(tomorrow)`, `(overdue by X days)`)."
     },
     "internal_cases": {
       "title": "🏢 Internal Operations & Tasks (Non-Customer)",
@@ -1064,12 +1082,12 @@
     "scoring": {
       "title": "📊 Automatic Urgency Scoring",
       "category": "Workflow",
-      "content": "### 📊 Automatic Urgency Scoring\n\nSupport Cockpit automatically calculates an **Urgency Score** (points) for open cases so critical cases stay at the top.\n\n#### Score Calculation Factors:\n- **Priority**: Critical (60 pts), High (40 pts), Medium (20 pts), Low (10 pts).\n- **★ VIP Practice**: VIP practices receive a flat **+30 points bonus**.\n- **Waiting Time**: The longer a case remains unsolved, the higher the score rises (**+2 points per day**).\n- **Inactivity**: Cases without notes in the last 48 hours receive extra points.\n- **Workflow Status**: In Progress (+10 pts), Waiting for Customer (+0 pts), On-site Appointment Needed (+20 pts).\n\n#### Background Recalculation:\nA background timer updates scores hourly. Customize scoring matrix in `⚙ Profile & Settings` -> `⌨ Shortcuts & Scoring`."
+      "content": "### 📊 Automatic Urgency Scoring\n\nSupport Cockpit automatically calculates an **Urgency Score** (points) for open cases so critical cases stay at the top.\n\n#### Score Calculation Factors:\n- **Priority**: Critical (60 pts), High (40 pts), Medium (20 pts), Low (10 pts).\n- **★ VIP Practice**: VIP practices receive a flat **+30 points bonus**.\n- **Waiting Time**: The longer a case remains unsolved, the higher the score rises (**+2 points per day**).\n- **Inactivity**: Cases without notes in the last 48 hours receive extra points.\n- **Workflow Status**: In Progress (+10 pts), Waiting for Customer (+0 pts), On-site Appointment Needed (+20 pts).\n\n#### Background Recalculation:\nA background timer updates scores hourly. Customize VIP bonus points in `⚙ Profile & Settings` -> `🧩 Miscellaneous` tab (**Priority Scoring** section)."
     },
     "shortcuts": {
       "title": "⌨ Keyboard Shortcuts Overview",
       "category": "Shortcuts",
-      "content": "### ⌨ Keyboard Shortcuts Overview\n\nBoost productivity with hotkeys:\n\n| Feature | Shortcut |\n| :--- | :--- |\n| **New Case** | `Ctrl + N` |\n| **Save Case** | `Ctrl + S` |\n| **Complete / Archive Case** | `Ctrl + Shift + A` |\n| **Export Case** | `Ctrl + E` |\n| **Open Settings** | `Ctrl + P` |\n| **Snippet Picker** | `Ctrl + M` |\n| **Focus Wiki Search** | `Ctrl + W` |\n| **Focus Search** | `Ctrl + F` |\n| **Paste Screenshot** | `Ctrl + V` |\n| **Cockpit View** | `Ctrl + 1` |\n| **Kanban Board** | `Ctrl + 2` |\n| **Table View** | `Ctrl + 3` |\n| **Analytics Dashboard** | `Ctrl + 4` |\n| **Toggle Theme** | `Ctrl + T` |\n| **Help Manual** | `F1` |"
+      "content": "### ⌨ Keyboard Shortcuts Overview\n\nBoost productivity with hotkeys:\n\n| Feature | Shortcut |\n| :--- | :--- |\n| **New Case** | `Ctrl + N` |\n| **Save Case** | `Ctrl + S` |\n| **Complete / Archive Case** | `Ctrl + Shift + A` |\n| **Export Case** | `Ctrl + E` |\n| **Open Settings** | `Ctrl + P` |\n| **Snippet Picker** | `Ctrl + M` |\n| **Focus Wiki Search** | `Ctrl + W` |\n| **Focus Search** | `Ctrl + F` |\n| **Paste Screenshot** | `Ctrl + V` |\n| **Cockpit View** | `Ctrl + 1` |\n| **Kanban Board** | `Ctrl + 2` |\n| **Table View** | `Ctrl + 3` |\n| **Analytics Dashboard** | `Ctrl + 4` |\n| **Toggle Theme** | `Ctrl + T` |\n| **Help Manual** | `F1` |\n\n*Tip: All hotkeys can be customized in settings (`⚙ Profile & Settings` -> `🧩 Miscellaneous` tab).*"
     },
     "snippets_manager": {
       "title": "📝 Text Snippets & Snippet Manager",
@@ -1084,7 +1102,7 @@
     "storage_paths": {
       "title": "📁 Storage Locations, Data Structure & Portable Exe Operation",
       "category": "Configuration",
-      "content": "### 📁 Storage Locations, Data Structure & Portable Exe Operation\n\nSupport Cockpit is fully portable and separates working data from binary files.\n\n#### 1. Set Custom Data Directory\n- Open **⚙ Profile & Settings** (`👤`) -> **📁 Storage & Paths** tab.\n- Click **📁 Select Directory** to choose your data location (e.g. `D:\\SupportData` or network folder).\n\n#### 2. Portable `.exe` Mode\n- Running as a portable `.exe` writes no files into system directories (e.g. `Program Files`).\n- User configuration is stored in user profile: `%APPDATA%\\SupportCockpit\\user_config.json`."
+      "content": "### 📁 Storage Locations, Data Structure & Portable Exe Operation\n\nSupport Cockpit is fully portable and separates working data from binary files.\n\n#### 1. Custom Data Directory & Overrides\n- Open **⚙ Profile & Settings** (`👤`) -> **📁 Storage & Data Export** tab.\n- In the **left column**, select your workspace folder or configure custom file overrides for cases, customers, and wiki databases.\n- The left column also provides **automatic backup retention** (Grandfather-Father-Son cycle for daily, weekly, and monthly backups).\n\n#### 2. Full ZIP Backup & Restore\n- In the **right column**, create or restore complete timestamped ZIP backups with one click.\n\n#### 3. Portable `.exe` Mode\n- Running as a portable `.exe` writes no files into system directories (e.g. `Program Files`).\n- User configuration is stored in user profile: `%APPDATA%\\SupportCockpit\\user_config.json`."
     },
     "template_editor": {
       "title": "📄 Export Template Editor (Jinja2)",
@@ -1093,18 +1111,18 @@
     },
     "ui_customization": {
       "category": "User Interface",
-      "content": "### 📅 Date Formatting, Calendar Picker & Column Widths\n\n#### 1. 📅 Date Formatting\n- All dates in the Support Cockpit (deadlines, callbacks, follow-ups, timeline) are displayed consistently in standard date format (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`).\n\n#### 2. 🗓 Interactive Calendar Picker\n- An interactive calendar dialog is available for all date entries (e.g. scheduling follow-ups, setting callback deadlines).\n- Click **📅 Calendar** next to the input field to open the monthly calendar and conveniently select the desired date with a click.\n- Quick selection buttons for *Today*, *+ 1 Day*, and *+ 1 Week* speed up data entry.\n\n#### 3. 📐 Individual & Persistent Column Widths\n- Use the **📐 Columns** button in the top menu bar to freely adjust the widths of individual columns in the cockpit (case list, details/form, timeline) as well as the Kanban board.\n- Your chosen widths are automatically saved in the user configuration (`user_config.json`) and persist across application restarts.\n",
-      "title": "📅 Date Formats, Calendar & Column Widths"
+      "content": "### 📅 Date Formatting, Column Widths & Personal Color Marker\n\n#### 1. 📅 Date Formatting & Calendar Picker\n- All dates in the Support Cockpit (deadlines, callbacks, follow-ups, timeline) are displayed consistently in standard date format (`DD.MM.YYYY` or `DD.MM.YYYY HH:MM`).\n- An interactive calendar dialog is available for all date entries.\n\n#### 2. 🎨 Personal Employee Color Marker\n- Under **⚙ Profile & Settings** (`👤`) -> **👤 User Profile** tab, each employee can select a custom personal color.\n- **Discreet Color Tiles**: When enabled, own cases and timeline notes display a sleek, black-bordered color tile (`10x10 pixels`):\n  - In the Cockpit case list next to the Case ID.\n  - In Kanban card headers.\n  - In timeline cards bottom-right next to the author's name.\n- Instantly identify your own items without visual clutter.\n\n#### 3. 📐 Individual & Persistent Column Widths\n- Use the **📐 Columns** button in the top menu bar to freely adjust the widths of individual columns in the cockpit as well as the Kanban board.\n- Under **⚙ Profile & Settings** -> **👤 User Profile** tab (right column under *Appearance & Layout*), click **↻ Reset All Column Widths to Defaults** to restore factory defaults anytime.\n- Your chosen widths are automatically saved in the user configuration (`user_config.json`) and persist across application restarts.",
+      "title": "📅 Date Formats, Column Widths & Color Marker"
     },
     "wiki": {
       "title": "📚 BookStack Offline Wiki Integration",
       "category": "Wiki",
-      "content": "### 📚 BookStack Offline Wiki Integration\n\nSearch and read BookStack wiki articles directly inside the Cockpit without switching windows.\n\n#### Features & Usage:\n1. **Open Wiki Tab**: Click the **Wiki / Knowledge Base** tab in the right Cockpit pane.\n2. **Search (`Ctrl + W`)**: Type search terms or error codes (e.g. `ERR_DB_902`, `TI Connector`) in the search bar.\n3. **Read Article**: Click a search result – content renders instantly inside the Cockpit.\n4. **Open in Browser**: Click the globe icon to open the original page in your default browser.\n5. **Offline Cache & Sync**: Click **🔄 Wiki Sync** to sync the local index with your BookStack server. Set credentials under `⚙ Profile & Settings` -> `📚 BookStack Wiki`."
+      "content": "### 📚 BookStack Offline Wiki Integration\n\nSearch and read BookStack wiki articles directly inside the Cockpit without switching windows.\n\n#### Features & Usage:\n1. **Open Wiki Tab**: Click the **Wiki / Knowledge Base** tab in the right Cockpit pane.\n2. **Search (`Ctrl + W`)**: Type search terms or error codes (e.g. `ERR_DB_902`, `TI Connector`) in the search bar.\n3. **Read Article**: Click a search result – content renders instantly inside the Cockpit.\n4. **Open in Browser**: Click the globe icon to open the original page in your default browser.\n5. **Offline Cache & Sync**: Click **🔄 Wiki Sync** to sync the local index with your BookStack server. Set credentials under `⚙ Profile & Settings` -> `🧩 Miscellaneous` tab (**BookStack Server Configuration** section)."
     },
     "zip_backup_restore": {
       "title": "📦 Full ZIP Backup & Restore",
       "category": "Configuration",
-      "content": "### 📦 Full ZIP Backup & Restore\n\nBackup your entire dataset including cases, practice data, forms, and file attachments in a single ZIP archive.\n\n#### 1. Create Backup\n1. Open **⚙ Profile & Settings** (`👤`) -> **📦 Backup & Restore** tab.\n2. Click **💾 Create Full Backup...**.\n3. Select target folder – creates timestamped archive (e.g. `SupportCockpit_Backup_2026-09-03.zip`).\n\n#### 2. Restore Backup\n1. Click **📥 Restore Backup...**.\n2. Select desired ZIP archive.\n3. **Safety Backup**: System automatically creates a rollback backup before overwriting data."
+      "content": "### 📦 Full ZIP Backup & Restore\n\nBackup your entire dataset including cases, practice data, forms, and file attachments in a single ZIP archive.\n\n#### 1. Create Backup\n1. Open **⚙ Profile & Settings** (`👤`) -> **📁 Storage & Data Export** tab (right column: *Full Backup & ZIP Archive*).\n2. Click **💾 Export Backup...**.\n3. Select target folder – creates timestamped archive (e.g. `SupportCockpit_Backup_2026-09-03.zip`).\n\n#### 2. Restore Backup\n1. Click **📥 Import Backup...**.\n2. Select desired ZIP archive.\n3. **Safety Backup**: System automatically creates a rollback backup before overwriting data."
     },
     "first_steps": {
       "title": "🐣 Getting Started & Quickstart Guide",
@@ -1124,7 +1142,7 @@
     "faq_troubleshooting": {
       "title": "❓ FAQ & Troubleshooting",
       "category": "Shortcuts",
-      "content": "### ❓ FAQ & Troubleshooting\n\n#### Q: AI shows Red status (Offline). What should I do?\n- **A**: Open `⚙ Profile & Settings` -> `🤖 AI & NLP` and click **`▶ Start Ollama Server`**. Ensure Ollama is installed on your PC (`ollama.com`).\n\n#### Q: How do I transfer data to a new PC?\n- **A**: Create a **Full Backup (ZIP)** under `⚙ Profile & Settings` -> `📦 Backup & Restore`. Restore the ZIP file on the new PC.\n\n#### Q: How do I reset column widths in the Cockpit?\n- **A**: Open `⚙ Profile & Settings` -> `🎨 Appearance` and click **↻ Reset All Column Widths to Defaults**."
+      "content": "### ❓ FAQ & Troubleshooting\n\n#### Q: AI shows Red status (Offline). What should I do?\n- **A**: Open `⚙ Profile & Settings` -> `🤖 AI & NLP` and click **`▶ Start Ollama Server`**. Ensure Ollama is installed on your PC (`ollama.com`).\n\n#### Q: How do I transfer data to a new PC?\n- **A**: Create a **Full Backup (ZIP)** under `⚙ Profile & Settings` -> `📁 Storage & Data Export` in the right column. Restore the ZIP file on the new PC via **Import Backup...**.\n\n#### Q: How do I reset column widths in the Cockpit?\n- **A**: Open `⚙ Profile & Settings` -> `👤 User Profile` and click **↻ Reset All Column Widths to Defaults** in the right column under *Appearance & Layout*.\n\n#### Q: Can I define custom keyboard shortcuts?\n- **A**: Yes! Under `⚙ Profile & Settings` -> `🧩 Miscellaneous`, you can record custom hotkeys for every application action and snippet macro."
     }
   },
   "help_dialog": {
@@ -1191,7 +1209,7 @@
     "opt_cobra": "🐍 Cobra CRM Import",
     "opt_colleagues": "👥 Colleagues",
     "opt_email_import": "📥 Email Import",
-    "opt_export": "📤 Export (Ctrl+E)",
+    "opt_export": "📤 Export & Handover (Ctrl+E)",
     "opt_forms": "🛠 Forms",
     "opt_help": "📖 Help (F1)",
     "opt_modules": "🧩 Modules",
@@ -1268,9 +1286,12 @@
     "backup_title": "📦 Complete Data Backup & ZIP Archiving",
     "browse_folder": "📁 Select Folder",
     "btn_new_profile": "➕ Create New Profile",
+    "app_profile_file": "App Profile (app_profile.json):",
+    "archive_file": "Archive (archive.json):",
     "cases_file": "Cases (cases.json):",
     "checking_api_key": "🔍 Checking key...",
     "checking_ollama": "🔍 Checking Ollama status...",
+    "colleagues_file": "Colleagues (colleagues.json):",
     "creating_model_msg": "⏳ Creating 'pvs-support' model from Modelfile...",
     "cust_file": "Customers (customers.json):",
     "custom_overrides": "Custom Individual File Path Overrides (Optional):",
@@ -1342,10 +1363,13 @@
     "title_save_sig": "Save signature to file",
     "title_load_sig": "Load signature from file",
     "sig_saved_success": "✅ Signature saved successfully!",
+    "sig_saved_error": "⚠ Error saving signature: {error}",
     "sig_loaded_success": "✅ Signature loaded!",
+    "sig_loaded_error": "⚠ Error loading signature: {error}",
     "status_saved": "✔ Settings & paths saved!",
     "tab_ai": "🤖 AI & NLP",
     "tab_backup": "💾 Backup",
+    "tab_misc": "🧩 Miscellaneous",
     "tab_paths": "📁 Storage & Data Export",
     "tab_profile": "📊 Basic Profile",
     "tab_shortcuts": "⌨ Shortcuts & Scoring",
@@ -1358,11 +1382,21 @@
     "title_select_backup_zip": "Select backup (ZIP file)",
     "title_select_data_dir": "Select Data Directory",
     "title_select_file": "Select File",
+    "p2p_sync_header": "P2P Colleague Synchronization",
+    "p2p_sync_desc": "Compare your cases directly with your colleagues' network data and merge updates.",
+    "btn_open_p2p_sync": "🔄 Open P2P Sync...",
+    "color_marker_header": "Personal Color Tag",
+    "color_marker_enable": "Highlight own entries & cases with color",
+    "color_marker_select": "Choose color...",
+    "color_marker_preview": "Preview:",
+    "color_marker_sample": "Own Entry",
     "user_details": "Personal Information & Contact Details",
     "user_info_header": "User Information (Active Profile)",
     "user_name": "Username / Initials:",
     "user_tab_header": "Manage & Switch User Profile",
     "widths_reset_msg": "All column widths for all views reset to default!",
+    "schemas_file": "Form Schemas (question_schemas.json):",
+    "templates_file": "Export Templates (export_templates.json):",
     "wiki_file": "Wiki DB (sqlite):",
     "wiki_sync_mode": "Sync Mode:",
     "wiki_sync_startup": "Sync Wiki Content on Application Launch",
@@ -1414,7 +1448,9 @@
     "no_snippets": "No text snippets available.",
     "widths_summary": "• Cockpit: Left {left}px | Center {center}px | Right {right}px\n• Kanban Board: Min column width {board}px\n• Table: ID {id}px | Practice {prac}px | Title {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP backup created successfully: {file_count} files ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted."
+    "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted.",
+    "shortcut_conflict": "⚠ Shortcut conflict: The following hotkeys are assigned multiple times: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Shortcut conflict: Hotkeys cannot be assigned multiple times!"
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -1472,7 +1508,10 @@
     "new_schema_title": "🆕 Create New Form (Schema)",
     "schema_id_lbl": "Schema ID (optional):",
     "select_form_lbl": "Select Form:",
-    "toggle_required": "Required +/-"
+    "toggle_required": "Required +/-",
+    "badge_required": "[REQUIRED]",
+    "badge_optional": "[OPTIONAL]",
+    "no_form": "No Form"
   },
   "schemas": {
     "bug_report": {
@@ -1734,7 +1773,10 @@
     "name_placeholder": "e.g. GitLab / Dev Ticket",
     "new_title": "📄 Create New Export Template",
     "req_fields_lbl": "Required Mandatory Fields Before Export:",
-    "target_type_lbl": "Target Action / Type:"
+    "target_type_lbl": "Target Action / Type:",
+    "no_desc": "No description",
+    "no_req_fields": "No required fields",
+    "req_fields_summary": "Required fields: {fields}"
   },
   "timeline": {
     "case_completed": "Case marked as completed.",
@@ -1751,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Follow-up due ({count})",
     "reminder_title": "Reminder"
+  },
+  "tray": {
+    "open": "Open",
+    "quit": "Exit",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} due follow-up(s)"
   },
   "ui_buttons": {
     "apply": "Apply",
@@ -1863,5 +1911,10 @@
     "name": "Name (A-Z)",
     "id": "Practice No. / ID",
     "contact": "Time since last contact"
+  },
+  "theme": {
+    "dark": "Dark",
+    "light": "Light",
+    "system": "System"
   }
 }

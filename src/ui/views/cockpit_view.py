@@ -3,7 +3,6 @@ from typing import Any
 from collections.abc import Callable
 from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
-from enums import get_actor_display
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from services.scoring_service import ScoringService
@@ -11,7 +10,31 @@ from services.attachment_service import AttachmentService
 from services.wiki_sync_service import WikiSyncService
 from services.schema_service import SchemaService
 
-from constants import COLOR_SASH_DARK, COLOR_SASH_LIGHT
+from constants import (
+    COCKPIT_CENTER_MIN_WIDTH,
+    COCKPIT_SIDEBAR_MIN_WIDTH,
+    COLOR_PANED_PANE_BG,
+    COLOR_SASH_DARK,
+    COLOR_SASH_LIGHT,
+    DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_SIDEBAR_TAB_ATTACHMENTS,
+    DEFAULT_SIDEBAR_TAB_TIMELINE,
+    DEFAULT_SIDEBAR_TAB_WIKI,
+    INFO_FRAME_MIN_WIDTH_THRESHOLD,
+    INFO_FRAME_RESIZE_DELTA,
+    PAD_NONE,
+    PAD_XS,
+    PANED_MIN_TOTAL_WIDTH,
+    PANED_PANE_MIN_WIDTH,
+    SASH_RESTORE_DELAY_FAST_MS,
+    SASH_RESTORE_DELAY_SLOW_MS,
+    VIP_TAG_DISPLAY,
+    WIEDERVORLAGE_FALLBACK_DEFAULT_WIDTH,
+    WIEDERVORLAGE_FALLBACK_MIN_WIDTH,
+    WIEDERVORLAGE_MIN_WIDTH,
+    WIEDERVORLAGE_MIN_WRAP_WIDTH,
+    WIEDERVORLAGE_WRAP_OFFSET,
+)
 from ui.views.cockpit_layout_builders import CockpitLayoutBuilderMixin
 
 
@@ -67,15 +90,15 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.create_layout()
 
     def apply_column_widths(self, widths: dict[str, int]):
-        w_left = widths.get("cockpit_left", 300)
-        w_right = widths.get("cockpit_right", 320)
+        w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
+        w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
         if hasattr(self, "paned"):
             try:
                 # Sashes only - see create_layout on why width= must stay off.
                 total_w = self.paned.winfo_width()
-                if total_w > 100:
+                if total_w > PANED_MIN_TOTAL_WIDTH:
                     self.paned.sash_place(0, w_left, 0)
-                    self.paned.sash_place(1, max(w_left + 150, total_w - w_right), 0)
+                    self.paned.sash_place(1, max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right), 0)
             except Exception:
                 pass
 
@@ -84,8 +107,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             if not hasattr(self, "paned") or not self.paned.winfo_exists():
                 return
             total_w = self.paned.winfo_width()
-            if total_w <= 100:
-                self.after(100, self.restore_sash_positions)
+            if total_w <= PANED_MIN_TOTAL_WIDTH:
+                self.after(SASH_RESTORE_DELAY_FAST_MS, self.restore_sash_positions)
                 return
 
             widths = {}
@@ -94,11 +117,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             elif self.app_config and hasattr(self.app_config, "column_widths"):
                 widths = self.app_config.column_widths
 
-            w_left = widths.get("cockpit_left", 300)
-            w_right = widths.get("cockpit_right", 320)
+            w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
+            w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
 
             self.paned.sash_place(0, w_left, 0)
-            self.paned.sash_place(1, max(w_left + 150, total_w - w_right), 0)
+            self.paned.sash_place(1, max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right), 0)
             self._last_paned_width = total_w
         except Exception as e:
             logger.warning(f"Could not restore sash positions: {e}")
@@ -119,7 +142,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             return
         try:
             total_w = self.paned.winfo_width() if event is None else event.width
-            if total_w > 100:
+            if total_w > PANED_MIN_TOTAL_WIDTH:
                 self._last_paned_width = total_w
         except Exception:
             pass
@@ -129,7 +152,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             if not hasattr(self, "paned") or not self.paned.winfo_exists():
                 return
             total_w = self.paned.winfo_width()
-            if total_w <= 100:
+            if total_w <= PANED_MIN_TOTAL_WIDTH:
                 return
 
             self._last_paned_width = total_w
@@ -138,12 +161,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             sash1 = self.paned.sash_coord(1)
 
             if sash0 and len(sash0) > 0 and sash0[0] > 0:
-                w_left = max(100, sash0[0])
+                w_left = max(PANED_PANE_MIN_WIDTH, sash0[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_left"] = w_left
 
             if sash1 and len(sash1) > 0 and sash1[0] > 0:
-                w_right = max(100, total_w - sash1[0])
+                w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_right"] = w_right
 
@@ -160,7 +183,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 self.paned.configure(bg=sash_bg)
             except Exception:
                 pass
-            target_bg = ("gray92", "#2b2b2b")
+            target_bg = COLOR_PANED_PANE_BG
             for attr in ("left_frame", "center_frame", "right_tabview"):
                 w = getattr(self, attr, None)
                 if w is not None and hasattr(w, "configure") and hasattr(w, "winfo_exists") and w.winfo_exists():
@@ -186,13 +209,13 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         # what made the manual re-placing below fight the geometry manager and
         # lose. The initial widths are set by placing the sashes instead
         # (restore_sash_positions).
-        self.paned.add(self.left_frame, minsize=120, stretch="never")
-        self.paned.add(self.center_frame, minsize=150, stretch="always")
-        self.paned.add(self.right_tabview, minsize=120, stretch="never")
+        self.paned.add(self.left_frame, minsize=COCKPIT_SIDEBAR_MIN_WIDTH, stretch="never")
+        self.paned.add(self.center_frame, minsize=COCKPIT_CENTER_MIN_WIDTH, stretch="always")
+        self.paned.add(self.right_tabview, minsize=COCKPIT_SIDEBAR_MIN_WIDTH, stretch="never")
         self._initial_widths = (w_left, w_right)
 
-        self.after(100, self.restore_sash_positions)
-        self.after(500, self.restore_sash_positions)
+        self.after(SASH_RESTORE_DELAY_FAST_MS, self.restore_sash_positions)
+        self.after(SASH_RESTORE_DELAY_SLOW_MS, self.restore_sash_positions)
 
     def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
         self.left_frame.set_cases(cases, deep_results=deep_results)
@@ -201,7 +224,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.schemas = schemas
 
     def focus_timeline_note(self):
-        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", "Zeitleiste")
+        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", DEFAULT_SIDEBAR_TAB_TIMELINE)
         self.right_tabview.set(tl_tab)
         self._on_sidebar_tab_changed(tl_tab)
         self.timeline_widget.note_textbox.focus_set()
@@ -274,6 +297,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
     def on_select_case_from_list(self, case: Case):
         self.current_case = case
+        if self.on_case_selected:
+            self.on_case_selected(case)
 
         self._update_title_label()
         self.print_btn.configure(state="normal")
@@ -284,7 +309,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.convert_schema_btn.configure(state="normal")
 
         from services.i18n_service import tr
-        vip_str = " ★ VIP" if case.customer.is_vip else ""
+        vip_str = VIP_TAG_DISPLAY if case.customer.is_vip else ""
         if case.is_internal:
             self.kunde_label.configure(text=f"🏢 {tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({case.customer.customer_id}){vip_str}")
         else:
@@ -296,7 +321,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
         self._update_wiedervorlage_display()
 
-        self.actor_combo.set(get_actor_display(case.workflow_status.current_actor))
+        self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         self.complete_btn.configure(text=tr("cockpit.reopen", "✓ Wieder öffnen") if case.workflow_status.is_completed else tr("cockpit.complete", "✓ Erledigt"))
 
         # Reset sidebar loaded tabs cache for new case
@@ -319,22 +344,28 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             return
 
         self._loaded_tab_case_ids[curr_tab] = self.current_case.case_id
-        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", "Zeitleiste")
-        att_tab = getattr(self, "_sidebar_tab_names", {}).get("attachments", "Anhänge")
-        if curr_tab == tl_tab or curr_tab == "Zeitleiste":
+        tl_tab = getattr(self, "_sidebar_tab_names", {}).get("timeline", DEFAULT_SIDEBAR_TAB_TIMELINE)
+        att_tab = getattr(self, "_sidebar_tab_names", {}).get("attachments", DEFAULT_SIDEBAR_TAB_ATTACHMENTS)
+        if curr_tab in (tl_tab, DEFAULT_SIDEBAR_TAB_TIMELINE):
             self.timeline_widget.load_timeline(self.current_case.timeline)
-        elif curr_tab == att_tab or curr_tab == "Anhänge":
+        elif curr_tab in (att_tab, DEFAULT_SIDEBAR_TAB_ATTACHMENTS):
             self.attachment_widget.load_attachments(self.current_case)
 
     def on_more_actions_selected(self, choice: str):
-        if choice.startswith("📧"):
-            self.on_copy_practice_email()
-        elif choice.startswith("📤"):
+        if choice.startswith("📤"):
             self.on_click_export()
-        elif choice.startswith("🖨"):
-            self.on_click_print()
+        elif choice.startswith("✉"):
+            self.on_click_email_calendar()
+        elif choice.startswith("📅"):
+            self.on_click_calendar()
+        elif choice.startswith("📦"):
+            self.on_click_archive()
         elif choice.startswith("🔄"):
             self.open_convert_schema_dialog()
+        elif choice.startswith("📧"):
+            self.on_copy_practice_email()
+        elif choice.startswith("🖨"):
+            self.on_click_print()
         if hasattr(self, "more_actions_combo"):
             from services.i18n_service import tr
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
@@ -412,6 +443,9 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.on_case_updated(self.current_case)
 
     def on_actor_changed(self, new_actor_display: str):
+        from services.i18n_service import tr
+        if hasattr(self, "actor_combo"):
+            self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         if self.current_case:
             from ui.dialogs.handover_dialog import HandoverDialog
             from utils.datetime_utils import now_iso
@@ -420,7 +454,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             def on_confirmed(new_actor_val: str, channel: str, person: str, note: str):
                 if self.current_case:
-                    from services.i18n_service import tr
                     prev_actor_val = self.current_case.workflow_status.current_actor
                     self.current_case.workflow_status.current_actor = new_actor_val
                     self.current_case.workflow_status.actor_since = now_iso()
@@ -447,6 +480,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 self,
                 case=self.current_case,
                 on_handover_confirmed=on_confirmed,
+                target_actor=new_actor_display,
             )
 
     def open_followup_dialog(self):
@@ -519,10 +553,10 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             if not self.info_left_frame.winfo_exists():
                 return
             w = self.info_left_frame.winfo_width()
-            if w > 50 and abs(w - self._last_info_w) > 8:
+            if w > INFO_FRAME_MIN_WIDTH_THRESHOLD and abs(w - self._last_info_w) > INFO_FRAME_RESIZE_DELTA:
                 self._last_info_w = w
                 self._updating_info = True
-                wrap_w = max(180, w - 10)
+                wrap_w = max(WIEDERVORLAGE_MIN_WRAP_WIDTH, w - WIEDERVORLAGE_WRAP_OFFSET)
                 self.wv_hdr_label.configure(wraplength=wrap_w)
                 self.wv_date_label.configure(wraplength=wrap_w)
                 self.wv_time_label.configure(wraplength=wrap_w)
@@ -560,12 +594,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
         # Compute available pixel width in info_left_frame
         w = self.info_left_frame.winfo_width()
-        if w <= 50:
+        if w <= INFO_FRAME_MIN_WIDTH_THRESHOLD:
             bar_w = self.info_row.winfo_width()
             right_w = self.status_right_frame.winfo_reqwidth()
-            w = max(250, (bar_w - right_w - 30) if bar_w > right_w + 50 else 380)
+            w = max(WIEDERVORLAGE_FALLBACK_MIN_WIDTH, (bar_w - right_w - 30) if bar_w > right_w + INFO_FRAME_MIN_WIDTH_THRESHOLD else WIEDERVORLAGE_FALLBACK_DEFAULT_WIDTH)
         else:
-            w = max(200, w - 10)
+            w = max(WIEDERVORLAGE_MIN_WIDTH, w - WIEDERVORLAGE_WRAP_OFFSET)
 
         self._last_info_w = w
         from services.i18n_service import tr
@@ -573,17 +607,17 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.wv_date_label.configure(text=f"  {fw_date_str}", wraplength=w)
         self.wv_time_label.configure(text=f"  {fw_time_str}", wraplength=w)
 
-        self.wv_hdr_label.pack(fill="x", anchor="w", pady=0)
-        self.wv_date_label.pack(fill="x", anchor="w", pady=0)
-        self.wv_time_label.pack(fill="x", anchor="w", pady=0)
+        self.wv_hdr_label.pack(fill="x", anchor="w", pady=PAD_NONE)
+        self.wv_date_label.pack(fill="x", anchor="w", pady=PAD_NONE)
+        self.wv_time_label.pack(fill="x", anchor="w", pady=PAD_NONE)
 
         if note:
             self.wv_note_label.configure(text=f"  {note}", wraplength=w)
-            self.wv_note_label.pack(fill="x", anchor="w", pady=0)
+            self.wv_note_label.pack(fill="x", anchor="w", pady=PAD_NONE)
         else:
             self.wv_note_label.pack_forget()
 
-        self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(2, 0))
+        self.wiedervorlage_frame.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_NONE))
 
     def focus_wiki_search(self):
         # cockpit_view.py used to define focus_wiki_search() twice; this was
@@ -592,7 +626,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         # shortcut bound to it in app.py silently focused a hidden widget.
         # Restoring the tab-switch from the (until now dead) first definition.
         if hasattr(self, "right_tabview"):
-            wiki_tab = getattr(self, "_sidebar_tab_names", {}).get("wiki", "Wiki")
+            wiki_tab = getattr(self, "_sidebar_tab_names", {}).get("wiki", DEFAULT_SIDEBAR_TAB_WIKI)
             self.right_tabview.set(wiki_tab)
         if hasattr(self, "wiki_widget") and hasattr(self.wiki_widget, "search_entry"):
             self.wiki_widget.search_entry.focus()

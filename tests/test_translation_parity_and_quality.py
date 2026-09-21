@@ -333,9 +333,9 @@ class TestTranslationQualityAndLocalization:
         en = load_locale_json("en")["board"]
         sv = load_locale_json("sv")["board"]
 
-        assert "Support" in de["col_support"]
-        assert "Support" in en["col_support"]
-        assert "Support" in sv["col_support"]
+        assert "Hotline" in de["col_support"]
+        assert "Hotline" in en["col_support"]
+        assert "Hotline" in sv["col_support"]
 
         assert de["col_completed"] == "✓ Erledigte Fälle"
         assert en["col_completed"] == "✓ Completed Cases"

@@ -4,27 +4,50 @@ import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from constants import DEFAULT_COLUMN_WIDTHS
+
+from constants import (
+    APP_LOG_FILENAME,
+    APP_NAME,
+    APP_PROFILE_FILENAME,
+    ARCHIVE_FILENAME,
+    ATTACHMENTS_DIRNAME,
+    BACKUPS_DIRNAME,
+    CASES_FILENAME,
+    COLLEAGUES_DIRNAME,
+    COLLEAGUES_FILENAME,
+    CUSTOMERS_FILENAME,
+    DATA_DIRNAME,
+    DATA_EXAMPLES_DIRNAME,
+    DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_FROZEN_WORKSPACE_NAME,
+    DEFAULT_USER_NAME,
+    ENV_SUPPORTCOCKPIT_CONFIG_DIR,
+    EXPORT_TEMPLATES_FILENAME,
+    JSON_INDENT,
+    QUESTION_SCHEMAS_FILENAME,
+    USER_CONFIG_FILENAME,
+    WIKI_DB_FILENAME,
+)
 
 logger = logging.getLogger("SupportCockpit")
 
 
 def get_global_config_dir() -> Path:
     """Returns the persistent user appdata folder for SupportCockpit."""
-    if "SUPPORTCOCKPIT_CONFIG_DIR" in os.environ and os.environ["SUPPORTCOCKPIT_CONFIG_DIR"].strip():
-        config_dir = Path(os.environ["SUPPORTCOCKPIT_CONFIG_DIR"])
+    if ENV_SUPPORTCOCKPIT_CONFIG_DIR in os.environ and os.environ[ENV_SUPPORTCOCKPIT_CONFIG_DIR].strip():
+        config_dir = Path(os.environ[ENV_SUPPORTCOCKPIT_CONFIG_DIR])
     elif os.name == "nt":
         base = Path(os.environ.get("APPDATA", Path.home()))
-        config_dir = base / "SupportCockpit"
+        config_dir = base / APP_NAME
     else:
         base = Path.home() / ".config"
-        config_dir = base / "SupportCockpit"
+        config_dir = base / APP_NAME
     config_dir.mkdir(parents=True, exist_ok=True)
     return config_dir
 
 
 def get_global_config_file() -> Path:
-    return get_global_config_dir() / "user_config.json"
+    return get_global_config_dir() / USER_CONFIG_FILENAME
 
 
 def is_frozen_app() -> bool:
@@ -35,14 +58,14 @@ def is_frozen_app() -> bool:
 def get_default_workspace_dir() -> Path:
     """Gets default workspace directory depending on execution mode."""
     if is_frozen_app():
-        return Path.home() / "Documents" / "SupportCockpitData"
+        return Path.home() / "Documents" / DEFAULT_FROZEN_WORKSPACE_NAME
     return Path.cwd()
 
 
 @dataclass
 class AppConfig:
     workspace_dir: Path = field(default_factory=get_default_workspace_dir)
-    username: str = field(default_factory=lambda: os.getlogin() if hasattr(os, "getlogin") else "default_user")
+    username: str = field(default_factory=lambda: os.getlogin() if hasattr(os, "getlogin") else DEFAULT_USER_NAME)
 
     # Optional individual file path overrides
     active_profile_name: str | None = None
@@ -79,7 +102,7 @@ class AppConfig:
 
     @property
     def data_dir(self) -> Path:
-        return self.workspace_dir / "data"
+        return self.workspace_dir / DATA_DIRNAME
 
     @property
     def example_data_dir(self) -> Path:
@@ -90,58 +113,58 @@ class AppConfig:
             # regardless of platform config. is_frozen_app() already confirms
             # hasattr(sys, "_MEIPASS") above; getattr() here just avoids needing a
             # pyright suppression comment for something already runtime-guarded.
-            meipass_examples = Path(getattr(sys, "_MEIPASS", "")) / "data_examples"
+            meipass_examples = Path(getattr(sys, "_MEIPASS", "")) / DATA_EXAMPLES_DIRNAME
             if meipass_examples.exists():
                 return meipass_examples
-        return self.workspace_dir / "data_examples"
+        return self.workspace_dir / DATA_EXAMPLES_DIRNAME
 
     @property
     def cases_path(self) -> Path:
-        return self.custom_cases_path or (self.data_dir / "cases.json")
+        return self.custom_cases_path or (self.data_dir / CASES_FILENAME)
 
     @property
     def archive_path(self) -> Path:
-        return self.custom_archive_path or (self.data_dir / "archive.json")
+        return self.custom_archive_path or (self.data_dir / ARCHIVE_FILENAME)
 
     @property
     def customers_path(self) -> Path:
-        return self.custom_customers_path or (self.data_dir / "customers.json")
+        return self.custom_customers_path or (self.data_dir / CUSTOMERS_FILENAME)
 
     @property
     def app_profile_path(self) -> Path:
-        return self.custom_app_profile_path or (self.data_dir / "app_profile.json")
+        return self.custom_app_profile_path or (self.data_dir / APP_PROFILE_FILENAME)
 
     @property
     def colleagues_path(self) -> Path:
-        return self.custom_colleagues_path or (self.data_dir / "colleagues.json")
+        return self.custom_colleagues_path or (self.data_dir / COLLEAGUES_FILENAME)
 
     @property
     def question_schemas_path(self) -> Path:
-        return self.custom_question_schemas_path or (self.data_dir / "question_schemas.json")
+        return self.custom_question_schemas_path or (self.data_dir / QUESTION_SCHEMAS_FILENAME)
 
     @property
     def export_templates_path(self) -> Path:
-        return self.custom_export_templates_path or (self.data_dir / "export_templates.json")
+        return self.custom_export_templates_path or (self.data_dir / EXPORT_TEMPLATES_FILENAME)
 
     @property
     def wiki_db_path(self) -> Path:
-        return self.custom_wiki_db_path or (self.data_dir / "wiki_index.sqlite")
+        return self.custom_wiki_db_path or (self.data_dir / WIKI_DB_FILENAME)
 
     @property
     def log_file_path(self) -> Path:
-        return self.data_dir / "app.log"
+        return self.data_dir / APP_LOG_FILENAME
 
     @property
     def attachments_dir(self) -> Path:
-        return self.data_dir / "attachments"
+        return self.data_dir / ATTACHMENTS_DIRNAME
 
     @property
     def backups_dir(self) -> Path:
-        return self.data_dir / "backups"
+        return self.data_dir / BACKUPS_DIRNAME
 
     @property
     def colleagues_dir(self) -> Path:
-        return self.data_dir / "colleagues"
+        return self.data_dir / COLLEAGUES_DIRNAME
 
     def get_example_path(self, filename: str) -> Path:
         return self.example_data_dir / filename
@@ -179,7 +202,7 @@ class AppConfig:
         }
         try:
             with open(config_file, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+                json.dump(data, f, indent=JSON_INDENT, ensure_ascii=False)
             logger.info(f"Saved global user config to {config_file}")
         except Exception as e:
             logger.error(f"Failed to save user config: {e}")
@@ -204,7 +227,7 @@ class AppConfig:
                     ws_dir = get_default_workspace_dir()
 
                 col_widths = data.get("column_widths", {})
-                default_widths = {"cockpit_left": 300, "cockpit_center": 420, "cockpit_right": 320, "board_column": 280}
+                default_widths = dict(DEFAULT_COLUMN_WIDTHS)
                 if isinstance(col_widths, dict):
                     default_widths.update(col_widths)
 

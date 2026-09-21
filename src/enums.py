@@ -1,10 +1,18 @@
 from enum import StrEnum
 
 from constants import (
-    DISPLAY_CHANNEL_NAMES,
+    ACTOR_KEY_MAP,
+    CHANNEL_KEY_MAP,
     DISPLAY_ACTOR_NAMES,
-    DISPLAY_LAYOUT_NAMES,
     DISPLAY_BOARD_COLUMN_NAMES,
+    DISPLAY_CHANNEL_NAMES,
+    DISPLAY_LAYOUT_NAMES,
+    DISPLAY_SORT_CRITERION_NAMES,
+    DISPLAY_THEME_NAMES,
+    LAYOUT_KEY_MAP,
+    LEGACY_ACTOR_MAP,
+    SORT_CRITERION_KEY_MAP,
+    THEME_KEY_MAP,
 )
 
 
@@ -67,51 +75,25 @@ CHANNEL_DISPLAY = DISPLAY_CHANNEL_NAMES
 ACTOR_DISPLAY = DISPLAY_ACTOR_NAMES
 LAYOUT_DISPLAY = DISPLAY_LAYOUT_NAMES
 BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
-
-# Not sourced from constants.py like the DISPLAY_* dicts above: these are the
-# exact strings customtkinter's set_appearance_mode()/get_appearance_mode()
-# use ("Dark"/"Light"/"System"), so the dict keys have to match that casing
-# rather than the SCREAMING_SNAKE_CASE style used elsewhere in this file.
-THEME_DISPLAY = {
-    "Dark": "Dunkel",
-    "Light": "Hell",
-    "System": "System",
-}
+THEME_DISPLAY = DISPLAY_THEME_NAMES
 
 
 def get_channel_display(val: str) -> str:
     from services.i18n_service import tr
-    key_map = {
-        "PHONE_INBOUND": "channels.phone",
-        "EMAIL": "channels.email",
-        "INTERNAL_NOTE": "channels.internal_note",
-    }
     default = CHANNEL_DISPLAY.get(val, val)
-    return tr(key_map.get(val, ""), default=default)
+    return tr(CHANNEL_KEY_MAP.get(val, ""), default=default)
 
 
 def get_actor_display(val: str) -> str:
     from services.i18n_service import tr
-    key_map = {
-        "SUPPORT": "actors.support_team",
-        "CUSTOMER": "actors.practice",
-        "DEVELOPMENT": "actors.dev",
-        "TECH": "actors.third_party",
-    }
     default = ACTOR_DISPLAY.get(val, val)
-    return tr(key_map.get(val, ""), default=default)
+    return tr(ACTOR_KEY_MAP.get(val, ""), default=default)
 
 
 def get_layout_display(val: str) -> str:
     from services.i18n_service import tr
-    key_map = {
-        "COCKPIT": "layouts.cockpit",
-        "BOARD": "layouts.board",
-        "TABLE": "layouts.table",
-        "ANALYTICS": "layouts.analytics",
-    }
     default = LAYOUT_DISPLAY.get(val, val)
-    return tr(key_map.get(val, ""), default=default)
+    return tr(LAYOUT_KEY_MAP.get(val, ""), default=default)
 
 
 def get_board_column_display(val: str) -> str:
@@ -120,34 +102,23 @@ def get_board_column_display(val: str) -> str:
 
 def get_theme_display(val: str) -> str:
     from services.i18n_service import tr
-    key_map = {
-        "Dark": "theme.dark",
-        "Light": "theme.light",
-        "System": "theme.system",
-    }
     default = THEME_DISPLAY.get(val, val)
-    return tr(key_map.get(val, ""), default=default)
+    return tr(THEME_KEY_MAP.get(val, ""), default=default)
 
 
 def get_sort_criterion_display(val: str) -> str:
     from services.i18n_service import tr
-    key_map = {
-        "name": "customer_mgmt.sort_name",
-        "id": "customer_mgmt.sort_id",
-        "contact": "customer_mgmt.sort_contact",
-    }
-    defaults = {
-        "name": "Name (A-Z)",
-        "id": "Praxisnummer / ID",
-        "contact": "Zeit seit letztem Kontakt",
-    }
-    return tr(key_map.get(val, ""), default=defaults.get(val, val))
+    default = DISPLAY_SORT_CRITERION_NAMES.get(val, val)
+    return tr(SORT_CRITERION_KEY_MAP.get(val, ""), default=default)
 
 
 def get_actor_val_from_display(display: str) -> str:
     for k in ACTOR_DISPLAY:
         if get_actor_display(k) == display or ACTOR_DISPLAY[k] == display:
             return k
+    disp_lower = display.lower().strip()
+    if disp_lower in LEGACY_ACTOR_MAP:
+        return LEGACY_ACTOR_MAP[disp_lower]
     return display
 
 

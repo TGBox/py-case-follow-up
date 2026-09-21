@@ -8,7 +8,7 @@
     "DATA_TECH": "Data-AL Technik",
     "DEVELOPMENT": "Entwicklung",
     "HOTLINE": "Hotline",
-    "SUPPORT": "Support / Hotline",
+    "SUPPORT": "Hotline",
     "TECH": "Technik",
     "data_customer": "Kunde",
     "data_development": "Entwicklung",
@@ -17,7 +17,7 @@
     "data_tech": "Technik",
     "dev": "Entwicklung",
     "practice": "Kunde",
-    "support_team": "Support / Hotline",
+    "support_team": "Hotline",
     "third_party": "Technik"
   },
   "ai_constants": {
@@ -130,13 +130,19 @@
     "cockpit_btn": "🎯 Cockpit",
     "col_completed": "✓ Erledigte Fälle",
     "col_completed_header": "✓ Erledigte Fälle",
+    "col_customer": "👤 Kunde ({count})",
+    "col_customer_header": "👤 Kunde",
     "col_dev": "💻 Entwickler ({count})",
-    "col_dev_header": "💻 Entwickler / Dev-Team",
+    "col_dev_header": "💻 Entwicklung",
     "col_done": "✓ Erledigt ({count})",
     "col_followup": "🔔 Wiedervorlage ({count})",
-    "col_followup_header": "🔔 Wiedervorlage / Warten",
-    "col_support": "📥 Support ({count})",
-    "col_support_header": "📥 Support / In Bearbeitung",
+    "col_followup_header": "🔔 Wiedervorlage",
+    "col_hotline": "📞 Hotline ({count})",
+    "col_hotline_header": "📞 Hotline",
+    "col_support": "📥 Hotline ({count})",
+    "col_support_header": "📥 Hotline",
+    "col_tech": "🔧 Technik ({count})",
+    "col_tech_header": "🔧 Technik",
     "collapse_btn": "◀ Zuklappen",
     "expand_btn": "▶",
     "handover": "👤 Übergeben",
@@ -145,9 +151,12 @@
     "score": "Score",
     "score_label": "Score {score}",
     "title_completed": "Erledigt",
-    "title_dev": "Entwickler",
+    "title_customer": "Kunde",
+    "title_dev": "Entwicklung",
     "title_followup": "Wiedervorlage",
-    "title_support": "Support"
+    "title_hotline": "Hotline",
+    "title_support": "Hotline",
+    "title_tech": "Technik"
   },
   "board_columns": {
     "ACTION_REQUIRED": "Aktion erforderlich",
@@ -223,6 +232,7 @@
     "banner_print": "<strong>Druckansicht Fall-Akte</strong> — Druckdialog wird geöffnet. Wählen Sie Ihren Drucker oder „Als PDF speichern“.",
     "banner_view": "<strong>Fall-Akte Ansicht</strong> — Übersicht für Fall {case_id}.",
     "btn_print_pdf": "🖨 Drucken / Als PDF speichern",
+    "header_case_metadata": "Fall-Metadaten",
     "header_customer_data": "Kunden- & Praxisdaten",
     "header_form_fields": "Formularfelder & Details",
     "header_timeline": "Verlauf & Zeitleiste",
@@ -341,12 +351,14 @@
     "email_copied_msg": "Praxis-E-Mail '{email}' wurde in die Zwischenablage kopiert.",
     "email_copied_title": "📋 E-Mail kopiert",
     "export_case": "📤 Fall exportieren",
+    "export_handover": "📤 Export & Übergabe",
     "filter_all": "Alle",
     "filter_deep": "🔍 Tiefensuche",
     "filter_followup": "🔔 Wiedervorlage",
     "filter_urgent": "🔥 Dringend",
     "followup": "🔔 Wiedervorlage",
     "followup_at": "🔔 Nachfragen am:",
+    "handover_action": "Übergabe",
     "internal_task_title": "INTERNE AUFGABE / VORGANG",
     "more_actions": "⚙ Weitere Aktionen...",
     "no_email_msg": "Für diese Praxis ist keine E-Mail-Adresse hinterlegt.",
@@ -612,7 +624,10 @@
     "zip_lbl": "PLZ:",
     "zip_placeholder": "12345",
     "edit_practice": "Praxis bearbeiten: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Name (A-Z)",
+    "sort_id": "Praxisnummer / ID",
+    "sort_contact": "Zeit seit letztem Kontakt"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -902,6 +917,7 @@
   },
   "export_dialog": {
     "copy_btn": "In Zwischenablage kopieren",
+    "dialog_title": "Export & Übergabe — {case_id}",
     "export_for": "Export für Fall",
     "force_export_chk": "Trotz unvollständiger Daten exportieren ([FEHLT: ...] Platzhalter)",
     "manage_templates_btn": "🛠 Vorlagen verwalten",
@@ -909,6 +925,8 @@
     "preview_header": "Vorschau des exportierten Textes:",
     "save_file_btn": "In Datei speichern...",
     "select_template": "Vorlage auswählen:",
+    "tab_export": "Export & Vorlagen",
+    "tab_print": "Drucken & Akte",
     "window_title": "{base_title} — {case_id}",
     "file_saved": "💾 Datei gespeichert: {name}",
     "export_for_case": "Export für Fall {case_id}"
@@ -1004,12 +1022,12 @@
     "basics": {
       "title": "🚀 Grundlagen & 4 Ansichten",
       "category": "Grundlagen",
-      "content": "### 🚀 Grundlagen der Benutzeroberfläche & Layouts\n\nDas Support-Cockpit bietet 4 spezialisierte Arbeitsansichten, zwischen denen Sie jederzeit über das Dropdown **Layout** in der Menüleiste oder per Hotkey umschalten können:\n\n#### 1. 🎛 Cockpit-Ansicht (Standard, `Strg + 1`)\n- **Dreigeteiltes Haupt-Layout**:\n  - **Links**: Fallliste mit Suchleiste, Schnellfiltern (`[🔥 Dringend]`, `[🔔 Wiedervorlagen]`, `[🏢 Intern]`) und Dringlichkeits-Badges.\n  - **Mitte**: Falldetails, dynamische Formularfelder, Schnellaktionen (E-Mail, Kalender, Wiedervorlage, Notiz) und Zeitleisteneinträge.\n  - **Rechts**: Wechselbarer Tab-Container mit *Zeitleiste*, *Dateianhängen & Screenshots* sowie dem *BookStack Offline-Wiki*.\n\n#### 2. 📋 Kanban-Board (`Strg + 2`)\n- Übersicht aller Fälle nach Zuständigkeits- und Bearbeitungsstatus:\n  - *Neu*, *Aktion erforderlich*, *Warten*, *In Bearbeitung*, *Erledigt*.\n- Ideal für Team-Overviews und tägliche Standup-Meetings.\n\n#### 3. 📊 Tabellarische Matrix (`Strg + 3`)\n- Übersichtliche Tabellenansicht aller Fälle für schnelles Durchsuchen, Vergleichen und Verwalten großer Fallmengen.\n\n#### 4. 📈 Auswertungen & Kennzahlen (`Strg + 4`)\n- Statistisches Dashboard mit Kennzahlen zu offenen Fällen, Überfälligkeiten, durchschnittlicher Bearbeitungsdauer, VIP-Quoten und Auslastung."
+      "content": "### 🚀 Grundlagen der Benutzeroberfläche & Layouts\n\nDas Support-Cockpit bietet 4 spezialisierte Arbeitsansichten, zwischen denen Sie jederzeit über das Dropdown **Layout** in der Menüleiste oder per Hotkey umschalten können:\n\n#### 1. 🎛 Cockpit-Ansicht (Standard, `Strg + 1`)\n- **Dreigeteiltes Haupt-Layout**:\n  - **Links**: Fallliste mit Suchleiste, Schnellfiltern (`[🔥 Dringend]`, `[🔔 Wiedervorlagen]`, `[🏢 Intern]`), Dringlichkeits-Badges und persönlicher Farbmarkierung.\n  - **Mitte**: Falldetails, dynamische Formularfelder und integrierte Aktionsleiste (Wiedervorlage, Notiz, Übergabe-Dropdown, Erledigt, Speichern, Weitere Aktionen).\n  - **Rechts**: Wechselbarer Tab-Container mit *Zeitleiste* (kompakte Karten mit Notizart und Inhalt links, Datum, Uhrzeit und Bearbeiter ohne Personen-Icon rechts), *Dateianhängen & Screenshots* sowie dem *BookStack Offline-Wiki*.\n\n#### 2. 📋 Kanban-Board (`Strg + 2`)\n- Vollständige Übersicht nach den 4 Kern-Abteilungsspalten und 2 Prozessspalten (**6 Spalten**):\n  - 📞 **Hotline** (`hotline`)\n  - 🔧 **Technik** (`tech`)\n  - 💻 **Entwicklung** (`dev`)\n  - 👤 **Kunde** (`customer`)\n  - 🔔 **Wiedervorlage** (`followup`)\n  - ✓ **Erledigt** (`completed`)\n- Jede Spalte lässt sich einklappen und zeigt in der Kopfzeile die Anzahl der enthaltenen Fälle.\n\n#### 3. 📊 Tabellarische Matrix (`Strg + 3`)\n- Übersichtliche Tabellenansicht aller Fälle für schnelles Durchsuchen, Vergleichen und Verwalten großer Fallmengen.\n\n#### 4. 📈 Auswertungen & Kennzahlen (`Strg + 4`)\n- Statistisches Dashboard mit Kennzahlen zu offenen Fällen, Überfälligkeiten, durchschnittlicher Bearbeitungsdauer, VIP-Quoten und Auslastung."
     },
     "case_print_reporting": {
-      "title": "🖨 Fall-Druckansicht, PDF & Bilder",
+      "title": "🖨 Fall-Druckansicht & Kompakter A4 PDF-Export",
       "category": "Export",
-      "content": "### 🖨 Fall-Druckansicht, PDF & Bildberichte\n\nErstellen Sie druckfähige Gesamtberichte inklusive aller Screenshots und Zeitleisteneinträge.\n\n#### Schritt-für-Schritt Anleitung:\n1. Klicken Sie im Cockpit auf **🖨 Drucken** (unter `⚙ Weitere Aktionen...`).\n2. **Optionen festlegen**: Wählen Sie aus, welche Abschnitte im Bericht enthalten sein sollen (Kundendaten, Formularfelder, Zeitleiste, Bildanhänge).\n3. **Bilder am Berichtsende**: Alle im Fall gespeicherten Screenshots (`.png`, `.jpg`) werden automatisch am Ende der Druckseite eingebettet.\n4. **Drucken oder als PDF speichern**:\n   - Klicken Sie auf **🖨 Im Browser öffnen & Drucken**, um das Dokument im Browser anzuzeigen und den System-Druckdialog aufzurufen.\n   - Oder nutzen Sie **💾 Als HTML/PDF speichern**, um die Datei lokal abzulegen."
+      "content": "### 🖨 Fall-Druckansicht & Kompakter A4 PDF-Export\n\nErstellen Sie hochgradig platzoptimierte Fallakten-Berichte, die standardmäßig sauber auf **eine einzige DIN A4-Seite** passen.\n\n#### 1. Kompaktes 2-Spalten Layout\n- **Horizontale Gruppierung**: Fall-Metadaten (links) und Kunden-/Praxisdaten (rechts) sind nebeneinander angeordnet, um die vertikale Höhe zu minimieren.\n- **2-spaltiges Formular-Raster**: Kurze Formularfelder teilen sich platzsparend zwei Spalten. Längere Texte spannen automatisch über die volle Breite.\n- **Kompakte Zeitleiste**: Reduzierte Ränder und flache Boxen verhindern überflüssigen Weißraum.\n\n#### 2. DIN A4 Seitenformat (@page)\n- Das hinterlegte `@page { size: A4 portrait; margin: 8mm 10mm; }` sorgt beim Drucken und beim Speichern als PDF im Browser automatisch für ideale Ränder.\n- Automatische Seitenumbruchsvermeidung (`page-break-inside: avoid;`) verhindert das Zerschneiden von Tabellen, Kacheln und Bildern.\n\n#### 3. Aufruf & Bedienung:\n1. Öffnen Sie im Cockpit das Menü **⚙ Weitere Aktionen...** -> **📤 Export & Übergabe** und wechseln Sie auf den Reiter **Drucken & Akte** (oder nutzen Sie das Druck-Icon).\n2. Passen Sie die Checkboxen nach Bedarf an (z. B. einzelne Notizen oder Anhänge abwählen).\n3. Klicken Sie auf **🖨 Im Browser öffnen & Drucken** (öffnet den Browser inklusive automatischem PDF-/Druckdialog) oder **💾 Als HTML speichern**."
     },
     "cobra_crm_import": {
       "title": "🐍 Cobra CRM Praxen- & Kundenimport",
@@ -1027,14 +1045,14 @@
       "content": "### 🔌 E-Mail-Import (IMAP) & REST Webhooks (Jira/GitLab)\n\nVerknüpfen Sie das Support-Cockpit mit Ihren bestehenden Postfächern und Ticket-Systemen.\n\n#### 1. 📬 Automatische E-Mail-Import (IMAP)\n- **Funktionsweise**: Das Support-Cockpit fragt in konfigurierbaren Intervallen Ihr Support-Postfach per IMAP ab.\n- **Automatische Fallentwürfe**: Neue E-Mails werden automatisch als unbestätigte Fall-Entwürfe im Cockpit gelistet. Sie können den Entwurf mit einem Klick prüfen, einer Praxis zuordnen und übernehmen.\n\n#### 2. 🔗 REST Webhooks (GitLab, Jira, Custom APIs)\n- **Outbound-Webhooks**: Konfigurieren Sie unter `⚙ Profil & Einstellungen` -> `🔌 Webhooks` Ihre Ziel-URLs.\n- **Automatische Payloads**: Bei Erstellung, Bearbeitung oder Abschluss eines Falls sendet das System strukturierte JSON-Payloads an Ihr präferiertes Ticketsystem (Jira / GitLab / In-House REST API)."
     },
     "export": {
-      "title": "📤 Export-Engine & Ticket-Protokolle",
+      "title": "📤 Export & Übergabe (Vorlagen & Druck)",
       "category": "Export",
-      "content": "### 📤 Export-Engine & Ticket-Protokolle\n\nGenerieren Sie mit einem Klick saubere Übergabeprotokolle, E-Mails oder Dokumentationen.\n\n#### Schritt-für-Schritt Anleitung:\n1. Wählen Sie den gewünschten Fall im Cockpit aus.\n2. Klicken Sie auf **📤 Export** (oder drücken Sie `Strg + E`).\n3. **Vorlage wählen**: Wählen Sie eine passende Vorlage (z. B. *Standard Übergabe*, *Kunden-Zusammenfassung*, *Entwickler-Bugreport*).\n4. **Ausgabeformat wählen**:\n   - **Markdown**: Perfekt geeignet für Jira, GitHub, Redmine oder BookStack.\n   - **HTML / Text**: Ideal für E-Mail-Entwürfe und Dokumente.\n   - **PDF**: Zur Archivierung oder zum Ausdrucken.\n5. Klicken Sie auf **📋 In Zwischenablage kopieren** oder **💾 Als Datei speichern**."
+      "content": "### 📤 Konsolidierter Dialog: Export & Übergabe (`Strg + E`)\n\nDer gemeinsame Dialog **`📤 Export & Übergabe`** fasst Vorlagen-Exporte und den druckfähigen Fallbericht in zwei übersichtlichen Reitern zusammen:\n\n#### Tab 1: Export & Vorlagen (Standard)\n1. Wählen Sie eine Vorlage (z. B. *Standard Übergabe*, *Kunden-Zusammenfassung*, *Entwickler-Bugreport*).\n2. Wählen Sie das Ausgabeformat (*Markdown*, *HTML / Text*, *PDF*).\n3. Kopieren Sie das Protokoll in die Zwischenablage (**📋 In Zwischenablage kopieren**) oder speichern Sie es als Datei (**💾 Datei speichern**).\n\n#### Tab 2: Drucken & Akte\n- Ermöglicht den selektiven Fallakten-Druck.\n- Wählen Sie gewünschte Abschnitte oder einzelne Timeline-Einträge ab.\n- Öffnen Sie den optimierten DIN A4-Druckbericht im Browser (**🖨 Im Browser öffnen & Drucken**) oder speichern Sie den Bericht als statisches HTML/PDF (**💾 Speichern**)."
     },
     "handover_followup": {
       "title": "🔔 Zuständigkeitswechsel & Wiedervorlagen",
       "category": "Workflow",
-      "content": "### 🔔 Zuständigkeitswechsel & Wiedervorlagen\n\nSorgen Sie dafür, dass kein Fall in Vergessenheit gerät und Übergaben lückenlos nachvollziehbar bleiben.\n\n#### 1. Zuständigkeit (Akteur) wechseln\n- Ändern Sie im Cockpit das Dropdown **Zuständig (Akteur)** (z. B. von *Support* auf *Entwicklung*).\n- Das System protokolliert den Wechsel automatisch mit Zeitstempel und Urheber in der Zeitleiste (*ZUSTÄNDIGKEIT: Support -> Entwicklung*).\n\n#### 2. Wiedervorlage & Erinnerung festlegen\n1. Klicken Sie im Cockpit auf **🔔 Wiedervorlage** (oder nach einem Akteurwechsel im automatischen Pop-up).\n2. Wählen Sie das Gewünschte Datum per Kalender-Picker oder nutzen Sie Schnelltasten (`+ 1 Tag`, `+ 2 Tage`, `+ 1 Woche`).\n3. Tragen Sie eine kurze Erinnerungs-Notiz ein (z. B. *\"Beim Entwickler bezüglich Ticket #402 nachfragen\"*).\n4. **Anzeige in der Fallliste**: Fällige Wiedervorlagen werden 3-zeilig hervorgehoben und zeigen den relativen Status (`(heute fällig)`, `(morgen)` oder `(seit X Tagen überfällig)`)."
+      "content": "### 🔔 Zuständigkeitswechsel & Wiedervorlagen\n\nSorgen Sie dafür, dass kein Fall in Vergessenheit gerät und Übergaben lückenlos nachvollziehbar bleiben.\n\n#### 1. Übergabe-Dropdown im Cockpit\n- In der unteren Aktionsleiste direkt neben dem **`✓ Erledigt`**-Button befindet sich das **`Übergabe`**-Dropdown-Menü.\n- Wählen Sie dort direkt die gewünschte Zielabteilung aus:\n  - 📞 **Hotline**\n  - 🔧 **Technik**\n  - 💻 **Entwicklung**\n  - 👤 **Kunde**\n- Beim Klick öffnet sich der Übergabedialog mit der vorausgewählten Abteilung, und das Dropdown springt sofort wieder auf die Beschriftung *\"Übergabe\"* zurück.\n- **Mitarbeiter-Auswahl & Abwesenheitswarnung**: Sie können einen konkreten Kollegen zuweisen. Ist dieser als abwesend (Urlaub/Krankheit) eingetragen, warnt das System sofort visuell.\n- Das System protokolliert den Wechsel automatisch mit Zeitstempel und Urheber in der Zeitleiste.\n\n#### 2. Wiedervorlage & Erinnerung festlegen\n1. Klicken Sie im Cockpit auf **🔔 Wiedervorlage** (oder nach einem Akteurwechsel im automatischen Pop-up).\n2. Wählen Sie das gewünschte Datum per Kalender-Picker oder nutzen Sie Schnelltasten (`+ 1 Tag`, `+ 2 Tage`, `+ 1 Woche`).\n3. Tragen Sie eine kurze Erinnerungs-Notiz ein (z. B. *\"Beim Entwickler bezüglich Ticket #402 nachfragen\"*).\n4. **Anzeige in der Fallliste**: Fällige Wiedervorlagen werden 3-zeilig hervorgehoben und zeigen den relativen Status (`(heute fällig)`, `(morgen)` oder `(seit X Tagen überfällig)`)."
     },
     "internal_cases": {
       "title": "🏢 Interne Vorgänge & Aufgaben (ohne Kunde)",
@@ -1064,12 +1082,12 @@
     "scoring": {
       "title": "📊 Fall-Scoring & Dringlichkeits-Priorisierung",
       "category": "Workflow",
-      "content": "### 📊 Automatisches Dringlichkeits-Scoring\n\nDas Support-Cockpit berechnet für jeden offenen Fall automatisch einen **Dringlichkeits-Score** (Punkte), damit Sie kritische Fälle sofort oben in Ihrer Liste sehen.\n\n#### Berechnungsfaktoren:\n- **Priorität**: Critical (60 Pkt), High (40 Pkt), Medium (20 Pkt), Low (10 Pkt).\n- **★ VIP-Praxis**: Praxen mit VIP-Status erhalten einen pauschalen Bonus von **+30 Punkten**.\n- **Wartezeit (Liegezeit)**: Je länger ein Fall ungelöst ist, desto höher steigt der Score (automatisch **+2 Punkte pro Tag**).\n- **Inaktivität**: Fälle ohne Notiz/Update in den letzten 48 Stunden erhalten Zusatzpunkte.\n- **Workflow-Status**: In Bearbeitung (+10 Pkt), Warten auf Kunde (+0 Pkt), Vorort-Termin nötig (+20 Pkt).\n\n#### Automatische Hintergrund-Aktualisierung:\nEin Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich. Sie können die Punkte-Matrix in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) individuell anpassen."
+      "content": "### 📊 Automatisches Dringlichkeits-Scoring\n\nDas Support-Cockpit berechnet für jeden offenen Fall automatisch einen **Dringlichkeits-Score** (Punkte), damit Sie kritische Fälle sofort oben in Ihrer Liste sehen.\n\n#### Berechnungsfaktoren:\n- **Priorität**: Critical (60 Pkt), High (40 Pkt), Medium (20 Pkt), Low (10 Pkt).\n- **★ VIP-Praxis**: Praxen mit VIP-Status erhalten einen pauschalen Bonus von **+30 Punkten**.\n- **Wartezeit (Liegezeit)**: Je länger ein Fall ungelöst ist, desto höher steigt der Score (automatisch **+2 Punkte pro Tag**).\n- **Inaktivität**: Fälle ohne Notiz/Update in den letzten 48 Stunden erhalten Zusatzpunkte.\n- **Workflow-Status**: In Bearbeitung (+10 Pkt), Warten auf Kunde (+0 Pkt), Vorort-Termin nötig (+20 Pkt).\n\n#### Automatische Hintergrund-Aktualisierung:\nEin Hintergrund-Timer aktualisiert die Scores aller offenen Fälle stündlich. Sie können die VIP-Bonus-Punkte in den Einstellungen (`⚙ Profil & Einstellungen` -> Reiter `🧩 Sonstiges`, Bereich **Prioritäts-Scoring**) individuell anpassen."
     },
     "shortcuts": {
       "title": "⌨ Tastenkürzel (Hotkeys) Übersicht",
       "category": "Tastenkürzel",
-      "content": "### ⌨ Tastenkürzel (Shortcuts) Übersicht\n\nArbeiten Sie noch schneller mit Tastenkürzeln:\n\n| Funktion | Tastenkürzel |\n| :--- | :--- |\n| **Neuer Fall** | `Strg + N` |\n| **Fall speichern** | `Strg + S` |\n| **Fall erledigen / archivieren** | `Strg + Umschalt + A` |\n| **Fall exportieren** | `Strg + E` |\n| **Einstellungen öffnen** | `Strg + P` |\n| **Snippet-Picker (Textbausteine)** | `Strg + M` |\n| **Wiki-Suche fokussieren** | `Strg + W` |\n| **Kundensuche / Fallsuche** | `Strg + F` |\n| **Screenshot einfügen** | `Strg + V` |\n| **Cockpit-Ansicht** | `Strg + 1` |\n| **Kanban-Board** | `Strg + 2` |\n| **Tabellen-Ansicht** | `Strg + 3` |\n| **Auswertungen & Kennzahlen** | `Strg + 4` |\n| **Theme umschalten** | `Strg + T` |\n| **Handbuch & Hilfe** | `F1` |\n\n*Tipp: Alle Hotkeys können in den Einstellungen (`⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring`) individuell angepasst und erfasst werden.*"
+      "content": "### ⌨ Tastenkürzel (Shortcuts) Übersicht\n\nArbeiten Sie noch schneller mit Tastenkürzeln:\n\n| Funktion | Tastenkürzel |\n| :--- | :--- |\n| **Neuer Fall** | `Strg + N` |\n| **Fall speichern** | `Strg + S` |\n| **Fall erledigen / archivieren** | `Strg + Umschalt + A` |\n| **Fall exportieren** | `Strg + E` |\n| **Einstellungen öffnen** | `Strg + P` |\n| **Snippet-Picker (Textbausteine)** | `Strg + M` |\n| **Wiki-Suche fokussieren** | `Strg + W` |\n| **Kundensuche / Fallsuche** | `Strg + F` |\n| **Screenshot einfügen** | `Strg + V` |\n| **Cockpit-Ansicht** | `Strg + 1` |\n| **Kanban-Board** | `Strg + 2` |\n| **Tabellen-Ansicht** | `Strg + 3` |\n| **Auswertungen & Kennzahlen** | `Strg + 4` |\n| **Theme umschalten** | `Strg + T` |\n| **Handbuch & Hilfe** | `F1` |\n\n*Tipp: Alle Hotkeys können in den Einstellungen (`⚙ Profil & Einstellungen` -> Reiter `🧩 Sonstiges`) individuell angepasst und erfasst werden.*"
     },
     "snippets_manager": {
       "title": "📝 Textbausteine & Snippet-Manager",
@@ -1084,7 +1102,7 @@
     "storage_paths": {
       "title": "📁 Speicherorte, Datenstruktur & Exe-Betrieb",
       "category": "Konfiguration",
-      "content": "### 📁 Speicherorte, Datenstruktur & Portable Exe-Betrieb\n\nDas Support-Cockpit ist vollkommen mobil und speichert Arbeitsdaten getrennt von den Programmdateien.\n\n#### 1. Datenordner frei festlegen\n- Öffnen Sie **⚙ Profil & Einstellungen** (`👤`) -> Reiter **📁 Speicherort & Pfade**.\n- Wählen Sie über **📁 Ordner wählen** Ihren gewünschten Speicherort (z. B. lokales Laufwerk `D:\\SupportDaten` oder einen Netzwert-Ordner).\n\n#### 2. Verhalten beim Betrieb als Einzeldatei (`.exe`)\n- Wird die Anwendung als portable `.exe` gestartet, werden keine Dateien im Ausführungsverzeichnis (z. B. `Program Files`) geschrieben.\n- Die Benutzerkonfiguration wird sicher in Ihrem Benutzerprofil abgelegt:\n  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`\n- Fehlt die Konfiguration, wird automatisch der Ordner `Dokumente\\SupportCockpitData` verwendet."
+      "content": "### 📁 Speicherorte, Datenstruktur & Portable Exe-Betrieb\n\nDas Support-Cockpit ist vollkommen mobil und speichert Arbeitsdaten getrennt von den Programmdateien.\n\n#### 1. Datenordner & Pfade frei festlegen\n- Öffnen Sie **⚙ Profil & Einstellungen** (`👤`) -> Reiter **📁 Speicherort & Datenexport**.\n- In der **linken Spalte** können Sie über **📁 Ordner wählen** das Basis-Arbeitsverzeichnis festlegen oder individuelle Pfad-Überschreibungen für Fälle, Kunden und Wiki-Datenbanken konfigurieren.\n- Ebenfalls links konfigurieren Sie die **automatische Backup-Aufbewahrung** nach dem Grandfather-Father-Son-Prinzip (Tages-, Wochen- und Monatsbackups).\n\n#### 2. Komplett-Datensicherung & ZIP-Archivierung\n- In der **rechten Spalte** erstellen Sie mit einem Klick zeitgestempelte Komplett-ZIP-Backups oder spielen bestehende Archive wieder ein.\n\n#### 3. Verhalten beim Betrieb als Einzeldatei (`.exe`)\n- Wird die Anwendung als portable `.exe` gestartet, werden keine Dateien im Ausführungsverzeichnis (z. B. `Program Files`) geschrieben.\n- Die Benutzerkonfiguration wird sicher in Ihrem Benutzerprofil abgelegt:\n  - Windows: `%APPDATA%\\SupportCockpit\\user_config.json`\n- Fehlt die Konfiguration, wird automatisch der Ordner `Dokumente\\SupportCockpitData` verwendet."
     },
     "template_editor": {
       "title": "📄 Export-Vorlagen-Editor (Jinja2)",
@@ -1093,18 +1111,18 @@
     },
     "ui_customization": {
       "category": "Benutzeroberfläche",
-      "content": "\n### 📅 Datumsformatierung, Kalender-Picker & Spaltenbreiten\n\n#### 1. 📅 Deutsche Datumsformatierung\n- Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.\n\n#### 2. 🗓 Interaktiver Kalender-Picker\n- Bei allen Datumseingaben (z. B. Wiedervorlage einplanen, Rückruf-Deadline festlegen) steht ein interaktiver Kalender-Dialog zur Verfügung.\n- Klicken Sie neben dem Eingabefeld auf **📅 Kalender**, um den Monatskalender zu öffnen und das gewünschte Datum bequem per Klick auszuwählen.\n- Schnellauswahl-Tasten für *Heute*, *+ 1 Tag* und *+ 1 Woche* beschleunigen die Eingabe.\n\n#### 3. 📐 Individuelle & dauerhafte Spaltenbreiten\n- Über den Button **📐 Spalten** in der oberen Menüleiste können Sie die Breiten der einzelnen Spalten im Cockpit (Fallliste, Details/Formular, Zeitleiste) sowie im Kanban-Board frei anpassen.\n- Ihre gewählten Breiten werden automatisch in der Benutzerkonfiguration (`user_config.json`) gespeichert und bleiben beim Neustart der Anwendung erhalten.\n",
-      "title": "📅 Datumsformate, Kalender & Spaltenbreiten"
+      "content": "### 📅 Datumsformatierung, Spaltenbreiten & Persönliche Farbmarkierung\n\n#### 1. 📅 Deutsche Datumsformatierung & Kalender-Picker\n- Alle Datumsangaben im Support-Cockpit (Fristen, Rückrufe, Wiedervorlagen, Zeitleiste) werden einheitlich im deutschen Format (`DD.MM.YYYY` bzw. `DD.MM.YYYY HH:MM`) dargestellt.\n- Bei allen Datumseingaben steht ein interaktiver Kalender-Dialog zur Verfügung.\n\n#### 2. 🎨 Persönliche Mitarbeiter-Farbmarkierung\n- Unter **⚙ Profil & Einstellungen** (`👤`) -> Reiter **👤 Benutzerprofil** kann jeder Mitarbeiter eine persönliche Farbe wählen.\n- **Dezente Farbkacheln**: Bei aktivierter Markierung erhalten alle eigenen Fälle und Timeline-Einträge eine dezente, schwarz umrandete Farbkachel (`10x10 Pixel`):\n  - In der Cockpit-Fallliste neben der Fall-ID.\n  - Auf den Kanban-Karten in der Kopfzeile.\n  - In den Zeitleisten-Karten unten rechts neben dem Bearbeiternamen.\n- So erkennen Sie Ihre eigenen Vorgänge auf einen Blick, ohne dass das restliche Oberflächendesign überladen wird.\n\n#### 3. 📐 Individuelle & dauerhafte Spaltenbreiten\n- Über den Button **📐 Spalten** in der oberen Menüleiste können Sie die Breiten der einzelnen Spalten im Cockpit sowie im Kanban-Board frei anpassen.\n- Unter **⚙ Profil & Einstellungen** -> Reiter **👤 Benutzerprofil** (rechte Spalte unter *Erscheinungsbild & Layout*) können Sie über **↻ Alle Spaltenbreiten auf Standard zurücksetzen** gespeicherte Breiten jederzeit zurücksetzen.\n- Ihre gewählten Breiten werden automatisch in der Benutzerkonfiguration (`user_config.json`) gespeichert und bleiben beim Neustart der Anwendung erhalten.",
+      "title": "📅 Datumsformate, Spaltenbreiten & Farbmarkierung"
     },
     "wiki": {
       "title": "📚 BookStack Wiki Integration",
       "category": "Wiki",
-      "content": "### 📚 BookStack Offline-Wiki Integration\n\nDas Support-Cockpit verfügt über eine direkte Anbindung an Ihr BookStack-Wiki, damit Sie Lösungsanleitungen ohne Fensterwechsel direkt im Cockpit nachschlagen können.\n\n#### Funktionen & Bedienung:\n1. **Wiki-Tab öffnen**: Klicken Sie im rechten Cockpit-Panel auf den Reiter **Wiki / Wissensdatenbank**.\n2. **Suche (`Strg + W`)**: Tippen Sie Suchbegriffe oder Fehlercodes (z. B. `ERR_DB_902`, `TI-Konnektor`) in die Suchleiste ein.\n3. **Artikel lesen**: Klicken Sie auf ein Suchergebnis – der Inhalt wird sofort sauber formatiert im Cockpit gerendert.\n4. **Im Browser öffnen**: Ein Klick auf das Globus-Icon öffnet die Original-Seite direkt in Ihrem Webbrowser.\n5. **Offline-Cache & Sync**: Über **🔄 Wiki Sync** können Sie den lokalen Offline-Index mit Ihrem BookStack-Server abgleichen. Die Zugangsdaten (URL, API-Tokens) hinterlegen Sie unter `⚙ Profil & Einstellungen` -> `📚 BookStack Wiki`."
+      "content": "### 📚 BookStack Offline-Wiki Integration\n\nDas Support-Cockpit verfügt über eine direkte Anbindung an Ihr BookStack-Wiki, damit Sie Lösungsanleitungen ohne Fensterwechsel direkt im Cockpit nachschlagen können.\n\n#### Funktionen & Bedienung:\n1. **Wiki-Tab öffnen**: Klicken Sie im rechten Cockpit-Panel auf den Reiter **Wiki / Wissensdatenbank**.\n2. **Suche (`Strg + W`)**: Tippen Sie Suchbegriffe oder Fehlercodes (z. B. `ERR_DB_902`, `TI-Konnektor`) in die Suchleiste ein.\n3. **Artikel lesen**: Klicken Sie auf ein Suchergebnis – der Inhalt wird sofort sauber formatiert im Cockpit gerendert.\n4. **Im Browser öffnen**: Ein Klick auf das Globus-Icon öffnet die Original-Seite direkt in Ihrem Webbrowser.\n5. **Offline-Cache & Sync**: Über **🔄 Wiki Sync** können Sie den lokalen Offline-Index mit Ihrem BookStack-Server abgleichen. Die Zugangsdaten (URL, API-Tokens) hinterlegen Sie unter `⚙ Profil & Einstellungen` -> Reiter `🧩 Sonstiges` (Bereich **BookStack Server Konfiguration**)."
     },
     "zip_backup_restore": {
       "title": "📦 Komplett-ZIP Backup & Wiederherstellung",
       "category": "Konfiguration",
-      "content": "### 📦 Komplett-ZIP Backup & Wiederherstellung\n\nSichern Sie Ihren gesamten Datenbestand inkl. aller Fälle, Kundendaten, Formulare und Dateianhänge in einem ZIP-Archiv.\n\n#### 1. Backup erstellen\n1. Öffnen Sie **⚙ Profil & Einstellungen** (`👤`) -> Reiter **📦 Sicherung & Wiederherstellung**.\n2. Klicken Sie auf **💾 Komplett-Backup erstellen...**.\n3. Wählen Sie den Zielordner – das System erstellt ein zeitstempeltes Archiv (z. B. `SupportCockpit_Backup_2026-09-03.zip`).\n\n#### 2. Backup wiederherstellen\n1. Klicken Sie auf **📥 Backup wiederherstellen...**.\n2. Wählen Sie das gewünschte ZIP-Archiv aus.\n3. **Automatische Sicherheitssicherung**: Vor dem Überschreiben erstellt das System automatisch ein Sicherheits-Backup des aktuellen Datenstands, sodass Sie jederzeit zurückrollen können."
+      "content": "### 📦 Komplett-ZIP Backup & Wiederherstellung\n\nSichern Sie Ihren gesamten Datenbestand inkl. aller Fälle, Kundendaten, Formulare und Dateianhänge in einem ZIP-Archiv.\n\n#### 1. Backup erstellen\n1. Öffnen Sie **⚙ Profil & Einstellungen** (`👤`) -> Reiter **📁 Speicherort & Datenexport** (rechte Spalte: *Komplett-Datensicherung & ZIP-Archivierung*).\n2. Klicken Sie auf **💾 Datensicherung exportieren...**.\n3. Wählen Sie den Zielordner – das System erstellt ein zeitstempeltes Archiv (z. B. `SupportCockpit_Backup_2026-09-03.zip`).\n\n#### 2. Backup wiederherstellen\n1. Klicken Sie auf **📥 Datensicherung importieren...**.\n2. Wählen Sie das gewünschte ZIP-Archiv aus.\n3. **Automatische Sicherheitssicherung**: Vor dem Überschreiben erstellt das System automatisch ein Sicherheits-Backup des aktuellen Datenstands, sodass Sie jederzeit zurückrollen können."
     },
     "first_steps": {
       "title": "🐣 Erste Schritte & Schnellstart-Guide",
@@ -1124,7 +1142,7 @@
     "faq_troubleshooting": {
       "title": "❓ Häufige Fragen & Fehlerbehebung (FAQ)",
       "category": "Tastenkürzel",
-      "content": "### ❓ Häufige Fragen & Fehlerbehebung (FAQ)\n\n#### Q: Die KI zeigt einen roten Status (Offline) an. Was tun?\n- **A**: Öffnen Sie `⚙ Profil & Einstellungen` -> `🤖 KI & NLP` und klicken Sie auf **`▶ Ollama Server Starten`**. Stellen Sie sicher, dass Ollama auf Ihrem PC installiert ist (`ollama.com`).\n\n#### Q: Wie übertrage ich meine Daten auf einen neuen PC?\n- **A**: Erstellen Sie unter `⚙ Profil & Einstellungen` -> `📦 Sicherung & Wiederherstellung` ein **Komplett-Backup (ZIP)**. Spielen Sie diese ZIP-Datei auf dem neuen PC über **Backup wiederherstellen** ein.\n\n#### Q: Wie setze ich die Spaltenbreiten im Cockpit zurück?\n- **A**: Öffnen Sie `⚙ Profil & Einstellungen` -> `🎨 Erscheinungsbild` und klicken Sie unter *Gespeicherte Spaltenbreiten* auf **↻ Alle Spaltenbreiten auf Standard zurücksetzen**.\n\n#### Q: Kann ich eigene Tastenkürzel definieren?\n- **A**: Ja! Unter `⚙ Profil & Einstellungen` -> `⌨ Tastenkürzel & Scoring` können Sie für jede Aktion und für Ihre Textbausteine eigene Hotkeys per Tastendruck erfassen."
+      "content": "### ❓ Häufige Fragen & Fehlerbehebung (FAQ)\n\n#### Q: Die KI zeigt einen roten Status (Offline) an. Was tun?\n- **A**: Öffnen Sie `⚙ Profil & Einstellungen` -> `🤖 KI & NLP` und klicken Sie auf **`▶ Ollama Server Starten`**. Stellen Sie sicher, dass Ollama auf Ihrem PC installiert ist (`ollama.com`).\n\n#### Q: Wie übertrage ich meine Daten auf einen neuen PC?\n- **A**: Erstellen Sie unter `⚙ Profil & Einstellungen` -> `📁 Speicherort & Datenexport` ein **Komplett-Backup (ZIP)** in der rechten Spalte. Spielen Sie diese ZIP-Datei auf dem neuen PC über **Datensicherung importieren...** ein.\n\n#### Q: Wie setze ich die Spaltenbreiten im Cockpit zurück?\n- **A**: Öffnen Sie `⚙ Profil & Einstellungen` -> Reiter **👤 Benutzerprofil** und klicken Sie in der rechten Spalte unter *Erscheinungsbild & Layout* auf **↻ Alle Spaltenbreiten auf Standard zurücksetzen**.\n\n#### Q: Kann ich eigene Tastenkürzel definieren?\n- **A**: Ja! Unter `⚙ Profil & Einstellungen` -> Reiter **🧩 Sonstiges** können Sie für jede Aktion und für Ihre Textbausteine eigene Hotkeys per Tastendruck erfassen."
     }
   },
   "help_dialog": {
@@ -1191,7 +1209,7 @@
     "opt_cobra": "🐍 Cobra CRM Import",
     "opt_colleagues": "👥 Mitarbeiter",
     "opt_email_import": "📥 E-Mail Import",
-    "opt_export": "📤 Export (Strg+E)",
+    "opt_export": "📤 Export & Übergabe (Strg+E)",
     "opt_forms": "🛠 Formulare",
     "opt_help": "📖 Hilfe (F1)",
     "opt_modules": "🧩 Programmbereiche",
@@ -1268,9 +1286,12 @@
     "backup_title": "📦 Komplett-Datensicherung & ZIP-Archivierung",
     "browse_folder": "📁 Ordner wählen",
     "btn_new_profile": "➕ Neues Profil anlegen",
+    "app_profile_file": "App-Profil (app_profile.json):",
+    "archive_file": "Archiv (archive.json):",
     "cases_file": "Fälle (cases.json):",
     "checking_api_key": "🔍 Prüfe Key...",
     "checking_ollama": "🔍 Prüfe Ollama-Status...",
+    "colleagues_file": "Kollegen (colleagues.json):",
     "creating_model_msg": "⏳ Erstelle 'pvs-support' Modell aus Modelfile...",
     "cust_file": "Kunden (customers.json):",
     "custom_overrides": "Benutzerdefinierte Einzeldateipfade (Optional):",
@@ -1342,10 +1363,13 @@
     "title_save_sig": "Signatur in Datei speichern",
     "title_load_sig": "Signatur aus Datei laden",
     "sig_saved_success": "✅ Signatur erfolgreich gespeichert!",
+    "sig_saved_error": "⚠ Fehler beim Speichern der Signatur: {error}",
     "sig_loaded_success": "✅ Signatur geladen!",
+    "sig_loaded_error": "⚠ Fehler beim Laden der Signatur: {error}",
     "status_saved": "✔ Einstellungen & Pfade gespeichert!",
     "tab_ai": "🤖 KI & NLP",
     "tab_backup": "💾 Datensicherung",
+    "tab_misc": "🧩 Sonstiges",
     "tab_paths": "📁 Speicherort & Datenexport",
     "tab_profile": "📊 Basis-Profil",
     "tab_shortcuts": "⌨ Tastenkürzel & Scoring",
@@ -1358,11 +1382,21 @@
     "title_select_backup_zip": "Datensicherung (ZIP-Datei) auswählen",
     "title_select_data_dir": "Datenordner auswählen",
     "title_select_file": "Datei auswählen",
+    "p2p_sync_header": "P2P-Kollegen-Synchronisation",
+    "p2p_sync_desc": "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
+    "btn_open_p2p_sync": "🔄 P2P-Sync öffnen...",
+    "color_marker_header": "Persönliche Farbmarkierung",
+    "color_marker_enable": "Eigene Einträge & Fälle farblich hervorheben",
+    "color_marker_select": "Farbe wählen...",
+    "color_marker_preview": "Vorschau:",
+    "color_marker_sample": "Eigener Eintrag",
     "user_details": "Persönliche Angaben & Kontaktdaten",
     "user_info_header": "Benutzerinformationen (Aktives Profil)",
     "user_name": "Benutzername / Kürzel:",
     "user_tab_header": "Mitarbeiter-Profil verwalten & wechseln",
     "widths_reset_msg": "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!",
+    "schemas_file": "Formulare (question_schemas.json):",
+    "templates_file": "Export-Vorlagen (export_templates.json):",
     "wiki_file": "Wiki DB (sqlite):",
     "wiki_sync_mode": "Synchronisations-Modus:",
     "wiki_sync_startup": "Wiki-Inhalte beim Anwendungsstart synchronisieren",
@@ -1414,7 +1448,9 @@
     "no_snippets": "Keine Textbausteine vorhanden.",
     "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt."
+    "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
+    "shortcut_conflict": "⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!"
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -1472,7 +1508,10 @@
     "new_schema_title": "🆕 Neues Formular (Schema) erstellen",
     "schema_id_lbl": "Schema-ID (optional):",
     "select_form_lbl": "Formular auswählen:",
-    "toggle_required": "Pflicht +/-"
+    "toggle_required": "Pflicht +/-",
+    "badge_required": "[PFLICHT]",
+    "badge_optional": "[OPTIONAL]",
+    "no_form": "Kein Formular"
   },
   "schemas": {
     "bug_report": {
@@ -1734,7 +1773,10 @@
     "name_placeholder": "z. B. GitLab / Dev-Ticket",
     "new_title": "📄 Neue Export-Vorlage erstellen",
     "req_fields_lbl": "Erforderliche Pflichtfelder vor Export:",
-    "target_type_lbl": "Ziel-Aktion / Typ:"
+    "target_type_lbl": "Ziel-Aktion / Typ:",
+    "no_desc": "Keine Beschreibung",
+    "no_req_fields": "Keine Pflichtfelder",
+    "req_fields_summary": "Pflichtfelder: {fields}"
   },
   "timeline": {
     "case_completed": "Fall auf erledigt gesetzt.",
@@ -1751,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Wiedervorlage fällig ({count})",
     "reminder_title": "Erinnerung"
+  },
+  "tray": {
+    "open": "Öffnen",
+    "quit": "Beenden",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} fällige Wiedervorlage(n)"
   },
   "ui_buttons": {
     "apply": "Übernehmen",
@@ -1863,5 +1911,10 @@
     "name": "Name (A-Z)",
     "id": "Praxisnummer / ID",
     "contact": "Zeit seit letztem Kontakt"
+  },
+  "theme": {
+    "dark": "Dunkel",
+    "light": "Hell",
+    "system": "System"
   }
 }

@@ -2,7 +2,11 @@ from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import UrgencyLevel, BoardColumn, Actor, Channel
 from utils.datetime_utils import parse_iso, format_german_datetime
-from constants import VALIDATION_MESSAGES
+from constants import (
+    DEFAULT_IDLE_WARNING_DAYS,
+    INTERNAL_CUSTOMER_ID,
+    VALIDATION_MESSAGES,
+)
 
 
 @dataclass
@@ -55,7 +59,7 @@ class CaseCustomer:
 
     def validate(self) -> list[str]:
         errors = []
-        if self.customer_id == "INTERNAL":
+        if self.customer_id == INTERNAL_CUSTOMER_ID:
             return []
         if not self.customer_id.strip():
             errors.append(VALIDATION_MESSAGES["case_customer_id_required"])
@@ -125,7 +129,7 @@ class WorkflowStatus:
     board_column: str = BoardColumn.NEW
     current_actor: str = Actor.SUPPORT
     actor_since: str = ""
-    idle_warning_days: int = 1
+    idle_warning_days: int = DEFAULT_IDLE_WARNING_DAYS
     is_data_complete: bool = False
     followup_at: str = ""
     followup_note: str = ""
@@ -156,7 +160,7 @@ class WorkflowStatus:
             board_column=data.get("board_column", BoardColumn.NEW),
             current_actor=data.get("current_actor", Actor.SUPPORT),
             actor_since=data.get("actor_since", ""),
-            idle_warning_days=int(data.get("idle_warning_days", 1)),
+            idle_warning_days=int(data.get("idle_warning_days", DEFAULT_IDLE_WARNING_DAYS)),
             is_data_complete=bool(data.get("is_data_complete", False)),
             followup_at=data.get("followup_at", ""),
             followup_note=data.get("followup_note", ""),
@@ -205,7 +209,7 @@ class Case:
 
     @property
     def is_internal(self) -> bool:
-        return self.customer.customer_id == "INTERNAL"
+        return self.customer.customer_id == INTERNAL_CUSTOMER_ID
 
     @property
     def title(self) -> str:
@@ -240,7 +244,7 @@ class Case:
     def validate(self) -> list[str]:
         errors = []
         if not self.case_id:
-            errors.append("Case ID cannot be empty.")
+            errors.append(VALIDATION_MESSAGES["case_id_required"])
         if self.created_at:
             try:
                 parse_iso(self.created_at)

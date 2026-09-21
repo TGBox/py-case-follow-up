@@ -134,13 +134,13 @@ class TestE2EMultilingualWorkflows:
         # 5. Switch language to English mid-workflow
         get_i18n().current_language = "en"
         assert DIALOG_TITLES["new_case"] == "Create New Support Case"
-        assert "Support" in get_actor_display(new_case.workflow_status.current_actor)
+        assert "Hotline" in get_actor_display(new_case.workflow_status.current_actor)
         assert "Phone" in get_channel_display(timeline_entry.channel)
 
         # 6. Switch language to German
         get_i18n().current_language = "de"
         assert DIALOG_TITLES["new_case"] == "Neuen Support-Fall anlegen"
-        assert "Support" in get_actor_display(new_case.workflow_status.current_actor)
+        assert "Hotline" in get_actor_display(new_case.workflow_status.current_actor)
         assert "Telefon" in get_channel_display(timeline_entry.channel)
 
         # 7. Complete the case

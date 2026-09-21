@@ -4,12 +4,77 @@ import customtkinter as ctk
 from tkinter import filedialog
 from typing import Any
 from collections.abc import Callable
-from models.schema import QuestionSchema, SchemaField
+from constants import (
+    BORDER_COLOR_MISSING,
+    BORDER_WIDTH_CARD,
+    BORDER_WIDTH_MISSING,
+    BTN_HEIGHT_ADD_CARD,
+    BTN_HEIGHT_REMOVE_CARD,
+    BTN_HEIGHT_TAG_QUICK,
+    BTN_WIDTH_IMPORT_FILES,
+    BTN_WIDTH_OPEN_FILE,
+    BTN_WIDTH_REMOVE_CARD,
+    BTN_WIDTH_TAG_QUICK,
+    BYTES_PER_KB,
+    CHECKBOX_TAG_WIDTH,
+    COLOR_ACCENT_BLUE,
+    COLOR_BELL_BTN,
+    COLOR_BTN_SECONDARY,
+    COLOR_CARD_BORDER_DEFAULT,
+    COLOR_DANGER,
+    COLOR_DANGER_HOVER,
+    COLOR_MINI_ATTACH_BG,
+    COLOR_MINI_ATTACH_ROW_BG,
+    COLOR_MUTED_LABEL,
+    COLOR_OPEN_FILE_BTN,
+    COLOR_OPEN_FILE_BTN_HOVER,
+    COLOR_REPEATABLE_CARD_BG,
+    COLOR_RESIZE_HANDLE,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_USER_BTN_TEXT,
+    CORNER_RADIUS_CARD,
+    CURSOR_HAND,
+    CURSOR_RESIZE_V,
+    DEBOUNCE_KEY_TAG_SEARCH,
+    DEFAULT_ATTACHMENTS_DIR,
+    FILE_NAME_DATA_BACKUP,
+    FONT_SIZE_BODY,
+    FONT_SIZE_CONFIRM,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_WEIGHT_BOLD,
+    FONT_WEIGHT_NORMAL,
+    HEIGHT_MINI_ATTACH_ROW,
+    HEIGHT_MINI_ATTACH_SCROLL,
+    HEIGHT_OPEN_FILE_BTN,
+    HEIGHT_RESIZE_HANDLE,
+    MOUSEWHEEL_DELTA_UNIT,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_MD,
+    PAD_SM,
+    PAD_XL,
+    PAD_XS,
+    POPUP_TAG_PICKER_GEOMETRY,
+    POPUP_TAG_PICKER_HEIGHT,
+    POPUP_TAG_PICKER_MIN_HEIGHT,
+    POPUP_TAG_PICKER_MIN_WIDTH,
+    POPUP_TAG_PICKER_WIDTH,
+    SEARCH_DEBOUNCE_MS,
+    SPACING_SM,
+    TEXTBOX_DEFAULT_WIDTH,
+    TEXTBOX_MAX_HEIGHT,
+    TEXTBOX_MIN_HEIGHT,
+    TEXTBOX_VISIBLE_THRESHOLD_BOTTOM,
+    TEXTBOX_VISIBLE_THRESHOLD_TOP,
+)
+from enums import FieldType
 from models.case import Case
 from models.profile import UserProfile
-from services.storage_service import StorageService
+from models.schema import QuestionSchema, SchemaField
 from services.attachment_service import AttachmentService
-from enums import FieldType
+from services.storage_service import StorageService
 from ui.widgets.dynamic_form_field_renderers import FieldRendererMixin
 
 
@@ -23,9 +88,9 @@ class TextboxResizeHandle(ctk.CTkFrame):
         field_id: str,
         profile: UserProfile | None,
         storage_service: StorageService | None,
-        width: int = 520,
+        width: int = TEXTBOX_DEFAULT_WIDTH,
     ):
-        super().__init__(parent, fg_color=("gray75", "gray35"), height=7, width=width, cursor="sb_v_double_arrow")
+        super().__init__(parent, fg_color=COLOR_RESIZE_HANDLE, height=HEIGHT_RESIZE_HANDLE, width=width, cursor=CURSOR_RESIZE_V)
         self.target_textbox = target_textbox
         self.field_id = field_id
         self.profile = profile
@@ -43,7 +108,7 @@ class TextboxResizeHandle(ctk.CTkFrame):
 
     def on_drag(self, event):
         delta = event.y_root - self.start_y
-        new_h = max(50, min(600, self.start_height + delta))
+        new_h = max(TEXTBOX_MIN_HEIGHT, min(TEXTBOX_MAX_HEIGHT, self.start_height + delta))
         self.target_textbox.configure(height=new_h)
 
     def on_release(self, event):
@@ -65,10 +130,10 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         self.on_apply = on_apply
         from services.i18n_service import tr
         self.title(tr("dynamic_form.select_tags_dialog_title", "🧩 Programmbereiche auswählen"))
-        self.geometry("450x440")
-        self.minsize(380, 320)
+        self.geometry(POPUP_TAG_PICKER_GEOMETRY)
+        self.minsize(POPUP_TAG_PICKER_MIN_WIDTH, POPUP_TAG_PICKER_MIN_HEIGHT)
         from utils.ui_utils import center_window
-        center_window(self, 450, 440)
+        center_window(self, POPUP_TAG_PICKER_WIDTH, POPUP_TAG_PICKER_HEIGHT)
 
         self.transient(parent)
         self.grab_set()
@@ -80,41 +145,40 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         from services.i18n_service import tr
 
         hdr = ctk.CTkFrame(self, fg_color="transparent")
-        hdr.pack(fill="x", padx=12, pady=(10, 4))
+        hdr.pack(fill="x", padx=PAD_LG, pady=(PAD_MD + PAD_XS, PAD_SM))
 
-        ctk.CTkLabel(hdr, text=tr("dynamic_form.select_tags", "🧩 Programmbereiche auswählen:"), font=ctk.CTkFont(size=14, weight="bold")).pack(anchor="w")
+        ctk.CTkLabel(hdr, text=tr("dynamic_form.select_tags", "🧩 Programmbereiche auswählen:"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight=FONT_WEIGHT_BOLD)).pack(anchor="w")
 
         # Search Bar & Quick Action Buttons
         tools_frame = ctk.CTkFrame(self, fg_color="transparent")
-        tools_frame.pack(fill="x", padx=12, pady=(0, 6))
+        tools_frame.pack(fill="x", padx=PAD_LG, pady=(0, PAD_MD - PAD_XS))
 
         self.search_entry = ctk.CTkEntry(tools_frame, placeholder_text=tr("dynamic_form.search_tags", "🔍 Programmbereich suchen..."))
-        self.search_entry.pack(fill="x", pady=(0, 6))
+        self.search_entry.pack(fill="x", pady=(0, PAD_MD - PAD_XS))
         self.search_entry.bind("<KeyRelease>", self._on_tag_search_keyrelease)
 
         btn_row = ctk.CTkFrame(tools_frame, fg_color="transparent")
         btn_row.pack(fill="x")
 
-        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_all", "Alle auswählen"), width=110, height=24, fg_color="gray30", command=self.select_all).pack(side="left", padx=(0, 5))
-        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_none", "Keine auswählen"), width=110, height=24, fg_color="gray30", command=self.select_none).pack(side="left")
+        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_all", "Alle auswählen"), width=BTN_WIDTH_TAG_QUICK, height=BTN_HEIGHT_TAG_QUICK, fg_color=COLOR_BTN_SECONDARY, command=self.select_all).pack(side="left", padx=(0, PAD_CONTAINER))
+        ctk.CTkButton(btn_row, text=tr("dynamic_form.select_none", "Keine auswählen"), width=BTN_WIDTH_TAG_QUICK, height=BTN_HEIGHT_TAG_QUICK, fg_color=COLOR_BTN_SECONDARY, command=self.select_none).pack(side="left")
 
         # Scrollable List
         self.scroll_frame = ctk.CTkScrollableFrame(self)
-        self.scroll_frame.pack(fill="both", expand=True, padx=12, pady=5)
+        self.scroll_frame.pack(fill="both", expand=True, padx=PAD_LG, pady=PAD_CONTAINER)
         from utils.ui_utils import enable_auto_hiding_scrollbar
         enable_auto_hiding_scrollbar(self.scroll_frame)
 
         # Footer
         ftr = ctk.CTkFrame(self, fg_color="transparent")
-        ftr.pack(fill="x", padx=12, pady=(4, 10))
+        ftr.pack(fill="x", padx=PAD_LG, pady=(PAD_SM, PAD_MD + PAD_XS))
 
-        ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "✓ Übernehmen & Schließen"), fg_color="forestgreen", command=self.apply_and_close).pack(side="right")
+        ctk.CTkButton(ftr, text=tr("dynamic_form.apply_close", "✓ Übernehmen & Schließen"), fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER, command=self.apply_and_close).pack(side="right")
 
     def _on_tag_search_keyrelease(self, event=None):
         """Debounces the tag filter so the checkbox list is rebuilt once per typing pause."""
         from utils.ui_utils import debounce
-        from constants import SEARCH_DEBOUNCE_MS
-        debounce(self, "tag_search", SEARCH_DEBOUNCE_MS, self.render_tag_checkboxes)
+        debounce(self, DEBOUNCE_KEY_TAG_SEARCH, SEARCH_DEBOUNCE_MS, self.render_tag_checkboxes)
 
     def render_tag_checkboxes(self):
         from services.i18n_service import tr
@@ -128,7 +192,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
         filtered = [t for t in self.available_tags if query in t.lower()] if query else self.available_tags
 
         if not filtered:
-            ctk.CTkLabel(self.scroll_frame, text=tr("dynamic_form.no_tags", "Kein Programmbereich gefunden."), text_color="gray").pack(pady=15)
+            ctk.CTkLabel(self.scroll_frame, text=tr("dynamic_form.no_tags", "Kein Programmbereich gefunden."), text_color=COLOR_MUTED_LABEL).pack(pady=PAD_XL)
         else:
             for tag in filtered:
                 is_on = tag in self.selected_tags
@@ -141,8 +205,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         self.selected_tags.discard(t)
 
                 if raw_query and query in tag.lower():
-                    row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", cursor="hand2")
-                    row.pack(fill="x", pady=4, padx=5)
+                    row = ctk.CTkFrame(self.scroll_frame, fg_color="transparent", cursor=CURSOR_HAND)
+                    row.pack(fill="x", pady=SPACING_SM, padx=PAD_CONTAINER)
 
                     def toggle_cb(e=None, t=tag, v=bvar):
                         new_val = not v.get()
@@ -157,7 +221,7 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         text="",
                         variable=bvar,
                         command=make_chk_cb,
-                        width=24,
+                        width=CHECKBOX_TAG_WIDTH,
                     )
                     chk.pack(side="left", padx=0)
 
@@ -165,8 +229,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         row,
                         text=tag,
                         query=raw_query,
-                        font=ctk.CTkFont(size=12),
-                        text_color=("gray10", "gray90"),
+                        font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                        text_color=COLOR_USER_BTN_TEXT,
                         bg_color="transparent",
                         wrap="none",
                         on_click=toggle_cb,
@@ -182,9 +246,9 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
                         text=tag,
                         variable=bvar,
                         command=make_chk_cb,
-                        font=ctk.CTkFont(size=12),
+                        font=ctk.CTkFont(size=FONT_SIZE_BODY),
                     )
-                    chk.pack(anchor="w", pady=4, padx=5)
+                    chk.pack(anchor="w", pady=SPACING_SM, padx=PAD_CONTAINER)
                     bind_mouse_wheel_to_canvas(chk, self.scroll_frame)
 
         canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
@@ -236,7 +300,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         try:
             canvas = getattr(self.scroll_frame, "_parent_canvas", getattr(self.scroll_frame, "_canvas", None))
             if canvas and hasattr(canvas, "yview_scroll"):
-                canvas.yview_scroll(int(-1 * (delta / 120)), "units")
+                canvas.yview_scroll(int(-1 * (delta / MOUSEWHEEL_DELTA_UNIT)), "units")
         except Exception:
             pass
 
@@ -250,10 +314,10 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
                 tk_text = getattr(textbox, "_textbox", None)
                 if tk_text:
                     top, bottom = tk_text.yview()
-                    all_text_visible = (top <= 0.001 and bottom >= 0.999)
+                    all_text_visible = (top <= TEXTBOX_VISIBLE_THRESHOLD_TOP and bottom >= TEXTBOX_VISIBLE_THRESHOLD_BOTTOM)
                     if not all_text_visible:
-                        can_scroll_up = (event.delta > 0 and top > 0.001)
-                        can_scroll_down = (event.delta < 0 and bottom < 0.999)
+                        can_scroll_up = (event.delta > 0 and top > TEXTBOX_VISIBLE_THRESHOLD_TOP)
+                        can_scroll_down = (event.delta < 0 and bottom < TEXTBOX_VISIBLE_THRESHOLD_BOTTOM)
                         if can_scroll_up or can_scroll_down:
                             return  # Allow inner textbox text scrolling ONLY when text exceeds visible lines
                 # Scroll the main view whenever text fits inside the visible textbox display
@@ -328,7 +392,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             label_row,
             text=label_text,
             anchor="w",
-            font=ctk.CTkFont(size=12, weight="bold" if f.required else "normal"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD if f.required else FONT_WEIGHT_NORMAL),
         )
         lbl.pack(side="left")
 
@@ -413,7 +477,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             if is_missing:
                 if key not in self._field_border_defaults:
                     self._field_border_defaults[key] = (widget.cget("border_color"), widget.cget("border_width"))
-                widget.configure(border_color="red", border_width=2)
+                widget.configure(border_color=BORDER_COLOR_MISSING, border_width=BORDER_WIDTH_MISSING)
             else:
                 previous = self._field_border_defaults.pop(key, None)
                 if previous is not None:
@@ -520,37 +584,37 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         for idx, req_data in enumerate(self.current_file_requests):
             card_frame = ctk.CTkFrame(
                 self.repeatable_container,
-                fg_color=("gray90", "gray22"),
-                corner_radius=8,
-                border_width=1,
-                border_color=("gray75", "gray35"),
+                fg_color=COLOR_REPEATABLE_CARD_BG,
+                corner_radius=CORNER_RADIUS_CARD,
+                border_width=BORDER_WIDTH_CARD,
+                border_color=COLOR_CARD_BORDER_DEFAULT,
             )
-            card_frame.pack(fill="x", pady=8, padx=4)
+            card_frame.pack(fill="x", pady=PAD_MD, padx=PAD_SM)
 
             hdr = ctk.CTkFrame(card_frame, fg_color="transparent")
-            hdr.pack(fill="x", padx=10, pady=(8, 4))
+            hdr.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_MD, PAD_SM))
 
             ctk.CTkLabel(
                 hdr,
                 text=f"📌 {group_title} #{idx + 1}",
-                font=ctk.CTkFont(size=13, weight="bold"),
-                text_color=("dodgerblue", "deepskyblue"),
+                font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD),
+                text_color=COLOR_ACCENT_BLUE,
             ).pack(side="left")
 
             if len(self.current_file_requests) > 1:
                 ctk.CTkButton(
                     hdr,
                     text=tr("dynamic_form.remove_card", "🗑 Anfrage #{idx} entfernen", idx=idx + 1),
-                    height=24,
-                    width=140,
-                    fg_color="firebrick",
-                    hover_color="crimson",
+                    height=BTN_HEIGHT_REMOVE_CARD,
+                    width=BTN_WIDTH_REMOVE_CARD,
+                    fg_color=COLOR_DANGER,
+                    hover_color=COLOR_DANGER_HOVER,
                     command=lambda i=idx: self.remove_repeatable_card(i),
                 ).pack(side="right")
 
             card_widgets_dict: dict[str, tuple[str, Any]] = {}
             card_body = ctk.CTkFrame(card_frame, fg_color="transparent")
-            card_body.pack(fill="x", padx=10, pady=(0, 8))
+            card_body.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(0, PAD_MD))
 
             for f in self.card_fields:
                 val = req_data.get(f.field_id)
@@ -560,18 +624,18 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
             self.card_field_widgets.append(card_widgets_dict)
 
-        btn_row = ctk.CTkFrame(self.repeatable_container, fg_color="transparent")
-        btn_row.pack(fill="x", pady=(6, 4))
+            btn_row = ctk.CTkFrame(self.repeatable_container, fg_color="transparent")
+            btn_row.pack(fill="x", pady=(PAD_MD - PAD_XS, PAD_SM))
 
-        ctk.CTkButton(
-            btn_row,
-            text=tr("dynamic_form.add_card", "➕ Weitere {title} anfordern", title=group_title),
-            fg_color="forestgreen",
-            hover_color="darkgreen",
-            height=32,
-            font=ctk.CTkFont(size=12, weight="bold"),
-            command=self.add_repeatable_card,
-        ).pack(fill="x", padx=4)
+            ctk.CTkButton(
+                btn_row,
+                text=tr("dynamic_form.add_card", "➕ Weitere {title} anfordern", title=group_title),
+                fg_color=COLOR_SUCCESS,
+                hover_color=COLOR_SUCCESS_HOVER,
+                height=BTN_HEIGHT_ADD_CARD,
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                command=self.add_repeatable_card,
+            ).pack(fill="x", padx=PAD_SM)
 
         self._bind_mouse_wheel_recursive(self.repeatable_container)
 
@@ -631,7 +695,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         elif case.attachment_directory:
             return case.attachment_directory
         else:
-            return os.path.join("data", "attachments", case.case_id)
+            return os.path.join(DEFAULT_ATTACHMENTS_DIR, case.case_id)
 
     # --- DB BACKUP IMPORT & MINI ATTACHMENT SECTION ---
     def import_db_backup_file(self, case: Case, bool_var: ctk.BooleanVar):
@@ -648,7 +712,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         target_dir = self._get_target_dir(case)
         os.makedirs(target_dir, exist_ok=True)
-        target_path = os.path.join(target_dir, "data-al.backup")
+        target_path = os.path.join(target_dir, FILE_NAME_DATA_BACKUP)
 
         shutil.copy2(file_path, target_path)
         bool_var.set(True)
@@ -658,32 +722,32 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             self.refresh_mini_attachment_list(case)
 
     def render_mini_attachment_section(self, parent: Any, case: Case):
-        attach_box = ctk.CTkFrame(parent, fg_color=("gray92", "gray18"), corner_radius=6)
-        attach_box.pack(fill="x", pady=(6, 4))
+        attach_box = ctk.CTkFrame(parent, fg_color=COLOR_MINI_ATTACH_BG, corner_radius=CORNER_RADIUS_CARD)
+        attach_box.pack(fill="x", pady=(PAD_MD - PAD_XS, PAD_SM))
 
         hdr_row = ctk.CTkFrame(attach_box, fg_color="transparent")
-        hdr_row.pack(fill="x", padx=8, pady=4)
+        hdr_row.pack(fill="x", padx=PAD_MD, pady=PAD_SM)
 
         from services.i18n_service import tr
 
         self.mini_attach_hdr_label = ctk.CTkLabel(
             hdr_row,
             text=tr("dynamic_form.no_files", "📎 Abgelegte Dateien im Fallordner: Keine (0)"),
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
         )
         self.mini_attach_hdr_label.pack(side="left")
 
         ctk.CTkButton(
             hdr_row,
             text=tr("dynamic_form.import_files", "+ Datei(en) importieren..."),
-            height=24,
-            width=150,
-            fg_color="gray30",
-            hover_color="gray40",
+            height=BTN_HEIGHT_REMOVE_CARD,
+            width=BTN_WIDTH_IMPORT_FILES,
+            fg_color=COLOR_BTN_SECONDARY,
+            hover_color=COLOR_BELL_BTN,
             command=lambda: self.import_general_files(case),
         ).pack(side="right")
 
-        self.mini_attach_scroll = ctk.CTkScrollableFrame(attach_box, height=90, fg_color="transparent")
+        self.mini_attach_scroll = ctk.CTkScrollableFrame(attach_box, height=HEIGHT_MINI_ATTACH_SCROLL, fg_color="transparent")
 
         self.refresh_mini_attachment_list(case)
 
@@ -723,26 +787,26 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         for f_name in files:
             f_path = os.path.join(target_dir, f_name)
-            size_kb = os.path.getsize(f_path) / 1024.0
+            size_kb = os.path.getsize(f_path) / BYTES_PER_KB
 
-            frow = ctk.CTkFrame(self.mini_attach_scroll, fg_color=("gray85", "gray25"), height=24)
-            frow.pack(fill="x", pady=2)
+            frow = ctk.CTkFrame(self.mini_attach_scroll, fg_color=COLOR_MINI_ATTACH_ROW_BG, height=HEIGHT_MINI_ATTACH_ROW)
+            frow.pack(fill="x", pady=PAD_XS)
 
-            is_backup = f_name == "data-al.backup"
+            is_backup = f_name == FILE_NAME_DATA_BACKUP
             icon = "🗄" if is_backup else "📄"
 
             lbl_txt = f"{icon} {f_name} ({size_kb:.1f} KB)"
-            ctk.CTkLabel(frow, text=lbl_txt, font=ctk.CTkFont(size=11), anchor="w").pack(side="left", padx=8, expand=True, fill="x")
+            ctk.CTkLabel(frow, text=lbl_txt, font=ctk.CTkFont(size=FONT_SIZE_SM), anchor="w").pack(side="left", padx=PAD_MD, expand=True, fill="x")
 
             ctk.CTkButton(
                 frow,
                 text=tr("common.open", "👁 Öffnen"),
-                width=65,
-                height=20,
-                fg_color="gray35",
-                hover_color="gray45",
+                width=BTN_WIDTH_OPEN_FILE,
+                height=HEIGHT_OPEN_FILE_BTN,
+                fg_color=COLOR_OPEN_FILE_BTN,
+                hover_color=COLOR_OPEN_FILE_BTN_HOVER,
                 command=lambda p=f_path: self.open_file_external(p),
-            ).pack(side="right", padx=4)
+            ).pack(side="right", padx=PAD_SM)
 
     def open_file_external(self, filepath: str):
         try:

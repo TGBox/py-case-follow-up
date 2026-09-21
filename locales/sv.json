@@ -8,8 +8,8 @@
     "DATA_TECH": "Data-AL Teknisk support",
     "DEVELOPMENT": "Utveckling",
     "HOTLINE": "Hotline",
-    "SUPPORT": "Support / Hotline",
-    "TECH": "Teknisk support",
+    "SUPPORT": "Hotline",
+    "TECH": "Teknik",
     "data_customer": "Kund",
     "data_development": "Utveckling",
     "data_hotline": "Hotline",
@@ -17,7 +17,7 @@
     "data_tech": "Teknik",
     "dev": "Utveckling",
     "practice": "Kund",
-    "support_team": "Support / Hotline",
+    "support_team": "Hotline",
     "third_party": "Teknik"
   },
   "ai_constants": {
@@ -130,13 +130,19 @@
     "cockpit_btn": "🎯 Cockpit",
     "col_completed": "✓ Avslutade ärenden",
     "col_completed_header": "✓ Slutförda ärenden",
+    "col_customer": "👤 Kund ({count})",
+    "col_customer_header": "👤 Kund",
     "col_dev": "💻 Utvecklare ({count})",
-    "col_dev_header": "💻 Utvecklare / Dev-team",
+    "col_dev_header": "💻 Utveckling",
     "col_done": "✓ Klart ({count})",
     "col_followup": "🔔 Uppföljning ({count})",
-    "col_followup_header": "🔔 Uppföljning / Väntar",
-    "col_support": "📥 Support ({count})",
-    "col_support_header": "📥 Support / Pågående",
+    "col_followup_header": "🔔 Uppföljning",
+    "col_hotline": "📞 Hotline ({count})",
+    "col_hotline_header": "📞 Hotline",
+    "col_support": "📥 Hotline ({count})",
+    "col_support_header": "📥 Hotline",
+    "col_tech": "🔧 Teknik ({count})",
+    "col_tech_header": "🔧 Teknik",
     "collapse_btn": "◀ Fäll ihop",
     "expand_btn": "▶",
     "handover": "👤 Överlämna",
@@ -145,9 +151,12 @@
     "score": "Poäng",
     "score_label": "Poäng {score}",
     "title_completed": "Klart",
-    "title_dev": "Utvecklare",
+    "title_customer": "Kund",
+    "title_dev": "Utveckling",
     "title_followup": "Uppföljning",
-    "title_support": "Support"
+    "title_hotline": "Hotline",
+    "title_support": "Hotline",
+    "title_tech": "Teknik"
   },
   "board_columns": {
     "ACTION_REQUIRED": "Åtgärd krävs",
@@ -223,6 +232,7 @@
     "banner_print": "<strong>Utskriftsvy för ärendeakt</strong> — Utskriftsdialogrutan öppnas. Välj din skrivare eller \"Spara som PDF\".",
     "banner_view": "<strong>Ärendeaktvy</strong> — Översikt för ärende {case_id}.",
     "btn_print_pdf": "🖨 Skriv ut / Spara som PDF",
+    "header_case_metadata": "Ärendemetadata",
     "header_customer_data": "Kund- & mottagningsdata",
     "header_form_fields": "Formulärfält & detaljer",
     "header_timeline": "Historik & tidslinje",
@@ -341,12 +351,14 @@
     "email_copied_msg": "Mottagningens e-post '{email}' kopierades till urklipp.",
     "email_copied_title": "📋 E-post kopierad",
     "export_case": "📤 Exportera ärende",
+    "export_handover": "📤 Exportera & Överlämning",
     "filter_all": "Alla",
     "filter_deep": "🔍 Djupsökning",
     "filter_followup": "🔔 Uppföljning",
     "filter_urgent": "🔥 Brådskande",
     "followup": "🔔 Uppföljning",
     "followup_at": "🔔 Följ upp den:",
+    "handover_action": "Överlämning",
     "internal_task_title": "INTERNT ÄRENDE / UPPGIFT",
     "more_actions": "⚙ Fler åtgärder...",
     "no_email_msg": "Ingen e-postadress är registrerad för denna mottagning.",
@@ -612,7 +624,10 @@
     "zip_lbl": "Postnr:",
     "zip_placeholder": "12345",
     "edit_practice": "Redigera mottagning: {name}",
-    "id_suffix": "(ID: {id})"
+    "id_suffix": "(ID: {id})",
+    "sort_name": "Namn (A-Ö)",
+    "sort_id": "Mottagningsnummer / ID",
+    "sort_contact": "Tid sedan senaste kontakt"
   },
   "date_picker": {
     "btn_down": "▼",
@@ -902,6 +917,7 @@
   },
   "export_dialog": {
     "copy_btn": "Kopiera till urklipp",
+    "dialog_title": "Exportera & Överlämning — {case_id}",
     "export_for": "Exportera för ärende",
     "force_export_chk": "Exportera trots ofullständiga data ([SAKNAS: ...] platshållare)",
     "manage_templates_btn": "🛠 Hantera mallar",
@@ -909,6 +925,8 @@
     "preview_header": "Förhandsgranskning av exporterad text:",
     "save_file_btn": "Spara till fil...",
     "select_template": "Välj mall:",
+    "tab_export": "Export & Mallar",
+    "tab_print": "Utskrift & Ärendeakt",
     "window_title": "{base_title} — {case_id}",
     "file_saved": "💾 Filen sparad: {name}",
     "export_for_case": "Exportera för ärende {case_id}"
@@ -1004,12 +1022,12 @@
     "basics": {
       "title": "🚀 Grundläggande & 4 Vyer",
       "category": "Grundläggande",
-      "content": "### 🚀 Grundläggande gränssnitt & vyer\n\nSupport Cockpit erbjuder 4 specialiserade arbetsvyer som du när som helst kan växla mellan via menyn eller snabbknappar:\n\n#### 1. 🎛 Cockpit-vy (Standard, `Ctrl + 1`)\n- **Tredelad huvudlayout**:\n  - **Vänster**: Ärendelista med sökfält, snabbfilter och brådskandebadgar.\n  - **Mitten**: Ärendedetaljer, dynamiska formulärfält, snabbåtgärder och tidslinje.\n  - **Höger**: Flikcontainer med *Tidslinje*, *Bilagor & Skärmklipp* samt *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban-tavla (`Ctrl + 2`)\n- Ärendeöversikt sorterad efter statuskolumner (*Ny*, *Åtgärd krävs*, *Väntar*, *Pågår*, *Slutförd*).\n\n#### 3. 📊 Tabellmatris (`Ctrl + 3`)\n- Kompakt tabellvy för snabb sökning, sortering och hantering av stora volymer.\n\n#### 4. 📈 Analys & Nyckeltal (`Ctrl + 4`)\n- Statistisk instrumentpanel med nyckeltal för öppna ärenden, förfallotider, handläggningstider och belastning."
+      "content": "### 🚀 Grundläggande gränssnitt & vyer\n\nSupport Cockpit erbjuder 4 specialiserade arbetsvyer som du när som helst kan växla mellan via menyn eller snabbknappar:\n\n#### 1. 🎛 Cockpit-vy (Standard, `Ctrl + 1`)\n- **Tredelad huvudlayout**:\n  - **Vänster**: Ärendelista med sökfält, snabbfilter (`[🔥 Brådskande]`, `[🔔 Uppföljningar]`, `[🏢 Internt]`), brådskandebadgar och personlig färgmarkering.\n  - **Mitten**: Ärendedetaljer, dynamiska formulärfält och integrerat verktygsfält (Uppföljning, Notering, Överlämning, Klart, Spara, Fler åtgärder).\n  - **Höger**: Flikcontainer med *Tidslinje* (kompakta kort med noteringskanal och innehåll till vänster, datum, tid och handläggare utan personikon till höger), *Bilagor & Skärmklipp* samt *BookStack Offline Wiki*.\n\n#### 2. 📋 Kanban-tavla (`Ctrl + 2`)\n- Fullständig översikt över 4 avdelningskolumner och 2 processkolumner (**6 kolumner**):\n  - 📞 **Hotline** (`hotline`)\n  - 🔧 **Teknik** (`tech`)\n  - 💻 **Utveckling** (`dev`)\n  - 👤 **Kund** (`customer`)\n  - 🔔 **Uppföljning** (`followup`)\n  - ✓ **Klart** (`completed`)\n- Varje kolumn kan fällas ihop och visar antal ärenden i rubriken.\n\n#### 3. 📊 Tabellmatris (`Ctrl + 3`)\n- Kompakt tabellvy för snabb sökning, sortering och hantering av stora volymer.\n\n#### 4. 📈 Analys & Nyckeltal (`Ctrl + 4`)\n- Statistisk instrumentpanel med nyckeltal för öppna ärenden, förfallotider, handläggningstider och belastning."
     },
     "case_print_reporting": {
-      "title": "🖨 Utskriftsvy, PDF & Bilder",
+      "title": "🖨 Ärendeutskrift & Kompakt A4 PDF-export",
       "category": "Export",
-      "content": "### 🖨 Utskriftsvy, PDF & Bilder\n\nSkapa utskriftsvänliga rapporter inklusive alla skärmklipp och tidslinjenoteringar."
+      "content": "### 🖨 Ärendeutskrift & Kompakt A4 PDF-export\n\nSkapa utrymmesoptimerade ärenderapporter som ryms på **en enda A4-sida** för standardärenden.\n\n#### 1. Kompakt 2-kolumners layout\n- **Horisontell gruppering**: Ärendemetadata (vänster) och kunddata (höger) placeras sida vid sida.\n- **2-kolumners fältraster**: Korta formulärfält delar upp två kolumner för att spara vertikalt utrymme. Längre texter spänner över hela bredden.\n- **Kompakt tidslinje**: Diskreta kort med reducerade marginaler eliminerar onödigt tomrum.\n\n#### 2. DIN A4-format (@page)\n- Inbyggd `@page { size: A4 portrait; margin: 8mm 10mm; }` säkerställer korrekta utskriftsmarginaler i webbläsaren.\n- Automatiskt skydd mot sidbrytning inuti tabeller och kort (`page-break-inside: avoid;`).\n\n#### 3. Användning:\n1. I Cockpit, öppna **⚙ Fler åtgärder...** -> **📤 Export & överlämning** och välj fliken **Skriv ut & akt**.\n2. Anpassa kryssrutorna efter behov.\n3. Klicka på **🖨 Öppna i webbläsare & skriv ut** eller **💾 Spara som HTML**."
     },
     "cobra_crm_import": {
       "title": "🐍 Cobra CRM Import",
@@ -1027,14 +1045,14 @@
       "content": "### 🔌 E-postimport (IMAP) & Webhooks\n\nImportera e-post automatiskt och skicka REST webhooks till Jira / GitLab."
     },
     "export": {
-      "title": "📤 Exportmotor & Mallar",
+      "title": "📤 Export & överlämning (Mallar & Utskrift)",
       "category": "Export",
-      "content": "### 📤 Exportmotor & Mallar\n\nExportera ärenden till Markdown, HTML eller PDF för biljettsystem och e-post."
+      "content": "### 📤 Samlad dialog: Export & överlämning (`Ctrl + E`)\n\nDen enhetliga dialogen **`📤 Export & överlämning`** sammanför mallbaserad export och utskriftsrapporter i två flikar:\n\n#### Flik 1: Export & mallar (Standard)\n1. Välj en mall (*Standard överlämning*, *Kundsammanfattning*, *Utvecklarrapport*).\n2. Välj utdataformat (*Markdown*, *HTML / Text*, *PDF*).\n3. Kopiera till urklipp (**📋 Kopiera till urklipp**) eller spara som fil (**💾 Spara fil**).\n\n#### Flik 2: Skriv ut & akt\n- Selektiv utskrift av ärendeakt.\n- Välj önskade avsnitt eller enskilda tidslinjeanteckningar.\n- Öppna den optimerade A4-rapporten i webbläsaren (**🖨 Öppna i webbläsare & skriv ut**) eller spara som HTML/PDF (**💾 Spara**)."
     },
     "handover_followup": {
-      "title": "🔔 Överlämningar & Återupptaganden",
+      "title": "🔔 Ansvarsöverlämning & Uppföljningar",
       "category": "Arbetsflöde",
-      "content": "### 🔔 Överlämningar & Återupptaganden\n\nLogga överlämningar i tidslinjen och schemalägg påminnelser med kalenderväljaren."
+      "content": "### 🔔 Ansvarsöverlämning & Uppföljningar\n\nSäkerställ att inga ärenden glöms bort och att överlämningar är spårbara.\n\n#### 1. Överlämningsmeny i Cockpit\n- I det nedre verktygsfältet direkt bredvid knappen **`✓ Klart`** finns rullgardinsmenyn **`Överlämning`**.\n- Välj målavdelning direkt:\n  - 📞 **Hotline**\n  - 🔧 **Teknik**\n  - 💻 **Utveckling**\n  - 👤 **Kund**\n- Vid klick öppnas överlämningsdialogen med förvald avdelning, och menyn återgår omedelbart till texten *\"Överlämning\"*.\n- **Kollega & frånvarovarning**: Tilldela en kollega. Om personen är markerad som frånvarande visas en visuell varning omedelbart.\n- Överlämningen loggas i tidslinjen med tidsstämpel och handläggare.\n\n#### 2. Schemalägg uppföljning & påminnelse\n1. Klicka på **🔔 Uppföljning** i Cockpit.\n2. Välj datum med kalenderväljaren eller snabbknapparna (`+ 1 dag`, `+ 2 dagar`, `+ 1 vecka`).\n3. Ange en kort påminnelsenotering.\n4. **Ärendelistevisning**: Aktiva uppföljningar markeras på tre rader med relativ förfallostatus (`(förfaller idag)`, `(imorgon)`, `(försenad med X dagar)`)."
     },
     "internal_cases": {
       "title": "🏢 Interna ärenden & uppgifter",
@@ -1064,12 +1082,12 @@
     "scoring": {
       "title": "📊 Automatisk Brådskandescoring",
       "category": "Arbetsflöde",
-      "content": "### 📊 Automatisk Brådskandescoring\n\nBeräknar poäng baserat på prioritet, VIP-status, väntetid och inaktivitet för att prioritera akuta ärenden."
+      "content": "### 📊 Automatisk Brådskandescoring\n\nBeräknar poäng baserat på prioritet, VIP-status, väntetid och inaktivitet för att prioritera akuta ärenden. Anpassa VIP-bonuspoäng under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "shortcuts": {
       "title": "⌨ Tangentbordsgenvägar",
       "category": "Genvägar",
-      "content": "### ⌨ Tangentbordsgenvägar\n\nÖversikt över alla snabbknappar (`Ctrl+N`, `Ctrl+S`, `Ctrl+V`, `Ctrl+M`, `Ctrl+W`, `F1`)."
+      "content": "### ⌨ Tangentbordsgenvägar\n\nÖversikt över alla snabbknappar (`Ctrl+N`, `Ctrl+S`, `Ctrl+V`, `Ctrl+M`, `Ctrl+W`, `F1`). Alla snabbknappar och makron kan anpassas under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "snippets_manager": {
       "title": "📝 Textmallar & Snippet Manager",
@@ -1084,7 +1102,7 @@
     "storage_paths": {
       "title": "📁 Lagringsplatser & Portabel drift",
       "category": "Konfiguration",
-      "content": "### 📁 Lagringsplatser & Portabel drift\n\nAnpassa datamappar för portabel drift och nätverksenheter."
+      "content": "### 📁 Lagringsplatser & Portabel drift\n\nAnpassa datamappar för portabel drift och nätverksenheter under `⚙ Profil & inställningar` -> fliken `📁 Lagringsplats & Dataexport` (vänstra kolumnen för sökvägar och automatisk gallring, högra kolumnen för ZIP-säkerhetskopia)."
     },
     "template_editor": {
       "title": "📄 Exportmall-redigerare (Jinja2)",
@@ -1093,18 +1111,18 @@
     },
     "ui_customization": {
       "category": "Användargränssnitt",
-      "content": "### 📅 Datumvisning & användaranpassningar\n\n- **Standardformat**: Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- **Grafisk kalenderväljare**: Klicka på kalenderikonen bredvid datumfält för att öppna den grafiska datumväljaren med snabbval (*Idag 11:30*, *Idag 16:30*, *Imorgon 08:00*, *+ 1 dag*, *+ 1 vecka*).\n- **Kolumnbredder**: Kolumnbredder i tabellvyn kan justeras genom att dra i kolumnrubrikerna. Bredderna sparas automatiskt i din profil och kan återställas under **Inställningar** vid behov.",
-      "title": "📅 Datumformat, kalender & kolumnbredder"
+      "content": "### 📅 Datumvisning, kolumnbredder & personlig färgmarkering\n\n#### 1. 📅 Datumvisning & kalenderväljare\n- Alla datum- och tidsangivelser i applikationen följer standardformatet `DD.MM.YYYY HH:MM` (t.ex. `25.08.2026 14:30`).\n- En interaktiv kalenderväljare är tillgänglig för alla datumfält med snabbval (*+ 1 dag*, *+ 1 vecka*).\n\n#### 2. 🎨 Personlig medarbetarfärgmarkering\n- Under **⚙ Profil & inställningar** (`👤`) -> fliken **👤 Användarprofil** kan varje medarbetare välja en personlig färg.\n- **Diskreta färgbrickor**: När markering är aktiv visas en diskret, svart inramad färgbricka (`10x10 pixlar`):\n  - I ärendelistan bredvid ärende-ID.\n  - I rubriken på Kanban-korten.\n  - I tidslinjekorten nere till höger bredvid handläggarens namn.\n- Ger snabb visuell överblick utan att störa den övriga designen.\n\n#### 3. 📐 Individuella kolumnbredder\n- Kolumnbredder i Cockpit och på Kanban-tavlan kan anpassas via knappen **📐 Kolumner** i toppmenyn.\n- Under **⚙ Profil & inställningar** -> fliken **👤 Användarprofil** (högra kolumnen) kan sparade kolumnbredder när som helst återställas till fabriksinställningar via **↻ Återställ alla kolumnbredder**.",
+      "title": "📅 Datumformat, kolumnbredder & färgmarkering"
     },
     "wiki": {
       "title": "📚 BookStack Offline Wiki",
       "category": "Wiki",
-      "content": "### 📚 BookStack Offline Wiki\n\nSök och läs BookStack-artiklar direkt i Cockpit med offline-cache och synk."
+      "content": "### 📚 BookStack Offline Wiki\n\nSök och läs BookStack-artiklar direkt i Cockpit med offline-cache och synk. Konfigurera serveranslutning och autentisering under `⚙ Profil & inställningar` -> fliken `🧩 Övrigt`."
     },
     "zip_backup_restore": {
       "title": "📦 Komplett ZIP-säkerhetskopia",
       "category": "Konfiguration",
-      "content": "### 📦 Komplett ZIP-säkerhetskopia\n\nSkapa och återställ kompletta ZIP-arkiv för alla data och bilagor."
+      "content": "### 📦 Komplett ZIP-säkerhetskopia\n\nSkapa och återställ kompletta ZIP-arkiv för alla data och bilagor under `⚙ Profil & inställningar` -> fliken `📁 Lagringsplats & Dataexport` (högra sektionen)."
     },
     "first_steps": {
       "title": "🐣 Kom igång & Snabbstartsguide",
@@ -1124,7 +1142,7 @@
     "faq_troubleshooting": {
       "title": "❓ Vanliga frågor & Felsökning (FAQ)",
       "category": "Genvägar",
-      "content": "### ❓ Vanliga frågor & Felsökning (FAQ)\n\nLösningar på vanliga frågor om AI-status, datorbyte och kolumnbredder."
+      "content": "### ❓ Vanliga frågor & Felsökning (FAQ)\n\nLösningar på vanliga frågor om AI-status (`🤖 AI & NLP`), datorbyte och ZIP-backup (`📁 Lagringsplats & Dataexport`), anpassade kortkommandon (`🧩 Övrigt`) och återställning av kolumnbredder (`👤 Användarprofil`)."
     }
   },
   "help_dialog": {
@@ -1191,7 +1209,7 @@
     "opt_cobra": "🐍 Cobra CRM Import",
     "opt_colleagues": "👥 Medarbetare",
     "opt_email_import": "📥 E-postimport",
-    "opt_export": "📤 Exportera (Ctrl+E)",
+    "opt_export": "📤 Exportera & Överlämning (Ctrl+E)",
     "opt_forms": "🛠 Formulär",
     "opt_help": "📖 Hjälp (F1)",
     "opt_modules": "🧩 Moduler",
@@ -1268,9 +1286,12 @@
     "backup_title": "📦 Fullständig datasäkerhetskopiering & ZIP-arkivering",
     "browse_folder": "📁 Välj mapp",
     "btn_new_profile": "➕ Skapa ny profil",
+    "app_profile_file": "App-profil (app_profile.json):",
+    "archive_file": "Arkiv (archive.json):",
     "cases_file": "Ärenden (cases.json):",
     "checking_api_key": "🔍 Kontrollerar nyckel...",
     "checking_ollama": "🔍 Kontrollerar Ollama-status...",
+    "colleagues_file": "Kolleger (colleagues.json):",
     "creating_model_msg": "⏳ Skapar 'pvs-support'-modell från Modelfile...",
     "cust_file": "Kunder (customers.json):",
     "custom_overrides": "Anpassade filsökvägar (valfritt):",
@@ -1342,10 +1363,13 @@
     "title_save_sig": "Spara signatur till fil",
     "title_load_sig": "Läs in signatur från fil",
     "sig_saved_success": "✅ Signaturen har sparats!",
+    "sig_saved_error": "⚠ Fel vid sparande av signatur: {error}",
     "sig_loaded_success": "✅ Signaturen har lästs in!",
+    "sig_loaded_error": "⚠ Fel vid inläsning av signatur: {error}",
     "status_saved": "✔ Inställningar & sökvägar sparade!",
     "tab_ai": "🤖 AI & NLP",
     "tab_backup": "💾 Säkerhetskopiering",
+    "tab_misc": "🧩 Övrigt",
     "tab_paths": "📁 Lagringsplats & Dataexport",
     "tab_profile": "📊 Basprofil",
     "tab_shortcuts": "⌨ Genvägar & poängsättning",
@@ -1358,11 +1382,21 @@
     "title_select_backup_zip": "Välj säkerhetskopia (ZIP-fil)",
     "title_select_data_dir": "Välj datamapp",
     "title_select_file": "Välj fil",
+    "p2p_sync_header": "P2P-kollegasynkronisering",
+    "p2p_sync_desc": "Jämför dina ärenden direkt med dina kollegors nätverksdata och slå samman uppdateringar.",
+    "btn_open_p2p_sync": "🔄 Öppna P2P-synk...",
+    "color_marker_header": "Personlig färgmarkering",
+    "color_marker_enable": "Färgmarkera egna poster & ärenden",
+    "color_marker_select": "Välj färg...",
+    "color_marker_preview": "Förhandsgranskning:",
+    "color_marker_sample": "Egen post",
     "user_details": "Personuppgifter & kontaktinformation",
     "user_info_header": "Användarinformation (aktiv profil)",
     "user_name": "Användarnamn / initialer:",
     "user_tab_header": "Hantera & byt användarprofil",
     "widths_reset_msg": "Alla kolumnbredder för alla vyer har återställts till standard!",
+    "schemas_file": "Formulärscheman (question_schemas.json):",
+    "templates_file": "Exportmallar (export_templates.json):",
     "wiki_file": "Wiki DB (sqlite):",
     "wiki_sync_mode": "Synkroniseringsläge:",
     "wiki_sync_startup": "Synkronisera wiki-innehåll vid programstart",
@@ -1414,7 +1448,9 @@
     "no_snippets": "Inga textavsnitt tillgängliga.",
     "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px",
     "zip_backup_success": "✅ ZIP-säkerhetskopia skapad: {file_count} filer ({mb_size:.2f} MB)",
-    "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade."
+    "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade.",
+    "shortcut_conflict": "⚠ Genvägskonflikt: Följande snabbtangenter är tilldelade flera gånger: {dup_str}",
+    "shortcut_conflict_generic": "⚠ Genvägskonflikt: Snabbtangenter får inte tilldelas flera gånger!"
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -1472,7 +1508,10 @@
     "new_schema_title": "🆕 Skapa nytt formulär (Schema)",
     "schema_id_lbl": "Schema-ID (valfritt):",
     "select_form_lbl": "Välj formulär:",
-    "toggle_required": "Obligatorisk +/-"
+    "toggle_required": "Obligatorisk +/-",
+    "badge_required": "[OBLIGATORISK]",
+    "badge_optional": "[VALFRITT]",
+    "no_form": "Inget formulär"
   },
   "schemas": {
     "bug_report": {
@@ -1734,7 +1773,10 @@
     "name_placeholder": "t.ex. GitLab / Utvecklarärende",
     "new_title": "📄 Skapa ny exportmall",
     "req_fields_lbl": "Obligatoriska fält före export:",
-    "target_type_lbl": "Målåtgärd / Typ:"
+    "target_type_lbl": "Målåtgärd / Typ:",
+    "no_desc": "Ingen beskrivning",
+    "no_req_fields": "Inga obligatoriska fält",
+    "req_fields_summary": "Obligatoriska fält: {fields}"
   },
   "timeline": {
     "case_completed": "Ärendet markerat som klart.",
@@ -1751,6 +1793,12 @@
   "toast": {
     "followup_due_title": "🔔 Uppföljning förfallen ({count})",
     "reminder_title": "Påminnelse"
+  },
+  "tray": {
+    "open": "Öppna",
+    "quit": "Avsluta",
+    "tooltip_default": "Support-Cockpit",
+    "tooltip_due": "Support-Cockpit — {count} förfallen uppföljning(ar)"
   },
   "ui_buttons": {
     "apply": "Verkställ",
@@ -1863,5 +1911,10 @@
     "name": "Namn (A-Ö)",
     "id": "Mottagningsnummer / ID",
     "contact": "Tid sedan senaste kontakt"
+  },
+  "theme": {
+    "dark": "Mörk",
+    "light": "Ljus",
+    "system": "System"
   }
 }

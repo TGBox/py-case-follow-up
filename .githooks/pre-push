@@ -1,0 +1,52 @@
+#!/bin/sh
+# Git pre-push hook:
+# 1. Builds the PyInstaller executable from py-case-follow-up.spec
+# 2. Runs static type checking via pyright
+# 3. Runs all pytest tests to ensure zero regressions and verify the built bundle
+
+set -e
+
+echo ""
+echo "============================================================"
+echo " [pre-push] 1/3: Generiere neue .exe-Datei via PyInstaller..."
+echo "============================================================"
+
+if ! uv run pyinstaller py-case-follow-up.spec; then
+    echo "" >&2
+    echo "[pre-push] ❌ FEHLER: PyInstaller-Build fehlgeschlagen!" >&2
+    echo "[pre-push] Push wird abgebrochen." >&2
+    exit 1
+fi
+
+echo ""
+echo "============================================================"
+echo " [pre-push] 2/3: Statische Typenprüfung (uvx pyright src)..."
+echo "============================================================"
+
+if ! uvx pyright src; then
+    echo "" >&2
+    echo "[pre-push] ❌ FEHLER: Typecheck fehlgeschlagen!" >&2
+    echo "[pre-push] Push wird abgebrochen." >&2
+    exit 1
+fi
+
+echo ""
+echo "============================================================"
+echo " [pre-push] 3/3: Führe Testsuite aus (uv run pytest)..."
+echo "============================================================"
+
+if ! uv run pytest --no-cov; then
+    echo "" >&2
+    echo "[pre-push] ❌ FEHLER: Testsuite fehlgeschlagen!" >&2
+    echo "[pre-push] Push wird abgebrochen." >&2
+    exit 1
+fi
+
+echo ""
+echo "============================================================"
+echo " [pre-push] ✓ Exe-Build, Typecheck und alle Tests erfolgreich!"
+echo " [pre-push] Push wird fortgesetzt."
+echo "============================================================"
+echo ""
+
+exit 0

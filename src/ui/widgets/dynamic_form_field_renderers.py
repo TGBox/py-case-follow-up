@@ -20,7 +20,46 @@ from typing import Any
 from collections.abc import Callable
 from models.schema import SchemaField
 from models.case import Case
-from constants import DEFAULT_MODULE_TAGS
+from constants import (
+    BROWSER_OPTION_UNKNOWN,
+    BTN_HEIGHT_MANAGE_TAGS,
+    BTN_WIDTH_CALENDAR,
+    BTN_WIDTH_CHOOSE_FILE,
+    BTN_WIDTH_IMPORT_BACKUP,
+    BTN_WIDTH_MANAGE_TAGS,
+    COLOR_BTN_IMPORT_BACKUP,
+    COLOR_BTN_IMPORT_BACKUP_HOVER,
+    COLOR_BTN_MANAGE_TAGS,
+    COLOR_BTN_MANAGE_TAGS_HOVER,
+    COLOR_BTN_SECONDARY,
+    COLOR_BTN_SECONDARY_HOVER,
+    COLOR_DROPDOWN_MISSING_BG,
+    COLOR_DROPDOWN_MISSING_BTN,
+    COLOR_PILL_ACTIVE,
+    COLOR_PILL_BOX_BG,
+    COLOR_PILL_HOVER,
+    COLOR_PILL_INACTIVE,
+    COLOR_PILL_TEXT_ACTIVE,
+    COLOR_PILL_TEXT_INACTIVE,
+    COLOR_TAG_PICKER_BTN_BG,
+    COLOR_TAG_PICKER_BTN_HOVER,
+    COLOR_TAG_PICKER_BTN_TEXT,
+    COMBO_WIDTH_FORM,
+    CORNER_RADIUS_MD,
+    DEFAULT_BROWSER_OPTIONS,
+    DEFAULT_MODULE_TAGS,
+    ENTRY_WIDTH_DATE,
+    ENTRY_WIDTH_FILE,
+    ENTRY_WIDTH_FORM_DEFAULT,
+    HEIGHT_BROWSER_PILL,
+    HEIGHT_TAG_PICKER_BTN,
+    PAD_CONTAINER,
+    PAD_MD,
+    PAD_SM,
+    PAD_XS,
+    TEXTBOX_DEFAULT_HEIGHT,
+    TEXTBOX_DEFAULT_WIDTH,
+)
 
 
 class FieldRendererMixin:
@@ -61,18 +100,18 @@ class FieldRendererMixin:
             ctk.CTkButton(
                 label_row,
                 text=tr("dynamic_form.manage_tags", "⚙ Programmbereiche verwalten"),
-                width=140,
-                height=22,
-                fg_color=("gray75", "gray30"),
-                hover_color=("gray65", "gray40"),
+                width=BTN_WIDTH_MANAGE_TAGS,
+                height=BTN_HEIGHT_MANAGE_TAGS,
+                fg_color=COLOR_BTN_MANAGE_TAGS,
+                hover_color=COLOR_BTN_MANAGE_TAGS_HOVER,
                 command=self.on_manage_module_tags,
-            ).pack(side="right", padx=5)
+            ).pack(side="right", padx=PAD_CONTAINER)
 
         available_mods = self.profile.available_module_tags if self.profile else list(DEFAULT_MODULE_TAGS)
         selected_mods = [m.strip() for m in str(val).split(",") if m.strip()] if val else []
 
         mod_container = ctk.CTkFrame(row_frame, fg_color="transparent")
-        mod_container.pack(fill="x", pady=2)
+        mod_container.pack(fill="x", pady=PAD_XS)
 
         mod_selected_holder = {"selected": selected_mods}
 
@@ -92,11 +131,11 @@ class FieldRendererMixin:
         picker_btn = ctk.CTkButton(
             mod_container,
             text=btn_text,
-            height=32,
+            height=HEIGHT_TAG_PICKER_BTN,
             anchor="w",
-            fg_color=("gray85", "gray25"),
-            hover_color=("gray75", "gray35"),
-            text_color=("gray10", "white"),
+            fg_color=COLOR_TAG_PICKER_BTN_BG,
+            hover_color=COLOR_TAG_PICKER_BTN_HOVER,
+            text_color=COLOR_TAG_PICKER_BTN_TEXT,
         )
         picker_btn.pack(fill="x", expand=True)
 
@@ -118,15 +157,15 @@ class FieldRendererMixin:
         target_widget_dict[f.field_id] = ("module_picker", mod_selected_holder)
 
     def _render_browser_multiselect_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any]):
-        browser_options = ["Firefox", "Edge", "Chrome", "Unbekannt"]
+        browser_options = list(DEFAULT_BROWSER_OPTIONS)
         raw_val = str(val) if val else ""
         selected_browsers = [b.strip() for b in raw_val.split(",") if b.strip()]
 
-        b_frame = ctk.CTkFrame(row_frame, fg_color=("gray90", "gray20"), corner_radius=6)
-        b_frame.pack(fill="x", pady=2)
+        b_frame = ctk.CTkFrame(row_frame, fg_color=COLOR_PILL_BOX_BG, corner_radius=CORNER_RADIUS_MD)
+        b_frame.pack(fill="x", pady=PAD_XS)
 
         b_pills_box = ctk.CTkFrame(b_frame, fg_color="transparent")
-        b_pills_box.pack(fill="x", padx=6, pady=4)
+        b_pills_box.pack(fill="x", padx=CORNER_RADIUS_MD, pady=PAD_SM)
 
         b_vars: dict[str, ctk.BooleanVar] = {}
         b_btns: dict[str, ctk.CTkButton] = {}
@@ -135,23 +174,24 @@ class FieldRendererMixin:
             for b_opt, b_v in b_vars.items():
                 is_sel = b_v.get()
                 b_btns[b_opt].configure(
-                    fg_color="dodgerblue" if is_sel else ("gray80", "gray30"),
-                    text_color="white" if is_sel else ("gray10", "white"),
+                    fg_color=COLOR_PILL_ACTIVE if is_sel else COLOR_PILL_INACTIVE,
+                    text_color=COLOR_PILL_TEXT_ACTIVE if is_sel else COLOR_PILL_TEXT_INACTIVE,
                 )
             self.update_conditional_visibility()
 
         def on_browser_click(clicked_opt: str):
-            if clicked_opt == "Unbekannt":
-                new_state = not b_vars["Unbekannt"].get()
-                b_vars["Unbekannt"].set(new_state)
+            if clicked_opt == BROWSER_OPTION_UNKNOWN:
+                new_state = not b_vars[BROWSER_OPTION_UNKNOWN].get()
+                b_vars[BROWSER_OPTION_UNKNOWN].set(new_state)
                 if new_state:
-                    for o in ["Firefox", "Edge", "Chrome"]:
-                        b_vars[o].set(False)
+                    for o in browser_options:
+                        if o != BROWSER_OPTION_UNKNOWN:
+                            b_vars[o].set(False)
             else:
                 new_state = not b_vars[clicked_opt].get()
                 b_vars[clicked_opt].set(new_state)
                 if new_state:
-                    b_vars["Unbekannt"].set(False)
+                    b_vars[BROWSER_OPTION_UNKNOWN].set(False)
 
             update_browser_pills_ui()
 
@@ -163,13 +203,13 @@ class FieldRendererMixin:
             btn = ctk.CTkButton(
                 b_pills_box,
                 text=b_opt,
-                height=26,
-                fg_color="dodgerblue" if is_b_on else ("gray80", "gray30"),
-                hover_color="deepskyblue",
-                text_color="white" if is_b_on else ("gray10", "white"),
+                height=HEIGHT_BROWSER_PILL,
+                fg_color=COLOR_PILL_ACTIVE if is_b_on else COLOR_PILL_INACTIVE,
+                hover_color=COLOR_PILL_HOVER,
+                text_color=COLOR_PILL_TEXT_ACTIVE if is_b_on else COLOR_PILL_TEXT_INACTIVE,
                 command=lambda opt=b_opt: on_browser_click(opt),
             )
-            btn.pack(side="left", padx=4, pady=3)
+            btn.pack(side="left", padx=PAD_SM, pady=PAD_SM - 1)
             b_btns[b_opt] = btn
 
         target_widget_dict[f.field_id] = ("browser_pills", b_vars)
@@ -179,19 +219,19 @@ class FieldRendererMixin:
         entry_row.pack(anchor="w")
 
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or tr("common.date_placeholder", "TT.MM.JJJJ"), width=295, **entry_kwargs)
+        entry = ctk.CTkEntry(entry_row, placeholder_text=f.placeholder or tr("common.date_placeholder", "TT.MM.JJJJ"), width=ENTRY_WIDTH_DATE, **entry_kwargs)
         if val:
             entry.insert(0, str(val))
-        entry.pack(side="left", padx=(0, 10))
+        entry.pack(side="left", padx=(0, PAD_MD + PAD_XS))
 
         from services.i18n_service import tr
 
         cal_btn = ctk.CTkButton(
             entry_row,
             text=tr("cockpit.calendar", "📅 Kalender"),
-            width=95,
-            fg_color="gray30",
-            hover_color="gray40",
+            width=BTN_WIDTH_CALENDAR,
+            fg_color=COLOR_BTN_SECONDARY,
+            hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=lambda e=entry: self.open_calendar_picker(e),
         )
         cal_btn.pack(side="left")
@@ -199,17 +239,17 @@ class FieldRendererMixin:
 
     def _render_dropdown_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], is_missing: bool):
         options = f.options if f.options else ["-"]
-        opt_kwargs: dict[str, Any] = {"button_color": "darkred", "fg_color": "firebrick"} if is_missing else {}
+        opt_kwargs: dict[str, Any] = {"button_color": COLOR_DROPDOWN_MISSING_BTN, "fg_color": COLOR_DROPDOWN_MISSING_BG} if is_missing else {}
         combo = ctk.CTkOptionMenu(
             row_frame,
             values=options,
             command=lambda _val: self.update_conditional_visibility(),
-            width=400,
+            width=COMBO_WIDTH_FORM,
             **opt_kwargs,
         )
         if val and str(val) in options:
             combo.set(str(val))
-        combo.pack(anchor="w", pady=(0, 2))
+        combo.pack(anchor="w", pady=(0, PAD_XS))
         target_widget_dict[f.field_id] = (f.field_type, combo)
 
     def _render_boolean_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any], case: Case | None):
@@ -237,12 +277,12 @@ class FieldRendererMixin:
             import_db_btn = ctk.CTkButton(
                 chk_frame,
                 text=tr("dynamic_form.import_backup", "📁 .backup-Datei importieren..."),
-                width=190,
-                fg_color="darkblue",
-                hover_color="blue",
+                width=BTN_WIDTH_IMPORT_BACKUP,
+                fg_color=COLOR_BTN_IMPORT_BACKUP,
+                hover_color=COLOR_BTN_IMPORT_BACKUP_HOVER,
                 command=lambda c=case, v=bool_var: self.import_db_backup_file(c, v),
             )
-            import_db_btn.pack(side="left", padx=15)
+            import_db_btn.pack(side="left", padx=PAD_MD + PAD_CONTAINER + PAD_XS)
 
         target_widget_dict[f.field_id] = (f.field_type, bool_var)
 
@@ -256,12 +296,12 @@ class FieldRendererMixin:
         file_entry = ctk.CTkEntry(
             file_row,
             placeholder_text=f.placeholder or tr("dynamic_form.no_file_selected", "Keine Datei ausgewählt..."),
-            width=280,
+            width=ENTRY_WIDTH_FILE,
             **entry_kwargs,
         )
         if val:
             file_entry.insert(0, str(val))
-        file_entry.pack(side="left", padx=(0, 10))
+        file_entry.pack(side="left", padx=(0, PAD_MD + PAD_XS))
 
         def open_file_picker(e=file_entry, f_item=f):
             exts = f_item.allowed_extensions
@@ -284,9 +324,9 @@ class FieldRendererMixin:
         ctk.CTkButton(
             file_row,
             text=tr("dynamic_form.choose_file", "📁 Datei wählen..."),
-            width=110,
-            fg_color="gray30",
-            hover_color="gray40",
+            width=BTN_WIDTH_CHOOSE_FILE,
+            fg_color=COLOR_BTN_SECONDARY,
+            hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=open_file_picker,
         ).pack(side="left")
 
@@ -294,15 +334,15 @@ class FieldRendererMixin:
 
     def _render_number_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.number_placeholder", "Zahl..."), width=400, **entry_kwargs)
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.number_placeholder", "Zahl..."), width=ENTRY_WIDTH_FORM_DEFAULT, **entry_kwargs)
         if val is not None:
             entry.insert(0, str(val))
-        entry.pack(anchor="w", pady=(0, 2))
+        entry.pack(anchor="w", pady=(0, PAD_XS))
         target_widget_dict[f.field_id] = (f.field_type, entry)
 
     def _render_textbox_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any] | None = None):
         from ui.widgets.dynamic_form_widget import TextboxResizeHandle
-        custom_height = 90
+        custom_height = TEXTBOX_DEFAULT_HEIGHT
         if self.profile:
             ui = getattr(self.profile, "ui_settings", None)
             cust_heights = getattr(ui, "custom_textbox_heights", None) or getattr(self.profile, "textbox_heights", None)
@@ -311,10 +351,10 @@ class FieldRendererMixin:
             elif ui and getattr(ui, "textbox_height", None):
                 custom_height = ui.textbox_height
 
-        textbox = ctk.CTkTextbox(row_frame, width=520, height=custom_height, wrap="word", **(entry_kwargs or {}))
+        textbox = ctk.CTkTextbox(row_frame, width=TEXTBOX_DEFAULT_WIDTH, height=custom_height, wrap="word", **(entry_kwargs or {}))
         if val:
             textbox.insert("1.0", str(val))
-        textbox.pack(anchor="w", pady=(0, 2))
+        textbox.pack(anchor="w", pady=(0, PAD_XS))
 
         handle = TextboxResizeHandle(
             row_frame,
@@ -322,16 +362,16 @@ class FieldRendererMixin:
             field_id=f.field_id,
             profile=self.profile,
             storage_service=self.storage_service,
-            width=520,
+            width=TEXTBOX_DEFAULT_WIDTH,
         )
-        handle.pack(anchor="w", pady=(2, 0))
+        handle.pack(anchor="w", pady=(PAD_XS, 0))
 
         target_widget_dict[f.field_id] = ("textbox", textbox)
 
     def _render_text_entry_field(self, row_frame: ctk.CTkFrame, f: SchemaField, val: Any, target_widget_dict: dict[str, Any], entry_kwargs: dict[str, Any]):
         from services.i18n_service import tr
-        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.text_placeholder", "Text..."), width=400, **entry_kwargs)
+        entry = ctk.CTkEntry(row_frame, placeholder_text=f.placeholder or tr("dynamic_form.text_placeholder", "Text..."), width=ENTRY_WIDTH_FORM_DEFAULT, **entry_kwargs)
         if val:
             entry.insert(0, str(val))
-        entry.pack(anchor="w", pady=(0, 2))
+        entry.pack(anchor="w", pady=(0, PAD_XS))
         target_widget_dict[f.field_id] = (f.field_type, entry)

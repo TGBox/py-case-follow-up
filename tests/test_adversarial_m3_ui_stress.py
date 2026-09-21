@@ -73,9 +73,9 @@ class TestRapidLanguageSwitchStress:
         }
 
         expected_actor_support = {
-            "de": "Support / Hotline",
-            "en": "Support / Hotline",
-            "sv": "Support / Hotline",
+            "de": "Hotline",
+            "en": "Hotline",
+            "sv": "Hotline",
         }
 
         for i in range(100):
@@ -244,6 +244,7 @@ class TestAttachmentWidgetDynamicRefreshBug:
         # 2nd refresh: should either handle destroyed preview_label safely or fail if bug exists
         # We test if the widget crashes with TclError
         import _tkinter
+        error_msg = ""
         try:
             get_i18n().current_language = "en"
             widget.refresh_ui_labels()
@@ -287,31 +288,31 @@ class TestHeadlessUIViewsDynamicUpdates:
         board.set_cases(cases)
 
         # German check
-        assert "Support (1)" in board.col_headers["support"].cget("text")
-        assert "Entwickler (1)" in board.col_headers["dev"].cget("text")
+        assert "Hotline (1)" in board.col_headers["hotline"].cget("text")
+        assert "Entwicklung (1)" in board.col_headers["dev"].cget("text")
         assert "Wiedervorlage (1)" in board.col_headers["followup"].cget("text")
         assert "Erledigt (1)" in board.col_headers["completed"].cget("text")
 
-        # Collapse support column
-        board.toggle_column_collapse("support")
-        assert board.collapsed_states["support"] is True
+        # Collapse hotline column
+        board.toggle_column_collapse("hotline")
+        assert board.collapsed_states.get("hotline") is True
 
         # Switch to English
         get_i18n().current_language = "en"
         board.refresh_ui_labels()
-        assert board.collapsed_states["support"] is True
+        assert board.collapsed_states.get("hotline") == True  # noqa: E712
         assert "Development (1)" in board.col_headers["dev"].cget("text") or "Developer (1)" in board.col_headers["dev"].cget("text")
         assert "Follow-up (1)" in board.col_headers["followup"].cget("text")
 
-        # Expand support column in English
-        board.toggle_column_collapse("support")
-        assert board.collapsed_states["support"] is False
-        assert "Support (1)" in board.col_headers["support"].cget("text")
+        # Expand hotline column in English
+        board.toggle_column_collapse("hotline")
+        assert board.collapsed_states.get("hotline") == False  # noqa: E712
+        assert "Hotline (1)" in board.col_headers["hotline"].cget("text")
 
         # Switch to Swedish
         get_i18n().current_language = "sv"
         board.refresh_ui_labels()
-        assert "Utvecklare (1)" in board.col_headers["dev"].cget("text")
+        assert "Utveckling (1)" in board.col_headers["dev"].cget("text")
         assert "Uppföljning (1)" in board.col_headers["followup"].cget("text")
         assert "Klart (1)" in board.col_headers["completed"].cget("text") or "Avslutade (1)" in board.col_headers["completed"].cget("text")
 

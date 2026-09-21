@@ -4,6 +4,7 @@ import customtkinter as ctk
 
 from constants import (
     BADGE_HEIGHT_SM,
+    BOARD_ACTION_ROW_BREAK_WIDTH,
     BOARD_CARD_WRAP_WIDTH,
     BOARD_COLLAPSED_COL_WIDTH,
     BOARD_EXPANDED_COL_MIN_WIDTH,
@@ -41,6 +42,7 @@ from constants import (
     FONT_SIZE_XS,
     PAD_LG,
     PAD_MD,
+    PAD_NONE,
     PAD_SM,
     PAD_XS,
     USER_COLOR_TILE_SIZE,
@@ -186,11 +188,11 @@ class KanbanCardWidget(ctk.CTkFrame):
             ).pack(side="right")
 
         # Action Buttons Row
-        action_frame = ctk.CTkFrame(self, fg_color="transparent")
-        action_frame.pack(fill="x", padx=PAD_MD, pady=(PAD_SM, PAD_MD))
+        self.action_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.action_frame.pack(fill="x", padx=PAD_MD, pady=(PAD_SM, PAD_MD))
 
-        ctk.CTkButton(
-            action_frame,
+        self.cockpit_btn = ctk.CTkButton(
+            self.action_frame,
             text=tr("board.cockpit_btn", "🎯 Cockpit"),
             command=lambda: self.on_switch_to_cockpit(self.case),
             width=BTN_WIDTH_CARD_ACTION,
@@ -198,26 +200,26 @@ class KanbanCardWidget(ctk.CTkFrame):
             font=ctk.CTkFont(size=FONT_SIZE_XS),
             fg_color=COLOR_BTN_GRAY,
             hover_color=COLOR_BTN_GRAY_HOVER,
-        ).pack(side="left", padx=PAD_XS)
+        )
 
-        ctk.CTkButton(
-            action_frame,
+        self.handover_btn = ctk.CTkButton(
+            self.action_frame,
             text=tr("board.handover", "👤 Übergeben"),
             command=lambda: self.on_change_actor(self.case),
             width=BTN_WIDTH_SM,
             height=BTN_HEIGHT_SM,
             font=ctk.CTkFont(size=FONT_SIZE_XS),
-        ).pack(side="left", padx=PAD_XS)
+        )
 
-        ctk.CTkButton(
-            action_frame,
+        self.remind_btn = ctk.CTkButton(
+            self.action_frame,
             text=tr("board.remind", "🔔 Erinnere"),
             command=lambda: self.on_open_followup(self.case),
             width=BTN_WIDTH_BOARD_REMIND,
             height=BTN_HEIGHT_SM,
             font=ctk.CTkFont(size=FONT_SIZE_XS),
             fg_color=COLOR_BOARD_REMIND,
-        ).pack(side="left", padx=PAD_XS)
+        )
 
         comp_text = (
             tr("cockpit.complete", "✓ Erledigt")
@@ -225,15 +227,57 @@ class KanbanCardWidget(ctk.CTkFrame):
             else tr("board.reopen", "✓ Öffnen")
         )
         comp_color = COLOR_SUCCESS if not self.case.workflow_status.is_completed else COLOR_COMPLETED_GRAY
-        ctk.CTkButton(
-            action_frame,
+        self.complete_btn = ctk.CTkButton(
+            self.action_frame,
             text=comp_text,
             command=lambda: self.on_toggle_complete(self.case),
             width=BTN_WIDTH_CARD_ACTION,
             height=BTN_HEIGHT_SM,
             font=ctk.CTkFont(size=FONT_SIZE_XS),
             fg_color=comp_color,
-        ).pack(side="right", padx=PAD_XS)
+        )
+
+        # Side-by-side needs about BOARD_ACTION_ROW_BREAK_WIDTH; a narrower column
+        # used to clip the last caption instead of rearranging.
+        self._action_row_horizontal: bool | None = None
+        self._apply_action_row_layout(horizontal=True)
+        self.action_frame.bind("<Configure>", self._on_action_frame_configure, add="+")
+
+    @property
+    def _action_buttons(self) -> tuple:
+        return (self.cockpit_btn, self.handover_btn, self.remind_btn, self.complete_btn)
+
+    def _apply_action_row_layout(self, horizontal: bool) -> None:
+        """Lays the four action buttons out in one row or in a 2x2 grid."""
+        if horizontal == self._action_row_horizontal:
+            return
+        self._action_row_horizontal = horizontal
+
+        for btn in self._action_buttons:
+            btn.pack_forget()
+            btn.grid_forget()
+
+        if horizontal:
+            for column in range(2):
+                self.action_frame.grid_columnconfigure(column, weight=0)
+            for btn in (self.cockpit_btn, self.handover_btn, self.remind_btn):
+                btn.pack(side="left", padx=PAD_XS)
+            self.complete_btn.pack(side="right", padx=PAD_XS)
+        else:
+            # Half-width cells, so each caption keeps its full text.
+            for column in range(2):
+                self.action_frame.grid_columnconfigure(column, weight=1, uniform="card_actions")
+            for index, btn in enumerate(self._action_buttons):
+                btn.grid(
+                    row=index // 2,
+                    column=index % 2,
+                    sticky="ew",
+                    padx=PAD_XS,
+                    pady=(PAD_NONE if index < 2 else PAD_XS, PAD_NONE),
+                )
+
+    def _on_action_frame_configure(self, event: Any) -> None:
+        self._apply_action_row_layout(horizontal=event.width >= BOARD_ACTION_ROW_BREAK_WIDTH)
 
 
 class BoardView(ctk.CTkFrame):

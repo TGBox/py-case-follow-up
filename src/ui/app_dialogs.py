@@ -247,7 +247,7 @@ class DialogLaunchersMixin:
 
             # Refresh the cockpit info row (practice label) if currently open
             if (
-                self.is_view_built("cockpit")
+                self.is_view_built(LayoutMode.COCKPIT.value)
                 and hasattr(self.cockpit_view, "refresh_ui_labels")
             ):
                 self.cockpit_view.refresh_ui_labels()
@@ -342,26 +342,21 @@ class DialogLaunchersMixin:
                     f"Could not delete attachment folder {attachment_dir}: {err}"
                 )
 
-        # Clear cockpit detail view if the deleted case is currently open
-        if self.is_view_built("cockpit") and hasattr(self.cockpit_view, "current_case"):
-            if (
-                self.cockpit_view.current_case is not None
-                and self.cockpit_view.current_case.case_id == case_id
-            ):
-                # Reset the cockpit detail pane cleanly
+        # Clear the cockpit detail pane if the deleted case is the one on screen.
+        # The layout registry is keyed by LayoutMode.COCKPIT.value ("COCKPIT") -
+        # the lowercase literal that used to stand here never matched, so this
+        # whole block was dead and the deleted case stayed visible until the user
+        # clicked another one.
+        if self.is_view_built(LayoutMode.COCKPIT.value):
+            current = getattr(self.cockpit_view, "current_case", None)
+            if current is not None and current.case_id == case_id:
                 try:
-                    self.cockpit_view.current_case = None
-                    if hasattr(self.cockpit_view, "form_widget"):
-                        self.cockpit_view.form_widget.clear_form()
-                    if hasattr(self.cockpit_view, "case_title_label"):
-                        from services.i18n_service import tr as _tr
-                        self.cockpit_view.case_title_label.configure(
-                            text=_tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen")
-                        )
-                    if hasattr(self.cockpit_view, "save_btn"):
-                        self.cockpit_view.save_btn.configure(state="disabled")
+                    self.cockpit_view.clear_current_case()
                 except Exception:
-                    pass
+                    import logging
+                    logging.getLogger("SupportCockpit").warning(
+                        "Could not clear the cockpit detail pane after deleting a case", exc_info=True
+                    )
 
         self.refresh_views(force_all=True)
 

@@ -166,7 +166,7 @@ class BaseDialog(ctk.CTkToplevel):
         except Exception as err:
             logger.warning(f"Could not refresh choices of {type(widget).__name__}: {err}")
 
-    def selected_choice_index(self, widget, fallback: int = 0) -> int:
+    def selected_choice_index(self, widget, fallback: int = 0, value: str | None = None) -> int:
         """Position of an OptionMenu's current selection within its own values.
 
         The visible labels come from tr(...), so matching them against German
@@ -174,10 +174,18 @@ class BaseDialog(ctk.CTkToplevel):
         The position carries the same information and is language independent -
         it also survives retranslate_choices(), which restores the selection by
         index for exactly that reason.
+
+        A command callback is handed the newly chosen label; passing it as
+        *value* resolves that label instead of re-reading the widget, which
+        keeps such a callback meaningful when it is invoked directly. Comparing
+        against the widget's *current* values stays language independent - only
+        a hard-coded literal would not be. An unknown label falls back to the
+        widget's own selection.
         """
         try:
             values = list(widget.cget("values"))
-            return values.index(widget.get())
+            wanted = value if value is not None and value in values else widget.get()
+            return values.index(wanted)
         except Exception as err:
             logger.warning(f"Could not resolve selection of {type(widget).__name__}: {err}")
             return fallback

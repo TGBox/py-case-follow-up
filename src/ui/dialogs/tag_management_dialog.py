@@ -45,6 +45,15 @@ from utils.ui_utils import (
     enable_auto_hiding_scrollbar,
 )
 
+#: Key/default pairs for the two tabs, and the program values the caller uses
+#: to preselect one. Same order, so the tab position maps onto a value without
+#: ever comparing the translated tab caption.
+TAG_TAB_CHOICES = [
+    ("tag_mgmt.tab_tags", "🏷 Allgemeine Tags"),
+    ("tag_mgmt.tab_modules", "🧩 Programmbereiche"),
+]
+TAG_TAB_KEYS = ("tags", "modules")
+
 
 class TagManagementDialog(BaseDialog):
     def __init__(
@@ -71,10 +80,10 @@ class TagManagementDialog(BaseDialog):
         )
 
         self.create_widgets()
-        if initial_tab == "modules":
-            self.tabview.set("🧩 Programmbereiche")
-        else:
-            self.tabview.set("🏷 Allgemeine Tags")
+        # Select by position: the captions are translated, so the German ones
+        # that used to stand here matched nothing once the UI ran in EN or SV.
+        initial_index = TAG_TAB_KEYS.index(initial_tab) if initial_tab in TAG_TAB_KEYS else 0
+        self.tabview.set(self._tab_names[initial_index])
 
         self.render_tags_list()
         self.render_modules_list()
@@ -105,8 +114,9 @@ class TagManagementDialog(BaseDialog):
         self.tabview = ctk.CTkTabview(main_frame, command=self._on_tab_changed)
         self.tabview.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_CONTAINER))
 
-        tab_tags = self.tabview.add(tr("tag_mgmt.tab_tags", "🏷 Allgemeine Tags"))
-        tab_modules = self.tabview.add(tr("tag_mgmt.tab_modules", "🧩 Programmbereiche"))
+        self._tab_names = [tr(key, default) for key, default in TAG_TAB_CHOICES]
+        tab_tags = self.tabview.add(self._tab_names[0])
+        tab_modules = self.tabview.add(self._tab_names[1])
 
         # --- TAB 1: ALLGEMEINE TAGS ---
         # Search & Add Box
@@ -164,8 +174,13 @@ class TagManagementDialog(BaseDialog):
         self.after(DELAY_SCROLL_RESET_LONG_MS, _do_reset)
 
     def _on_tab_changed(self):
-        curr = self.tabview.get()
-        if "Programmbereiche" in curr:
+        # CTkTabview identifies a tab by its caption, which is translated, so
+        # the position in self._tab_names is what stays stable across languages.
+        try:
+            index = self._tab_names.index(self.tabview.get())
+        except ValueError:
+            index = 0
+        if TAG_TAB_KEYS[index] == "modules":
             self._reset_scroll_to_top(self.modules_scroll)
         else:
             self._reset_scroll_to_top(self.tags_scroll)

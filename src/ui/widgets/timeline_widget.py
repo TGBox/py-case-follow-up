@@ -29,8 +29,6 @@ from constants import (
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
     TIMELINE_NOTE_TEXTBOX_PAD_Y,
-    TIMELINE_NOTE_WRAP_MIN,
-    TIMELINE_NOTE_WRAP_OFFSET,
     USER_COLOR_TILE_SIZE,
 )
 from utils.datetime_utils import now_iso, format_german_date, format_german_time
@@ -134,6 +132,63 @@ class TimelineWidget(ctk.CTkFrame):
             sep = "\n" if curr_text.strip() else ""
             self.note_textbox.insert("end", f"{sep}{text}")
 
+    @staticmethod
+    def _count_display_lines(textbox: ctk.CTkTextbox) -> int:
+        """Number of wrapped lines the note currently occupies.
+
+        Text.count("displaylines") returns the number of line *breaks* between
+        the two indices, and Tk reports that as None for 0, a bare int on newer
+        Pythons or a 1-tuple on older ones - so all three shapes are normalised
+        before the first line is added back on.
+        """
+        raw = textbox._textbox.count("1.0", "end - 1 chars", "displaylines")
+        if raw is None:
+            breaks = 0
+        elif isinstance(raw, (tuple, list)):
+            breaks = int(raw[0]) if raw else 0
+        else:
+            breaks = int(raw)
+        return max(1, breaks + 1)
+
+    def _bind_note_autosize(self, note_tb: ctk.CTkTextbox, note_font: ctk.CTkFont) -> None:
+        """Grows a note box to its full text and keeps it there.
+
+        The previous version measured from the *card's* Configure event and set
+        an explicit width, so the very first pass wrapped against a width the
+        box did not have yet and came out one or two lines short - the rest of
+        the note ended up hidden behind the textbox's own scrolling. Measuring
+        the box itself, only once it actually has a width, and deriving the line
+        height from the font instead of dlineinfo() (which returns None while
+        the widget is still unmapped) removes both failure modes.
+        """
+        font_line_height = note_font.metrics("linespace")
+        applied: list[int] = [-1]
+
+        def _fit_height(_event: Any = None) -> None:
+            try:
+                if not note_tb.winfo_exists() or note_tb.winfo_width() <= 1:
+                    return
+                lines = self._count_display_lines(note_tb)
+                # dlineinfo reports the rendered line box including spacing, but
+                # only once the widget is mapped - the font metric covers the
+                # first pass, when it is not.
+                rendered = note_tb._textbox.dlineinfo("1.0")
+                line_height = rendered[3] if rendered else font_line_height
+                needed = lines * line_height + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2
+                # Only touch the geometry on a real change; configure() inside a
+                # Configure handler would otherwise bounce back and forth.
+                if needed != applied[0]:
+                    applied[0] = needed
+                    note_tb.configure(height=needed)
+            except Exception:
+                pass
+
+        note_tb.bind("<Configure>", _fit_height, add="+")
+        try:
+            note_tb.after_idle(_fit_height)
+        except Exception:
+            pass
+
     def load_timeline(self, entries: list[TimelineEntry]):
         self.timeline_entries = list(entries)
         for widget in self.scroll_frame.winfo_children():
@@ -214,34 +269,21 @@ class TimelineWidget(ctk.CTkFrame):
                 height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
+            note_font = ctk.CTkFont(size=FONT_SIZE_BODY)
             note_tb = ctk.CTkTextbox(
                 left_col,
-                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                font=note_font,
                 fg_color="transparent",
                 border_width=0,
                 wrap="word",
-                height=1,
+                height=note_font.metrics("linespace") + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2,
                 activate_scrollbars=False,
             )
             note_tb.insert("1.0", entry.note)
             note_tb.configure(state="disabled")
             note_tb.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
 
-            def _make_resize_handler(target_tb: ctk.CTkTextbox):
-                def _on_resize(event: Any) -> None:
-                    avail_width = max(TIMELINE_NOTE_WRAP_MIN, event.width - TIMELINE_NOTE_WRAP_OFFSET)
-                    target_tb.configure(width=avail_width)
-                    # Count wrapped lines to set exact height
-                    target_tb.configure(state="normal")
-                    line_count = (target_tb._textbox.count("1.0", "end", "displaylines") or (1,))[0]
-                    target_tb.configure(state="disabled")
-                    line_height = target_tb._textbox.dlineinfo("1.0")
-                    if line_height:
-                        new_height = line_count * line_height[3] + TIMELINE_NOTE_TEXTBOX_PAD_Y * 2
-                        target_tb.configure(height=max(new_height, line_height[3]))
-                return _on_resize
-
-            card.bind("<Configure>", _make_resize_handler(note_tb), add="+")
+            self._bind_note_autosize(note_tb, note_font)
 
             if entry.status_change:
                 from services.i18n_service import tr

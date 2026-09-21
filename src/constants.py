@@ -654,6 +654,10 @@ TOOLTIP_LAZY_DELAY_MS = 400
 BOARD_CARD_WRAP_WIDTH = 260
 BTN_WIDTH_CARD_ACTION = 70
 BTN_WIDTH_BOARD_REMIND = 75
+#: Width a card's action row needs to fit all four buttons side by side
+#: (70 + 80 + 75 + 70 plus their padding). Below this the row switches to a
+#: 2x2 grid so no caption gets clipped.
+BOARD_ACTION_ROW_BREAK_WIDTH = 330
 BADGE_HEIGHT_SM = 20
 BOARD_COLLAPSED_COL_WIDTH = 42
 BOARD_EXPANDED_COL_MIN_WIDTH = 170

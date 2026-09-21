@@ -6,6 +6,8 @@ import customtkinter as ctk
 from constants import (
     COLOR_FALLBACK_TEXT_BG,
     COLOR_SEARCH_HIGHLIGHT,
+    CURSOR_ARROW,
+    CURSOR_HAND,
     DEFAULT_ELLIPSIS,
     DEFAULT_FONT_FAMILY_FALLBACK,
     DEFAULT_FONT_SIZE_FALLBACK,
@@ -814,7 +816,7 @@ def create_highlighted_label(
         spacing2=0,
         spacing3=0,
         bg=res_bg,
-        cursor="hand2" if on_click else "arrow",
+        cursor=CURSOR_HAND if on_click else CURSOR_ARROW,
         takefocus=0,
     )
 

@@ -35,6 +35,7 @@ from constants import (
     PAD_TINY,
     PAD_XL,
     PAD_XS,
+    VIP_TAG_DISPLAY,
 )
 
 
@@ -210,7 +211,7 @@ class AnalyticsView(ctk.CTkFrame):
 
         sorted_prac = sorted(prac_counts.items(), key=lambda item: item[1][0], reverse=True)[:5]
         for idx, (p_name, (count, is_vip)) in enumerate(sorted_prac, start=1):
-            vip_str = " ★ VIP" if is_vip else ""
+            vip_str = VIP_TAG_DISPLAY if is_vip else ""
             ctk.CTkLabel(prac_frame, text=tr("analytics.practice_ranking_item", "{idx}. {name}{vip} — {count} Vorgänge", idx=idx, name=p_name, vip=vip_str, count=count), font=ctk.CTkFont(size=FONT_SIZE_BODY), anchor="w").pack(fill="x", padx=PAD_XL, pady=PAD_XS)
 
         # Card R2: Assignee Workload (Bearbeiter)

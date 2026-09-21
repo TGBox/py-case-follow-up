@@ -25,6 +25,7 @@ from constants import (
     PAD_GAP,
     PAD_NONE,
     PAD_XS,
+    VIP_TAG_DISPLAY,
 )
 
 COL_TITLE_MAP = LocalizedDict("table_columns", {
@@ -343,7 +344,7 @@ class TableView(ctk.CTkFrame):
         sorted_cases = sorted(self.cases, key=get_sort_key, reverse=self.sort_reverse)
 
         for c in sorted_cases:
-            vip_str = " ★ VIP" if c.customer.is_vip else ""
+            vip_str = VIP_TAG_DISPLAY if c.customer.is_vip else ""
             fw_str = format_german_datetime(c.workflow_status.followup_at) if c.workflow_status.followup_at else "-"
             score = c.classification.calculated_score
 

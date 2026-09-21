@@ -96,24 +96,21 @@ class ZipImportPathDialog(BaseDialog):
         title_lbl.pack(fill="x", padx=PAD_LG, pady=(PAD_10, PAD_XS))
 
         mb_size = self.zip_info["total_bytes"] / (BYTES_PER_KB * BYTES_PER_KB)
-        info_str = tr(
-            "zip_import.info_summary",
-            "Enthält: {total} Dateien  ({data} Datendateien, {att} Anhänge)  •  Größe: {size:.2f} MB",
-            total=self.zip_info['total_files'],
-            data=self.zip_info['data_files'],
-            att=self.zip_info['attachment_files'],
-            size=mb_size,
-        )
-        sub_lbl = ctk.CTkLabel(
+        info_summary_default = "Enthält: {total} Dateien  ({data} Datendateien, {att} Anhänge)  •  Größe: {size:.2f} MB"
+        info_kwargs = {
+            "total": self.zip_info["total_files"],
+            "data": self.zip_info["data_files"],
+            "att": self.zip_info["attachment_files"],
+            "size": mb_size,
+        }
+        sub_lbl = self.register_i18n(ctk.CTkLabel(
             header_card,
-            text=info_str,
+            text=tr("zip_import.info_summary", info_summary_default, **info_kwargs),
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_NOTE_TEXT,
             anchor="w",
-        )
+        ), "zip_import.info_summary", info_summary_default, **info_kwargs)
         sub_lbl.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_10))
-
-        from services.i18n_service import tr
 
         # Selection Mode Selector
         self.register_i18n(ctk.CTkLabel(
@@ -160,8 +157,6 @@ class ZipImportPathDialog(BaseDialog):
             wraplength=ZIP_IMPORT_WARN_WRAPLENGTH,
         ), "zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.")
         warn_lbl.pack(fill="x", pady=(PAD_NONE, PAD_15))
-
-        from services.i18n_service import tr
 
         # Bottom Action Bar
         bottom_bar = ctk.CTkFrame(main_frame, fg_color="transparent")

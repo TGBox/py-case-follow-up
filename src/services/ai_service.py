@@ -20,6 +20,7 @@ from constants import (
     DEFAULT_OLLAMA_URL,
     DEFAULT_PVS_MODEL_NAME,
     GEMINI_API_BASE_URL,
+    GEMINI_FALLBACK_MODELS,
     GEMINI_TIMEOUT_GENERATE,
     GEMINI_TIMEOUT_STATUS,
     OLLAMA_FALLBACK_BASE_MODELS,
@@ -74,8 +75,8 @@ class AiService:
     def active_model_name(self) -> str:
         """Returns active model name depending on provider (OLLAMA vs GEMINI)."""
         if self.provider == "GEMINI":
-            return self.gemini_model or "gemini-3.6-flash"
-        return self.model_name or "qwen3.5:9b"
+            return self.gemini_model or DEFAULT_GEMINI_MODEL
+        return self.model_name or DEFAULT_OLLAMA_MODEL
 
     def check_gemini_status(self, api_key: str | None = None, model: str | None = None) -> tuple[bool, str]:
         """Checks if Google Gemini API key is valid by querying the models list API."""
@@ -187,8 +188,8 @@ class AiService:
                 if resp.status == 200:
                     res_data = json.loads(resp.read().decode("utf-8"))
                     if res_data.get("status") == "success" or "error" not in res_data:
-                        self.model_name = "pvs-support"
-                        return True, f"Modell 'pvs-support' aus '{modelfile_path}' (Basis: {base_model}) erfolgreich erstellt!"
+                        self.model_name = DEFAULT_PVS_MODEL_NAME
+                        return True, f"Modell '{DEFAULT_PVS_MODEL_NAME}' aus '{modelfile_path}' (Basis: {base_model}) erfolgreich erstellt!"
                     return False, f"Erstellung fehlgeschlagen: {res_data.get('error', 'Unbekannter Fehler')}"
         except urllib.error.HTTPError as e:
             try:
@@ -258,7 +259,7 @@ class AiService:
             return None
 
         models_to_try = [self.gemini_model]
-        for fallback in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-pro"]:
+        for fallback in GEMINI_FALLBACK_MODELS:
             if fallback not in models_to_try:
                 models_to_try.append(fallback)
 

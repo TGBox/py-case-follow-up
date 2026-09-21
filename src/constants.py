@@ -451,6 +451,10 @@ TIMELINE_NOTE_WRAP_OFFSET = 120
 #: Horizontal breathing room between a timeline note and the edge of
 #: its column, subtracted from the column width to get the wrap length.
 TIMELINE_NOTE_WRAP_INSET = 12
+#: Timeline notes are shown in full, so the shared highlight-label helper
+#: must not cap them at its usual few lines. A ceiling stays as a guard
+#: against a pathological note blowing up the layout.
+TIMELINE_NOTE_MAX_DISPLAY_LINES = 500
 TOOLBAR_BREAK_WIDTH = 640
 BTN_WIDTH_ACTION_SM = 95
 TOOLTIP_SHORT_DELAY_MS = 250
@@ -707,6 +711,9 @@ COLOR_TEXT_GREEN = "green"
 COLOR_TEXT_ORANGE = "orange"
 COLOR_TEXT_GRAY = "gray"
 COLOR_TEXT_WHITE = "white"
+#: CustomTkinter's own default label colour. Needed wherever a raw tk
+#: widget has to match the CTkLabels around it, which do not expose it.
+COLOR_TEXT_BODY = ("gray10", "#DCE4EE")
 COLOR_TEXT_BLUE = "dodgerblue"
 COLOR_PURPLE_DARK = "darkviolet"
 COLOR_PRIMARY_BLUE = "dodgerblue"
@@ -1588,7 +1595,6 @@ COLOR_DATE_PICKER_STEPPER_TEXT = ("gray20", "gray90")
 COLOR_DATE_PICKER_TIME_MENU = ("dodgerblue", "#1f538d")
 COLOR_DATE_PICKER_TODAY_BG = ("gray80", "gray25")
 COLOR_DATE_PICKER_DAY_HOVER = "royalblue"
-COLOR_DATE_PICKER_DAY_TEXT = ("gray10", "#DCE4EE")
 
 # --- AI Assistant Dialog Tokens ---
 DIALOG_MIN_SIZE_AI_ASSISTANT = (720, 480)

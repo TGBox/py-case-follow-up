@@ -14,6 +14,7 @@ from constants import (
     COLOR_MUTED_LABEL,
     COLOR_PURPLE_DARK,
     COLOR_SUBTITLE_MUTED,
+    COLOR_TEXT_BODY,
     COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_XS,
@@ -28,9 +29,7 @@ from constants import (
     PAD_SM,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
-    TIMELINE_NOTE_WRAP_DEFAULT,
-    TIMELINE_NOTE_WRAP_INSET,
-    TIMELINE_NOTE_WRAP_MIN,
+    TIMELINE_NOTE_MAX_DISPLAY_LINES,
     USER_COLOR_TILE_SIZE,
 )
 from utils.datetime_utils import now_iso, format_german_date, format_german_time
@@ -135,39 +134,26 @@ class TimelineWidget(ctk.CTkFrame):
             self.note_textbox.insert("end", f"{sep}{text}")
 
     @staticmethod
-    def _bind_note_wraplength(note_lbl: ctk.CTkLabel, column) -> None:
-        """Keeps a note label wrapping at the width its column actually has.
+    def _enable_text_selection(note_txt: Any) -> None:
+        """Lets a read-only note be selected and copied.
 
-        wraplength is a pixel value, so it cannot be expressed as "fill the
-        column" - it has to be recomputed whenever the column is resized. The
-        label's own height follows from the wrapped text, which is what makes
-        the note show in full instead of scrolling inside a fixed box.
+        create_highlighted_label leaves the widget disabled and takefocus=0, and
+        Tk's own Button-1 binding only calls focus on a Text whose state is
+        normal. Selecting with the mouse already works while disabled - the
+        selection tag is not an edit - but without focus the Ctrl+C that follows
+        goes somewhere else, so the note could be highlighted and not copied.
         """
-        applied: list[int] = [-1]
-
-        def _fit_wrap(event: Any = None) -> None:
+        def _focus(_event: Any = None) -> None:
             try:
-                if not note_lbl.winfo_exists():
-                    return
-                available = event.width if event is not None else column.winfo_width()
-                if available <= 1:
-                    return
-                wrap = max(TIMELINE_NOTE_WRAP_MIN, available - TIMELINE_NOTE_WRAP_INSET)
-                # Re-wrapping changes the label's height, which resizes the
-                # column and fires this again - only act on a real width change.
-                if wrap != applied[0]:
-                    applied[0] = wrap
-                    note_lbl.configure(wraplength=wrap)
+                note_txt.focus_set()
             except Exception:
                 pass
 
-        column.bind("<Configure>", _fit_wrap, add="+")
-        try:
-            note_lbl.after_idle(_fit_wrap)
-        except Exception:
-            pass
+        note_txt.bind("<Button-1>", _focus, add="+")
 
     def load_timeline(self, entries: list[TimelineEntry]):
+        from utils.ui_utils import bind_mouse_wheel_to_canvas, create_highlighted_label
+
         self.timeline_entries = list(entries)
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
@@ -247,23 +233,25 @@ class TimelineWidget(ctk.CTkFrame):
                 height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
-            # A label, not a textbox: a CTkTextbox is a scrolling viewport, so it
-            # has to be told its height, and every attempt to compute that height
-            # from wrapped-line counts left the last lines hidden behind a
-            # scrollbar-less scroll area. A wrapping label has no viewport - it
-            # requests exactly the height its wrapped text needs, so the card
-            # grows with the note instead of cutting it off.
-            note_lbl = ctk.CTkLabel(
+            # The shared highlight-label helper, because a note has to be both
+            # fully visible and selectable. A CTkLabel cannot be selected and a
+            # CTkTextbox is a scrolling viewport that has to be told its pixel
+            # height - computing that from wrapped lines kept leaving the last
+            # lines hidden. The helper sizes a raw tk.Text in *lines*, which is
+            # the unit Tk itself uses, and re-measures on every resize.
+            note_txt = create_highlighted_label(
                 left_col,
                 text=entry.note,
+                query="",
                 font=ctk.CTkFont(size=FONT_SIZE_BODY),
-                anchor="w",
-                justify="left",
-                wraplength=TIMELINE_NOTE_WRAP_DEFAULT,
+                text_color=COLOR_TEXT_BODY,
+                bg_color=COLOR_CARD_BG,
+                wrap="word",
+                scroll_frame=self.scroll_frame,
+                max_display_lines=TIMELINE_NOTE_MAX_DISPLAY_LINES,
             )
-            note_lbl.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
-
-            self._bind_note_wraplength(note_lbl, left_col)
+            note_txt.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
+            self._enable_text_selection(note_txt)
 
             if entry.status_change:
                 from services.i18n_service import tr
@@ -276,7 +264,6 @@ class TimelineWidget(ctk.CTkFrame):
                 )
                 sc_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 
-        from utils.ui_utils import bind_mouse_wheel_to_canvas
         bind_mouse_wheel_to_canvas(self.scroll_frame)
 
     def on_add_note(self):

@@ -262,13 +262,13 @@ class EmailDraftDialog(BaseDialog):
 
         self.praxis_btn = self.register_i18n(ctk.CTkButton(
             self.to_row,
-            text=tr("email_draft.practice_card_btn", "📇 Praxiskartei ▾"),
+            text=tr("email_draft.practice_card_btn", "Praxiskartei ▾"),
             width=BTN_WIDTH_PRAXISKARTEI,
             height=BTN_HEIGHT_MD,
             fg_color=COLOR_BTN_MANAGE_TAGS,
             hover_color=COLOR_BTN_MANAGE_TAGS_HOVER,
             command=self.toggle_praxiskartei_dropdown,
-        ), "email_draft.practice_card_btn", "📇 Praxiskartei ▾")
+        ), "email_draft.practice_card_btn", "Praxiskartei ▾")
         self.praxis_btn.pack(side="right")
 
         # Expandable Live Autocomplete / Suggestions Card
@@ -287,22 +287,22 @@ class EmailDraftDialog(BaseDialog):
 
         self.suggestions_title = self.register_i18n(ctk.CTkLabel(
             sug_hdr,
-            text=tr("email_draft.suggestions_title", "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):"),
+            text=tr("email_draft.suggestions_title", "Kontakte aus Praxiskartei (Klicken zum Übernehmen):"),
             font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
             anchor="w",
-        ), "email_draft.suggestions_title", "🔍 Kontakte aus Praxiskartei (Klicken zum Übernehmen):")
+        ), "email_draft.suggestions_title", "Kontakte aus Praxiskartei (Klicken zum Übernehmen):")
         self.suggestions_title.pack(side="left", fill="x", expand=True)
 
         self.register_i18n(ctk.CTkButton(
             sug_hdr,
-            text=tr("email_draft.close_btn", "✕ Schließen"),
+            text=tr("email_draft.close_btn", "Schließen"),
             width=BTN_WIDTH_SUGGESTION_CLOSE,
             height=BTN_HEIGHT_SUGGESTION_CLOSE,
             font=ctk.CTkFont(size=FONT_SIZE_XS),
             fg_color=COLOR_BTN_GRAY,
             hover_color=COLOR_BTN_GRAY_HOVER,
             command=self.hide_suggestions,
-        ), "email_draft.close_btn", "✕ Schließen").pack(side="right")
+        ), "email_draft.close_btn", "Schließen").pack(side="right")
 
         self.suggestions_scroll = ctk.CTkScrollableFrame(
             self.suggestions_frame,
@@ -327,7 +327,7 @@ class EmailDraftDialog(BaseDialog):
         if self.snippet_service:
             self.register_i18n(ctk.CTkButton(
                 body_hdr_row,
-                text=tr("email_draft.snippet_btn", "🧩 Textbaustein"),
+                text=tr("email_draft.snippet_btn", "Textbaustein"),
                 width=BTN_WIDTH_CHOOSE_FILE,
                 height=BTN_HEIGHT_PILL,
                 fg_color=COLOR_BTN_SECONDARY,
@@ -400,30 +400,30 @@ class EmailDraftDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             btn_box,
-            text=tr("email_draft.open_mailto", "✉ In Standard-Mail-App öffnen"),
+            text=tr("email_draft.open_mailto", "In Standard-Mail-App öffnen"),
             fg_color=COLOR_TOAST_BORDER,
             hover_color=COLOR_TOAST_BTN_HOVER,
             command=self.on_open_mailto,
             height=BTN_HEIGHT_LG,
-        ), "email_draft.open_mailto", "✉ In Standard-Mail-App öffnen").pack(side="left", padx=(0, PAD_MD))
+        ), "email_draft.open_mailto", "In Standard-Mail-App öffnen").pack(side="left", padx=(0, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             btn_box,
-            text=tr("email_draft.transfer_outlook", "📬 In Outlook übertragen"),
+            text=tr("email_draft.transfer_outlook", "In Outlook übertragen"),
             fg_color=COLOR_OUTLOOK_BLUE,
             hover_color=COLOR_OUTLOOK_HOVER,
             command=self.on_transfer_to_outlook,
             height=BTN_HEIGHT_LG,
-        ), "email_draft.transfer_outlook", "📬 In Outlook übertragen").pack(side="left", padx=(0, PAD_MD))
+        ), "email_draft.transfer_outlook", "In Outlook übertragen").pack(side="left", padx=(0, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             btn_box,
-            text=tr("ui_buttons.copy_clipboard", "📋 In Zwischenablage kopieren"),
+            text=tr("ui_buttons.copy_clipboard", "In Zwischenablage kopieren"),
             fg_color=COLOR_BTN_MANAGE_TAGS,
             hover_color=COLOR_BTN_MANAGE_TAGS_HOVER,
             command=self.on_copy_text,
             height=BTN_HEIGHT_LG,
-        ), "ui_buttons.copy_clipboard", "📋 In Zwischenablage kopieren").pack(side="left")
+        ), "ui_buttons.copy_clipboard", "In Zwischenablage kopieren").pack(side="left")
 
         self.register_i18n(ctk.CTkButton(
             btn_box,

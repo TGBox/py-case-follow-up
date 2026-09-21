@@ -94,7 +94,7 @@ class CobraImportDialog(BaseDialog):
         self.file_entry = self.register_i18n(ctk.CTkEntry(f_row, placeholder_text=tr("cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...")), "cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...", attr="placeholder_text")
         self.file_entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_MD))
 
-        self.register_i18n(ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=BTN_WIDTH_BROWSE, command=self.on_browse_file), "cobra_import.browse_btn", "📁 Durchsuchen...").pack(side="right")
+        self.register_i18n(ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "Durchsuchen..."), width=BTN_WIDTH_BROWSE, command=self.on_browse_file), "cobra_import.browse_btn", "Durchsuchen...").pack(side="right")
 
         # Scrollable Content Box for Mapping & Preview
         from utils.ui_utils import enable_auto_hiding_scrollbar
@@ -132,12 +132,12 @@ class CobraImportDialog(BaseDialog):
 
         self.import_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
-            text=tr("cobra_import.import_btn", "🐍 Praxen importieren"),
+            text=tr("cobra_import.import_btn", "Praxen importieren"),
             fg_color=COLOR_SUCCESS,
             hover_color=COLOR_SUCCESS_HOVER,
             command=self.on_click_import,
             state="disabled",
-        ), "cobra_import.import_btn", "🐍 Praxen importieren")
+        ), "cobra_import.import_btn", "Praxen importieren")
         self.import_btn.pack(side="right", padx=(PAD_GAP, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color=COLOR_BTN_GRAY, command=self.destroy, width=BTN_WIDTH_CANCEL), "common.cancel", "Abbrechen").pack(side="right")

@@ -181,14 +181,14 @@ class ExportDialog(BaseDialog):
         btn_manage = self.register_i18n(
             ctk.CTkButton(
                 tpl_frame,
-                text=tr("export_dialog.manage_templates_btn", "🛠 Vorlagen verwalten"),
+                text=tr("export_dialog.manage_templates_btn", "Vorlagen verwalten"),
                 command=self.on_open_template_manager,
                 width=BTN_WIDTH_LG,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
             ),
             "export_dialog.manage_templates_btn",
-            "🛠 Vorlagen verwalten",
+            "Vorlagen verwalten",
         )
         btn_manage.pack(side="right", padx=(PAD_SM, PAD_NONE))
 
@@ -297,40 +297,40 @@ class ExportDialog(BaseDialog):
         self.register_i18n(
             ctk.CTkButton(
                 print_btn_frame,
-                text=tr("ui_buttons.print_pdf", "🖨 PDF-Bericht drucken"),
+                text=tr("ui_buttons.print_pdf", "PDF-Bericht drucken"),
                 fg_color=COLOR_SUCCESS,
                 hover_color=COLOR_SUCCESS_HOVER,
                 command=self.generate_and_print_pdf,
                 width=BTN_WIDTH_XL,
             ),
             "ui_buttons.print_pdf",
-            "🖨 PDF-Bericht drucken",
+            "PDF-Bericht drucken",
         ).pack(side="right", padx=(PAD_SM, PAD_NONE))
 
         self.register_i18n(
             ctk.CTkButton(
                 print_btn_frame,
-                text=tr("case_print.html_report_btn", "🌐 HTML-Bericht"),
+                text=tr("case_print.html_report_btn", "HTML-Bericht"),
                 fg_color=COLOR_PRIMARY,
                 hover_color=COLOR_PRIMARY_HOVER,
                 command=self.generate_and_open_html,
                 width=BTN_WIDTH_LG,
             ),
             "case_print.html_report_btn",
-            "🌐 HTML-Bericht",
+            "HTML-Bericht",
         ).pack(side="right", padx=(PAD_SM, PAD_NONE))
 
         self.register_i18n(
             ctk.CTkButton(
                 print_btn_frame,
-                text=tr("case_print.save_btn", "💾 Speichern..."),
+                text=tr("case_print.save_btn", "Speichern..."),
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
                 command=self.generate_and_save_file,
                 width=BTN_WIDTH_MD,
             ),
             "case_print.save_btn",
-            "💾 Speichern...",
+            "Speichern...",
         ).pack(side="right")
 
     # ------------------------------------------------------------------ #

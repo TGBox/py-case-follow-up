@@ -284,9 +284,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             frame = ctk.CTkFrame(win, fg_color=COLOR_SPLASH_BG, border_width=1, border_color=COLOR_SPLASH_BORDER)
             frame.pack(fill="both", expand=True)
 
-            self.splash_title_lbl = ctk.CTkLabel(frame, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=FONT_SIZE_SPLASH, weight="bold"), text_color=COLOR_SPLASH_BORDER)
+            self.splash_title_lbl = ctk.CTkLabel(frame, text=tr("splash.title", "Support-Cockpit"), font=ctk.CTkFont(size=FONT_SIZE_SPLASH, weight="bold"), text_color=COLOR_SPLASH_BORDER)
             self.splash_title_lbl.pack(pady=PAD_SPLASH_TITLE)
-            self.splash_msg_lbl = ctk.CTkLabel(frame, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=FONT_SIZE_BODY), text_color=COLOR_MUTED_LABEL)
+            self.splash_msg_lbl = ctk.CTkLabel(frame, text=tr("splash.loading", "Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=FONT_SIZE_BODY), text_color=COLOR_MUTED_LABEL)
             self.splash_msg_lbl.pack()
 
             win.deiconify()
@@ -368,7 +368,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         menu_frame = self.menu_frame
 
         # App Title
-        ctk.CTkLabel(menu_frame, text=tr("menu.title", " 🩺 Support-Cockpit "), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")).pack(side="left", padx=PAD_LG, pady=PAD_SM)
+        ctk.CTkLabel(menu_frame, text=tr("menu.title", "Support-Cockpit"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")).pack(side="left", padx=PAD_LG, pady=PAD_SM)
 
         # Layout Switcher
         ctk.CTkLabel(menu_frame, text=tr("menu.layout", "Layout:")).pack(side="left", padx=(PAD_LG, PAD_CONTAINER), pady=PAD_SM)
@@ -402,7 +402,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self._on_vorlagen_selected,
             width=COMBO_WIDTH_VORLAGEN,
         )
-        self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
+        self.vorlagen_combo.set(tr("menu.templates", "⎘ Vorlagen & Formulare"))
         self.vorlagen_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Grouped Dropdown 3: Datenaustausch
@@ -412,15 +412,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self._on_datenaustausch_selected,
             width=COMBO_WIDTH_DATENAUSTAUSCH,
         )
-        self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
+        self.datenaustausch_combo.set(tr("menu.data_exchange", "⇄ Datenaustausch"))
         self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Right side: User, Bell Badge, Help, Theme & Quit
         quit_btn = ctk.CTkButton(
             menu_frame,
-            text=tr("menu.quit", "Beenden"),
-            image=get_icon(ICON_KEY_QUIT, size=ICON_SIZE_HEADER),
-            compound="left",
+            text=tr("menu.quit", "✕ Beenden"),
             command=self.on_quit_app,
             width=BTN_WIDTH_QUIT,
             fg_color=COLOR_QUIT_BTN,
@@ -430,9 +428,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         theme_btn = ctk.CTkButton(
             menu_frame,
-            text=tr("menu.theme", "Theme"),
-            image=get_icon(ICON_KEY_THEME, size=ICON_SIZE_HEADER),
-            compound="left",
+            text=tr("menu.theme", "◑ Theme"),
             command=self.toggle_theme,
             width=BTN_WIDTH_SM,
             fg_color=COLOR_THEME_BTN,
@@ -442,8 +438,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.help_btn = ctk.CTkButton(
             menu_frame,
             text=tr("common.help_btn", "Hilfe"),
-            image=get_icon(ICON_KEY_HELP, size=ICON_SIZE_HEADER),
-            compound="left",
             command=self.open_help_dialog,
             width=BTN_WIDTH_HELP,
             fg_color=COLOR_MUTED_GRAY_FG,
@@ -454,13 +448,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.bell_btn = ctk.CTkButton(
             menu_frame,
             text="0",
-            image=get_icon(
-                ICON_KEY_BELL,
-                size=ICON_SIZE_HEADER,
-                light_color=COLOR_ICON_WHITE,
-                dark_color=COLOR_ICON_WHITE,
-            ),
-            compound="left",
             command=self.open_followup_flyout,
             width=BTN_WIDTH_XS,
             fg_color=COLOR_BELL_BTN,
@@ -470,9 +457,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         self.user_btn = ctk.CTkButton(
             menu_frame,
-            text=f"{self.profile.user.name}",
-            image=get_icon(ICON_KEY_USER, size=ICON_SIZE_HEADER),
-            compound="left",
+            text=f"👤 {self.profile.user.name}",
             font=ctk.CTkFont(weight="bold"),
             command=self.open_profile_settings_dialog,
             width=BTN_WIDTH_USER,
@@ -485,37 +470,55 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def _on_stammdaten_selected(self, choice: str):
         from services.i18n_service import tr
         self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
-        if choice.startswith("🏥"):
+        options = get_localized_menu_options_stammdaten()
+        try:
+            idx = options.index(choice)
+        except ValueError:
+            idx = -1
+
+        if idx == 0 or choice.startswith("🏥") or "prax" in choice.lower():
             self.open_customer_management_dialog()
-        elif choice.startswith("👥"):
+        elif idx == 1 or choice.startswith("👥") or "mitarbeiter" in choice.lower() or "colleague" in choice.lower():
             self.open_colleague_management_dialog()
-        elif choice.startswith("🧩"):
+        elif idx == 2 or choice.startswith("🧩") or "programm" in choice.lower() or "module" in choice.lower():
             self.open_module_tag_management_dialog()
-        elif choice.startswith("🏷"):
+        elif idx == 3 or choice.startswith("🏷") or "tag" in choice.lower():
             self.open_tag_management_dialog(initial_tab="tags")
 
     def _on_vorlagen_selected(self, choice: str):
         from services.i18n_service import tr
-        self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
-        if choice.startswith("🛠"):
+        self.vorlagen_combo.set(tr("menu.templates", "⎘ Vorlagen & Formulare"))
+        options = get_localized_menu_options_vorlagen()
+        try:
+            idx = options.index(choice)
+        except ValueError:
+            idx = -1
+
+        if idx == 0 or choice.startswith("🛠") or "formular" in choice.lower() or "form" in choice.lower():
             self.open_schema_builder_dialog()
-        elif choice.startswith("📄"):
+        elif idx == 1 or choice.startswith("📄") or "vorlage" in choice.lower() or "template" in choice.lower():
             self.open_template_manager_dialog()
-        elif choice.startswith("📝"):
+        elif idx == 2 or choice.startswith("📝") or "textbaustein" in choice.lower() or "snippet" in choice.lower():
             self.open_snippet_management_dialog()
 
     def _on_datenaustausch_selected(self, choice: str):
         from services.i18n_service import tr
-        self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
-        if choice.startswith("📥"):
+        self.datenaustausch_combo.set(tr("menu.data_exchange", "⇄ Datenaustausch"))
+        options = get_localized_menu_options_datenaustausch()
+        try:
+            idx = options.index(choice)
+        except ValueError:
+            idx = -1
+
+        if idx == 0 or choice.startswith("📥") or "e-mail" in choice.lower() or "email" in choice.lower():
             self.open_email_import_dialog()
-        elif choice.startswith("🐍"):
+        elif idx == 1 or choice.startswith("🐍") or "cobra" in choice.lower():
             self.open_cobra_import_dialog()
-        elif choice.startswith("📤"):
+        elif idx == 2 or choice.startswith("📤") or "export" in choice.lower():
             self.open_export_dialog(self.active_case)
-        elif choice.startswith("📦"):
+        elif idx == 3 or choice.startswith("📦") or "zip" in choice.lower() or "backup" in choice.lower():
             self.open_zip_export_dialog()
-        elif choice.startswith("🔄"):
+        elif idx == 4 or choice.startswith("🔄") or "p2p" in choice.lower() or "sync" in choice.lower():
             self.open_p2p_dialog()
 
     def get_filtered_cases(self) -> list[Case]:
@@ -743,9 +746,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if btn is not None:
             from services.i18n_service import tr
             if show_demo:
-                btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color=COLOR_BOARD_REMIND)
+                btn.configure(text=tr("menu.demo_on", "Beispieldaten: AN"), fg_color=COLOR_BOARD_REMIND)
             else:
-                btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color=COLOR_COMPLETED_GRAY)
+                btn.configure(text=tr("menu.demo_off", "Beispieldaten: AUS"), fg_color=COLOR_COMPLETED_GRAY)
 
         self.check_due_followups()
 

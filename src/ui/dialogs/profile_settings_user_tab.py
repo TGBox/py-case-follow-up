@@ -98,13 +98,13 @@ class UserSettingsTabMixin:
         self.btn_new_prof = self.register_i18n(
             ctk.CTkButton(
                 prof_frame,
-                text=tr("profile.btn_new_profile", "➕ Neues Profil"),
+                text=tr("profile.btn_new_profile", "Neues Profil"),
                 command=self.open_create_profile_dialog,
                 fg_color=COLOR_SUCCESS,
                 width=BTN_WIDTH_LG,
             ),
             "profile.btn_new_profile",
-            "➕ Neues Profil",
+            "Neues Profil",
         )
         self.btn_new_prof.pack(side="left")
 
@@ -237,7 +237,7 @@ class UserSettingsTabMixin:
         self.btn_save_sig = self.register_i18n(
             ctk.CTkButton(
                 sig_btn_frame,
-                text=tr("profile.btn_export_signature", "💾 Signatur speichern..."),
+                text=tr("profile.btn_export_signature", "Signatur speichern..."),
                 command=self.on_export_signature,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
@@ -245,14 +245,14 @@ class UserSettingsTabMixin:
                 width=BTN_WIDTH_SIGNATURE,
             ),
             "profile.btn_export_signature",
-            "💾 Signatur speichern...",
+            "Signatur speichern...",
         )
         self.btn_save_sig.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.btn_load_sig = self.register_i18n(
             ctk.CTkButton(
                 sig_btn_frame,
-                text=tr("profile.btn_import_signature", "📂 Signatur laden..."),
+                text=tr("profile.btn_import_signature", "Signatur laden..."),
                 command=self.on_import_signature,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
@@ -260,7 +260,7 @@ class UserSettingsTabMixin:
                 width=BTN_WIDTH_SIGNATURE,
             ),
             "profile.btn_import_signature",
-            "📂 Signatur laden...",
+            "Signatur laden...",
         )
         self.btn_load_sig.pack(side="left")
 
@@ -275,14 +275,14 @@ class UserSettingsTabMixin:
         self.btn_open_p2p = self.register_i18n(
             ctk.CTkButton(
                 left_col,
-                text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."),
+                text=tr("profile.btn_open_p2p_sync", "P2P-Sync öffnen..."),
                 command=self.on_open_p2p_sync_dialog,
                 fg_color=COLOR_PRIMARY,
                 hover_color=COLOR_PRIMARY_HOVER,
                 width=ENTRY_WIDTH_COMPACT,
             ),
             "profile.btn_open_p2p_sync",
-            "🔄 P2P-Sync öffnen...",
+            "P2P-Sync öffnen...",
         )
         self.btn_open_p2p.grid(row=13, column=0, sticky="w", padx=(PAD_NONE, PAD_SM), pady=(PAD_NONE, PAD_SM))
 
@@ -605,7 +605,7 @@ class UserSettingsTabMixin:
         if hasattr(self, "active_prof_lbl"):
             self.active_prof_lbl.configure(text=tr("profile.active_profile", "Aktives Profil:"))
         if hasattr(self, "btn_new_prof"):
-            self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "➕ Neues Profil anlegen"))
+            self.btn_new_prof.configure(text=tr("profile.btn_new_profile", "Neues Profil anlegen"))
         if hasattr(self, "user_details_hdr_lbl"):
             self.user_details_hdr_lbl.configure(text=tr("profile.user_info_header", "Benutzerinformationen (Aktives Profil)"))
         if hasattr(self, "user_name_lbl"):
@@ -621,15 +621,15 @@ class UserSettingsTabMixin:
         if hasattr(self, "sig_lbl"):
             self.sig_lbl.configure(text=tr("profile.signature", "E-Mail Signatur (für E-Mail-Entwürfe):"))
         if hasattr(self, "btn_save_sig"):
-            self.btn_save_sig.configure(text=tr("profile.btn_export_signature", "💾 Signatur speichern..."))
+            self.btn_save_sig.configure(text=tr("profile.btn_export_signature", "Signatur speichern..."))
         if hasattr(self, "btn_load_sig"):
-            self.btn_load_sig.configure(text=tr("profile.btn_import_signature", "📂 Signatur laden..."))
+            self.btn_load_sig.configure(text=tr("profile.btn_import_signature", "Signatur laden..."))
         if hasattr(self, "p2p_hdr_lbl"):
             self.p2p_hdr_lbl.configure(text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"))
         if hasattr(self, "p2p_desc_lbl"):
             self.p2p_desc_lbl.configure(text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."))
         if hasattr(self, "btn_open_p2p"):
-            self.btn_open_p2p.configure(text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."))
+            self.btn_open_p2p.configure(text=tr("profile.btn_open_p2p_sync", "P2P-Sync öffnen..."))
         if hasattr(self, "color_marker_hdr_lbl"):
             self.color_marker_hdr_lbl.configure(text=tr("profile.color_marker_header", "Persönliche Farbmarkierung"))
         if hasattr(self, "color_marker_switch"):

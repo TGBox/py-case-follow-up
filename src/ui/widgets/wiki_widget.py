@@ -54,7 +54,7 @@ class WikiWidget(ctk.CTkFrame):
 
         self.sync_btn = ctk.CTkButton(
             top_frame,
-            text=tr("wiki.sync_btn", "🔄 Wiki Sync"),
+            text=tr("wiki.sync_btn", "Wiki Sync"),
             command=self.on_sync_wiki,
             width=BTN_WIDTH_WIKI_SYNC,
         )
@@ -66,7 +66,7 @@ class WikiWidget(ctk.CTkFrame):
 
         self.search_entry = ctk.CTkEntry(
             search_frame,
-            placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."),
+            placeholder_text=tr("wiki.search_placeholder", "Wiki durchsuchen (z. B. ERR_DB_902)..."),
         )
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
@@ -89,9 +89,9 @@ class WikiWidget(ctk.CTkFrame):
         if hasattr(self, "hdr_lbl"):
             self.hdr_lbl.configure(text=tr("wiki.header", "BookStack Offline Wiki"))
         if hasattr(self, "sync_btn"):
-            self.sync_btn.configure(text=tr("wiki.sync_btn", "🔄 Wiki Sync"))
+            self.sync_btn.configure(text=tr("wiki.sync_btn", "Wiki Sync"))
         if hasattr(self, "search_entry"):
-            self.search_entry.configure(placeholder_text=tr("wiki.search_placeholder", "📖 Wiki durchsuchen (z. B. ERR_DB_902)..."))
+            self.search_entry.configure(placeholder_text=tr("wiki.search_placeholder", "Wiki durchsuchen (z. B. ERR_DB_902)..."))
         if hasattr(self, "search_entry") and self.search_entry.get().strip():
             self.on_search()
         elif hasattr(self, "status_label"):

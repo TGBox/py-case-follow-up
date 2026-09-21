@@ -168,12 +168,12 @@ def test_refresh_ui_labels_shows_internal_task_label_for_internal_case(cockpit):
 
 def test_refresh_ui_labels_updates_more_actions_dropdown_and_toolbar_buttons(cockpit):
     cockpit.refresh_ui_labels()
-    assert cockpit.more_actions_combo.get() == tr("cockpit.more_actions", "⚙ Weitere Aktionen...")
-    assert cockpit.email_btn.cget("text") == tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI")
-    assert cockpit.cal_btn.cget("text") == tr("cockpit.calendar", "📅 Kalender")
-    assert cockpit.followup_btn.cget("text") == tr("cockpit.followup", "🔔 Wiedervorlage")
-    assert cockpit.save_btn.cget("text") == tr("cockpit.save", "💾 Speichern")
-    assert cockpit.archive_btn.cget("text") == tr("cockpit.archive", "📦 Archivieren")
+    assert cockpit.more_actions_combo.get() == tr("cockpit.more_actions", "Weitere Aktionen...")
+    assert cockpit.email_btn.cget("text") == tr("cockpit.email_ai", "E-Mail & KI")
+    assert cockpit.cal_btn.cget("text") == tr("cockpit.calendar", "Kalender")
+    assert cockpit.followup_btn.cget("text") == tr("cockpit.followup", "Wiedervorlage")
+    assert cockpit.save_btn.cget("text") == tr("cockpit.save", "Speichern")
+    assert cockpit.archive_btn.cget("text") == tr("cockpit.archive", "Archivieren")
 
 
 def test_actor_combo_and_complete_btn_in_toolbar(cockpit):

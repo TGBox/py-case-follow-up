@@ -124,21 +124,21 @@ class ZipImportPathDialog(BaseDialog):
 
         self.btn_mode_root = self.register_i18n(ctk.CTkButton(
             mode_frame,
-            text=tr("zip_import.root_folder_btn", "📁 Gesamt-Zielordner wählen"),
+            text=tr("zip_import.root_folder_btn", "Gesamt-Zielordner wählen"),
             command=self.set_mode_root,
             fg_color=COLOR_PRIMARY_BLUE,
             width=BTN_WIDTH_ZIP_MODE,
-        ), "zip_import.root_folder_btn", "📁 Gesamt-Zielordner wählen")
+        ), "zip_import.root_folder_btn", "Gesamt-Zielordner wählen")
         self.btn_mode_root.pack(side="left", padx=(PAD_NONE, PAD_10))
 
         self.btn_mode_custom = self.register_i18n(ctk.CTkButton(
             mode_frame,
-            text=tr("zip_import.custom_paths_btn", "⚙ Einzelne Pfade anpassen"),
+            text=tr("zip_import.custom_paths_btn", "Einzelne Pfade anpassen"),
             command=self.set_mode_custom,
             fg_color=COLOR_BTN_CANCEL,
             hover_color=COLOR_BTN_CANCEL_HOVER,
             width=BTN_WIDTH_ZIP_MODE,
-        ), "zip_import.custom_paths_btn", "⚙ Einzelne Pfade anpassen")
+        ), "zip_import.custom_paths_btn", "Einzelne Pfade anpassen")
         self.btn_mode_custom.pack(side="left")
 
         # Destination Paths Inputs Frame
@@ -150,12 +150,12 @@ class ZipImportPathDialog(BaseDialog):
         # Status / Warning Info
         warn_lbl = self.register_i18n(ctk.CTkLabel(
             main_frame,
-            text=tr("zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben."),
+            text=tr("zip_import.warning_overwrite", "Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben."),
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_WARNING_NOTE,
             anchor="w",
             wraplength=ZIP_IMPORT_WARN_WRAPLENGTH,
-        ), "zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.")
+        ), "zip_import.warning_overwrite", "Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.")
         warn_lbl.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
         # Bottom Action Bar
@@ -173,12 +173,12 @@ class ZipImportPathDialog(BaseDialog):
 
         self.register_i18n(ctk.CTkButton(
             bottom_bar,
-            text=tr("zip_import.unpack_btn", "📥 Daten entpacken & importieren"),
+            text=tr("zip_import.unpack_btn", "Daten entpacken & importieren"),
             command=self.on_confirm,
             fg_color=COLOR_SUCCESS,
             width=BTN_WIDTH_WIDE,
             font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD),
-        ), "zip_import.unpack_btn", "📥 Daten entpacken & importieren").pack(side="right")
+        ), "zip_import.unpack_btn", "Daten entpacken & importieren").pack(side="right")
 
     def set_mode_root(self):
         self.mode = "root"

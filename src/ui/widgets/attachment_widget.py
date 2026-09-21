@@ -71,7 +71,7 @@ class AttachmentWidget(ctk.CTkFrame):
         self.hdr_lbl = ctk.CTkLabel(top_frame, text=tr("attachments.title", "Fall-Dateianhänge"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight=FONT_WEIGHT_BOLD))
         self.hdr_lbl.pack(side="left")
 
-        self.open_exp_btn = ctk.CTkButton(top_frame, text=tr("attachments.open_explorer", "📁 Explorer öffnen"), command=self.on_open_explorer, width=BTN_WIDTH_OPEN_EXPLORER)
+        self.open_exp_btn = ctk.CTkButton(top_frame, text=tr("attachments.open_explorer", "Explorer öffnen"), command=self.on_open_explorer, width=BTN_WIDTH_OPEN_EXPLORER)
         self.open_exp_btn.pack(side="right")
 
         # Scrollable file list
@@ -92,14 +92,14 @@ class AttachmentWidget(ctk.CTkFrame):
         self.add_file_btn = ctk.CTkButton(btn_frame, text=tr("attachments.add_file", "+ Datei hinzufügen..."), command=self.on_add_file, width=BTN_WIDTH_ADD_FILE)
         self.add_file_btn.pack(side="left")
 
-        self.tip_lbl = ctk.CTkLabel(btn_frame, text=tr("attachments.tip", "💡 Tipp: Strg+V fügt Screenshot als PNG ein"), font=ctk.CTkFont(size=FONT_SIZE_XS), text_color=COLOR_TIP_TEXT)
+        self.tip_lbl = ctk.CTkLabel(btn_frame, text=tr("attachments.tip", "Tipp: Strg+V fügt Screenshot als PNG ein"), font=ctk.CTkFont(size=FONT_SIZE_XS), text_color=COLOR_TIP_TEXT)
         self.tip_lbl.pack(side="right")
 
     def refresh_ui_labels(self):
         if hasattr(self, "hdr_lbl"):
             self.hdr_lbl.configure(text=tr("attachments.title", "Fall-Dateianhänge"))
         if hasattr(self, "open_exp_btn"):
-            self.open_exp_btn.configure(text=tr("attachments.open_explorer", "📁 Explorer öffnen"))
+            self.open_exp_btn.configure(text=tr("attachments.open_explorer", "Explorer öffnen"))
         plbl = getattr(self, "preview_label", None)
         if plbl is not None:
             try:

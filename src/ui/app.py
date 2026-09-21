@@ -61,7 +61,9 @@ from constants import (
     HOURLY_SCORING_INTERVAL_SECONDS,
     MENU_BAR_HEIGHT,
     OPEN_CASE_POLL_INTERVAL_MS,
+    PAD_3,
     PAD_CONTAINER,
+    PAD_GAP,
     PAD_LG,
     PAD_MD,
     PAD_SM,
@@ -372,7 +374,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         # Action Buttons
         new_btn = ctk.CTkButton(menu_frame, text=tr("menu.new_case", "+ Neuer Fall (Strg+N)"), command=self.open_new_case_dialog, width=BTN_WIDTH_NEW_CASE, fg_color=COLOR_SUCCESS)
-        new_btn.pack(side="left", padx=3, pady=PAD_SM)
+        new_btn.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
@@ -382,7 +384,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             width=COMBO_WIDTH_STAMMDATEN,
         )
         self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
-        self.stammdaten_combo.pack(side="left", padx=3, pady=PAD_SM)
+        self.stammdaten_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
@@ -392,7 +394,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             width=COMBO_WIDTH_VORLAGEN,
         )
         self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
-        self.vorlagen_combo.pack(side="left", padx=3, pady=PAD_SM)
+        self.vorlagen_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
@@ -402,11 +404,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             width=COMBO_WIDTH_DATENAUSTAUSCH,
         )
         self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
-        self.datenaustausch_combo.pack(side="left", padx=3, pady=PAD_SM)
+        self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
         # Right side: User, Bell Badge, Help, Theme & Quit
         quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=BTN_WIDTH_QUIT, fg_color=COLOR_QUIT_BTN, hover_color=COLOR_QUIT_BTN_HOVER)
-        quit_btn.pack(side="right", padx=6, pady=PAD_SM)
+        quit_btn.pack(side="right", padx=PAD_GAP, pady=PAD_SM)
 
         theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=BTN_WIDTH_SM, fg_color=COLOR_THEME_BTN)
         theme_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
@@ -441,7 +443,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             text_color=COLOR_USER_BTN_TEXT,
             hover_color=COLOR_USER_BTN_HOVER,
         )
-        self.user_btn.pack(side="right", padx=6, pady=PAD_SM)
+        self.user_btn.pack(side="right", padx=PAD_GAP, pady=PAD_SM)
 
     def _on_stammdaten_selected(self, choice: str):
         from services.i18n_service import tr

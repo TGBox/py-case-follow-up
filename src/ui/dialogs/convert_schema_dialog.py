@@ -6,7 +6,33 @@ from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
 from enums import Channel
 from utils.datetime_utils import now_iso
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_WIDTH_CONVERT_SCHEMA,
+    BTN_WIDTH_MD,
+    COLOR_BTN_NEUTRAL,
+    COLOR_CARD_ALT_BG,
+    COLOR_NOTICE_INFO_BG,
+    COLOR_PRIMARY,
+    COLOR_PRIMARY_HOVER,
+    COLOR_TEXT_GRAY,
+    COLOR_TEXT_RED,
+    CONVERT_NOTICE_WRAPLENGTH,
+    DIALOG_DIMENSIONS,
+    DIALOG_TITLES,
+    FONT_SIZE_BODY,
+    FONT_SIZE_CONFIRM,
+    FONT_SIZE_HEADER_BAR,
+    FONT_SIZE_SM,
+    PAD_10,
+    PAD_15,
+    PAD_2XL,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+)
 
 
 class ConvertSchemaDialog(BaseDialog):
@@ -43,45 +69,45 @@ class ConvertSchemaDialog(BaseDialog):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=PAD_2XL, pady=PAD_2XL)
 
         from services.i18n_service import tr
 
         # Header
         self.register_i18n(ctk.CTkLabel(
-            main_frame, text=tr("convert_schema.header", "🔄 Formular-Schema umwandeln"), font=ctk.CTkFont(size=16, weight="bold")
-        ), "convert_schema.header", "🔄 Formular-Schema umwandeln").pack(anchor="w", pady=(0, 10))
+            main_frame, text=tr("convert_schema.header", "🔄 Formular-Schema umwandeln"), font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight="bold")
+        ), "convert_schema.header", "🔄 Formular-Schema umwandeln").pack(anchor="w", pady=(PAD_NONE, PAD_10))
 
         # Case info
         curr_schema_name = self.current_schema.display_name if self.current_schema else self.case.classification.schema_id
-        info_box = ctk.CTkFrame(main_frame, fg_color=("gray90", "gray20"))
-        info_box.pack(fill="x", pady=(0, 12), padx=2)
+        info_box = ctk.CTkFrame(main_frame, fg_color=COLOR_CARD_ALT_BG)
+        info_box.pack(fill="x", pady=(PAD_NONE, PAD_LG), padx=PAD_XS)
 
         info_inner = ctk.CTkFrame(info_box, fg_color="transparent")
-        info_inner.pack(fill="x", padx=10, pady=8)
+        info_inner.pack(fill="x", padx=PAD_10, pady=PAD_MD)
 
         ctk.CTkLabel(
             info_inner,
             text=f"Fall-ID: {self.case.case_id} — {self.case.classification.title}",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
             anchor="w",
         ).pack(fill="x")
 
         ctk.CTkLabel(
             info_inner,
             text=f"Aktuelles Formular: {curr_schema_name}",
-            text_color="gray",
+            text_color=COLOR_TEXT_GRAY,
             anchor="w",
-        ).pack(fill="x", pady=(2, 0))
+        ).pack(fill="x", pady=(PAD_XS, PAD_NONE))
 
         # Target Schema selection
         self.register_i18n(ctk.CTkLabel(
-            main_frame, text=tr("convert_schema.select_target", "Neues Ziel-Formular auswählen:"), font=ctk.CTkFont(size=13, weight="bold")
-        ), "convert_schema.select_target", "Neues Ziel-Formular auswählen:").pack(anchor="w", pady=(4, 2))
+            main_frame, text=tr("convert_schema.select_target", "Neues Ziel-Formular auswählen:"), font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight="bold")
+        ), "convert_schema.select_target", "Neues Ziel-Formular auswählen:").pack(anchor="w", pady=(PAD_SM, PAD_XS))
 
         schema_options = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
         self.schema_combo = ctk.CTkOptionMenu(main_frame, values=schema_options if schema_options else ["Keine Schemas"])
-        self.schema_combo.pack(fill="x", pady=(0, 12))
+        self.schema_combo.pack(fill="x", pady=(PAD_NONE, PAD_LG))
 
         # Pre-select first non-current schema if available
         if self.other_schemas:
@@ -89,8 +115,8 @@ class ConvertSchemaDialog(BaseDialog):
             self.schema_combo.set(target_default)
 
         # Info Box about data preservation
-        notice_frame = ctk.CTkFrame(main_frame, fg_color=("lightblue", "#1e293b"))
-        notice_frame.pack(fill="x", pady=(0, 15))
+        notice_frame = ctk.CTkFrame(main_frame, fg_color=COLOR_NOTICE_INFO_BG)
+        notice_frame.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
         notice_text = (
             "ℹ Datensicherung:\n"
@@ -99,27 +125,27 @@ class ConvertSchemaDialog(BaseDialog):
             "Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
         )
         ctk.CTkLabel(
-            notice_frame, text=notice_text, font=ctk.CTkFont(size=11), justify="left", wraplength=460
-        ).pack(padx=10, pady=8, anchor="w")
+            notice_frame, text=notice_text, font=ctk.CTkFont(size=FONT_SIZE_SM), justify="left", wraplength=CONVERT_NOTICE_WRAPLENGTH
+        ).pack(padx=PAD_10, pady=PAD_MD, anchor="w")
 
-        self.error_label = ctk.CTkLabel(main_frame, text="", text_color="red")
-        self.error_label.pack(anchor="w", pady=(0, 5))
+        self.error_label = ctk.CTkLabel(main_frame, text="", text_color=COLOR_TEXT_RED)
+        self.error_label.pack(anchor="w", pady=(PAD_NONE, PAD_CONTAINER))
 
         # Bottom Buttons
         btn_row = ctk.CTkFrame(main_frame, fg_color="transparent")
         btn_row.pack(fill="x", side="bottom")
 
         self.register_i18n(ctk.CTkButton(
-            btn_row, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.destroy, width=110
+            btn_row, text=tr("common.cancel", "Abbrechen"), fg_color=COLOR_BTN_NEUTRAL, command=self.destroy, width=BTN_WIDTH_MD
         ), "common.cancel", "Abbrechen").pack(side="left")
 
         self.register_i18n(ctk.CTkButton(
             btn_row,
             text=tr("convert_schema.convert_btn", "Formular umwandeln"),
-            fg_color="#2563eb",
-            hover_color="#1d4ed8",
+            fg_color=COLOR_PRIMARY,
+            hover_color=COLOR_PRIMARY_HOVER,
             command=self.on_convert,
-            width=160,
+            width=BTN_WIDTH_CONVERT_SCHEMA,
         ), "convert_schema.convert_btn", "Formular umwandeln").pack(side="right")
 
     def on_convert(self):

@@ -4,7 +4,64 @@ from collections.abc import Callable
 import customtkinter as ctk
 from utils.datetime_utils import format_german_date, format_german_datetime, parse_german_date, parse_iso, get_local_now
 from utils.ui_utils import center_window
-from constants import COLOR_URGENCY_YELLOW
+from constants import (
+    BTN_HEIGHT_MD,
+    BTN_WIDTH_APPLY,
+    BTN_WIDTH_CALENDAR,
+    BTN_WIDTH_CANCEL,
+    COLOR_BTN_CANCEL,
+    COLOR_BTN_CANCEL_HOVER,
+    COLOR_CARD_BG_ALT,
+    COLOR_DATE_PICKER_DAY_HOVER,
+    COLOR_DATE_PICKER_DAY_TEXT,
+    COLOR_DATE_PICKER_STEPPER_BG,
+    COLOR_DATE_PICKER_STEPPER_BORDER,
+    COLOR_DATE_PICKER_STEPPER_TEXT,
+    COLOR_DATE_PICKER_TIME_MENU,
+    COLOR_DATE_PICKER_TODAY_BG,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    COLOR_NOTE_TEXT,
+    COLOR_PRIMARY_BLUE,
+    COLOR_SUCCESS,
+    COLOR_TEXT_GRAY,
+    COLOR_TEXT_WHITE,
+    COLOR_URGENCY_YELLOW,
+    CORNER_RADIUS_CARD,
+    CORNER_RADIUS_MD,
+    CORNER_RADIUS_PRESET,
+    CORNER_RADIUS_SM,
+    DATE_PICKER_DAY_CELL_HEIGHT,
+    DATE_PICKER_DAY_CELL_WIDTH,
+    DATE_PICKER_DIALOG_HEIGHT,
+    DATE_PICKER_DIALOG_HEIGHT_DATE_ONLY,
+    DATE_PICKER_DIALOG_WIDTH,
+    DATE_PICKER_NAV_BTN_HEIGHT,
+    DATE_PICKER_NAV_BTN_WIDTH,
+    DATE_PICKER_PRESET_BTN_HEIGHT,
+    DATE_PICKER_STEPPER_BTN_HEIGHT,
+    DATE_PICKER_STEPPER_BTN_WIDTH,
+    DATE_PICKER_TIME_MENU_CORNER_RADIUS,
+    DATE_PICKER_TIME_MENU_HEIGHT,
+    DATE_PICKER_TIME_MENU_WIDTH,
+    DATE_PICKER_WIDTH_DEFAULT,
+    FOLLOWUP_DELAY_DESTROY_MS,
+    FONT_SIZE_2XS,
+    FONT_SIZE_BODY,
+    FONT_SIZE_HEADER_BAR,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_SIZE_XS,
+    PAD_10,
+    PAD_3,
+    PAD_CONTAINER,
+    PAD_GAP,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+)
 
 
 class CalendarDialog(ctk.CTkToplevel):
@@ -23,8 +80,8 @@ class CalendarDialog(ctk.CTkToplevel):
 
         from services.i18n_service import tr
         self.title(tr("date_picker.dialog_title", "📅 Datum auswählen"))
-        win_w = 390
-        win_h = 440 if include_time else 350
+        win_w = DATE_PICKER_DIALOG_WIDTH
+        win_h = DATE_PICKER_DIALOG_HEIGHT if include_time else DATE_PICKER_DIALOG_HEIGHT_DATE_ONLY
         self.geometry(f"{win_w}x{win_h}")
         self.resizable(False, False)
         center_window(self, win_w, win_h)
@@ -82,32 +139,32 @@ class CalendarDialog(ctk.CTkToplevel):
     def create_widgets(self):
         from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=12, pady=10)
+        main_frame.pack(fill="both", expand=True, padx=PAD_LG, pady=PAD_10)
 
         # Header Month/Year Navigation
         nav_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        nav_frame.pack(fill="x", pady=(0, 6))
+        nav_frame.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
 
         btn_prev = ctk.CTkButton(
-            nav_frame, text=tr("date_picker.btn_prev", "◀"), width=32, height=26, corner_radius=6,
-            command=self.prev_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            nav_frame, text=tr("date_picker.btn_prev", "◀"), width=DATE_PICKER_NAV_BTN_WIDTH, height=DATE_PICKER_NAV_BTN_HEIGHT, corner_radius=CORNER_RADIUS_MD,
+            command=self.prev_month, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
         )
         btn_prev.pack(side="left")
 
         self.month_label = ctk.CTkLabel(
-            nav_frame, text="", font=ctk.CTkFont(size=14, weight="bold")
+            nav_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")
         )
         self.month_label.pack(side="left", expand=True)
 
         btn_next = ctk.CTkButton(
-            nav_frame, text=tr("date_picker.btn_next", "▶"), width=32, height=26, corner_radius=6,
-            command=self.next_month, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            nav_frame, text=tr("date_picker.btn_next", "▶"), width=DATE_PICKER_NAV_BTN_WIDTH, height=DATE_PICKER_NAV_BTN_HEIGHT, corner_radius=CORNER_RADIUS_MD,
+            command=self.next_month, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
         )
         btn_next.pack(side="right")
 
         # Weekdays Header (Mo - So)
         weekdays_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        weekdays_frame.pack(fill="x", pady=(0, 2))
+        weekdays_frame.pack(fill="x", pady=(PAD_NONE, PAD_XS))
         weekdays = [
             (tr("date_picker.weekday_mo", "Mo"), False),
             (tr("date_picker.weekday_tu", "Di"), False),
@@ -121,9 +178,9 @@ class CalendarDialog(ctk.CTkToplevel):
             lbl = ctk.CTkLabel(
                 weekdays_frame,
                 text=day_text,
-                width=48,
-                font=ctk.CTkFont(size=11, weight="bold"),
-                text_color="gray" if is_weekend else None,
+                width=DATE_PICKER_DAY_CELL_WIDTH,
+                font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
+                text_color=COLOR_TEXT_GRAY if is_weekend else None,
             )
             lbl.pack(side="left", padx=1)
 
@@ -133,14 +190,14 @@ class CalendarDialog(ctk.CTkToplevel):
 
         # Time Picker Row with Integrated Vertical Steppers
         if self.include_time:
-            time_card = ctk.CTkFrame(main_frame, fg_color=("gray85", "gray20"), corner_radius=8)
-            time_card.pack(fill="x", pady=(4, 4))
+            time_card = ctk.CTkFrame(main_frame, fg_color=COLOR_CARD_BG_ALT, corner_radius=CORNER_RADIUS_CARD)
+            time_card.pack(fill="x", pady=(PAD_SM, PAD_SM))
 
             from services.i18n_service import tr
 
             ctk.CTkLabel(
-                time_card, text=tr("date_picker.time_lbl", "⏰ Uhrzeit:"), font=ctk.CTkFont(size=11, weight="bold")
-            ).pack(side="left", padx=(10, 8))
+                time_card, text=tr("date_picker.time_lbl", "⏰ Uhrzeit:"), font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold")
+            ).pack(side="left", padx=(PAD_10, PAD_MD))
 
             # Hours: 07 to 20
             hours = [f"{h:02d}" for h in range(7, 21)]
@@ -149,44 +206,44 @@ class CalendarDialog(ctk.CTkToplevel):
 
             # Integrated Hour Stepper Block (▲ above, OptionMenu, ▼ below)
             hour_block = ctk.CTkFrame(
-                time_card, fg_color=("gray80", "gray25"), corner_radius=6,
-                border_width=1, border_color=("gray70", "gray35")
+                time_card, fg_color=COLOR_DATE_PICKER_STEPPER_BG, corner_radius=CORNER_RADIUS_MD,
+                border_width=1, border_color=COLOR_DATE_PICKER_STEPPER_BORDER
             )
-            hour_block.pack(side="left", padx=2, pady=3)
+            hour_block.pack(side="left", padx=PAD_XS, pady=PAD_3)
 
             btn_h_up = ctk.CTkButton(
-                hour_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
-                font=ctk.CTkFont(size=8, weight="bold"),
-                fg_color="transparent", hover_color=("gray65", "gray40"),
-                text_color=("gray20", "gray90"),
-                corner_radius=4, command=lambda: self.step_hour(1)
+                hour_block, text=tr("date_picker.btn_up", "▲"), width=DATE_PICKER_STEPPER_BTN_WIDTH, height=DATE_PICKER_STEPPER_BTN_HEIGHT,
+                font=ctk.CTkFont(size=FONT_SIZE_2XS, weight="bold"),
+                fg_color="transparent", hover_color=COLOR_MUTED_GRAY_HOVER,
+                text_color=COLOR_DATE_PICKER_STEPPER_TEXT,
+                corner_radius=CORNER_RADIUS_SM, command=lambda: self.step_hour(1)
             )
             btn_h_up.pack(fill="x", pady=(1, 0))
 
             self.hour_menu = ctk.CTkOptionMenu(
                 hour_block, values=hours, variable=self.hour_var,
-                width=54, height=22, font=ctk.CTkFont(size=12, weight="bold"),
-                dropdown_font=ctk.CTkFont(size=11),
-                fg_color=("dodgerblue", "#1f538d"),
-                button_color=("dodgerblue", "#1f538d"),
-                corner_radius=3
+                width=DATE_PICKER_TIME_MENU_WIDTH, height=DATE_PICKER_TIME_MENU_HEIGHT, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
+                dropdown_font=ctk.CTkFont(size=FONT_SIZE_SM),
+                fg_color=COLOR_DATE_PICKER_TIME_MENU,
+                button_color=COLOR_DATE_PICKER_TIME_MENU,
+                corner_radius=DATE_PICKER_TIME_MENU_CORNER_RADIUS
             )
-            self.hour_menu.pack(padx=2, pady=1)
+            self.hour_menu.pack(padx=PAD_XS, pady=1)
 
             btn_h_down = ctk.CTkButton(
-                hour_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
-                font=ctk.CTkFont(size=8, weight="bold"),
-                fg_color="transparent", hover_color=("gray65", "gray40"),
-                text_color=("gray20", "gray90"),
-                corner_radius=4, command=lambda: self.step_hour(-1)
+                hour_block, text=tr("date_picker.btn_down", "▼"), width=DATE_PICKER_STEPPER_BTN_WIDTH, height=DATE_PICKER_STEPPER_BTN_HEIGHT,
+                font=ctk.CTkFont(size=FONT_SIZE_2XS, weight="bold"),
+                fg_color="transparent", hover_color=COLOR_MUTED_GRAY_HOVER,
+                text_color=COLOR_DATE_PICKER_STEPPER_TEXT,
+                corner_radius=CORNER_RADIUS_SM, command=lambda: self.step_hour(-1)
             )
             btn_h_down.pack(fill="x", pady=(0, 1))
 
             # Colon separator
             ctk.CTkLabel(
-                time_card, text=":", font=ctk.CTkFont(size=16, weight="bold"),
-                text_color=("gray30", "gray70")
-            ).pack(side="left", padx=3)
+                time_card, text=":", font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight="bold"),
+                text_color=COLOR_NOTE_TEXT
+            ).pack(side="left", padx=PAD_3)
 
             # Minutes: 00 to 55 in 5 min steps
             minutes = [f"{m:02d}" for m in range(0, 60, 5)]
@@ -196,47 +253,47 @@ class CalendarDialog(ctk.CTkToplevel):
 
             # Integrated Minute Stepper Block (▲ above, OptionMenu, ▼ below)
             min_block = ctk.CTkFrame(
-                time_card, fg_color=("gray80", "gray25"), corner_radius=6,
-                border_width=1, border_color=("gray70", "gray35")
+                time_card, fg_color=COLOR_DATE_PICKER_STEPPER_BG, corner_radius=CORNER_RADIUS_MD,
+                border_width=1, border_color=COLOR_DATE_PICKER_STEPPER_BORDER
             )
-            min_block.pack(side="left", padx=2, pady=3)
+            min_block.pack(side="left", padx=PAD_XS, pady=PAD_3)
 
             btn_m_up = ctk.CTkButton(
-                min_block, text=tr("date_picker.btn_up", "▲"), width=52, height=13,
-                font=ctk.CTkFont(size=8, weight="bold"),
-                fg_color="transparent", hover_color=("gray65", "gray40"),
-                text_color=("gray20", "gray90"),
-                corner_radius=4, command=lambda: self.step_minute(5)
+                min_block, text=tr("date_picker.btn_up", "▲"), width=DATE_PICKER_STEPPER_BTN_WIDTH, height=DATE_PICKER_STEPPER_BTN_HEIGHT,
+                font=ctk.CTkFont(size=FONT_SIZE_2XS, weight="bold"),
+                fg_color="transparent", hover_color=COLOR_MUTED_GRAY_HOVER,
+                text_color=COLOR_DATE_PICKER_STEPPER_TEXT,
+                corner_radius=CORNER_RADIUS_SM, command=lambda: self.step_minute(5)
             )
             btn_m_up.pack(fill="x", pady=(1, 0))
 
             self.min_menu = ctk.CTkOptionMenu(
                 min_block, values=minutes, variable=self.minute_var,
-                width=54, height=22, font=ctk.CTkFont(size=12, weight="bold"),
-                dropdown_font=ctk.CTkFont(size=11),
-                fg_color=("dodgerblue", "#1f538d"),
-                button_color=("dodgerblue", "#1f538d"),
-                corner_radius=3
+                width=DATE_PICKER_TIME_MENU_WIDTH, height=DATE_PICKER_TIME_MENU_HEIGHT, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
+                dropdown_font=ctk.CTkFont(size=FONT_SIZE_SM),
+                fg_color=COLOR_DATE_PICKER_TIME_MENU,
+                button_color=COLOR_DATE_PICKER_TIME_MENU,
+                corner_radius=DATE_PICKER_TIME_MENU_CORNER_RADIUS
             )
-            self.min_menu.pack(padx=2, pady=1)
+            self.min_menu.pack(padx=PAD_XS, pady=1)
 
             btn_m_down = ctk.CTkButton(
-                min_block, text=tr("date_picker.btn_down", "▼"), width=52, height=13,
-                font=ctk.CTkFont(size=8, weight="bold"),
-                fg_color="transparent", hover_color=("gray65", "gray40"),
-                text_color=("gray20", "gray90"),
-                corner_radius=4, command=lambda: self.step_minute(-5)
+                min_block, text=tr("date_picker.btn_down", "▼"), width=DATE_PICKER_STEPPER_BTN_WIDTH, height=DATE_PICKER_STEPPER_BTN_HEIGHT,
+                font=ctk.CTkFont(size=FONT_SIZE_2XS, weight="bold"),
+                fg_color="transparent", hover_color=COLOR_MUTED_GRAY_HOVER,
+                text_color=COLOR_DATE_PICKER_STEPPER_TEXT,
+                corner_radius=CORNER_RADIUS_SM, command=lambda: self.step_minute(-5)
             )
             btn_m_down.pack(fill="x", pady=(0, 1))
 
             ctk.CTkLabel(
-                time_card, text=tr("date_picker.o_clock", "Uhr"), font=ctk.CTkFont(size=11, weight="bold"),
-                text_color=("gray30", "gray70")
-            ).pack(side="left", padx=(6, 8))
+                time_card, text=tr("date_picker.o_clock", "Uhr"), font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
+                text_color=COLOR_NOTE_TEXT
+            ).pack(side="left", padx=(PAD_GAP, PAD_MD))
 
             # Presets Grid (Uniform 3-column pill buttons)
             presets_grid = ctk.CTkFrame(main_frame, fg_color="transparent")
-            presets_grid.pack(fill="x", pady=(2, 4))
+            presets_grid.pack(fill="x", pady=(PAD_XS, PAD_SM))
 
             for col in range(3):
                 presets_grid.grid_columnconfigure(col, weight=1, uniform="cal_presets")
@@ -253,29 +310,29 @@ class CalendarDialog(ctk.CTkToplevel):
                 btn = ctk.CTkButton(
                     presets_grid,
                     text=text,
-                    height=25,
-                    corner_radius=12,
-                    font=ctk.CTkFont(size=10),
-                    fg_color=("gray75", "gray30"),
-                    hover_color=("gray65", "gray40"),
+                    height=DATE_PICKER_PRESET_BTN_HEIGHT,
+                    corner_radius=CORNER_RADIUS_PRESET,
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    fg_color=COLOR_MUTED_GRAY_FG,
+                    hover_color=COLOR_MUTED_GRAY_HOVER,
                     command=cmd,
                 )
-                btn.grid(row=r, column=c, padx=2, pady=2, sticky="ew")
+                btn.grid(row=r, column=c, padx=PAD_XS, pady=PAD_XS, sticky="ew")
 
         # Bottom Actions
         action_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        action_frame.pack(fill="x", side="bottom", pady=(2, 0))
+        action_frame.pack(fill="x", side="bottom", pady=(PAD_XS, PAD_NONE))
 
         btn_cancel = ctk.CTkButton(
-            action_frame, text=tr("common.cancel", "Abbrechen"), fg_color=("gray70", "gray40"),
-            hover_color=("gray60", "gray50"), command=self.destroy,
-            width=90, height=28
+            action_frame, text=tr("common.cancel", "Abbrechen"), fg_color=COLOR_BTN_CANCEL,
+            hover_color=COLOR_BTN_CANCEL_HOVER, command=self.destroy,
+            width=BTN_WIDTH_CANCEL, height=BTN_HEIGHT_MD
         )
         btn_cancel.pack(side="left")
 
         btn_apply = ctk.CTkButton(
-            action_frame, text=tr("ui_buttons.apply", "✓ Übernehmen"), fg_color="forestgreen",
-            command=self.on_apply, width=120, height=28
+            action_frame, text=tr("ui_buttons.apply", "✓ Übernehmen"), fg_color=COLOR_SUCCESS,
+            command=self.on_apply, width=BTN_WIDTH_APPLY, height=BTN_HEIGHT_MD
         )
         btn_apply.pack(side="right")
 
@@ -312,7 +369,7 @@ class CalendarDialog(ctk.CTkToplevel):
 
             for _col_idx, day in enumerate(week):
                 if day == 0:
-                    lbl = ctk.CTkLabel(row_frame, text="", width=48)
+                    lbl = ctk.CTkLabel(row_frame, text="", width=DATE_PICKER_DAY_CELL_WIDTH)
                     lbl.pack(side="left", padx=1)
                 else:
                     is_selected = (
@@ -326,17 +383,17 @@ class CalendarDialog(ctk.CTkToplevel):
                         and self.current_year == today.year
                     )
 
-                    fg_col = "dodgerblue" if is_selected else (("gray80", "gray25") if is_today else "transparent")
+                    fg_col = COLOR_PRIMARY_BLUE if is_selected else (COLOR_DATE_PICKER_TODAY_BG if is_today else "transparent")
                     border_col = COLOR_URGENCY_YELLOW if is_today and not is_selected else None
 
                     btn = ctk.CTkButton(
                         row_frame,
                         text=str(day),
-                        width=48,
-                        height=26,
+                        width=DATE_PICKER_DAY_CELL_WIDTH,
+                        height=DATE_PICKER_DAY_CELL_HEIGHT,
                         fg_color=fg_col,
-                        hover_color="royalblue" if not is_selected else None,
-                        text_color="white" if is_selected else ("gray10", "#DCE4EE"),
+                        hover_color=COLOR_DATE_PICKER_DAY_HOVER if not is_selected else None,
+                        text_color=COLOR_TEXT_WHITE if is_selected else COLOR_DATE_PICKER_DAY_TEXT,
                         border_width=1 if border_col else 0,
                         border_color=border_col,
                         command=lambda d=day: self.select_day(d),
@@ -433,7 +490,7 @@ class CalendarDialog(ctk.CTkToplevel):
             self.grab_release()
         except Exception:
             pass
-        self.after(1, self._do_destroy)
+        self.after(FOLLOWUP_DELAY_DESTROY_MS, self._do_destroy)
 
     def _do_destroy(self):
         try:
@@ -465,7 +522,7 @@ class DatePickerWidget(ctk.CTkFrame):
         placeholder_text: str | None = None,
         include_time: bool = True,
         initial_value: str = "",
-        width: int = 240,
+        width: int = DATE_PICKER_WIDTH_DEFAULT,
         on_change: Callable[[str], None] | None = None,
         **kwargs,
     ):
@@ -479,7 +536,7 @@ class DatePickerWidget(ctk.CTkFrame):
         )
 
         self.entry = ctk.CTkEntry(self, placeholder_text=ph, width=width)
-        self.entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_CONTAINER))
         self.entry.bind("<KeyRelease>", self._on_key_release, add="+")
 
         if initial_value:
@@ -490,7 +547,7 @@ class DatePickerWidget(ctk.CTkFrame):
                 self.entry.insert(0, formatted)
 
         self.cal_btn = ctk.CTkButton(
-            self, text=tr("cockpit.calendar", "📅 Kalender"), width=95, command=self.open_calendar, fg_color=("gray75", "gray30"), hover_color=("gray65", "gray40")
+            self, text=tr("cockpit.calendar", "📅 Kalender"), width=BTN_WIDTH_CALENDAR, command=self.open_calendar, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
         )
         self.cal_btn.pack(side="right")
 

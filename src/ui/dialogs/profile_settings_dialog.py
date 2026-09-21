@@ -12,6 +12,8 @@ from constants import (
     DIALOG_MIN_DIMENSIONS,
     DIALOG_TITLES,
     FONT_SIZE_TITLE,
+    HEIGHT_BOTTOM_BAR,
+    HEIGHT_TOP_BAR_SM,
     PAD_LG,
     PAD_MD,
     PAD_NONE,
@@ -69,7 +71,7 @@ class ProfileSettingsDialog(
 
     def create_widgets(self) -> None:
         # Top Header
-        top_bar = ctk.CTkFrame(self, height=45, corner_radius=PAD_NONE)
+        top_bar = ctk.CTkFrame(self, height=HEIGHT_TOP_BAR_SM, corner_radius=PAD_NONE)
         top_bar.pack(fill="x", side="top", padx=PAD_MD, pady=(PAD_MD, PAD_SM))
 
         self.top_header_lbl = self.register_i18n(
@@ -118,7 +120,7 @@ class ProfileSettingsDialog(
         self.setup_wiki_tab()
 
         # Bottom Action Bar
-        bottom_bar = ctk.CTkFrame(self, height=50, fg_color="transparent")
+        bottom_bar = ctk.CTkFrame(self, height=HEIGHT_BOTTOM_BAR, fg_color="transparent")
         bottom_bar.pack(fill="x", side="bottom", padx=PAD_LG, pady=PAD_MD)
 
         self.close_btn = self.register_i18n(

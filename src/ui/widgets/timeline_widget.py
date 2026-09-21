@@ -13,6 +13,7 @@ from constants import (
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_LABEL,
     COLOR_PURPLE_DARK,
+    COLOR_SUBTITLE_MUTED,
     COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_XS,
@@ -20,6 +21,8 @@ from constants import (
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
     FONT_SIZE_XS,
+    LABEL_HEIGHT_MD,
+    LABEL_HEIGHT_SM,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
@@ -160,7 +163,7 @@ class TimelineWidget(ctk.CTkFrame):
                 text=formatted_d,
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
                 text_color=COLOR_MUTED_LABEL,
-                height=13,
+                height=LABEL_HEIGHT_SM,
             ).pack(anchor="e")
 
             ctk.CTkLabel(
@@ -168,7 +171,7 @@ class TimelineWidget(ctk.CTkFrame):
                 text=formatted_t,
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
                 text_color=COLOR_MUTED_LABEL,
-                height=13,
+                height=LABEL_HEIGHT_SM,
             ).pack(anchor="e", pady=(PAD_XS, PAD_NONE))
 
             author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
@@ -195,8 +198,8 @@ class TimelineWidget(ctk.CTkFrame):
                 author_frame,
                 text=entry.author,
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
-                text_color=("gray45", "gray65"),
-                height=13,
+                text_color=COLOR_SUBTITLE_MUTED,
+                height=LABEL_HEIGHT_SM,
             ).pack(side="left")
 
             # Left Column: Channel Title, Note text (directly below title), Status change
@@ -208,7 +211,7 @@ class TimelineWidget(ctk.CTkFrame):
                 left_col,
                 text=channel_text,
                 font=ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
-                height=15,
+                height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
             note_lbl = ctk.CTkLabel(
@@ -236,7 +239,7 @@ class TimelineWidget(ctk.CTkFrame):
                     text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change),
                     font=ctk.CTkFont(size=FONT_SIZE_XS),
                     text_color=COLOR_INFO,
-                    height=13,
+                    height=LABEL_HEIGHT_SM,
                 )
                 sc_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 

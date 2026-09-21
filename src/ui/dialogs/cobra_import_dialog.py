@@ -5,7 +5,39 @@ from tkinter import filedialog
 from collections.abc import Callable
 from models.customer import Customer
 from services.cobra_crm_import_service import CobraCrmImportService
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_WIDTH_BROWSE,
+    BTN_WIDTH_CANCEL,
+    COLOR_BTN_GRAY,
+    COLOR_DANGER,
+    COLOR_IMPORT_NEW,
+    COLOR_PANEL_PREVIEW_BG,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_TEXT_BLUE,
+    COLOR_TEXT_GRAY,
+    COLOR_WARNING_TEXT,
+    COMBO_WIDTH_COBRA_MAPPING,
+    COMBO_WIDTH_CONFLICT_MODE,
+    CORNER_RADIUS_SM,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_COBRA_IMPORT,
+    DIALOG_TITLES,
+    FONT_SIZE_BODY,
+    FONT_SIZE_HEADER_BAR,
+    FONT_SIZE_SM,
+    FONT_SIZE_XS,
+    LABEL_WIDTH_COBRA_FIELD,
+    LABEL_WIDTH_IMPORT_BADGE,
+    PAD_10,
+    PAD_15,
+    PAD_CONTAINER,
+    PAD_GAP,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+)
 
 
 class CobraImportDialog(BaseDialog):
@@ -21,7 +53,7 @@ class CobraImportDialog(BaseDialog):
             parent,
             DIALOG_TITLES["cobra_import"],
             (w, h),
-            min_size=(760, 540),
+            min_size=DIALOG_MIN_SIZE_COBRA_IMPORT,
 
             title_factory=lambda: DIALOG_TITLES["cobra_import"],
         )
@@ -37,44 +69,44 @@ class CobraImportDialog(BaseDialog):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+        main_frame.pack(fill="both", expand=True, padx=PAD_15, pady=PAD_15)
 
         # Header
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        hdr_frame.pack(fill="x", pady=(0, 10))
+        hdr_frame.pack(fill="x", pady=(PAD_NONE, PAD_10))
 
         from services.i18n_service import tr
 
-        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent"), font=ctk.CTkFont(size=16, weight="bold")), "cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent").pack(anchor="w")
-        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."), font=ctk.CTkFont(size=11), text_color="gray"), "cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).").pack(anchor="w")
+        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent"), font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight="bold")), "cobra_import.header", "🐍 Cobra CRM Praxen-Import Assistent").pack(anchor="w")
+        self.register_i18n(ctk.CTkLabel(hdr_frame, text=tr("cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json)."), font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TEXT_GRAY), "cobra_import.header_desc", "Importieren Sie Praxen aus Cobra CRM Exporte-Dateien (.csv, .txt, .json).").pack(anchor="w")
 
         file_box = ctk.CTkFrame(main_frame)
-        file_box.pack(fill="x", pady=(0, 10))
+        file_box.pack(fill="x", pady=(PAD_NONE, PAD_10))
 
-        self.register_i18n(ctk.CTkLabel(file_box, text=tr("cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:").pack(anchor="w", padx=10, pady=(8, 4))
+        self.register_i18n(ctk.CTkLabel(file_box, text=tr("cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "cobra_import.step1_lbl", "1. Cobra Export-Datei auswählen:").pack(anchor="w", padx=PAD_10, pady=(PAD_MD, PAD_SM))
 
         f_row = ctk.CTkFrame(file_box, fg_color="transparent")
-        f_row.pack(fill="x", padx=10, pady=(0, 8))
+        f_row.pack(fill="x", padx=PAD_10, pady=(PAD_NONE, PAD_MD))
 
         self.file_entry = self.register_i18n(ctk.CTkEntry(f_row, placeholder_text=tr("cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...")), "cobra_import.file_placeholder", "Datei auswählen (*.csv, *.txt, *.json)...", attr="placeholder_text")
-        self.file_entry.pack(side="left", fill="x", expand=True, padx=(0, 8))
+        self.file_entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_MD))
 
-        self.register_i18n(ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=130, command=self.on_browse_file), "cobra_import.browse_btn", "📁 Durchsuchen...").pack(side="right")
+        self.register_i18n(ctk.CTkButton(f_row, text=tr("cobra_import.browse_btn", "📁 Durchsuchen..."), width=BTN_WIDTH_BROWSE, command=self.on_browse_file), "cobra_import.browse_btn", "📁 Durchsuchen...").pack(side="right")
 
         # Scrollable Content Box for Mapping & Preview
         from utils.ui_utils import enable_auto_hiding_scrollbar
         self.content_scroll = ctk.CTkScrollableFrame(main_frame)
-        self.content_scroll.pack(fill="both", expand=True, pady=(0, 10))
+        self.content_scroll.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_10))
         enable_auto_hiding_scrollbar(self.content_scroll)
 
         # Section 2: Column Mapping
-        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):").pack(anchor="w", pady=(4, 6))
+        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "cobra_import.step2_lbl", "2. Cobra Spaltenzuordnung (Feld-Mapper):").pack(anchor="w", pady=(PAD_SM, PAD_GAP))
 
         self.map_grid = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
-        self.map_grid.pack(fill="x", pady=(0, 10))
+        self.map_grid.pack(fill="x", pady=(PAD_NONE, PAD_10))
 
         # Section 3: Conflict Mode & Preview Summary
-        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=12, weight="bold")), "cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:").pack(anchor="w", pady=(8, 4))
+        self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:").pack(anchor="w", pady=(PAD_MD, PAD_SM))
 
         mode_options = [
             tr("cobra_import.mode_update", "Bestehende Praxen aktualisieren (Update)"),
@@ -84,32 +116,32 @@ class CobraImportDialog(BaseDialog):
         self.mode_combo = ctk.CTkOptionMenu(
             self.content_scroll,
             values=mode_options,
-            width=320,
+            width=COMBO_WIDTH_CONFLICT_MODE,
             command=lambda v: self.update_preview(),
         )
-        self.mode_combo.pack(anchor="w", pady=(0, 8))
+        self.mode_combo.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
-        self.summary_lbl = self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus."), font=ctk.CTkFont(size=11), text_color="dodgerblue", anchor="w"), "cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus.")
-        self.summary_lbl.pack(fill="x", pady=(0, 6))
+        self.summary_lbl = self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus."), font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TEXT_BLUE, anchor="w"), "cobra_import.initial_summary", "Bitte wählen Sie eine Export-Datei aus.")
+        self.summary_lbl.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
 
         self.preview_box = ctk.CTkFrame(self.content_scroll, fg_color="transparent")
-        self.preview_box.pack(fill="x", pady=(0, 10))
+        self.preview_box.pack(fill="x", pady=(PAD_NONE, PAD_10))
 
         # Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(5, 0))
+        btn_frame.pack(fill="x", pady=(PAD_CONTAINER, PAD_NONE))
 
         self.import_btn = self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("cobra_import.import_btn", "🐍 Praxen importieren"),
-            fg_color="forestgreen",
-            hover_color="darkgreen",
+            fg_color=COLOR_SUCCESS,
+            hover_color=COLOR_SUCCESS_HOVER,
             command=self.on_click_import,
             state="disabled",
         ), "cobra_import.import_btn", "🐍 Praxen importieren")
-        self.import_btn.pack(side="right", padx=(6, 0))
+        self.import_btn.pack(side="right", padx=(PAD_GAP, PAD_NONE))
 
-        self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray50", command=self.destroy, width=90), "common.cancel", "Abbrechen").pack(side="right")
+        self.register_i18n(ctk.CTkButton(btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color=COLOR_BTN_GRAY, command=self.destroy, width=BTN_WIDTH_CANCEL), "common.cancel", "Abbrechen").pack(side="right")
 
     def on_browse_file(self):
         from services.i18n_service import tr
@@ -127,7 +159,7 @@ class CobraImportDialog(BaseDialog):
         try:
             self.raw_rows, self.headers = CobraCrmImportService.parse_file(fp)
             if not self.raw_rows:
-                self.summary_lbl.configure(text=tr("cobra_import.no_records_found", "⚠ Keine Datensätze in der Datei gefunden."), text_color="crimson")
+                self.summary_lbl.configure(text=tr("cobra_import.no_records_found", "⚠ Keine Datensätze in der Datei gefunden."), text_color=COLOR_DANGER)
                 return
 
             self.mapping = CobraCrmImportService.auto_detect_mapping(self.headers)
@@ -135,7 +167,7 @@ class CobraImportDialog(BaseDialog):
             self.update_preview()
             self.import_btn.configure(state="normal")
         except Exception as ex:
-            self.summary_lbl.configure(text=tr("cobra_import.read_error", "❌ Fehler beim Lesen der Datei: {error}", error=ex), text_color="crimson")
+            self.summary_lbl.configure(text=tr("cobra_import.read_error", "❌ Fehler beim Lesen der Datei: {error}", error=ex), text_color=COLOR_DANGER)
 
     def render_mapping_grid(self):
         for w in self.map_grid.winfo_children():
@@ -178,7 +210,7 @@ class CobraImportDialog(BaseDialog):
 
         row_idx = 0
         for field_key, label_text in target_labels.items():
-            ctk.CTkLabel(self.map_grid, text=f"{label_text}:", font=ctk.CTkFont(size=11, weight="bold"), anchor="w", width=160).grid(row=row_idx, column=0, sticky="w", padx=4, pady=2)
+            ctk.CTkLabel(self.map_grid, text=f"{label_text}:", font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"), anchor="w", width=LABEL_WIDTH_COBRA_FIELD).grid(row=row_idx, column=0, sticky="w", padx=PAD_SM, pady=PAD_XS)
 
             detected = self.mapping.get(field_key, "")
             default_val = detected if detected in self.headers else no_mapping_text
@@ -186,11 +218,11 @@ class CobraImportDialog(BaseDialog):
             combo = ctk.CTkOptionMenu(
                 self.map_grid,
                 values=options,
-                width=240,
+                width=COMBO_WIDTH_COBRA_MAPPING,
                 command=lambda v, k=field_key: self.on_mapping_changed(k, v),
             )
             combo.set(default_val)
-            combo.grid(row=row_idx, column=1, sticky="w", padx=4, pady=2)
+            combo.grid(row=row_idx, column=1, sticky="w", padx=PAD_SM, pady=PAD_XS)
             self.mapping_combos[field_key] = combo
 
             row_idx += 1
@@ -215,7 +247,7 @@ class CobraImportDialog(BaseDialog):
         tot = len(self.mapped_customers)
 
         msg = tr("cobra_import.preview_summary", "✓ {tot} Praxen erkannt  |  🆕 {new} neue Praxen  |  ⚠ {dup} bereits vorhandene Praxen (Duplikate)", tot=tot, new=new_cnt, dup=dup_cnt)
-        self.summary_lbl.configure(text=msg, text_color="limegreen" if new_cnt > 0 else "dodgerblue")
+        self.summary_lbl.configure(text=msg, text_color=COLOR_IMPORT_NEW if new_cnt > 0 else COLOR_TEXT_BLUE)
 
         # Render preview items
         for w in self.preview_box.winfo_children():
@@ -224,16 +256,16 @@ class CobraImportDialog(BaseDialog):
         for c in self.mapped_customers[:15]:
             is_dup = any(d["imported"].customer_id == c.customer_id for d in diff["duplicates"])
             badge = tr("cobra_import.badge_duplicate", "⚠ Duplikat") if is_dup else tr("cobra_import.badge_new", "🆕 Neu")
-            badge_color = "darkorange" if is_dup else "limegreen"
+            badge_color = COLOR_WARNING_TEXT if is_dup else COLOR_IMPORT_NEW
 
-            row_f = ctk.CTkFrame(self.preview_box, fg_color=("gray90", "gray15"), corner_radius=4)
-            row_f.pack(fill="x", pady=2, padx=2)
+            row_f = ctk.CTkFrame(self.preview_box, fg_color=COLOR_PANEL_PREVIEW_BG, corner_radius=CORNER_RADIUS_SM)
+            row_f.pack(fill="x", pady=PAD_XS, padx=PAD_XS)
 
-            ctk.CTkLabel(row_f, text=badge, text_color=badge_color, font=ctk.CTkFont(size=10, weight="bold"), width=80).pack(side="left", padx=5)
-            ctk.CTkLabel(row_f, text=f"{c.customer_id}: {c.practice_name}", font=ctk.CTkFont(size=11, weight="bold")).pack(side="left", padx=5)
+            ctk.CTkLabel(row_f, text=badge, text_color=badge_color, font=ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"), width=LABEL_WIDTH_IMPORT_BADGE).pack(side="left", padx=PAD_CONTAINER)
+            ctk.CTkLabel(row_f, text=f"{c.customer_id}: {c.practice_name}", font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold")).pack(side="left", padx=PAD_CONTAINER)
             contact_str = f"| Ansprechpartner: {c.contact_person}" if c.contact_person else ""
             email_str = f"| {c.email}" if c.email else ""
-            ctk.CTkLabel(row_f, text=f"{contact_str} {email_str}", font=ctk.CTkFont(size=10), text_color="gray").pack(side="left", padx=5)
+            ctk.CTkLabel(row_f, text=f"{contact_str} {email_str}", font=ctk.CTkFont(size=FONT_SIZE_XS), text_color=COLOR_TEXT_GRAY).pack(side="left", padx=PAD_CONTAINER)
 
     def on_click_import(self):
         if not self.mapped_customers:

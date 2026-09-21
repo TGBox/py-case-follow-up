@@ -4,15 +4,22 @@ import tkinter as tk
 import customtkinter as ctk
 
 from constants import (
-    BTN_WIDTH_MD,
+    BORDER_WIDTH_COLOR_SELECTED,
     BTN_WIDTH_LG,
+    BTN_WIDTH_MD,
     BTN_WIDTH_SIGNATURE,
+    COLOR_BORDER_DARK,
     COLOR_DANGER,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
+    COLOR_NOTE_TEXT,
+    COLOR_PRESET_BORDER_SELECTED,
     COLOR_PRIMARY,
     COLOR_PRIMARY_HOVER,
+    COLOR_SIGNATURE_BG,
+    COLOR_SIGNATURE_BORDER,
     COLOR_SUCCESS,
+    COLOR_TEXT_WHITE,
     CORNER_RADIUS_ENTRY,
     CORNER_RADIUS_SM,
     DEFAULT_DEPARTMENT,
@@ -25,12 +32,15 @@ from constants import (
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
     FONT_SIZE_XS,
-    PAD_NONE,
-    PAD_XS,
-    PAD_SM,
     PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
     PROFILE_TAB_FIELD_WIDTH,
+    TEXTBOX_HEIGHT_SIGNATURE,
     USER_COLOR_PRESETS,
+    USER_COLOR_PRESET_TILE_SIZE,
+    USER_COLOR_PREVIEW_TILE_SIZE,
 )
 from models.profile import UserInfo, UserProfile
 from services.i18n_service import tr
@@ -202,12 +212,12 @@ class UserSettingsTabMixin:
         self.user_sig_txt = ctk.CTkTextbox(
             left_col,
             width=PROFILE_TAB_FIELD_WIDTH,
-            height=52,
+            height=TEXTBOX_HEIGHT_SIGNATURE,
             wrap="word",
             corner_radius=CORNER_RADIUS_ENTRY,
             border_width=1,
-            border_color=("gray65", "gray35"),
-            fg_color=("#F8F9FA", "gray17"),
+            border_color=COLOR_SIGNATURE_BORDER,
+            fg_color=COLOR_SIGNATURE_BG,
         )
         self.user_sig_txt.insert("1.0", self.profile.user.email_signature or "")
         self.user_sig_txt.grid(row=10, column=0, columnspan=2, sticky="ew", pady=(PAD_NONE, PAD_SM))
@@ -231,7 +241,7 @@ class UserSettingsTabMixin:
                 command=self.on_export_signature,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
-                text_color="white",
+                text_color=COLOR_TEXT_WHITE,
                 width=BTN_WIDTH_SIGNATURE,
             ),
             "profile.btn_export_signature",
@@ -246,7 +256,7 @@ class UserSettingsTabMixin:
                 command=self.on_import_signature,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
-                text_color="white",
+                text_color=COLOR_TEXT_WHITE,
                 width=BTN_WIDTH_SIGNATURE,
             ),
             "profile.btn_import_signature",
@@ -281,7 +291,7 @@ class UserSettingsTabMixin:
                 left_col,
                 text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
                 font=ctk.CTkFont(size=FONT_SIZE_XS),
-                text_color=("gray30", "gray70"),
+                text_color=COLOR_NOTE_TEXT,
                 wraplength=ENTRY_WIDTH_COMPACT,
                 justify="left",
             ),
@@ -324,13 +334,13 @@ class UserSettingsTabMixin:
             btn = ctk.CTkButton(
                 color_row_frame,
                 text="",
-                width=22,
-                height=22,
+                width=USER_COLOR_PRESET_TILE_SIZE,
+                height=USER_COLOR_PRESET_TILE_SIZE,
                 corner_radius=CORNER_RADIUS_SM,
                 fg_color=color,
                 hover_color=color,
-                border_width=2 if color.lower() == self.selected_user_color.lower() else 1,
-                border_color="#ffffff" if color.lower() == self.selected_user_color.lower() else "#18181b",
+                border_width=BORDER_WIDTH_COLOR_SELECTED if color.lower() == self.selected_user_color.lower() else 1,
+                border_color=COLOR_PRESET_BORDER_SELECTED if color.lower() == self.selected_user_color.lower() else COLOR_BORDER_DARK,
                 command=lambda c=color: self.set_selected_user_color(c),
             )
             btn.pack(side="left", padx=(PAD_NONE, PAD_SM))
@@ -344,7 +354,7 @@ class UserSettingsTabMixin:
                 command=self.on_pick_custom_color,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
-                text_color="white",
+                text_color=COLOR_TEXT_WHITE,
             ),
             "profile.color_marker_select",
             "Farbe wählen...",
@@ -363,12 +373,12 @@ class UserSettingsTabMixin:
 
         self.preview_tile = ctk.CTkFrame(
             preview_row_frame,
-            width=16,
-            height=16,
+            width=USER_COLOR_PREVIEW_TILE_SIZE,
+            height=USER_COLOR_PREVIEW_TILE_SIZE,
             corner_radius=CORNER_RADIUS_SM,
             fg_color=self.selected_user_color,
             border_width=1,
-            border_color="#18181b",
+            border_color=COLOR_BORDER_DARK,
         )
         self.preview_tile.pack(side="left", padx=(PAD_NONE, PAD_MD), pady=PAD_XS)
 
@@ -376,7 +386,7 @@ class UserSettingsTabMixin:
             preview_row_frame,
             text=f"{tr('profile.color_marker_sample', 'Eigener Eintrag')} ({self.profile.user.name or 'Benutzer'})",
             font=ctk.CTkFont(size=FONT_SIZE_SM),
-            text_color=("gray30", "gray70"),
+            text_color=COLOR_NOTE_TEXT,
         )
         self.preview_sample_lbl.pack(side="left")
 
@@ -393,8 +403,8 @@ class UserSettingsTabMixin:
             for c, btn in self._preset_buttons:
                 is_selected = (c.lower() == color.lower())
                 btn.configure(
-                    border_width=2 if is_selected else 1,
-                    border_color="#ffffff" if is_selected else "#18181b",
+                    border_width=BORDER_WIDTH_COLOR_SELECTED if is_selected else 1,
+                    border_color=COLOR_PRESET_BORDER_SELECTED if is_selected else COLOR_BORDER_DARK,
                 )
 
     def on_pick_custom_color(self) -> None:

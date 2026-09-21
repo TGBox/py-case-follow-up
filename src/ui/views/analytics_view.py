@@ -36,7 +36,10 @@ from constants import (
     PAD_XL,
     PAD_XS,
     VIP_TAG_DISPLAY,
+    ICON_KEY_COPY,
+    ICON_SIZE_ACTION,
 )
+from utils.icon_utils import get_icon
 
 
 class AnalyticsView(ctk.CTkFrame):
@@ -71,7 +74,9 @@ class AnalyticsView(ctk.CTkFrame):
 
         self.copy_report_btn = ctk.CTkButton(
             top_bar,
-            text=tr("analytics.copy_report_btn", "📋 Statistik-Bericht kopieren"),
+            text=tr("analytics.copy_report_btn", "Statistik-Bericht kopieren"),
+            image=get_icon(ICON_KEY_COPY, size=ICON_SIZE_ACTION),
+            compound="left",
             width=BTN_WIDTH_COPY_REPORT,
             fg_color=COLOR_BTN_SECONDARY,
             hover_color=COLOR_BTN_SECONDARY_HOVER,
@@ -316,5 +321,5 @@ class AnalyticsView(ctk.CTkFrame):
         if hasattr(self, "top_bar_title"):
             self.top_bar_title.configure(text=tr("analytics.header", "Auswertungen & Support Cockpit KPIs"))
         if hasattr(self, "copy_report_btn"):
-            self.copy_report_btn.configure(text=tr("analytics.copy_report_btn", "📋 Statistik-Bericht kopieren"))
+            self.copy_report_btn.configure(text=tr("analytics.copy_report_btn", "Statistik-Bericht kopieren"))
         self.render_dashboard()

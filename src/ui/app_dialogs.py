@@ -424,7 +424,7 @@ class DialogLaunchersMixin:
             self.deep_search_service = DeepSearchService(self.storage_service.config.workspace_dir)
         self.load_all_data()
         if hasattr(self, "user_btn") and self.user_btn and self.user_btn.winfo_exists():
-            self.user_btn.configure(text=f"👤 {self.profile.user.name}")
+            self.user_btn.configure(text=f"{self.profile.user.name}")
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
             self.cockpit_view.author_name = self.profile.user.name
             if hasattr(self.cockpit_view, "left_frame") and hasattr(self.cockpit_view.left_frame, "set_user_color_settings"):

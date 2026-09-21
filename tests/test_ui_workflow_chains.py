@@ -471,15 +471,15 @@ def test_notification_badge_updates_immediately_on_followup_or_complete(tmp_path
 
     # Initial check -> due_case triggers red bell
     app.check_due_followups()
-    assert app.bell_btn.text == "🔔 1"
+    assert app.bell_btn.text == "1"
     assert app.bell_btn.fg_color == "darkred"
 
     # User updates followup date to future date
     due_case.workflow_status.followup_at = "2035-01-01T10:00:00"
     app.check_due_followups()
 
-    # Bell badge turns back to grey 🔔 0 immediately
-    assert app.bell_btn.text == "🔔 0"
+    # Bell badge turns back to grey 0 immediately
+    assert app.bell_btn.text == "0"
     assert app.bell_btn.fg_color == "gray30"
 
 

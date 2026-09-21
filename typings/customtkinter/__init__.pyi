@@ -130,3 +130,9 @@ BooleanVar = tk.BooleanVar
 StringVar = tk.StringVar
 IntVar = tk.IntVar
 DoubleVar = tk.DoubleVar
+
+class CTkImage:
+    _size: Tuple[int, int]
+    _light_image: Any
+    _dark_image: Any
+    def __init__(self, light_image: Any = None, dark_image: Any = None, size: Tuple[int, int] = (16, 16)) -> None: ...

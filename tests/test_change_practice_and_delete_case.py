@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import cast
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -131,7 +132,7 @@ def test_on_delete_case_confirmed_with_attachments(tmp_path: Path):
     assert len(app.storage_service.load_cases()) == 0
     # Attachment directory removed from disk
     assert not att_dir.exists()
-    app.refresh_views.assert_called_once_with(force_all=True)
+    cast(MagicMock, app.refresh_views).assert_called_once_with(force_all=True)
 
 
 def test_on_delete_case_confirmed_keep_attachments(tmp_path: Path):
@@ -195,4 +196,4 @@ def test_on_change_practice_workflow(tmp_path: Path):
     assert "Praxisübernahme zum Quartalsende." in t_entry.note
     assert "PRAXIS: Alte Praxis Dr. Alt → Neue Praxis Dr. Neu" in t_entry.status_change
 
-    app.on_case_updated.assert_called_once_with(case)
+    cast(MagicMock, app.on_case_updated).assert_called_once_with(case)

@@ -10,6 +10,7 @@ self.cockpit_view, usw.) unveraendert funktionieren. Reines Verschieben von
 Code, keine Verhaltensaenderung.
 """
 from collections.abc import Callable
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 import customtkinter as ctk
 
@@ -199,6 +200,181 @@ class DialogLaunchersMixin:
             self.cases = [c for c in self.cases if c.case_id != case.case_id]
             self.active_case = None
             self.refresh_views()
+
+    def on_change_practice(self, case: Case) -> None:
+        """Opens the ChangePracticeDialog and applies the practice swap on confirmation."""
+        from ui.dialogs.change_practice_dialog import ChangePracticeDialog
+        from models.case import TimelineEntry
+        from utils.datetime_utils import now_iso
+        from enums import Channel
+        from services.i18n_service import tr
+
+        def _on_practice_changed(new_customer_data, note_text: str) -> None:
+            old_name = case.customer.practice_name or case.customer.customer_id
+            new_name = new_customer_data.practice_name
+
+            # Replace all customer data
+            case.customer = new_customer_data
+
+            # Add timeline entry (always automatic + optional user note combined)
+            auto_note = tr(
+                "change_practice.timeline_note",
+                'Praxis geändert von "{old}" zu "{new}".',
+                old=old_name,
+                new=new_name,
+            )
+            if note_text:
+                full_note = f"{auto_note} {note_text}"
+            else:
+                full_note = auto_note
+
+            change_text = tr(
+                "change_practice.timeline_status",
+                "PRAXIS: {old} → {new}",
+                old=old_name,
+                new=new_name,
+            )
+
+            entry = TimelineEntry(
+                timestamp=now_iso(),
+                author=self.profile.user.name,
+                channel=Channel.INTERNAL_NOTE.value,
+                note=full_note,
+                status_change=change_text,
+            )
+            case.timeline.append(entry)
+            self.on_case_updated(case)
+
+            # Refresh the cockpit info row (practice label) if currently open
+            if (
+                self.is_view_built("cockpit")
+                and hasattr(self.cockpit_view, "refresh_ui_labels")
+            ):
+                self.cockpit_view.refresh_ui_labels()
+
+            from ui.widgets.toast_notification import ToastNotification
+            ToastNotification(
+                self,
+                title=tr("change_practice.success_toast", "✅ Praxis geändert"),
+                message=tr(
+                    "change_practice.success_msg",
+                    'Praxis wurde zu "{name}" geändert.',
+                    name=new_name,
+                ),
+            )
+
+        ChangePracticeDialog(
+            self,
+            case=case,
+            customers=self.customers,
+            on_practice_changed=_on_practice_changed,
+            on_customer_added=self.on_quick_customer_added,
+        )
+
+    def on_delete_case(self, case: Case) -> None:
+        """Permanently deletes a case after two-stage confirmation.
+
+        Stage 1: Confirm data deletion.
+        Stage 2: Ask whether the attachment folder should also be deleted.
+        """
+        from ui.dialogs.confirm_dialog import ask_confirmation
+        from services.i18n_service import tr
+
+        # --- Stage 1: confirm data record deletion ---
+        confirmed = ask_confirmation(
+            self,
+            message=tr(
+                "delete_case.confirm_msg",
+                'Fall "{case_id}" wird unwiderruflich gelöscht. '
+                "Diese Aktion kann nicht rückgängig gemacht werden!",
+                case_id=case.case_id,
+            ),
+            title=tr("delete_case.confirm_title", "Fall löschen"),
+            confirm_text=tr("delete_case.confirm_btn", "Endgültig löschen"),
+        )
+        if not confirmed:
+            return
+
+        # --- Stage 2: optionally delete attachment folder ---
+        delete_attachments = False
+        attachment_dir = getattr(case, "attachment_directory", "") or ""
+        if attachment_dir:
+            att_path = Path(attachment_dir)
+            if att_path.exists() and att_path.is_dir():
+                delete_attachments = ask_confirmation(
+                    self,
+                    message=tr(
+                        "delete_case.attachments_msg",
+                        "Soll auch der Anhang-Ordner dieses Falls gelöscht werden? ({path})",
+                        path=str(att_path),
+                    ),
+                    title=tr("delete_case.attachments_title", "Anhänge löschen?"),
+                    confirm_text=tr("delete_case.attachments_confirm_btn", "Anhänge löschen"),
+                )
+
+        # --- Execute deletion ---
+        case_id = case.case_id
+        success = self.storage_service.delete_case_permanently(case_id)
+
+        if not success:
+            from ui.dialogs.confirm_dialog import show_notice
+            show_notice(
+                self,
+                message=tr("delete_case.not_found", "Fall nicht gefunden oder bereits gelöscht."),
+                title=tr("delete_case.confirm_title", "Fall löschen"),
+            )
+            return
+
+        # Remove from in-memory list (both active and archive are already updated by storage)
+        self.cases = [c for c in self.cases if c.case_id != case_id]
+        self.active_case = None
+
+        # Optionally delete attachment folder
+        if delete_attachments and attachment_dir:
+            try:
+                import shutil
+                att_path = Path(attachment_dir)
+                if att_path.exists():
+                    shutil.rmtree(att_path)
+            except Exception as err:
+                import logging
+                logging.getLogger("SupportCockpit").warning(
+                    f"Could not delete attachment folder {attachment_dir}: {err}"
+                )
+
+        # Clear cockpit detail view if the deleted case is currently open
+        if self.is_view_built("cockpit") and hasattr(self.cockpit_view, "current_case"):
+            if (
+                self.cockpit_view.current_case is not None
+                and self.cockpit_view.current_case.case_id == case_id
+            ):
+                # Reset the cockpit detail pane cleanly
+                try:
+                    self.cockpit_view.current_case = None
+                    if hasattr(self.cockpit_view, "form_widget"):
+                        self.cockpit_view.form_widget.clear_form()
+                    if hasattr(self.cockpit_view, "case_title_label"):
+                        from services.i18n_service import tr as _tr
+                        self.cockpit_view.case_title_label.configure(
+                            text=_tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen")
+                        )
+                    if hasattr(self.cockpit_view, "save_btn"):
+                        self.cockpit_view.save_btn.configure(state="disabled")
+                except Exception:
+                    pass
+
+        self.refresh_views(force_all=True)
+
+        from ui.widgets.toast_notification import ToastNotification
+        ToastNotification(
+            self,
+            title=tr("delete_case.success_toast", "🗑 Fall gelöscht"),
+            message=tr(
+                "delete_case.success_msg",
+                'Fall "{case_id}" wurde gelöscht.',
+                case_id=case_id,
+            ),
+        )
 
     # --- Dialog Openers ---
     def open_help_dialog(self):

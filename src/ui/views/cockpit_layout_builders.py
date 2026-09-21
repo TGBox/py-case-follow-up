@@ -323,6 +323,8 @@ class CockpitLayoutBuilderMixin:
                 tr("cockpit.calendar", "📅 Kalender"),
                 tr("cockpit.archive", "📦 Archivieren"),
                 tr("cockpit.convert_form", "🔄 Formular umwandeln"),
+                tr("cockpit.change_practice", "🏥 Praxis wechseln"),
+                tr("cockpit.delete_case", "🗑 Fall löschen"),
             ],
             command=self.on_more_actions_selected,
             width=COMBO_WIDTH_MORE_ACTIONS,
@@ -394,6 +396,8 @@ class CockpitLayoutBuilderMixin:
                 tr("cockpit.calendar", "📅 Kalender"),
                 tr("cockpit.archive", "📦 Archivieren"),
                 tr("cockpit.convert_form", "🔄 Formular umwandeln"),
+                tr("cockpit.change_practice", "🏥 Praxis wechseln"),
+                tr("cockpit.delete_case", "🗑 Fall löschen"),
             ])
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
 

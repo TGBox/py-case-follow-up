@@ -374,7 +374,9 @@
     "tab_attachments": "Bilagor",
     "tab_timeline": "Tidslinje",
     "tab_wiki": "Wiki / Kunskapsbas",
-    "timeline_title": "Historik & tidslinjeanteckningar"
+    "timeline_title": "Historik & tidslinjeanteckningar",
+    "change_practice": "🏥 Byt mottagning",
+    "delete_case": "🗑 Ta bort ärende"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Skapa ny medarbetare",
@@ -771,7 +773,8 @@
     "template_mgmt": "📄 Hantera exportmallar",
     "zip_export": "Spara fullständig säkerhetskopia som ZIP",
     "zip_import": "📥 Importera säkerhetskopia — Ange målsökvägar",
-    "followup": "🔔 Uppföljning & Påminnelse"
+    "followup": "🔔 Uppföljning & Påminnelse",
+    "change_practice": "🏥 Byt mottagning"
   },
   "dynamic_form": {
     "add_card": "➕ Begär ytterligare {title}",
@@ -1937,5 +1940,31 @@
     "dark": "Mörk",
     "light": "Ljus",
     "system": "System"
+  },
+  "change_practice": {
+    "confirm_btn": "Byt mottagning",
+    "confirm_msg": "All kunddata i detta ärende ersätts med data från den nyvalda mottagningen \"{new}\". Fortsätta?",
+    "current": "Nuvarande mottagning: {name}",
+    "header": "Välj ny mottagning för detta ärende:",
+    "no_customer": "Vänligen välj en mottagning.",
+    "note_label": "Anteckning om byte (valfritt):",
+    "note_placeholder": "t.ex. Mottagning sammanslagen med...",
+    "success_msg": "Mottagningen har ändrats till \"{name}\".",
+    "success_toast": "✅ Mottagning bytt",
+    "timeline_note": "Mottagning ändrad från \"{old}\" till \"{new}\".",
+    "timeline_status": "MOTTAGNING: {old} → {new}",
+    "title": "Byt mottagning"
+  },
+  "delete_case": {
+    "attachments_cancel_btn": "Ta bara bort dataposten",
+    "attachments_confirm_btn": "Ta bort bilagor",
+    "attachments_msg": "Ska bilagemappen för detta ärende också tas bort? ({path})",
+    "attachments_title": "Ta bort bilagor?",
+    "confirm_btn": "Ta bort permanent",
+    "confirm_msg": "Ärende \"{case_id}\" tas bort permanent. Denna åtgärd kan inte ångras!",
+    "confirm_title": "Ta bort ärende",
+    "not_found": "Ärendet hittades inte eller är redan borttaget.",
+    "success_msg": "Ärende \"{case_id}\" har tagits bort.",
+    "success_toast": "🗑 Ärende borttaget"
   }
 }

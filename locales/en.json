@@ -374,7 +374,9 @@
     "tab_attachments": "Attachments",
     "tab_timeline": "Timeline",
     "tab_wiki": "Wiki / Knowledge Base",
-    "timeline_title": "History & Timeline Notes"
+    "timeline_title": "History & Timeline Notes",
+    "change_practice": "🏥 Change Practice",
+    "delete_case": "🗑 Delete Case"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Add New Colleague",
@@ -771,7 +773,8 @@
     "template_mgmt": "📄 Manage Export Templates",
     "zip_export": "Save complete data backup as ZIP",
     "zip_import": "📥 Import Backup — Set Target Paths",
-    "followup": "🔔 Follow-up & Inquiry Reminder"
+    "followup": "🔔 Follow-up & Inquiry Reminder",
+    "change_practice": "🏥 Change Practice"
   },
   "dynamic_form": {
     "add_card": "➕ Request another {title}",
@@ -1937,5 +1940,31 @@
     "dark": "Dark",
     "light": "Light",
     "system": "System"
+  },
+  "change_practice": {
+    "confirm_btn": "Change Practice",
+    "confirm_msg": "All customer data of this case will be replaced with the data of the newly selected practice \"{new}\". Continue?",
+    "current": "Current practice: {name}",
+    "header": "Select new practice for this case:",
+    "no_customer": "Please select a practice.",
+    "note_label": "Note about the change (optional):",
+    "note_placeholder": "e.g. Practice merged with...",
+    "success_msg": "Practice was changed to \"{name}\".",
+    "success_toast": "✅ Practice changed",
+    "timeline_note": "Practice changed from \"{old}\" to \"{new}\".",
+    "timeline_status": "PRACTICE: {old} → {new}",
+    "title": "Change Practice"
+  },
+  "delete_case": {
+    "attachments_cancel_btn": "Only delete data record",
+    "attachments_confirm_btn": "Delete attachments",
+    "attachments_msg": "Should the attachment folder of this case also be deleted? ({path})",
+    "attachments_title": "Delete Attachments?",
+    "confirm_btn": "Delete permanently",
+    "confirm_msg": "Case \"{case_id}\" will be permanently deleted. This action cannot be undone!",
+    "confirm_title": "Delete Case",
+    "not_found": "Case not found or already deleted.",
+    "success_msg": "Case \"{case_id}\" was deleted.",
+    "success_toast": "🗑 Case deleted"
   }
 }

@@ -64,6 +64,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         on_open_email: Callable[[Case | None], None] | None = None,
         on_open_calendar: Callable[[Case], None] | None = None,
         on_open_snippet_picker: Callable[[Any], None] | None = None,
+        on_change_practice: Callable[[Case], None] | None = None,
+        on_delete_case: Callable[[Case], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.author_name = author_name
@@ -83,6 +85,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.on_open_email = on_open_email
         self.on_open_calendar = on_open_calendar
         self.on_open_snippet_picker = on_open_snippet_picker if on_open_snippet_picker is not None else (lambda x=None: None)
+        self.on_change_practice: Callable[[Case], None] = on_change_practice if on_change_practice is not None else (lambda c: None)
+        self.on_delete_case: Callable[[Case], None] = on_delete_case if on_delete_case is not None else (lambda c: None)
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
@@ -366,6 +370,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self.on_copy_practice_email()
         elif choice.startswith("🖨"):
             self.on_click_print()
+        elif choice.startswith("🏥"):
+            if self.current_case:
+                self.on_change_practice(self.current_case)
+        elif choice.startswith("🗑"):
+            if self.current_case:
+                self.on_delete_case(self.current_case)
         if hasattr(self, "more_actions_combo"):
             from services.i18n_service import tr
             self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))

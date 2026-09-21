@@ -190,6 +190,7 @@ DIALOG_TITLES = LocalizedDict("dialog_titles", {
     "email_calendar": "✉ E-Mail & 📅 Kalender-Entwurf",
     "ai_assistant": "🤖 KI- & Support-Assistent",
     "email_import": "📥 E-Mail Posteingang & Import Hub",
+    "change_practice": "🏥 Praxis wechseln",
 })
 
 # --- Sub-Header Labels inside Dialogs ---
@@ -503,6 +504,7 @@ DIALOG_DIMENSIONS = {
     "email_import": (850, 600),
     "confirm": (470, 215),
     "followup": (500, 385),
+    "change_practice": (560, 400),
 }
 
 DIALOG_MIN_DIMENSIONS = {

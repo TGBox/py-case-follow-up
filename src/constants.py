@@ -223,10 +223,6 @@ def get_localized_menu_options_datenaustausch() -> list[str]:
         tr("menu.opt_export", "📤 Export & Übergabe (Strg+E)"),
     ]
 
-MENU_OPTIONS_STAMMDATEN = ["🏥 Praxen", "👥 Mitarbeiter", "🧩 Programmbereiche", "🏷 Tags"]
-MENU_OPTIONS_VORLAGEN = ["🛠 Formulare", "📄 Vorlagen", "📝 Textbausteine"]
-MENU_OPTIONS_DATENAUSTAUSCH = ["📥 E-Mail Import", "🐍 Cobra CRM Import", "📤 Export & Übergabe (Strg+E)"]
-
 # --- Button Labels & UI Action Texts ---
 UI_BUTTON_TEXTS = LocalizedDict("ui_buttons", {
     "save": "Speichern",
@@ -346,6 +342,9 @@ DEFAULT_USER_COLOR = "#3b82f6"
 USER_COLOR_PRESETS = ["#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4"]
 DEFAULT_DEPARTMENT = "Support"
 DEFAULT_SIGNATURE_FILENAME = "email_signature.txt"
+#: Timeline author for entries an Outlook/IMAP import created. A technical
+#: marker that is stored in the case file, so it stays language independent.
+DEFAULT_AUTHOR_EMAIL_IMPORT = "E-Mail Import"
 DEFAULT_UI_THEME = "SYSTEM"
 DEFAULT_BOARD_COLLAPSED = {"support": False, "dev": False, "followup": False, "completed": False}
 DEFAULT_TABLE_COLUMN_WIDTHS = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
@@ -441,7 +440,7 @@ LABEL_WIDTH_LG = 180
 LABEL_WIDTH_XL = 280
 PROFILE_TAB_FIELD_WIDTH = 380
 SCROLL_FRAME_HEIGHT_SM = 190
-TEXTBOX_HEIGHT_SM = 60
+TEXTBOX_HEIGHT_SM = 45
 BTN_WIDTH_ACTION = 140
 USER_COLOR_TILE_SIZE = 10
 COLOR_BORDER_DARK = "#18181b"
@@ -605,19 +604,12 @@ TEXTBOX_SPACING3_PARAGRAPH = 6
 TEXTBOX_SPACING2_PARAGRAPH = 1
 
 # --- Design System Color Tokens ---
-COLOR_PRIMARY = "#2563eb"
-COLOR_PRIMARY_HOVER = "#1d4ed8"
 COLOR_AI_PURPLE = "#6366f1"
 COLOR_AI_PURPLE_HOVER = "#4f46e5"
 COLOR_BADGE_GREEN = "forestgreen"
 COLOR_BADGE_BLUE = "dodgerblue"
 COLOR_BADGE_GRAY = "gray"
-COLOR_SUCCESS = "forestgreen"
-COLOR_SUCCESS_HOVER = "darkgreen"
 COLOR_CANCEL = ("gray70", "gray40")
-COLOR_CANCEL_HOVER = ("gray60", "gray50")
-COLOR_DANGER = "crimson"
-COLOR_DANGER_HOVER = "darkred"
 COLOR_MUTED_GRAY = ("gray75", "gray30")
 COLOR_MUTED_HOVER = ("gray65", "gray40")
 COLOR_SASH_DARK = "#2b2b2b"
@@ -667,13 +659,13 @@ COLOR_SCORE_HIGH = "firebrick"
 COLOR_SCORE_MEDIUM = "darkgoldenrod"
 COLOR_SCORE_LOW = "darkgreen"
 COLOR_COLLAPSED_COL_BG = ("gray80", "gray25")
-COLOR_BTN_GRAY = ("gray75", "gray35")
+COLOR_BTN_GRAY = "gray50"
 COLOR_BTN_GRAY_HOVER = ("gray65", "gray45")
 COLOR_BTN_EXPAND_HOVER = ("gray65", "gray50")
 COLOR_BOARD_REMIND = "darkblue"
 COLOR_FOLLOWUP_FG = ("darkblue", "lightblue")
 COLOR_CARD_TITLE_FG = ("gray20", "gray85")
-COLOR_MUTED_LABEL = ("gray40", "gray70")
+COLOR_MUTED_LABEL = ("gray50", "gray60")
 COLOR_COMPLETED_GRAY = "gray40"
 
 
@@ -709,8 +701,6 @@ COLOR_TEXT_WHITE = "white"
 COLOR_TEXT_BLUE = "dodgerblue"
 COLOR_PURPLE_DARK = "darkviolet"
 COLOR_PRIMARY_BLUE = "dodgerblue"
-COLOR_BTN_GRAY = "gray40"
-COLOR_MUTED_LABEL = ("gray40", "gray70")
 COLOR_MUTED_DISABLED = ("gray50", "gray70")
 COLOR_MUTED_BODY = ("gray30", "gray80")
 
@@ -857,22 +847,71 @@ COBRA_FIELD_ALIAS_MAP = {
 # --- Supported File Extensions & Types ---
 IMAGE_FILE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
 TEXT_FILE_EXTENSIONS = {".txt", ".log", ".json", ".sql", ".xml", ".csv", ".ini", ".md"}
-FILE_TYPES_MARKDOWN_EXPORT = [("Markdown", "*.md"), ("Text", "*.txt"), ("Alle Dateien", "*.*")]
-FILE_TYPES_HTML_REPORT = [("HTML-Bericht (für PDF-Druck)", "*.html"), ("Alle Dateien", "*.*")]
-FILE_TYPES_ZIP = [("ZIP-Archiv", "*.zip")]
-FILE_TYPES_SIGNATURE_EXPORT = [
-    ("Textdatei (*.txt)", "*.txt"),
-    ("HTML-Datei (*.html)", "*.html"),
-    ("Markdown (*.md)", "*.md"),
-    ("Alle Dateien (*.*)", "*.*"),
-]
-FILE_TYPES_SIGNATURE_IMPORT = [
-    ("Text- & Web-Dateien (*.txt, *.html, *.md)", "*.txt *.html *.htm *.md"),
-    ("Textdatei (*.txt)", "*.txt"),
-    ("HTML-Datei (*.html, *.htm)", "*.html *.htm"),
-    ("Markdown (*.md)", "*.md"),
-    ("Alle Dateien (*.*)", "*.*"),
-]
+FILE_EXT_ICS = ".ics"
+ICS_FILENAME_TEMPLATE_APPOINTMENT = "Termin_Fall_{case_id}.ics"
+ICS_FILENAME_TEMPLATE_CALLBACK = "Rueckruf_Fall_{case_id}.ics"
+
+# The file-dialog type descriptions are user-visible, so they are built on demand
+# instead of being frozen at import time - a module-level list would keep the
+# language the app happened to start in. The glob patterns stay untranslated.
+def get_file_types_markdown_export() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.markdown", "Markdown"), "*.md"),
+        (tr("file_types.text", "Text"), "*.txt"),
+        (tr("file_types.all_files", "Alle Dateien"), "*.*"),
+    ]
+
+def get_file_types_html_report() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.html_report", "HTML-Bericht (für PDF-Druck)"), "*.html"),
+        (tr("file_types.all_files", "Alle Dateien"), "*.*"),
+    ]
+
+def get_file_types_zip() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [(tr("file_types.zip_archive", "ZIP-Archiv"), "*.zip")]
+
+def get_file_types_ics() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.ics", "iCalendar-Dateien (*.ics)"), "*.ics"),
+        (tr("file_types.all_files", "Alle Dateien"), "*.*"),
+    ]
+
+def get_file_types_cobra_export() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.cobra_export", "Cobra / CSV Dateien (*.csv, *.txt, *.json)"), "*.csv;*.txt;*.json"),
+        (tr("file_types.all_files", "Alle Dateien"), "*.*"),
+    ]
+
+def get_file_types_data_file(file_pattern: str) -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.data_file", "Datendatei"), file_pattern),
+        (tr("file_types.all_files", "Alle Dateien"), "*.*"),
+    ]
+
+def get_file_types_signature_export() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.text_file", "Textdatei (*.txt)"), "*.txt"),
+        (tr("file_types.html_file", "HTML-Datei (*.html)"), "*.html"),
+        (tr("file_types.markdown_file", "Markdown (*.md)"), "*.md"),
+        (tr("file_types.all_files_pattern", "Alle Dateien (*.*)"), "*.*"),
+    ]
+
+def get_file_types_signature_import() -> list[tuple[str, str]]:
+    from services.i18n_service import tr
+    return [
+        (tr("file_types.signature_combined", "Text- & Web-Dateien (*.txt, *.html, *.md)"), "*.txt *.html *.htm *.md"),
+        (tr("file_types.text_file", "Textdatei (*.txt)"), "*.txt"),
+        (tr("file_types.html_htm_file", "HTML-Datei (*.html, *.htm)"), "*.html *.htm"),
+        (tr("file_types.markdown_file", "Markdown (*.md)"), "*.md"),
+        (tr("file_types.all_files_pattern", "Alle Dateien (*.*)"), "*.*"),
+    ]
 
 # --- Default Scoring Matrix ---
 DEFAULT_SCORING_MATRIX = {
@@ -1141,7 +1180,6 @@ COLOR_SNIPPET_CARD_SEL = ("gray80", "gray25")
 COLOR_SNIPPET_CARD_BG = ("gray90", "gray15")
 COLOR_SNIPPET_PREVIEW_TEXT = ("gray40", "gray70")
 SNIPPET_PREVIEW_MAX_LEN = 60
-COLOR_BTN_GRAY = "gray50"
 
 # Help Dialog Design Tokens
 DIALOG_MIN_SIZE_HELP = (960, 600)
@@ -1214,7 +1252,6 @@ ENTRY_WIDTH_VM_COL = 95
 ENTRY_WIDTH_VM = 85
 ENTRY_WIDTH_DSC_COL = 100
 ENTRY_WIDTH_DSC = 90
-TEXTBOX_HEIGHT_SM = 45
 TEXTBOX_HEIGHT_RULES = 65
 COLOR_LABEL_GRAY60 = "gray60"
 COLOR_BTN_GRAY_40 = "gray40"
@@ -1339,7 +1376,6 @@ SNIPPET_FORM_MIN_WIDTH = 380
 TEXTBOX_HEIGHT_SNIPPET_CONTENT = 180
 COLOR_BTN_GRAY45 = "gray45"
 COLOR_DEEPSKYBLUE_HOVER = "deepskyblue"
-COLOR_DARKRED_HOVER = "darkred"
 COLOR_SNIPPET_CARD_ACTIVE = ("gray80", "gray25")
 COLOR_SNIPPET_CARD_INACTIVE = ("gray90", "gray15")
 COLOR_LABEL_GRAY70 = "gray70"
@@ -1462,7 +1498,6 @@ SHORTCUT_PASTE = "<Control-v>"
 TEXT_START_INDEX = "1.0"
 COLOR_FIREBRICK_HOVER = "firebrick"
 COLOR_PANEL_PREVIEW_BG = ("gray90", "gray15")
-COLOR_MUTED_LABEL = ("gray50", "gray60")
 COLOR_TIP_TEXT = ("gray40", "gray70")
 SCROLL_HEIGHT_ATTACHMENTS = 130
 TEXTBOX_HEIGHT_FILE_PREVIEW = 90
@@ -1591,6 +1626,15 @@ WIKI_SEARCH_SNIPPET_MAX_CHARS = 120
 WIKI_PAGE_SNIPPET_MAX_CHARS = 150
 
 # --- Cobra CRM Import Dialog Tokens ---
+#: Key/default pairs for the conflict-mode menu, and the stable mode keys the
+#: import service expects - same order, so the selected position maps straight
+#: onto a key without ever comparing translated label text.
+COBRA_CONFLICT_MODE_CHOICES = [
+    ("cobra_import.mode_update", "Bestehende Praxen aktualisieren (Update)"),
+    ("cobra_import.mode_skip", "Bestehende überspringen (Skip)"),
+    ("cobra_import.mode_all_new", "Alle als neu anlegen"),
+]
+COBRA_CONFLICT_MODE_KEYS = ("update", "skip", "all_new")
 DIALOG_MIN_SIZE_COBRA_IMPORT = (760, 540)
 COMBO_WIDTH_CONFLICT_MODE = 320
 COMBO_WIDTH_COBRA_MAPPING = 240

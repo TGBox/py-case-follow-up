@@ -463,7 +463,11 @@
     "select_valid": "Please select a valid target form.",
     "case_info": "Case ID: {case_id} — {title}",
     "current_form": "Current form: {schema_name}",
-    "notice_text": "ℹ Data Backup:\nWhen converting, previously entered form information will be added as a new note to the timeline so no content is lost. Common fields (e.g. program area) will be transferred to the new form."
+    "notice_text": "ℹ Data Backup:\nWhen converting, previously entered form information will be added as a new note to the timeline so no content is lost. Common fields (e.g. program area) will be transferred to the new form.",
+    "no_schemas": "No forms",
+    "backup_item": "• {label}: {value}",
+    "timeline_note": "🔄 Form converted from '{old_schema}' to '{new_schema}'.",
+    "timeline_note_with_data": "🔄 Form converted from '{old_schema}' to '{new_schema}'.\n--- Preserved form data ---\n{data}"
   },
   "customer_form": {
     "btn_add_contact": "+ Add Contact",
@@ -942,6 +946,19 @@
     "mail_kunden_rueckmeldung_name": "Email to Practice: Solution Summary"
   },
   "file_types": {
+    "all_files": "All files",
+    "all_files_pattern": "All files (*.*)",
+    "cobra_export": "Cobra / CSV files (*.csv, *.txt, *.json)",
+    "data_file": "Data file",
+    "html_file": "HTML file (*.html)",
+    "html_htm_file": "HTML file (*.html, *.htm)",
+    "html_report": "HTML report (for PDF printing)",
+    "ics": "iCalendar files (*.ics)",
+    "markdown": "Markdown",
+    "markdown_file": "Markdown (*.md)",
+    "signature_combined": "Text & web files (*.txt, *.html, *.md)",
+    "text": "Text",
+    "text_file": "Text file (*.txt)",
     "zip_archive": "ZIP Archive"
   },
   "followup": {
@@ -1857,10 +1874,14 @@
     "articles_found": "Wiki articles found",
     "articles_found_count": "{count} wiki articles found",
     "enter_query": "Please enter a search query.",
+    "err_missing_tokens": "BookStack API tokens are missing from the environment variables.",
+    "err_no_api_url": "Wiki API URL is not configured.",
     "header": "BookStack Offline Wiki",
     "no_results": "No matching articles in offline index.",
     "search_placeholder": "📖 Search wiki (e.g. ERR_DB_902)...",
     "sync_btn": "🔄 Wiki Sync",
+    "sync_error": "Wiki sync error: {error}",
+    "sync_success": "{count} articles synced.",
     "syncing": "⏳ Syncing wiki in background..."
   },
   "zip_import": {

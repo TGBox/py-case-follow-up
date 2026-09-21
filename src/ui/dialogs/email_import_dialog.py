@@ -28,6 +28,7 @@ from constants import (
     COLOR_TEXT_BLUE,
     COLOR_TEXT_GRAY,
     CORNER_RADIUS_CARD,
+    DEFAULT_AUTHOR_EMAIL_IMPORT,
     DIALOG_DIMENSIONS,
     DIALOG_HEADERS,
     DIALOG_MIN_SIZE_EMAIL_IMPORT,
@@ -64,7 +65,7 @@ class EmailImportDialog(BaseDialog):
         cases: list[Case],
         on_case_created: Callable[[Case], None],
         on_case_updated: Callable[[Case], None],
-        author_name: str = "E-Mail Import",
+        author_name: str = DEFAULT_AUTHOR_EMAIL_IMPORT,
     ):
         super().__init__(parent)
         self.cases = cases
@@ -170,7 +171,7 @@ class EmailImportDialog(BaseDialog):
             return
 
         for idx, mail in enumerate(self.emails):
-            subj = mail.get("subject", "Ohne Betreff")
+            subj = mail.get("subject") or tr("email_import.no_subject", "Ohne Betreff")
             sender_n = mail.get("sender_name", "")
             sender_e = mail.get("sender_email", "")
             body = mail.get("body", "")

@@ -463,7 +463,11 @@
     "select_valid": "Bitte ein gültiges Ziel-Formular auswählen.",
     "case_info": "Fall-ID: {case_id} — {title}",
     "current_form": "Aktuelles Formular: {schema_name}",
-    "notice_text": "ℹ Datensicherung:\nBeim Umwandeln werden bisher eingegebene Formular-Informationen als neue Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen."
+    "notice_text": "ℹ Datensicherung:\nBeim Umwandeln werden bisher eingegebene Formular-Informationen als neue Notiz in die Zeitleiste übernommen, sodass kein Inhalt verloren geht. Gemeinsame Felder (z. B. Programmbereich) werden ins neue Formular übertragen.",
+    "no_schemas": "Keine Schemas",
+    "backup_item": "• {label}: {value}",
+    "timeline_note": "🔄 Formular umgewandelt von '{old_schema}' zu '{new_schema}'.",
+    "timeline_note_with_data": "🔄 Formular umgewandelt von '{old_schema}' zu '{new_schema}'.\n--- Gesicherte Formular-Daten ---\n{data}"
   },
   "customer_form": {
     "btn_add_contact": "+ Kontakt hinzufügen",
@@ -942,6 +946,19 @@
     "mail_kunden_rueckmeldung_name": "E-Mail an Praxis: Lösungs-Zusammenfassung"
   },
   "file_types": {
+    "all_files": "Alle Dateien",
+    "all_files_pattern": "Alle Dateien (*.*)",
+    "cobra_export": "Cobra / CSV Dateien (*.csv, *.txt, *.json)",
+    "data_file": "Datendatei",
+    "html_file": "HTML-Datei (*.html)",
+    "html_htm_file": "HTML-Datei (*.html, *.htm)",
+    "html_report": "HTML-Bericht (für PDF-Druck)",
+    "ics": "iCalendar-Dateien (*.ics)",
+    "markdown": "Markdown",
+    "markdown_file": "Markdown (*.md)",
+    "signature_combined": "Text- & Web-Dateien (*.txt, *.html, *.md)",
+    "text": "Text",
+    "text_file": "Textdatei (*.txt)",
     "zip_archive": "ZIP-Archiv"
   },
   "followup": {
@@ -1857,10 +1874,14 @@
     "articles_found": "Wiki-Artikel gefunden",
     "articles_found_count": "{count} Wiki-Artikel gefunden",
     "enter_query": "Bitte Suchbegriff eingeben.",
+    "err_missing_tokens": "BookStack-API-Tokens fehlen in den Umgebungsvariablen.",
+    "err_no_api_url": "Wiki-API-URL ist nicht konfiguriert.",
     "header": "BookStack Offline Wiki",
     "no_results": "Keine treffenden Artikel im Offline-Index.",
     "search_placeholder": "📖 Wiki durchsuchen (z. B. ERR_DB_902)...",
     "sync_btn": "🔄 Wiki Sync",
+    "sync_error": "Wiki-Sync-Fehler: {error}",
+    "sync_success": "{count} Artikel synchronisiert.",
     "syncing": "⏳ Synchronisiere Wiki im Hintergrund..."
   },
   "zip_import": {

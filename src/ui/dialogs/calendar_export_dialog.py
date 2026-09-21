@@ -24,9 +24,11 @@ from constants import (
     DIALOG_DIMENSIONS,
     DIALOG_MIN_SIZE_CALENDAR_EXPORT,
     DIALOG_TITLES,
+    FILE_EXT_ICS,
     FONT_SIZE_BODY,
     FONT_SIZE_HEADER_BAR,
     FONT_SIZE_SM,
+    ICS_FILENAME_TEMPLATE_APPOINTMENT,
     PAD_10,
     PAD_15,
     PAD_CONTAINER,
@@ -34,6 +36,7 @@ from constants import (
     PAD_NONE,
     PAD_XS,
     TEXTBOX_HEIGHT_CALENDAR_DESC,
+    get_file_types_ics,
 )
 
 
@@ -182,9 +185,9 @@ class CalendarExportDialog(BaseDialog):
         file_path = filedialog.asksaveasfilename(
             parent=self,
             title=tr("calendar_export.save_dialog_title", "iCalendar-Datei speichern"),
-            defaultextension=".ics",
-            initialfile=f"Termin_Fall_{self.case.case_id}.ics",
-            filetypes=[("iCalendar Datei", "*.ics"), ("Alle Dateien", "*.*")],
+            defaultextension=FILE_EXT_ICS,
+            initialfile=ICS_FILENAME_TEMPLATE_APPOINTMENT.format(case_id=self.case.case_id),
+            filetypes=get_file_types_ics(),
         )
         if not file_path:
             return

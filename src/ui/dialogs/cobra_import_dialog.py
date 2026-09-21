@@ -8,6 +8,8 @@ from services.cobra_crm_import_service import CobraCrmImportService
 from constants import (
     BTN_WIDTH_BROWSE,
     BTN_WIDTH_CANCEL,
+    COBRA_CONFLICT_MODE_CHOICES,
+    COBRA_CONFLICT_MODE_KEYS,
     COLOR_BTN_GRAY,
     COLOR_DANGER,
     COLOR_IMPORT_NEW,
@@ -37,6 +39,7 @@ from constants import (
     PAD_NONE,
     PAD_SM,
     PAD_XS,
+    get_file_types_cobra_export,
 )
 
 
@@ -108,11 +111,7 @@ class CobraImportDialog(BaseDialog):
         # Section 3: Conflict Mode & Preview Summary
         self.register_i18n(ctk.CTkLabel(self.content_scroll, text=tr("cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "cobra_import.step3_lbl", "3. Konfliktbehandlung für bestehende Praxen:").pack(anchor="w", pady=(PAD_MD, PAD_SM))
 
-        mode_options = [
-            tr("cobra_import.mode_update", "Bestehende Praxen aktualisieren (Update)"),
-            tr("cobra_import.mode_skip", "Bestehende überspringen (Skip)"),
-            tr("cobra_import.mode_all_new", "Alle als neu anlegen"),
-        ]
+        mode_options = [tr(key, default) for key, default in COBRA_CONFLICT_MODE_CHOICES]
         self.mode_combo = ctk.CTkOptionMenu(
             self.content_scroll,
             values=mode_options,
@@ -147,7 +146,7 @@ class CobraImportDialog(BaseDialog):
         from services.i18n_service import tr
         fp = filedialog.askopenfilename(
             title=tr("cobra_import.file_dialog_title", "Cobra CRM Export-Datei auswählen"),
-            filetypes=[("Cobra / CSV Dateien (*.csv, *.txt, *.json)", "*.csv;*.txt;*.json"), ("Alle Dateien", "*.*")],
+            filetypes=get_file_types_cobra_export(),
         )
         if not fp:
             return
@@ -234,6 +233,16 @@ class CobraImportDialog(BaseDialog):
         self.mapping[field_key] = val
         self.update_preview()
 
+    def refresh_ui_labels(self) -> None:
+        """Re-translates the plain labels plus the conflict-mode menu.
+
+        register_i18n only rewrites a widget's *text*; the mode menu carries its
+        strings as values, so it needs retranslate_choices on top.
+        """
+        super().refresh_ui_labels()
+        if hasattr(self, "mode_combo"):
+            self.retranslate_choices(self.mode_combo, COBRA_CONFLICT_MODE_CHOICES)
+
     def update_preview(self):
         from services.i18n_service import tr
         if not self.raw_rows:
@@ -271,12 +280,10 @@ class CobraImportDialog(BaseDialog):
         if not self.mapped_customers:
             return
 
-        raw_mode = self.mode_combo.get()
-        mode = "update"
-        if "überspringen" in raw_mode.lower():
-            mode = "skip"
-        elif "alle" in raw_mode.lower():
-            mode = "all_new"
+        # The menu shows translated labels, so the selected *position* - not its
+        # text - is what identifies the mode in every language.
+        index = self.selected_choice_index(self.mode_combo)
+        mode = COBRA_CONFLICT_MODE_KEYS[min(index, len(COBRA_CONFLICT_MODE_KEYS) - 1)]
 
         merged = CobraCrmImportService.merge_customers(self.existing_customers, self.mapped_customers, mode=mode)
         self.on_import_completed(merged)

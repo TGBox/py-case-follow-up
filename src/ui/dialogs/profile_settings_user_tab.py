@@ -27,8 +27,6 @@ from constants import (
     DEFAULT_USER_COLOR,
     ENTRY_WIDTH_COMPACT,
     ENTRY_WIDTH_MD,
-    FILE_TYPES_SIGNATURE_EXPORT,
-    FILE_TYPES_SIGNATURE_IMPORT,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
     FONT_SIZE_XS,
@@ -41,6 +39,8 @@ from constants import (
     USER_COLOR_PRESETS,
     USER_COLOR_PRESET_TILE_SIZE,
     USER_COLOR_PREVIEW_TILE_SIZE,
+    get_file_types_signature_export,
+    get_file_types_signature_import,
 )
 from models.profile import UserInfo, UserProfile
 from services.i18n_service import tr
@@ -441,7 +441,7 @@ class UserSettingsTabMixin:
         file_path = filedialog.asksaveasfilename(
             title=tr("profile.title_save_sig", "Signatur in Datei speichern"),
             defaultextension=".txt",
-            filetypes=FILE_TYPES_SIGNATURE_EXPORT,
+            filetypes=get_file_types_signature_export(),
             initialfile=DEFAULT_SIGNATURE_FILENAME,
             parent=cast(tk.Misc, self),
         )
@@ -457,7 +457,7 @@ class UserSettingsTabMixin:
         from tkinter import filedialog
         file_path = filedialog.askopenfilename(
             title=tr("profile.title_load_sig", "Signatur aus Datei laden"),
-            filetypes=FILE_TYPES_SIGNATURE_IMPORT,
+            filetypes=get_file_types_signature_import(),
             parent=cast(tk.Misc, self),
         )
         if file_path:

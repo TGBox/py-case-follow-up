@@ -14,13 +14,69 @@ from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
 from models.profile import Colleague
 from constants import (
-    APP_WINDOW_TITLE,
-    APP_MIN_WIDTH,
+    APP_DEFAULT_GEOMETRY,
     APP_MIN_HEIGHT,
+    APP_MIN_WIDTH,
+    APP_WINDOW_TITLE,
+    BTN_WIDTH_HELP,
+    BTN_WIDTH_NEW_CASE,
+    BTN_WIDTH_QUIT,
+    BTN_WIDTH_SM,
+    BTN_WIDTH_USER,
+    BTN_WIDTH_XS,
+    COLOR_BELL_BTN,
+    COLOR_BELL_BTN_HOVER,
+    COLOR_BOARD_REMIND,
+    COLOR_COMPLETED_GRAY,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    COLOR_MUTED_LABEL,
+    COLOR_QUIT_BTN,
+    COLOR_QUIT_BTN_HOVER,
+    COLOR_SPLASH_BG,
+    COLOR_SPLASH_BORDER,
+    COLOR_SUCCESS,
+    COLOR_THEME_BTN,
+    COLOR_USER_BTN_HOVER,
+    COLOR_USER_BTN_TEXT,
+    COMBO_WIDTH_DATENAUSTAUSCH,
+    COMBO_WIDTH_LAYOUT,
+    COMBO_WIDTH_STAMMDATEN,
+    COMBO_WIDTH_VORLAGEN,
+    CORNER_RADIUS_CARD,
+    DEFAULT_BACKUP_ZIP_FILENAME,
+    DEFAULT_FONT_SCALE,
+    DEFAULT_LANGUAGE,
+    DEFAULT_SHORTCUT_VIEW_ANALYTICS,
+    DEFAULT_USER_COLOR,
+    FILE_EXT_ZIP,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
+    FOLLOWUP_CHECK_INTERVAL_MS,
+    FONT_SCALE_MAX,
+    FONT_SCALE_MIN,
+    FONT_SCALE_STEP,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SPLASH,
+    FONT_SIZE_SUBTITLE,
+    HOURLY_SCORING_INTERVAL_SECONDS,
+    MENU_BAR_HEIGHT,
     OPEN_CASE_POLL_INTERVAL_MS,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_MD,
+    PAD_SM,
+    PAD_SPLASH_TITLE,
+    SPLASH_DIMENSIONS,
+    THEME_DARK,
+    THEME_LIGHT,
     TOAST_SNIPPET_MACRO_TITLE,
     TOAST_SNIPPET_NO_FOCUS,
+    WIKI_STARTUP_SYNC_DELAY_MS,
+    WINDOW_STATE_ICONIC,
+    WINDOW_STATE_ZOOMED,
+    get_localized_menu_options_datenaustausch,
+    get_localized_menu_options_stammdaten,
+    get_localized_menu_options_vorlagen,
 )
 
 from services.storage_service import StorageService
@@ -72,7 +128,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.storage_service = StorageService(self.app_config)
         self.profile = self.storage_service.load_profile()
         self.storage_service.apply_profile_paths(self.profile)
-        font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+        font_scale = getattr(self.profile.ui_settings, "font_scale", DEFAULT_FONT_SCALE)
         ctk.set_widget_scaling(font_scale)
 
         super().__init__()
@@ -86,14 +142,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Configure Window
         from services.i18n_service import tr
         self.title(tr("app.window_title", APP_WINDOW_TITLE))
-        self.geometry("1440x880")
+        self.geometry(APP_DEFAULT_GEOMETRY)
         self.minsize(APP_MIN_WIDTH, APP_MIN_HEIGHT)
         self._set_scaled_min_max()
         # No wm state here: "zoomed" maps the window on Windows just like
         # deiconify does. The window stays hidden for the whole of the build
         # below and is shown by _reveal_window() at the very end.
 
-        self.apply_windows_theme(theme_mode == "Dark")
+        self.apply_windows_theme(theme_mode == THEME_DARK)
 
         # The splash is a window of its own, not an overlay inside this one.
         # An overlay can only ever cover the main window, never keep it from
@@ -132,7 +188,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.load_all_data()
 
         from services.i18n_service import get_i18n
-        get_i18n().current_language = getattr(self.profile.ui_settings, "language", "de")
+        get_i18n().current_language = getattr(self.profile.ui_settings, "language", DEFAULT_LANGUAGE)
         get_i18n().register_listener(self.on_language_changed)
 
         # Build UI Structure
@@ -140,7 +196,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.create_menu_bar()
 
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.container_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.container_frame.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
 
         # Views are built on first use (see _get_view); only the layout the
         # user actually starts in is created during startup.
@@ -173,7 +229,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                         self.cockpit_view.wiki_widget.on_sync_finished(success, msg)
                 self.after(0, _update_ui)
 
-            self.after(1000, lambda: self.wiki_service.sync_from_bookstack_async(callback=_on_startup_sync_done))
+            self.after(WIKI_STARTUP_SYNC_DELAY_MS, lambda: self.wiki_service.sync_from_bookstack_async(callback=_on_startup_sync_done))
 
         # Scoring Timer (every hour) & Followup Timer
         self.schedule_hourly_scoring()
@@ -190,7 +246,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Nothing of it has been on screen before this point.
         self.update_idletasks()
         self._close_splash_window()
-        self._reveal_window(theme_mode == "Dark")
+        self._reveal_window(theme_mode == THEME_DARK)
 
     def _on_window_configure(self, event=None):
         try:
@@ -209,17 +265,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             win = ctk.CTkToplevel(self)
             win.withdraw()
             win.overrideredirect(True)
-            width, height = 420, 150
+            width, height = SPLASH_DIMENSIONS
             x = (win.winfo_screenwidth() - width) // 2
             y = (win.winfo_screenheight() - height) // 2
             win.geometry(f"{width}x{height}+{x}+{y}")
 
-            frame = ctk.CTkFrame(win, fg_color=("gray95", "gray12"), border_width=1, border_color="dodgerblue")
+            frame = ctk.CTkFrame(win, fg_color=COLOR_SPLASH_BG, border_width=1, border_color=COLOR_SPLASH_BORDER)
             frame.pack(fill="both", expand=True)
 
-            self.splash_title_lbl = ctk.CTkLabel(frame, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=22, weight="bold"), text_color="dodgerblue")
-            self.splash_title_lbl.pack(pady=(38, 8))
-            self.splash_msg_lbl = ctk.CTkLabel(frame, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=12), text_color=("gray40", "gray70"))
+            self.splash_title_lbl = ctk.CTkLabel(frame, text=tr("splash.title", "🩺 Support-Cockpit"), font=ctk.CTkFont(size=FONT_SIZE_SPLASH, weight="bold"), text_color=COLOR_SPLASH_BORDER)
+            self.splash_title_lbl.pack(pady=PAD_SPLASH_TITLE)
+            self.splash_msg_lbl = ctk.CTkLabel(frame, text=tr("splash.loading", "⏳ Anwendungsdaten und Layouts werden geladen..."), font=ctk.CTkFont(size=FONT_SIZE_BODY), text_color=COLOR_MUTED_LABEL)
             self.splash_msg_lbl.pack()
 
             win.deiconify()
@@ -293,105 +349,99 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if hasattr(self, "menu_frame") and self.menu_frame and self.menu_frame.winfo_exists():
             self.menu_frame.destroy()
 
-        self.menu_frame = ctk.CTkFrame(self, height=48, corner_radius=8)
+        self.menu_frame = ctk.CTkFrame(self, height=MENU_BAR_HEIGHT, corner_radius=CORNER_RADIUS_CARD)
         if hasattr(self, "container_frame") and self.container_frame and self.container_frame.winfo_exists():
-            self.menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6), before=self.container_frame)
+            self.menu_frame.pack(fill="x", side="top", padx=PAD_LG, pady=(PAD_LG, PAD_MD), before=self.container_frame)
         else:
-            self.menu_frame.pack(fill="x", side="top", padx=10, pady=(10, 6))
+            self.menu_frame.pack(fill="x", side="top", padx=PAD_LG, pady=(PAD_LG, PAD_MD))
         menu_frame = self.menu_frame
 
         # App Title
-        ctk.CTkLabel(menu_frame, text=tr("menu.title", " 🩺 Support-Cockpit "), font=ctk.CTkFont(size=14, weight="bold")).pack(side="left", padx=10, pady=4)
+        ctk.CTkLabel(menu_frame, text=tr("menu.title", " 🩺 Support-Cockpit "), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")).pack(side="left", padx=PAD_LG, pady=PAD_SM)
 
         # Layout Switcher
-        ctk.CTkLabel(menu_frame, text=tr("menu.layout", "Layout:")).pack(side="left", padx=(12, 5), pady=4)
+        ctk.CTkLabel(menu_frame, text=tr("menu.layout", "Layout:")).pack(side="left", padx=(PAD_LG, PAD_CONTAINER), pady=PAD_SM)
         self.layout_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=list(LAYOUT_DISPLAY.values()),
             command=self.switch_layout,
-            width=120,
+            width=COMBO_WIDTH_LAYOUT,
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(side="left", padx=5, pady=4)
+        self.layout_combo.pack(side="left", padx=PAD_CONTAINER, pady=PAD_SM)
 
         # Action Buttons
-        new_btn = ctk.CTkButton(menu_frame, text=tr("menu.new_case", "+ Neuer Fall (Strg+N)"), command=self.open_new_case_dialog, width=150, fg_color="forestgreen")
-        new_btn.pack(side="left", padx=3, pady=4)
-
-        from constants import (
-            get_localized_menu_options_stammdaten,
-            get_localized_menu_options_vorlagen,
-            get_localized_menu_options_datenaustausch,
-        )
+        new_btn = ctk.CTkButton(menu_frame, text=tr("menu.new_case", "+ Neuer Fall (Strg+N)"), command=self.open_new_case_dialog, width=BTN_WIDTH_NEW_CASE, fg_color=COLOR_SUCCESS)
+        new_btn.pack(side="left", padx=3, pady=PAD_SM)
 
         # Grouped Dropdown 1: Stammdaten
         self.stammdaten_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=get_localized_menu_options_stammdaten(),
             command=self._on_stammdaten_selected,
-            width=150,
+            width=COMBO_WIDTH_STAMMDATEN,
         )
         self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
-        self.stammdaten_combo.pack(side="left", padx=3, pady=4)
+        self.stammdaten_combo.pack(side="left", padx=3, pady=PAD_SM)
 
         # Grouped Dropdown 2: Vorlagen & Formulare
         self.vorlagen_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=get_localized_menu_options_vorlagen(),
             command=self._on_vorlagen_selected,
-            width=165,
+            width=COMBO_WIDTH_VORLAGEN,
         )
         self.vorlagen_combo.set(tr("menu.templates", "📄 Vorlagen & Formulare"))
-        self.vorlagen_combo.pack(side="left", padx=3, pady=4)
+        self.vorlagen_combo.pack(side="left", padx=3, pady=PAD_SM)
 
         # Grouped Dropdown 3: Datenaustausch
         self.datenaustausch_combo = ctk.CTkOptionMenu(
             menu_frame,
             values=get_localized_menu_options_datenaustausch(),
             command=self._on_datenaustausch_selected,
-            width=145,
+            width=COMBO_WIDTH_DATENAUSTAUSCH,
         )
         self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
-        self.datenaustausch_combo.pack(side="left", padx=3, pady=4)
+        self.datenaustausch_combo.pack(side="left", padx=3, pady=PAD_SM)
 
         # Right side: User, Bell Badge, Help, Theme & Quit
-        quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=90, fg_color="#8B0000", hover_color="#B22222")
-        quit_btn.pack(side="right", padx=6, pady=4)
+        quit_btn = ctk.CTkButton(menu_frame, text=tr("menu.quit", "❌ Beenden"), command=self.on_quit_app, width=BTN_WIDTH_QUIT, fg_color=COLOR_QUIT_BTN, hover_color=COLOR_QUIT_BTN_HOVER)
+        quit_btn.pack(side="right", padx=6, pady=PAD_SM)
 
-        theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=80, fg_color=("gray70", "gray30"))
-        theme_btn.pack(side="right", padx=4, pady=4)
+        theme_btn = ctk.CTkButton(menu_frame, text=tr("menu.theme", "🌗 Theme"), command=self.toggle_theme, width=BTN_WIDTH_SM, fg_color=COLOR_THEME_BTN)
+        theme_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
         self.help_btn = ctk.CTkButton(
             menu_frame,
             text=tr("common.help_btn", "❓ Hilfe"),
             command=self.open_help_dialog,
-            width=85,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
+            width=BTN_WIDTH_HELP,
+            fg_color=COLOR_MUTED_GRAY_FG,
+            hover_color=COLOR_MUTED_GRAY_HOVER,
         )
-        self.help_btn.pack(side="right", padx=4, pady=4)
+        self.help_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
         self.bell_btn = ctk.CTkButton(
             menu_frame,
             text="🔔 0",
             command=self.open_followup_flyout,
-            width=65,
-            fg_color="gray30",
-            hover_color="darkred",
+            width=BTN_WIDTH_XS,
+            fg_color=COLOR_BELL_BTN,
+            hover_color=COLOR_BELL_BTN_HOVER,
         )
-        self.bell_btn.pack(side="right", padx=4, pady=4)
+        self.bell_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
         self.user_btn = ctk.CTkButton(
             menu_frame,
             text=f"👤 {self.profile.user.name}",
             font=ctk.CTkFont(weight="bold"),
             command=self.open_profile_settings_dialog,
-            width=130,
+            width=BTN_WIDTH_USER,
             fg_color="transparent",
-            text_color=("gray10", "gray90"),
-            hover_color=("gray80", "gray25")
+            text_color=COLOR_USER_BTN_TEXT,
+            hover_color=COLOR_USER_BTN_HOVER,
         )
-        self.user_btn.pack(side="right", padx=6, pady=4)
+        self.user_btn.pack(side="right", padx=6, pady=PAD_SM)
 
     def _on_stammdaten_selected(self, choice: str):
         from services.i18n_service import tr
@@ -469,6 +519,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 on_toggle_complete=self.on_toggle_complete_for_case,
                 on_change_actor=self.open_handover_dialog_for_case,
                 app_config=self.app_config,
+                current_user_name=self.profile.user.name,
+                user_color=getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
+                color_marker_enabled=getattr(self.profile.user, "color_marker_enabled", False),
             )
         if layout_value == LayoutMode.TABLE.value:
             return TableView(
@@ -649,9 +702,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if btn is not None:
             from services.i18n_service import tr
             if show_demo:
-                btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color="darkblue")
+                btn.configure(text=tr("menu.demo_on", "🧪 Beispieldaten: AN"), fg_color=COLOR_BOARD_REMIND)
             else:
-                btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color="gray40")
+                btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color=COLOR_COMPLETED_GRAY)
 
         self.check_due_followups()
 
@@ -662,10 +715,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         def _restore():
             try:
-                if self.state() == "iconic" or not self.winfo_viewable():
+                if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
                     self.deiconify()
-                if self.state() == "iconic":
-                    self.state("zoomed")
+                if self.state() == WINDOW_STATE_ICONIC:
+                    self.state(WINDOW_STATE_ZOOMED)
                 self.lift()
                 self.focus_force()
                 self.attributes("-topmost", True)
@@ -734,7 +787,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def _maximize_window(self):
         try:
-            self.state("zoomed")
+            self.state(WINDOW_STATE_ZOOMED)
         except Exception as e:
             logger.warning(f"Could not maximize window: {e}")
 
@@ -742,9 +795,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def toggle_theme(self):
         curr = ctk.get_appearance_mode()
-        new_theme = "Light" if curr == "Dark" else "Dark"
+        new_theme = THEME_LIGHT if curr == THEME_DARK else THEME_DARK
         ctk.set_appearance_mode(new_theme)
-        self.apply_windows_theme(new_theme == "Dark")
+        self.apply_windows_theme(new_theme == THEME_DARK)
         self.profile.ui_settings.theme = new_theme
         if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.update_sash_color()
@@ -764,7 +817,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         # App Actions Shortcuts
         safe_bind(shortcuts.new_case, lambda e: self.open_new_case_dialog())
-        safe_bind(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case))
+        safe_bind(shortcuts.export_dialog, lambda e: self.open_export_dialog(self.active_case or getattr(getattr(self, "cockpit_view", None), "current_case", None)))
         safe_bind(shortcuts.wiki_search, lambda e: self.cockpit_view.focus_wiki_search() if hasattr(self, "cockpit_view") else None)
         safe_bind(shortcuts.save_case, lambda e: self.cockpit_view.on_click_save() if hasattr(self, "cockpit_view") else None)
         safe_bind(shortcuts.search_customer, lambda e: self.cockpit_view.focus_customer_search() if hasattr(self, "cockpit_view") else None)
@@ -774,16 +827,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         safe_bind(shortcuts.view_cockpit, lambda e: self.switch_layout(LayoutMode.COCKPIT.value))
         safe_bind(shortcuts.view_board, lambda e: self.switch_layout(LayoutMode.BOARD.value))
         safe_bind(shortcuts.view_table, lambda e: self.switch_layout(LayoutMode.TABLE.value))
-        safe_bind(getattr(shortcuts, "view_analytics", "<Control-4>"), lambda e: self.switch_layout(LayoutMode.ANALYTICS.value))
+        safe_bind(getattr(shortcuts, "view_analytics", DEFAULT_SHORTCUT_VIEW_ANALYTICS), lambda e: self.switch_layout(LayoutMode.ANALYTICS.value))
         safe_bind(shortcuts.toggle_theme, lambda e: self.toggle_theme())
         safe_bind("<F1>", lambda e: self.open_help_dialog())
 
         # Global Font / UI Zoom shortcuts:
-        safe_bind("<Control-plus>", lambda e: self.zoom_font(0.1))
-        safe_bind("<Control-KP_Add>", lambda e: self.zoom_font(0.1))
-        safe_bind("<Control-equal>", lambda e: self.zoom_font(0.1))
-        safe_bind("<Control-minus>", lambda e: self.zoom_font(-0.1))
-        safe_bind("<Control-KP_Subtract>", lambda e: self.zoom_font(-0.1))
+        safe_bind("<Control-plus>", lambda e: self.zoom_font(FONT_SCALE_STEP))
+        safe_bind("<Control-KP_Add>", lambda e: self.zoom_font(FONT_SCALE_STEP))
+        safe_bind("<Control-equal>", lambda e: self.zoom_font(FONT_SCALE_STEP))
+        safe_bind("<Control-minus>", lambda e: self.zoom_font(-FONT_SCALE_STEP))
+        safe_bind("<Control-KP_Subtract>", lambda e: self.zoom_font(-FONT_SCALE_STEP))
         safe_bind("<Control-0>", lambda e: self.zoom_font(0.0, reset=True))
         safe_bind("<Control-KP_0>", lambda e: self.zoom_font(0.0, reset=True))
 
@@ -795,14 +848,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def zoom_font(self, delta: float, reset: bool = False):
         if reset:
-            new_scale = 1.0
+            new_scale = DEFAULT_FONT_SCALE
         else:
-            curr_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
+            curr_scale = getattr(self.profile.ui_settings, "font_scale", DEFAULT_FONT_SCALE)
             new_scale = round(curr_scale + delta, 2)
-            new_scale = max(0.8, min(1.5, new_scale))
+            new_scale = max(FONT_SCALE_MIN, min(FONT_SCALE_MAX, new_scale))
 
         self.profile.ui_settings.font_scale = new_scale
-        is_zoomed = (self.state() == "zoomed")
+        is_zoomed = (self.state() == WINDOW_STATE_ZOOMED)
         ctk.set_widget_scaling(new_scale)
         self._set_scaled_min_max()
         if is_zoomed:
@@ -876,7 +929,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def _start_scoring_timer(self, target):
         """Starts the hourly scoring timer, keeping a reference so it can be cancelled on quit."""
-        timer = threading.Timer(3600, target)
+        timer = threading.Timer(HOURLY_SCORING_INTERVAL_SECONDS, target)
         timer.daemon = True
         self._scoring_timer = timer
         timer.start()
@@ -888,9 +941,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         dest_file = filedialog.asksaveasfilename(
             title=tr("app.zip_backup_title", "Komplett-Datensicherung als ZIP speichern"),
-            defaultextension=".zip",
-            filetypes=[(tr("app.zip_filetypes", "ZIP-Archiv"), "*.zip")],
-            initialfile="SupportCockpit_Backup.zip",
+            defaultextension=FILE_EXT_ZIP,
+            filetypes=[(tr("app.zip_filetypes", "ZIP-Archiv"), f"*{FILE_EXT_ZIP}")],
+            initialfile=DEFAULT_BACKUP_ZIP_FILENAME,
             parent=self,
         )
         if dest_file:
@@ -933,7 +986,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         due_count = len(due_cases)
         if due_count > 0:
-            self.bell_btn.configure(text=f"🔔 {due_count}", fg_color="darkred")
+            self.bell_btn.configure(text=f"🔔 {due_count}", fg_color=COLOR_BELL_BTN_HOVER)
             last_count = getattr(self, "_last_notified_due_count", None)
             if last_count is None or due_count > last_count:
                 top_case = due_cases[0]
@@ -952,7 +1005,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                         logger.warning(f"Could not display toast notification: {e}")
             self._last_notified_due_count = due_count
         else:
-            self.bell_btn.configure(text="🔔 0", fg_color="gray30")
+            self.bell_btn.configure(text="🔔 0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0
 
         # Update tray icon badge (guard: may be called before tray_service is initialized)
@@ -965,7 +1018,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self.after_cancel(_timer_id)
             except Exception:
                 pass
-        self._followup_timer_id = self.after(60000, self.check_due_followups)
+        self._followup_timer_id = self.after(FOLLOWUP_CHECK_INTERVAL_MS, self.check_due_followups)
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog

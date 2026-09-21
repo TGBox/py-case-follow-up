@@ -1,4 +1,11 @@
-from models.customer import Customer, Contact
+from constants import (
+    CUSTOMER_SEARCH_MAX_CHARS,
+    CUSTOMER_SEARCH_MAX_MATCHES,
+    DEFAULT_ELLIPSIS,
+    SEARCH_STRIP_PUNCTUATION,
+    SEPARATOR_COMMA_SPACE,
+)
+from models.customer import Contact, Customer
 from services.storage_service import StorageService
 
 
@@ -44,8 +51,8 @@ class CustomerService:
     def summarize_matching_words(
         fields_to_check: list[str],
         query: str,
-        max_matches: int = 3,
-        max_chars: int = 50,
+        max_matches: int = CUSTOMER_SEARCH_MAX_MATCHES,
+        max_chars: int = CUSTOMER_SEARCH_MAX_CHARS,
         exclude_text: str = "",
     ) -> str | None:
         """Names the words that matched, so a hit in a hidden field is explained.
@@ -63,12 +70,11 @@ class CustomerService:
         unique_matches: list[str] = []
         seen: set[str] = set()
         has_more_matches = False
-        strip_chars = ",;:()[]{}<>\"'\t\r\n"
 
         for field_text in fields_to_check:
             words = field_text.split()
             for w in words:
-                clean_w = w.strip(strip_chars)
+                clean_w = w.strip(SEARCH_STRIP_PUNCTUATION)
                 if not clean_w:
                     continue
                 if q_lower in clean_w.lower():
@@ -89,12 +95,14 @@ class CustomerService:
         result_parts: list[str] = []
         current_len = 0
         truncated = has_more_matches
+        sep_len = len(SEPARATOR_COMMA_SPACE)
+        ellipsis_len = len(DEFAULT_ELLIPSIS)
 
         for i, word in enumerate(unique_matches):
-            add_len = len(word) + (2 if i > 0 else 0)
+            add_len = len(word) + (sep_len if i > 0 else 0)
             if current_len + add_len > max_chars:
                 if i == 0:
-                    result_parts.append(word[: max(1, max_chars - 3)])
+                    result_parts.append(word[: max(1, max_chars - ellipsis_len)])
                     truncated = True
                 else:
                     truncated = True
@@ -102,17 +110,17 @@ class CustomerService:
             result_parts.append(word)
             current_len += add_len
 
-        summary = ", ".join(result_parts)
+        summary = SEPARATOR_COMMA_SPACE.join(result_parts)
         if truncated:
-            summary += "..."
+            summary += DEFAULT_ELLIPSIS
         return summary
 
     @staticmethod
     def extract_customer_search_match_summary(
         customer: Customer,
         query: str,
-        max_matches: int = 3,
-        max_chars: int = 50,
+        max_matches: int = CUSTOMER_SEARCH_MAX_MATCHES,
+        max_chars: int = CUSTOMER_SEARCH_MAX_CHARS,
     ) -> str | None:
         """Extracts matching words from non-primary customer fields (contacts, website, VM/instance numbers).
 
@@ -158,3 +166,4 @@ class CustomerService:
         customer.contacts.append(contact)
         self.save_customer(customer)
         return True
+

@@ -6,7 +6,22 @@ keeps confirmations in the same CustomTkinter look as the rest of the UI.
 
 import customtkinter as ctk
 
-from constants import DIALOG_DIMENSIONS
+from constants import (
+    BTN_WIDTH_MD,
+    BTN_WIDTH_LG,
+    COLOR_DANGER,
+    COLOR_DANGER_HOVER,
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    CONFIRM_DIALOG_TEXT_PADDING,
+    DIALOG_DIMENSIONS,
+    FONT_SIZE_CONFIRM,
+    PAD_NONE,
+    PAD_MD,
+    PAD_XL,
+    PAD_2XL,
+)
+from services.i18n_service import tr
 from ui.dialogs.base_dialog import BaseDialog
 
 
@@ -24,9 +39,7 @@ class ConfirmDialog(BaseDialog):
         show_cancel: bool = True,
     ):
         super().__init__(parent)
-        from services.i18n_service import tr
-
-        self.result = False
+        self.result: bool = False
 
         w, h = DIALOG_DIMENSIONS["confirm"]
         self.setup_window(
@@ -37,26 +50,26 @@ class ConfirmDialog(BaseDialog):
         )
 
         body = ctk.CTkFrame(self, fg_color="transparent")
-        body.pack(fill="both", expand=True, padx=20, pady=(20, 10))
+        body.pack(fill="both", expand=True, padx=PAD_2XL, pady=(PAD_2XL, PAD_MD))
 
         ctk.CTkLabel(
             body,
             text=message,
-            wraplength=w - 70,
+            wraplength=w - CONFIRM_DIALOG_TEXT_PADDING,
             justify="left",
             anchor="w",
-            font=ctk.CTkFont(size=13),
+            font=ctk.CTkFont(size=FONT_SIZE_CONFIRM),
         ).pack(fill="both", expand=True)
 
         btn_row = ctk.CTkFrame(self, fg_color="transparent")
-        btn_row.pack(fill="x", padx=20, pady=(0, 18))
+        btn_row.pack(fill="x", padx=PAD_2XL, pady=(PAD_NONE, PAD_XL))
 
         self.confirm_btn = ctk.CTkButton(
             btn_row,
             text=confirm_text or tr("common.ok", "OK"),
-            width=150,
-            fg_color="red" if danger else None,
-            hover_color="darkred" if danger else None,
+            width=BTN_WIDTH_LG,
+            fg_color=COLOR_DANGER if danger else None,
+            hover_color=COLOR_DANGER_HOVER if danger else None,
             command=self.on_confirm,
         )
         self.confirm_btn.pack(side="right")
@@ -65,11 +78,11 @@ class ConfirmDialog(BaseDialog):
             ctk.CTkButton(
                 btn_row,
                 text=cancel_text or tr("common.cancel", "Abbrechen"),
-                width=120,
-                fg_color="gray40",
-                hover_color="gray30",
+                width=BTN_WIDTH_MD,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
                 command=self.request_close,
-            ).pack(side="right", padx=(0, 10))
+            ).pack(side="right", padx=(PAD_NONE, PAD_MD))
 
         self.set_default_action(self.on_confirm)
         try:
@@ -132,7 +145,7 @@ def ask_confirmation(
         return bool(getattr(dialog, "result", False))
     finally:
         _restore_parent_grab(parent, previous_grab)
-    return bool(dialog.result)
+    return dialog.result
 
 
 def show_notice(parent, message: str, title: str | None = None) -> None:

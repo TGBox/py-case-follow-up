@@ -1,27 +1,58 @@
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from typing import Any
-from enums import SyncMode, LayoutMode
+from enums import LayoutMode, SyncMode
 from utils.security import normalize_url
 from constants import (
+    DEFAULT_AI_PROVIDER,
+    DEFAULT_BACKUP_DAILY_DAYS,
+    DEFAULT_BACKUP_MONTHLY_MONTHS,
+    DEFAULT_BACKUP_WEEKLY_WEEKS,
+    DEFAULT_BOARD_COLLAPSED,
+    DEFAULT_BOOKSTACK_TOKEN_ID,
+    DEFAULT_BOOKSTACK_TOKEN_SECRET,
     DEFAULT_COLUMN_WIDTHS,
-    DEFAULT_TAGS,
-    DEFAULT_MODULE_TAGS,
-    VALIDATION_MESSAGES,
-    DEFAULT_SHORTCUTS,
-    DEFAULT_OLLAMA_URL,
-    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_DEADLINE_CLOSE_BONUS,
+    DEFAULT_DEADLINE_CLOSE_HOURS,
+    DEFAULT_DEADLINE_OVERDUE_BONUS,
+    DEFAULT_DEPARTMENT,
+    DEFAULT_FONT_SCALE,
     DEFAULT_GEMINI_MODEL,
+    DEFAULT_LANGUAGE,
+    DEFAULT_MODULE_TAGS,
+    DEFAULT_NOTIFICATION_LEVEL,
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_POINTS_PER_IDLE_DAY,
+    DEFAULT_POPUP_DISPLAY_TARGET,
+    DEFAULT_SHORTCUTS,
+    DEFAULT_TABLE_COLUMN_ORDER,
+    DEFAULT_TABLE_COLUMN_WIDTHS,
+    DEFAULT_TAGS,
+    DEFAULT_TEXTBOX_HEIGHT,
+    DEFAULT_THRESHOLD_RED,
+    DEFAULT_THRESHOLD_YELLOW,
+    DEFAULT_UI_THEME,
+    DEFAULT_USER_COLOR,
+    DEFAULT_USER_NAME,
+    DEFAULT_VIP_BONUS_POINTS,
+    FONT_SCALE_PROFILE_MAX,
+    FONT_SCALE_PROFILE_MIN,
+    POPUP_DISPLAY_TARGETS,
+    SUPPORTED_LANGUAGES,
+    VALIDATION_MESSAGES,
 )
 
 
 @dataclass
 class UserInfo:
-    name: str = "Support Agent"
-    department: str = "Support"
+    name: str = DEFAULT_USER_NAME
+    department: str = DEFAULT_DEPARTMENT
     extension: str = ""
     email: str = ""
     mobile: str = ""
     email_signature: str = ""
+    user_color: str = DEFAULT_USER_COLOR
+    color_marker_enabled: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -29,47 +60,49 @@ class UserInfo:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> UserInfo:
         return cls(
-            name=data.get("name", "Support Agent"),
-            department=data.get("department", "Support"),
+            name=data.get("name", DEFAULT_USER_NAME),
+            department=data.get("department", DEFAULT_DEPARTMENT),
             extension=data.get("extension", ""),
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),
             email_signature=data.get("email_signature", ""),
+            user_color=data.get("user_color", DEFAULT_USER_COLOR),
+            color_marker_enabled=bool(data.get("color_marker_enabled", False)),
         )
 
 
 @dataclass
 class UISettings:
-    theme: str = "SYSTEM"
+    theme: str = DEFAULT_UI_THEME
     default_layout: str = LayoutMode.COCKPIT
-    language: str = "de"
+    language: str = DEFAULT_LANGUAGE
     column_widths: dict[str, int] = field(
         default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
     board_collapsed: dict[str, bool] = field(
-        default_factory=lambda: {"support": False, "dev": False, "followup": False, "completed": False}
+        default_factory=lambda: dict(DEFAULT_BOARD_COLLAPSED)
     )
     table_column_widths: dict[str, int] = field(
-        default_factory=lambda: {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
+        default_factory=lambda: dict(DEFAULT_TABLE_COLUMN_WIDTHS)
     )
     table_column_order: list[str] = field(
-        default_factory=lambda: ["case_id", "practice", "title", "actor", "followup", "score"]
+        default_factory=lambda: list(DEFAULT_TABLE_COLUMN_ORDER)
     )
     show_demo_data: bool | None = None
-    textbox_height: int = 90
+    textbox_height: int = DEFAULT_TEXTBOX_HEIGHT
     custom_textbox_heights: dict[str, int] = field(default_factory=dict)
-    popup_display_target: str = "APP_SCREEN"
-    font_scale: float = 1.0
+    popup_display_target: str = DEFAULT_POPUP_DISPLAY_TARGET
+    font_scale: float = DEFAULT_FONT_SCALE
 
     def reset_column_widths(self) -> None:
         self.column_widths = dict(DEFAULT_COLUMN_WIDTHS)
-        self.board_collapsed = {"support": False, "dev": False, "followup": False, "completed": False}
-        self.table_column_widths = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
-        self.table_column_order = ["case_id", "practice", "title", "actor", "followup", "score"]
-        self.textbox_height = 90
+        self.board_collapsed = dict(DEFAULT_BOARD_COLLAPSED)
+        self.table_column_widths = dict(DEFAULT_TABLE_COLUMN_WIDTHS)
+        self.table_column_order = list(DEFAULT_TABLE_COLUMN_ORDER)
+        self.textbox_height = DEFAULT_TEXTBOX_HEIGHT
         self.custom_textbox_heights = {}
-        self.popup_display_target = "APP_SCREEN"
-        self.font_scale = 1.0
+        self.popup_display_target = DEFAULT_POPUP_DISPLAY_TARGET
+        self.font_scale = DEFAULT_FONT_SCALE
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -94,40 +127,40 @@ class UISettings:
         if isinstance(widths, dict):
             default_widths.update({k: int(v) for k, v in widths.items() if isinstance(v, (int, float))})
 
-        b_collapsed = {"support": False, "dev": False, "followup": False, "completed": False}
+        b_collapsed = dict(DEFAULT_BOARD_COLLAPSED)
         if isinstance(data.get("board_collapsed"), dict):
             b_collapsed.update(data["board_collapsed"])
 
-        t_widths = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
+        t_widths = dict(DEFAULT_TABLE_COLUMN_WIDTHS)
         if isinstance(data.get("table_column_widths"), dict):
             t_widths.update({k: int(v) for k, v in data["table_column_widths"].items() if isinstance(v, (int, float))})
 
-        def_order = ["case_id", "practice", "title", "actor", "followup", "score"]
+        def_order = list(DEFAULT_TABLE_COLUMN_ORDER)
         t_order = list(data.get("table_column_order", def_order)) if isinstance(data.get("table_column_order"), list) else def_order
 
         s_demo = data.get("show_demo_data")
         if not isinstance(s_demo, bool):
             s_demo = None
 
-        tb_height = int(data.get("textbox_height", 90))
+        tb_height = int(data.get("textbox_height", DEFAULT_TEXTBOX_HEIGHT))
         cust_tb_heights = dict(data.get("custom_textbox_heights", {})) if isinstance(data.get("custom_textbox_heights"), dict) else {}
-        popup_target = str(data.get("popup_display_target", "APP_SCREEN"))
-        if popup_target not in ("APP_SCREEN", "PRIMARY_SCREEN"):
-            popup_target = "APP_SCREEN"
+        popup_target = str(data.get("popup_display_target", DEFAULT_POPUP_DISPLAY_TARGET))
+        if popup_target not in POPUP_DISPLAY_TARGETS:
+            popup_target = DEFAULT_POPUP_DISPLAY_TARGET
 
-        lang = str(data.get("language", "de"))
-        if lang not in ("de", "en", "sv"):
-            lang = "de"
+        lang = str(data.get("language", DEFAULT_LANGUAGE))
+        if lang not in SUPPORTED_LANGUAGES:
+            lang = DEFAULT_LANGUAGE
 
         try:
-            font_scale = float(data.get("font_scale", 1.0))
-            if not (0.7 <= font_scale <= 2.0):
-                font_scale = 1.0
+            font_scale = float(data.get("font_scale", DEFAULT_FONT_SCALE))
+            if not (FONT_SCALE_PROFILE_MIN <= font_scale <= FONT_SCALE_PROFILE_MAX):
+                font_scale = DEFAULT_FONT_SCALE
         except (ValueError, TypeError):
-            font_scale = 1.0
+            font_scale = DEFAULT_FONT_SCALE
 
         return cls(
-            theme=data.get("theme", "SYSTEM"),
+            theme=data.get("theme", DEFAULT_UI_THEME),
             default_layout=data.get("default_layout", LayoutMode.COCKPIT),
             language=lang,
             column_widths=default_widths,
@@ -182,7 +215,7 @@ class ShortcutSettings:
 
 @dataclass
 class ReminderSettings:
-    notification_level: str = "LEVEL_A"
+    notification_level: str = DEFAULT_NOTIFICATION_LEVEL
     audio_enabled: bool = False
     os_popup_enabled: bool = True
 
@@ -192,7 +225,7 @@ class ReminderSettings:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ReminderSettings:
         return cls(
-            notification_level=data.get("notification_level", "LEVEL_A"),
+            notification_level=data.get("notification_level", DEFAULT_NOTIFICATION_LEVEL),
             audio_enabled=bool(data.get("audio_enabled", False)),
             os_popup_enabled=bool(data.get("os_popup_enabled", True)),
         )
@@ -200,13 +233,13 @@ class ReminderSettings:
 
 @dataclass
 class ScoringMatrix:
-    vip_bonus_points: int = 50
-    points_per_idle_day: int = 15
-    deadline_close_hours: int = 2
-    deadline_close_bonus: int = 40
-    deadline_overdue_bonus: int = 100
-    threshold_yellow: int = 50
-    threshold_red: int = 100
+    vip_bonus_points: int = DEFAULT_VIP_BONUS_POINTS
+    points_per_idle_day: int = DEFAULT_POINTS_PER_IDLE_DAY
+    deadline_close_hours: int = DEFAULT_DEADLINE_CLOSE_HOURS
+    deadline_close_bonus: int = DEFAULT_DEADLINE_CLOSE_BONUS
+    deadline_overdue_bonus: int = DEFAULT_DEADLINE_OVERDUE_BONUS
+    threshold_yellow: int = DEFAULT_THRESHOLD_YELLOW
+    threshold_red: int = DEFAULT_THRESHOLD_RED
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -214,21 +247,21 @@ class ScoringMatrix:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ScoringMatrix:
         return cls(
-            vip_bonus_points=int(data.get("vip_bonus_points", 50)),
-            points_per_idle_day=int(data.get("points_per_idle_day", 15)),
-            deadline_close_hours=int(data.get("deadline_close_hours", 2)),
-            deadline_close_bonus=int(data.get("deadline_close_bonus", 40)),
-            deadline_overdue_bonus=int(data.get("deadline_overdue_bonus", 100)),
-            threshold_yellow=int(data.get("threshold_yellow", 50)),
-            threshold_red=int(data.get("threshold_red", 100)),
+            vip_bonus_points=int(data.get("vip_bonus_points", DEFAULT_VIP_BONUS_POINTS)),
+            points_per_idle_day=int(data.get("points_per_idle_day", DEFAULT_POINTS_PER_IDLE_DAY)),
+            deadline_close_hours=int(data.get("deadline_close_hours", DEFAULT_DEADLINE_CLOSE_HOURS)),
+            deadline_close_bonus=int(data.get("deadline_close_bonus", DEFAULT_DEADLINE_CLOSE_BONUS)),
+            deadline_overdue_bonus=int(data.get("deadline_overdue_bonus", DEFAULT_DEADLINE_OVERDUE_BONUS)),
+            threshold_yellow=int(data.get("threshold_yellow", DEFAULT_THRESHOLD_YELLOW)),
+            threshold_red=int(data.get("threshold_red", DEFAULT_THRESHOLD_RED)),
         )
 
 
 @dataclass
 class WikiSettings:
     api_url: str = ""
-    token_id: str = "ENV_BOOKSTACK_TOKEN_ID"
-    token_secret: str = "ENV_BOOKSTACK_TOKEN_SECRET"
+    token_id: str = DEFAULT_BOOKSTACK_TOKEN_ID
+    token_secret: str = DEFAULT_BOOKSTACK_TOKEN_SECRET
     sync_mode: str = SyncMode.METADATA_ONLY
     sync_on_startup: bool = True
 
@@ -248,8 +281,8 @@ class WikiSettings:
     def from_dict(cls, data: dict[str, Any]) -> WikiSettings:
         return cls(
             api_url=normalize_url(data.get("api_url", "")),
-            token_id=data.get("token_id", "ENV_BOOKSTACK_TOKEN_ID"),
-            token_secret=data.get("token_secret", "ENV_BOOKSTACK_TOKEN_SECRET"),
+            token_id=data.get("token_id", DEFAULT_BOOKSTACK_TOKEN_ID),
+            token_secret=data.get("token_secret", DEFAULT_BOOKSTACK_TOKEN_SECRET),
             sync_mode=data.get("sync_mode", SyncMode.METADATA_ONLY),
             sync_on_startup=bool(data.get("sync_on_startup", True)),
         )
@@ -257,7 +290,7 @@ class WikiSettings:
 
 @dataclass
 class AiSettings:
-    provider: str = "OLLAMA"  # "OLLAMA" or "GEMINI"
+    provider: str = DEFAULT_AI_PROVIDER  # "OLLAMA" or "GEMINI"
     ollama_url: str = DEFAULT_OLLAMA_URL
     model_name: str = DEFAULT_OLLAMA_MODEL
     gemini_api_key: str = ""
@@ -276,7 +309,7 @@ class AiSettings:
         rules_raw = data.get("base_rules", [])
         rules = list(rules_raw) if isinstance(rules_raw, list) else []
         return cls(
-            provider=data.get("provider", "OLLAMA"),
+            provider=data.get("provider", DEFAULT_AI_PROVIDER),
             ollama_url=data.get("ollama_url", DEFAULT_OLLAMA_URL),
             model_name=data.get("model_name", DEFAULT_OLLAMA_MODEL),
             gemini_api_key=data.get("gemini_api_key", ""),
@@ -291,9 +324,9 @@ class AiSettings:
 
 @dataclass
 class BackupSettings:
-    daily_days: int = 7
-    weekly_weeks: int = 4
-    monthly_months: int = 6
+    daily_days: int = DEFAULT_BACKUP_DAILY_DAYS
+    weekly_weeks: int = DEFAULT_BACKUP_WEEKLY_WEEKS
+    monthly_months: int = DEFAULT_BACKUP_MONTHLY_MONTHS
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -301,17 +334,17 @@ class BackupSettings:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> BackupSettings:
         try:
-            daily = max(1, int(data.get("daily_days", 7)))
+            daily = max(1, int(data.get("daily_days", DEFAULT_BACKUP_DAILY_DAYS)))
         except (ValueError, TypeError):
-            daily = 7
+            daily = DEFAULT_BACKUP_DAILY_DAYS
         try:
-            weekly = max(0, int(data.get("weekly_weeks", 4)))
+            weekly = max(0, int(data.get("weekly_weeks", DEFAULT_BACKUP_WEEKLY_WEEKS)))
         except (ValueError, TypeError):
-            weekly = 4
+            weekly = DEFAULT_BACKUP_WEEKLY_WEEKS
         try:
-            monthly = max(0, int(data.get("monthly_months", 6)))
+            monthly = max(0, int(data.get("monthly_months", DEFAULT_BACKUP_MONTHLY_MONTHS)))
         except (ValueError, TypeError):
-            monthly = 6
+            monthly = DEFAULT_BACKUP_MONTHLY_MONTHS
         return cls(
             daily_days=daily,
             weekly_weeks=weekly,
@@ -405,7 +438,7 @@ class UserProfile:
 class Colleague:
     username: str = ""
     name: str = ""
-    department: str = "Support"
+    department: str = DEFAULT_DEPARTMENT
     extension: str = ""
     email: str = ""
     mobile: str = ""
@@ -430,7 +463,7 @@ class Colleague:
         return cls(
             username=data.get("username", ""),
             name=data.get("name", ""),
-            department=data.get("department", "Support"),
+            department=data.get("department", DEFAULT_DEPARTMENT),
             extension=data.get("extension", ""),
             email=data.get("email", ""),
             mobile=data.get("mobile", ""),

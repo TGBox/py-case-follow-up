@@ -1,11 +1,35 @@
+from collections.abc import Callable
 import customtkinter as ctk
 
-from ui.dialogs.base_dialog import BaseDialog
-from collections.abc import Callable
+from constants import (
+    BTN_WIDTH_MD,
+    COLOR_ABSENCE_WARNING,
+    COLOR_CANCEL,
+    COLOR_DANGER,
+    COLOR_MUTED_LABEL,
+    COLOR_SUCCESS,
+    DEFAULT_HANDOVER_CHANNELS,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_DIMENSIONS,
+    DIALOG_TITLES,
+    ENTRY_WIDTH_LG,
+    ENTRY_WIDTH_MD,
+    FONT_SIZE_SM,
+    FONT_SIZE_TITLE_SM,
+    LABEL_WIDTH_LG,
+    PAD_2XL,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_SM,
+    PAD_XL,
+    PAD_XS,
+    get_localized_handover_channels,
+)
+from enums import ACTOR_DISPLAY, get_actor_display, get_actor_val_from_display
 from models.case import Case
 from models.profile import Colleague
-from enums import ACTOR_DISPLAY, get_actor_val_from_display, get_actor_display
-from constants import DEFAULT_HANDOVER_CHANNELS, DIALOG_DIMENSIONS, DIALOG_TITLES
+from services.i18n_service import tr
+from ui.dialogs.base_dialog import BaseDialog
 
 HANDOVER_CHANNELS = DEFAULT_HANDOVER_CHANNELS
 
@@ -19,9 +43,11 @@ class HandoverDialog(BaseDialog):
         case: Case,
         colleagues: list[Colleague] | None = None,
         on_handover_confirmed: Callable[[str, str, str, str], None] | None = None,
+        target_actor: str | None = None,
     ):
         super().__init__(parent)
         self.case = case
+        self.target_actor = target_actor
         self.colleagues = list(colleagues) if colleagues else []
         if not self.colleagues:
             storage = getattr(parent, "storage_service", None)
@@ -37,8 +63,7 @@ class HandoverDialog(BaseDialog):
             parent,
             f"{DIALOG_TITLES['handover']} (Fall {case.case_id})",
             (w, h),
-            min_size=(520, 460),
-
+            min_size=DIALOG_MIN_DIMENSIONS["handover"],
             title_factory=lambda: f"{DIALOG_TITLES['handover']} (Fall {case.case_id})",
         )
 
@@ -47,25 +72,22 @@ class HandoverDialog(BaseDialog):
         self.enable_unsaved_guard()
 
     def create_widgets(self):
-        from services.i18n_service import tr
-        from constants import get_localized_handover_channels
-
         handover_channels = get_localized_handover_channels()
 
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=PAD_2XL, pady=PAD_2XL)
 
         # Header
         self.register_i18n(
             ctk.CTkLabel(
                 main_frame,
                 text=tr("handover_dialog.header_full", "👤 Zuständigkeit für {case_id} übergeben", case_id=self.case.case_id),
-                font=ctk.CTkFont(size=16, weight="bold"),
+                font=ctk.CTkFont(size=FONT_SIZE_TITLE_SM, weight="bold"),
             ),
             "handover_dialog.header_full",
             "👤 Zuständigkeit für {case_id} übergeben",
             case_id=self.case.case_id,
-        ).pack(anchor="w", pady=(0, 5))
+        ).pack(anchor="w", pady=(0, PAD_CONTAINER))
 
         curr_actor = get_actor_display(self.case.workflow_status.current_actor)
         self.register_i18n(
@@ -77,8 +99,8 @@ class HandoverDialog(BaseDialog):
                     actor=curr_actor,
                     customer=self.case.customer.practice_name,
                 ),
-                font=ctk.CTkFont(size=11),
-                text_color=("gray40", "gray70"),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_MUTED_LABEL,
             ),
             "handover_dialog.current_line",
             "Aktuelle Zuständigkeit: {actor} | Kunde: {customer}",
@@ -86,65 +108,66 @@ class HandoverDialog(BaseDialog):
             # on every language change - a fixed string would stay German.
             actor=lambda: get_actor_display(self.case.workflow_status.current_actor),
             customer=self.case.customer.practice_name,
-        ).pack(anchor="w", pady=(0, 15))
+        ).pack(anchor="w", pady=(0, PAD_XL))
 
         # 1. New Actor Dropdown
-        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.new_actor", "Neue verantwortliche Stelle *:"), font=ctk.CTkFont(weight="bold")), "handover_dialog.new_actor", "Neue verantwortliche Stelle *:").pack(anchor="w", pady=(4, 2))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.new_actor", "Neue verantwortliche Stelle *:"), font=ctk.CTkFont(weight="bold")), "handover_dialog.new_actor", "Neue verantwortliche Stelle *:").pack(anchor="w", pady=(PAD_SM, PAD_XS))
         actor_options = [get_actor_display(a) for a in ACTOR_DISPLAY]
-        self.actor_combo = ctk.CTkOptionMenu(main_frame, values=actor_options, width=320)
-        self.actor_combo.set(curr_actor if curr_actor in actor_options else actor_options[0])
-        self.actor_combo.pack(anchor="w", fill="x", pady=(0, 12))
+        self.actor_combo = ctk.CTkOptionMenu(main_frame, values=actor_options, width=ENTRY_WIDTH_LG)
+        initial_actor = self.target_actor if (self.target_actor and self.target_actor in actor_options) else curr_actor
+        self.actor_combo.set(initial_actor if initial_actor in actor_options else actor_options[0])
+        self.actor_combo.pack(anchor="w", fill="x", pady=(0, PAD_LG))
 
         # 2. Handover Channel / Medium Dropdown
-        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.channel", "Art der Weitergabe / Kanal *:"), font=ctk.CTkFont(weight="bold")), "handover_dialog.channel", "Art der Weitergabe / Kanal *:").pack(anchor="w", pady=(4, 2))
-        self.channel_combo = ctk.CTkOptionMenu(main_frame, values=handover_channels, width=320)
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.channel", "Art der Weitergabe / Kanal *:"), font=ctk.CTkFont(weight="bold")), "handover_dialog.channel", "Art der Weitergabe / Kanal *:").pack(anchor="w", pady=(PAD_SM, PAD_XS))
+        self.channel_combo = ctk.CTkOptionMenu(main_frame, values=handover_channels, width=ENTRY_WIDTH_LG)
         self.channel_combo.set(handover_channels[0])
-        self.channel_combo.pack(anchor="w", fill="x", pady=(0, 12))
+        self.channel_combo.pack(anchor="w", fill="x", pady=(0, PAD_LG))
 
         # 3. Specific Person Name (Select from Colleagues or custom entry)
-        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.recipient", "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):"), font=ctk.CTkFont(weight="bold")), "handover_dialog.recipient", "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):").pack(anchor="w", pady=(4, 2))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.recipient", "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):"), font=ctk.CTkFont(weight="bold")), "handover_dialog.recipient", "Empfänger / Name der Person (aus Mitarbeiterliste wählen oder eingeben):").pack(anchor="w", pady=(PAD_SM, PAD_XS))
 
         c_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        c_frame.pack(fill="x", pady=(0, 12))
+        c_frame.pack(fill="x", pady=(0, PAD_LG))
 
         col_names = [tr("handover_dialog.select_colleague", "- Aus Mitarbeiterliste wählen -")] + [f"{c.name} ({c.department})" for c in self.colleagues] if self.colleagues else [tr("handover_dialog.no_colleagues", "- Keine Mitarbeiter in Liste -")]
         self.colleague_combo = ctk.CTkOptionMenu(
-            c_frame, values=col_names, command=self.on_colleague_selected, width=220
+            c_frame, values=col_names, command=self.on_colleague_selected, width=ENTRY_WIDTH_MD
         )
-        self.colleague_combo.pack(side="left", padx=(0, 5))
+        self.colleague_combo.pack(side="left", padx=(0, PAD_CONTAINER))
 
         self.person_entry = self.register_i18n(ctk.CTkEntry(
             c_frame, placeholder_text=tr("handover_dialog.person_placeholder", "Empfänger-Name...")
         ), "handover_dialog.person_placeholder", "Empfänger-Name...", attr="placeholder_text")
         self.person_entry.pack(side="right", fill="x", expand=True)
 
-        self.absence_warn_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11, weight="bold"))
-        self.absence_warn_lbl.pack(anchor="w", pady=(0, 4))
+        self.absence_warn_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"))
+        self.absence_warn_lbl.pack(anchor="w", pady=(0, PAD_SM))
 
         # 4. Optional Note
-        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.note", "Notiz / Details zur Übergabe (optional):")), "handover_dialog.note", "Notiz / Details zur Übergabe (optional):").pack(anchor="w", pady=(4, 2))
+        self.register_i18n(ctk.CTkLabel(main_frame, text=tr("handover_dialog.note", "Notiz / Details zur Übergabe (optional):")), "handover_dialog.note", "Notiz / Details zur Übergabe (optional):").pack(anchor="w", pady=(PAD_SM, PAD_XS))
         self.note_entry = self.register_i18n(ctk.CTkEntry(
             main_frame, placeholder_text=tr("handover_dialog.note_placeholder", "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten...")
         ), "handover_dialog.note_placeholder", "z. B. Ticket #104 im GitLab angelegt, Rückruf erbeten...", attr="placeholder_text")
-        self.note_entry.pack(fill="x", pady=(0, 15))
+        self.note_entry.pack(fill="x", pady=(0, PAD_XL))
 
-        self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color="red")
-        self.err_lbl.pack(anchor="w", pady=(0, 5))
+        self.err_lbl = ctk.CTkLabel(main_frame, text="", text_color=COLOR_DANGER)
+        self.err_lbl.pack(anchor="w", pady=(0, PAD_CONTAINER))
 
         # Action Buttons
         btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_frame.pack(fill="x", pady=(5, 0))
+        btn_frame.pack(fill="x", pady=(PAD_CONTAINER, 0))
 
         self.register_i18n(ctk.CTkButton(
-            btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color="gray", command=self.on_cancel, width=110
+            btn_frame, text=tr("common.cancel", "Abbrechen"), fg_color=COLOR_CANCEL, command=self.on_cancel, width=BTN_WIDTH_MD
         ), "common.cancel", "Abbrechen").pack(side="left")
 
         self.register_i18n(ctk.CTkButton(
             btn_frame,
             text=tr("handover_dialog.confirm_btn", "🤝 Übergabe bestätigen"),
-            fg_color="forestgreen",
+            fg_color=COLOR_SUCCESS,
             command=self.on_confirm,
-            width=180,
+            width=LABEL_WIDTH_LG,
         ), "handover_dialog.confirm_btn", "🤝 Übergabe bestätigen").pack(side="right")
 
     def on_colleague_selected(self, selected_text: str):
@@ -159,8 +182,7 @@ class HandoverDialog(BaseDialog):
                 if c.name == name_part:
                     if c.is_absent:
                         reason = f" ({c.absence_reason})" if c.absence_reason else ""
-                        from services.i18n_service import tr
-                        self.absence_warn_lbl.configure(text=tr("handover_dialog.absence_warning", "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!", name=c.name, reason=reason), text_color="darkorange")
+                        self.absence_warn_lbl.configure(text=tr("handover_dialog.absence_warning", "⚠ ACHTUNG: {name} ist aktuell abwesend{reason}!", name=c.name, reason=reason), text_color=COLOR_ABSENCE_WARNING)
                     break
 
             col = next((c for c in self.colleagues if c.name == name_part), None)

@@ -2,6 +2,18 @@ from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 import customtkinter as ctk
 
+from constants import (
+    COLOR_MUTED_GRAY_FG,
+    COLOR_MUTED_GRAY_HOVER,
+    DEFAULT_COLUMN_WIDTHS,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+    PROFILE_TAB_FIELD_WIDTH,
+)
 from enums import get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
 from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY, LANGUAGE_DISPLAY_TO_CODE, get_i18n
 
@@ -58,80 +70,80 @@ class UiSettingsTabMixin:
 
     def setup_ui_section(self, right_col: ctk.CTkFrame) -> None:
         self.appearance_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(right_col, text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
             "profile.appearance_layout",
             "Erscheinungsbild & Layout",
         )
-        self.appearance_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.appearance_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_XS))
 
         self.lang_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.language", "Sprache / Language:")),
             "profile.language",
             "Sprache / Language:",
         )
-        self.lang_lbl.pack(anchor="w", pady=(5, 2))
+        self.lang_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
         self.language_combo = ctk.CTkOptionMenu(
             right_col,
             values=list(SUPPORTED_LANGUAGES.values()),
-            width=380,
+            width=PROFILE_TAB_FIELD_WIDTH,
         )
         curr_lang = getattr(self.profile.ui_settings, "language", "de")
         self.language_combo.set(LANGUAGE_CODE_TO_DISPLAY.get(curr_lang, "Deutsch"))
-        self.language_combo.pack(anchor="w", pady=(0, 12))
+        self.language_combo.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.theme_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.theme", "Farb-Thema (Theme):")),
             "profile.theme",
             "Farb-Thema (Theme):",
         )
-        self.theme_lbl.pack(anchor="w", pady=(5, 2))
-        self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=380)
+        self.theme_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+        self.theme_combo = ctk.CTkOptionMenu(right_col, values=[get_theme_display(v) for v in ("Dark", "Light", "System")], width=PROFILE_TAB_FIELD_WIDTH)
         self.theme_combo.set(get_theme_display(self.profile.ui_settings.theme))
-        self.theme_combo.pack(anchor="w", pady=(0, 12))
+        self.theme_combo.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.font_scale_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.font_scale", "Schriftgröße / Skalierung:")),
             "profile.font_scale",
             "Schriftgröße / Skalierung:",
         )
-        self.font_scale_lbl.pack(anchor="w", pady=(5, 2))
+        self.font_scale_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
         self.font_scale_combo = ctk.CTkOptionMenu(
             right_col,
             values=[get_font_scale_display(s) for s, _, _ in FONT_SCALE_OPTIONS],
             command=self.on_font_scale_preview,
-            width=380,
+            width=PROFILE_TAB_FIELD_WIDTH,
         )
         self.font_scale_combo.set(get_font_scale_display(getattr(self.profile.ui_settings, "font_scale", 1.0)))
-        self.font_scale_combo.pack(anchor="w", pady=(0, 12))
+        self.font_scale_combo.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.default_layout_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.default_layout", "Standard-Layout beim Start:")),
             "profile.default_layout",
             "Standard-Layout beim Start:",
         )
-        self.default_layout_lbl.pack(anchor="w", pady=(5, 2))
+        self.default_layout_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
         self.layout_combo = ctk.CTkOptionMenu(
             right_col,
             values=list(LAYOUT_DISPLAY.values()),
-            width=380,
+            width=PROFILE_TAB_FIELD_WIDTH,
         )
         self.layout_combo.set(get_layout_display(self.profile.ui_settings.default_layout))
-        self.layout_combo.pack(anchor="w", pady=(0, 12))
+        self.layout_combo.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.popup_target_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:")),
             "profile.popup_position",
             "Position zusätzlicher Fenster & Benachrichtigungen:",
         )
-        self.popup_target_lbl.pack(anchor="w", pady=(5, 2))
+        self.popup_target_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
         self.popup_target_combo = ctk.CTkOptionMenu(
             right_col,
             values=[tr(key, default) for key, default in POPUP_TARGET_CHOICES],
-            width=380,
+            width=PROFILE_TAB_FIELD_WIDTH,
         )
         curr_target = getattr(self.profile.ui_settings, "popup_display_target", "APP_SCREEN")
         self.popup_target_combo.set(tr("profile.popup_target_app", "App-Bildschirm (aktuell/zuletzt)") if curr_target == "APP_SCREEN" else tr("profile.popup_target_primary", "Hauptbildschirm"))
-        self.popup_target_combo.pack(anchor="w", pady=(0, 15))
+        self.popup_target_combo.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
         self.demo_switch = self.register_i18n(
             ctk.CTkSwitch(  # type: ignore[attr-defined]
@@ -145,7 +157,7 @@ class UiSettingsTabMixin:
             self.demo_switch.select()
         else:
             self.demo_switch.deselect()
-        self.demo_switch.pack(anchor="w", pady=(0, 12))
+        self.demo_switch.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.os_popup_switch = self.register_i18n(
             ctk.CTkSwitch(  # type: ignore[attr-defined]
@@ -159,35 +171,35 @@ class UiSettingsTabMixin:
             self.os_popup_switch.select()
         else:
             self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(0, 15))
+        self.os_popup_switch.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
         # Column widths reset section
         self.col_widths_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=14, weight="bold")),
+            ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
             "profile.saved_widths",
             "Gespeicherte Spaltenbreiten (Profile-Level)",
         )
-        self.col_widths_hdr_lbl.pack(anchor="w", pady=(5, 5))
+        self.col_widths_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_XS))
 
         widths = self.profile.ui_settings.column_widths
         w_str = self._build_widths_str(widths)
-        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=11), text_color=("gray40", "gray70"), justify="left", anchor="w")
-        self.widths_label.pack(anchor="w", pady=(0, 10))
+        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=("gray40", "gray70"), justify="left", anchor="w")
+        self.widths_label.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.btn_reset_widths = self.register_i18n(
             ctk.CTkButton(
                 right_col,
                 text=tr("profile.reset_widths_btn", "↻ Alle Spaltenbreiten auf Standard zurücksetzen"),
                 command=self.on_reset_column_widths,
-                fg_color=("gray45", "gray35"),
-                hover_color=("gray35", "gray45"),
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
                 text_color="white",
-                width=380,
+                width=PROFILE_TAB_FIELD_WIDTH,
             ),
             "profile.reset_widths_btn",
             "↻ Alle Spaltenbreiten auf Standard zurücksetzen",
         )
-        self.btn_reset_widths.pack(anchor="w", pady=(0, 10))
+        self.btn_reset_widths.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
     def _build_widths_str(self, w_dict: dict) -> str:
         return tr(
@@ -195,14 +207,14 @@ class UiSettingsTabMixin:
             "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n"
             "• Kanban-Board: Mindestspaltenbreite {board}px\n"
             "• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
-            left=w_dict.get('cockpit_left', 300),
-            center=w_dict.get('cockpit_center', 420),
-            right=w_dict.get('cockpit_right', 320),
-            board=w_dict.get('board_column', 280),
-            id=w_dict.get('table_col_id', 120),
-            prac=w_dict.get('table_col_practice', 220),
-            title=w_dict.get('table_col_title', 280),
-            score=w_dict.get('table_col_score', 90),
+            left=w_dict.get('cockpit_left', DEFAULT_COLUMN_WIDTHS['cockpit_left']),
+            center=w_dict.get('cockpit_center', DEFAULT_COLUMN_WIDTHS['cockpit_center']),
+            right=w_dict.get('cockpit_right', DEFAULT_COLUMN_WIDTHS['cockpit_right']),
+            board=w_dict.get('board_column', DEFAULT_COLUMN_WIDTHS['board_column']),
+            id=w_dict.get('table_col_id', DEFAULT_COLUMN_WIDTHS['table_col_id']),
+            prac=w_dict.get('table_col_practice', DEFAULT_COLUMN_WIDTHS['table_col_practice']),
+            title=w_dict.get('table_col_title', DEFAULT_COLUMN_WIDTHS['table_col_title']),
+            score=w_dict.get('table_col_score', DEFAULT_COLUMN_WIDTHS['table_col_score']),
         )
 
     def on_font_scale_preview(self, val: str) -> None:

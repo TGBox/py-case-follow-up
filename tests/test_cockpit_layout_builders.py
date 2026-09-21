@@ -137,12 +137,10 @@ def test_refresh_ui_labels_shows_complete_text_for_open_case(cockpit):
 
 
 def test_refresh_ui_labels_sets_actor_combo_to_current_actor(cockpit):
-    from enums import get_actor_display
-
     case = _make_case(current_actor=Actor.DEVELOPMENT)
     cockpit.current_case = case
     cockpit.refresh_ui_labels()
-    assert cockpit.actor_combo.get() == get_actor_display(Actor.DEVELOPMENT)
+    assert cockpit.actor_combo.get() == tr("cockpit.handover_action", "Übergabe")
 
 
 def test_refresh_ui_labels_shows_customer_info_with_vip_marker(cockpit):
@@ -176,3 +174,9 @@ def test_refresh_ui_labels_updates_more_actions_dropdown_and_toolbar_buttons(coc
     assert cockpit.followup_btn.cget("text") == tr("cockpit.followup", "🔔 Wiedervorlage")
     assert cockpit.save_btn.cget("text") == tr("cockpit.save", "💾 Speichern")
     assert cockpit.archive_btn.cget("text") == tr("cockpit.archive", "📦 Archivieren")
+
+
+def test_actor_combo_and_complete_btn_in_toolbar(cockpit):
+    """Verify actor_combo (Übergabe) and complete_btn (Erledigt) are placed in toolbar_right."""
+    assert cockpit.actor_combo.master == cockpit.toolbar_right
+    assert cockpit.complete_btn.master == cockpit.toolbar_right

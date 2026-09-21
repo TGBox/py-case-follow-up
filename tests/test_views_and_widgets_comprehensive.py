@@ -298,7 +298,7 @@ def _board(root, case_count: int = 12):
         on_switch_to_cockpit=lambda c: None,
         on_open_followup=lambda c: None,
         on_toggle_complete=lambda c: None,
-        on_change_actor=lambda c, a: None,
+        on_change_actor=lambda c: None,
     )
     board.pack(fill="both", expand=True)
     cases = []
@@ -326,7 +326,7 @@ def test_collapsing_one_column_replaces_only_that_column():
         root.update()
 
         before = {key: str(frame) for key, frame in board.col_frames.items()}
-        assert len(before) == 4
+        assert len(before) == 6
 
         board.toggle_column_collapse("dev")
         root.update()
@@ -335,7 +335,7 @@ def test_collapsing_one_column_replaces_only_that_column():
         replaced = [key for key in before if before[key] != after[key]]
 
         assert replaced == ["dev"], f"Es wurden zu viele Spalten neu gebaut: {replaced}"
-        assert set(after) == {"support", "dev", "followup", "completed"}
+        assert set(after) == {"hotline", "tech", "dev", "customer", "followup", "completed"}
         assert board.collapsed_states["dev"] is True
         assert "dev" not in board.col_scrolls, "eingeklappte Spalte braucht keinen Scrollbereich"
     finally:
@@ -353,17 +353,17 @@ def test_collapsing_keeps_the_other_columns_cards_alive():
         board = _board(root)
         root.update()
 
-        support_scroll = board.col_scrolls["support"]
-        cards_before = [str(w) for w in support_scroll.winfo_children() if isinstance(w, KanbanCardWidget)]
-        assert cards_before, "Testaufbau ohne Karten in 'support'"
+        hotline_scroll = board.col_scrolls["hotline"]
+        cards_before = [str(w) for w in hotline_scroll.winfo_children() if isinstance(w, KanbanCardWidget)]
+        assert cards_before, "Testaufbau ohne Karten in 'hotline'"
         signatures_before = dict(board._col_signatures)
 
         board.toggle_column_collapse("dev")
         root.update()
 
-        cards_after = [str(w) for w in board.col_scrolls["support"].winfo_children() if isinstance(w, KanbanCardWidget)]
+        cards_after = [str(w) for w in board.col_scrolls["hotline"].winfo_children() if isinstance(w, KanbanCardWidget)]
         assert cards_after == cards_before, "Karten fremder Spalten wurden neu gebaut"
-        assert board._col_signatures.get("support") == signatures_before.get("support")
+        assert board._col_signatures.get("hotline") == signatures_before.get("hotline")
     finally:
         root.destroy()
 
@@ -386,7 +386,7 @@ def test_expanding_restores_the_column():
         assert board.collapsed_states["dev"] is False
         assert "dev" in board.col_scrolls
         assert "dev" in board.col_headers
-        assert len(board.col_frames) == 4
+        assert len(board.col_frames) == 6
     finally:
         root.destroy()
 
@@ -405,9 +405,9 @@ def test_a_column_renders_only_a_batch_up_front():
         board = _board(root, case_count=80)
         root.update()
 
-        offen = board._pending_cases.get("support", [])
+        offen = board._pending_cases.get("hotline", [])
         assert len(offen) > board.RENDER_BATCH_SIZE, "Testdaten fuellen keine zwei Haeppchen"
-        gerendert = board._rendered_counts.get("support", 0)
+        gerendert = board._rendered_counts.get("hotline", 0)
         assert gerendert <= board.RENDER_BATCH_SIZE * 2, (
             f"{gerendert} von {len(offen)} Karten sofort gebaut - das skaliert wieder mit der Fallzahl"
         )
@@ -430,16 +430,16 @@ def test_scrolling_to_the_end_pulls_in_the_next_batch():
     try:
         board = _board(root, case_count=80)
         root.update()
-        vorher = board._rendered_counts["support"]
+        vorher = board._rendered_counts["hotline"]
 
-        canvas = board._col_canvas("support")
+        canvas = board._col_canvas("hotline")
         assert canvas is not None
         canvas.yview_moveto(1.0)
         root.update()
         root.update_idletasks()
         root.update()
 
-        assert board._rendered_counts["support"] > vorher, "beim Scrollen wird nichts nachgeladen"
+        assert board._rendered_counts["hotline"] > vorher, "beim Scrollen wird nichts nachgeladen"
     finally:
         root.destroy()
 
@@ -452,19 +452,19 @@ def test_scrolling_reaches_every_case_in_a_column():
     try:
         board = _board(root, case_count=80)
         root.update()
-        canvas = board._col_canvas("support")
+        canvas = board._col_canvas("hotline")
         assert canvas is not None
-        gesamt = len(board._pending_cases["support"])
+        gesamt = len(board._pending_cases["hotline"])
 
         for _ in range(60):
-            if board._rendered_counts["support"] >= gesamt:
+            if board._rendered_counts["hotline"] >= gesamt:
                 break
             canvas.yview_moveto(1.0)
             root.update()
             root.update_idletasks()
 
-        assert board._rendered_counts["support"] == gesamt, (
-            f"nur {board._rendered_counts['support']} von {gesamt} Faellen erreichbar"
+        assert board._rendered_counts["hotline"] == gesamt, (
+            f"nur {board._rendered_counts['hotline']} von {gesamt} Faellen erreichbar"
         )
     finally:
         root.destroy()
@@ -527,11 +527,11 @@ def test_a_refresh_without_changes_does_not_rebuild_the_columns():
         root.update()
         board.render_all_cards()
         root.update()
-        vorher = [str(w) for w in board.col_scrolls["support"].winfo_children()]
+        vorher = [str(w) for w in board.col_scrolls["hotline"].winfo_children()]
 
         board.refresh_board()
         root.update()
-        nachher = [str(w) for w in board.col_scrolls["support"].winfo_children()]
+        nachher = [str(w) for w in board.col_scrolls["hotline"].winfo_children()]
 
         assert vorher == nachher, "unveraenderte Spalte wurde neu aufgebaut"
     finally:

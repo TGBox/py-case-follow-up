@@ -2,6 +2,43 @@ import customtkinter as ctk
 from typing import Any
 from collections.abc import Callable
 
+from constants import (
+    BORDER_WIDTH_CARD,
+    COLOR_BORDER_POPOVER,
+    COLOR_COMBO_BTN_BG,
+    COLOR_COMBO_BTN_HOVER,
+    COLOR_ITEM_HOVER,
+    COLOR_ITEM_SELECTED,
+    COLOR_MUTED_LABEL,
+    COLOR_POPOVER_BG,
+    COLOR_SUBTITLE_MUTED,
+    COLOR_TEXT_PRIMARY,
+    COMBO_DEFAULT_HEIGHT,
+    COMBO_DEFAULT_WIDTH,
+    CORNER_RADIUS_MD,
+    CORNER_RADIUS_SM,
+    CURSOR_HAND,
+    DEBOUNCE_KEY_COMBOBOX_SEARCH,
+    DELAY_FOCUS_RESTORE_MS,
+    DELAY_POPOVER_CLOSE_MS,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_XS,
+    HEIGHT_COMBO_OPTION,
+    HEIGHT_SEARCH_ENTRY,
+    PAD_MD,
+    PAD_SM,
+    PAD_TINY,
+    PAD_XL,
+    PAD_XS,
+    POPOVER_HEADER_HEIGHT,
+    POPOVER_ITEM_HEIGHT,
+    POPOVER_MAX_HEIGHT,
+    POPOVER_MIN_HEIGHT,
+    POPOVER_MIN_WIDTH,
+    SEARCH_DEBOUNCE_MS,
+)
+
 
 class SearchableCombobox(ctk.CTkFrame):
     """Searchable & scrollable dropdown picker widget for CustomTkinter."""
@@ -11,8 +48,8 @@ class SearchableCombobox(ctk.CTkFrame):
         master: Any,
         values: list[str] | None = None,
         command: Callable[[str], None] | None = None,
-        width: int = 380,
-        height: int = 32,
+        width: int = COMBO_DEFAULT_WIDTH,
+        height: int = COMBO_DEFAULT_HEIGHT,
         placeholder_text: str | None = None,
         search_index: dict[str, str] | None = None,
         summary_provider: Callable[[str, str], str | None] | None = None,
@@ -47,10 +84,10 @@ class SearchableCombobox(ctk.CTkFrame):
             width=width,
             height=height,
             anchor="w",
-            fg_color=("gray85", "gray25"),
-            hover_color=("gray75", "gray32"),
-            text_color=("black", "white"),
-            font=ctk.CTkFont(size=12),
+            fg_color=COLOR_COMBO_BTN_BG,
+            hover_color=COLOR_COMBO_BTN_HOVER,
+            text_color=COLOR_TEXT_PRIMARY,
+            font=ctk.CTkFont(size=FONT_SIZE_BODY),
             command=self.toggle_popover,
         )
         self.btn.pack(fill="both", expand=True)
@@ -129,23 +166,23 @@ class SearchableCombobox(ctk.CTkFrame):
         self.update_idletasks()
         btn_x = self.btn.winfo_rootx()
         btn_y = self.btn.winfo_rooty()
-        btn_w = max(self.btn.winfo_width(), 360)
+        btn_w = max(self.btn.winfo_width(), POPOVER_MIN_WIDTH)
         btn_h = self.btn.winfo_height()
 
         pop_w = btn_w
-        pop_h = min(280, max(120, len(self._values) * 32 + 45))
+        pop_h = min(POPOVER_MAX_HEIGHT, max(POPOVER_MIN_HEIGHT, len(self._values) * POPOVER_ITEM_HEIGHT + POPOVER_HEADER_HEIGHT))
         pop_x = btn_x
-        pop_y = btn_y + btn_h + 2
+        pop_y = btn_y + btn_h + PAD_XS
 
         self._popover.geometry(f"{pop_w}x{pop_h}+{pop_x}+{pop_y}")
 
         # Outer Frame
         outer = ctk.CTkFrame(
             self._popover,
-            fg_color=("gray90", "gray18"),
-            border_width=2,
-            border_color="dodgerblue",
-            corner_radius=6,
+            fg_color=COLOR_POPOVER_BG,
+            border_width=BORDER_WIDTH_CARD,
+            border_color=COLOR_BORDER_POPOVER,
+            corner_radius=CORNER_RADIUS_MD,
         )
         outer.pack(fill="both", expand=True)
 
@@ -155,17 +192,17 @@ class SearchableCombobox(ctk.CTkFrame):
         self.search_entry = ctk.CTkEntry(
             outer,
             placeholder_text=tr("searchable_combo.placeholder", "🔍 Buchstaben eintippen zum Suchen..."),
-            height=30,
-            font=ctk.CTkFont(size=11),
+            height=HEIGHT_SEARCH_ENTRY,
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
         )
-        self.search_entry.pack(fill="x", padx=6, pady=(6, 4))
+        self.search_entry.pack(fill="x", padx=CORNER_RADIUS_MD, pady=(CORNER_RADIUS_MD, PAD_SM))
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
         self.search_entry.bind("<Return>", self._on_enter_pressed)
         self.search_entry.bind("<Escape>", lambda e: self.close_popover())  # focus returns to the picker button
 
         # Scrollable Options List
         self.options_scroll = ctk.CTkScrollableFrame(outer, fg_color="transparent")
-        self.options_scroll.pack(fill="both", expand=True, padx=4, pady=(0, 6))
+        self.options_scroll.pack(fill="both", expand=True, padx=PAD_SM, pady=(0, CORNER_RADIUS_MD))
 
         from utils.ui_utils import enable_auto_hiding_scrollbar
         enable_auto_hiding_scrollbar(self.options_scroll)
@@ -193,7 +230,7 @@ class SearchableCombobox(ctk.CTkFrame):
                 pass
 
         try:
-            self.after(10, _do)
+            self.after(DELAY_FOCUS_RESTORE_MS, _do)
         except Exception:
             _do()
 
@@ -204,14 +241,14 @@ class SearchableCombobox(ctk.CTkFrame):
             if not focused or not str(focused).startswith(str(self._popover)):
                 # Focus went somewhere else on purpose (another field or even
                 # another application) - just close, never pull it back.
-                self.after(100, lambda: self.close_popover(restore_focus=False))
+                self.after(DELAY_POPOVER_CLOSE_MS, lambda: self.close_popover(restore_focus=False))
 
     def close_popover(self, restore_focus: bool = True, focus_target: Any | None = None) -> None:
         # Das Suchfeld gehoert dem Popover, die Verzoegerung haengt aber am
         # Widget, das weiterlebt. Ohne Abbruch liefe die wartende Suche nach
         # dem Schliessen auf ein zerstoertes Eingabefeld.
         from utils.ui_utils import cancel_debounce
-        cancel_debounce(self, "combobox_search")
+        cancel_debounce(self, DEBOUNCE_KEY_COMBOBOX_SEARCH)
 
         pop = self._popover
         self._popover = None
@@ -269,15 +306,14 @@ class SearchableCombobox(ctk.CTkFrame):
                 pass
 
         try:
-            self.after(10, _do)
+            self.after(DELAY_FOCUS_RESTORE_MS, _do)
         except Exception:
             _do()
 
     def _on_search_keyrelease(self, event=None) -> None:
         """Wartet die Tipppause ab, statt bei jedem Buchstaben neu zu filtern."""
-        from constants import SEARCH_DEBOUNCE_MS
         from utils.ui_utils import debounce
-        debounce(self, "combobox_search", SEARCH_DEBOUNCE_MS, self._on_search_changed)
+        debounce(self, DEBOUNCE_KEY_COMBOBOX_SEARCH, SEARCH_DEBOUNCE_MS, self._on_search_changed)
 
     def _on_search_changed(self, event=None) -> None:
         raw_query = self.search_entry.get().strip()
@@ -298,9 +334,9 @@ class SearchableCombobox(ctk.CTkFrame):
             ctk.CTkLabel(
                 self.options_scroll,
                 text=tr("searchable_combo.no_results", "Keine Praxen gefunden"),
-                font=ctk.CTkFont(size=11),
-                text_color="gray",
-            ).pack(pady=10)
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_MUTED_LABEL,
+            ).pack(pady=PAD_MD + PAD_XS)
             return
 
         if query and self._rich_results:
@@ -309,21 +345,21 @@ class SearchableCombobox(ctk.CTkFrame):
 
         for item in items:
             is_selected = item == self._selected_value
-            fg = ("#2563eb", "#1d4ed8") if is_selected else "transparent"
-            tc = "white" if is_selected else ("black", "white")
+            fg = COLOR_ITEM_SELECTED if is_selected else "transparent"
+            tc = "white" if is_selected else COLOR_TEXT_PRIMARY
 
             btn = ctk.CTkButton(
                 self.options_scroll,
                 text=item,
                 anchor="w",
-                height=28,
+                height=HEIGHT_COMBO_OPTION,
                 fg_color=fg,
-                hover_color=("gray75", "gray35"),
+                hover_color=COLOR_ITEM_HOVER,
                 text_color=tc,
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
                 command=lambda val=item: self._select_item(val),
             )
-            btn.pack(fill="x", pady=1, padx=2)
+            btn.pack(fill="x", pady=PAD_TINY, padx=PAD_XS)
 
     def _render_rich_options(self, items: list[str], query: str) -> None:
         """Renders one row per hit with the matched text highlighted.
@@ -336,11 +372,11 @@ class SearchableCombobox(ctk.CTkFrame):
 
         for item in items:
             is_selected = item == self._selected_value
-            row_bg = ("#2563eb", "#1d4ed8") if is_selected else ("gray90", "gray18")
-            text_col = ("white", "white") if is_selected else ("black", "white")
+            row_bg = COLOR_ITEM_SELECTED if is_selected else COLOR_POPOVER_BG
+            text_col = ("white", "white") if is_selected else COLOR_TEXT_PRIMARY
 
-            row = ctk.CTkFrame(self.options_scroll, fg_color=row_bg, corner_radius=4, cursor="hand2")
-            row.pack(fill="x", pady=1, padx=2)
+            row = ctk.CTkFrame(self.options_scroll, fg_color=row_bg, corner_radius=CORNER_RADIUS_SM, cursor=CURSOR_HAND)
+            row.pack(fill="x", pady=PAD_TINY, padx=PAD_XS)
 
             def on_click(_event=None, val=item):
                 self._select_item(val)
@@ -351,13 +387,13 @@ class SearchableCombobox(ctk.CTkFrame):
                 row,
                 text=item,
                 query=query,
-                font=ctk.CTkFont(size=11),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
                 text_color=text_col,
                 bg_color=row_bg,
                 wrap="none",
                 on_click=on_click,
                 scroll_frame=self.options_scroll,
-            ).pack(fill="x", anchor="w", padx=8, pady=(4, 0))
+            ).pack(fill="x", anchor="w", padx=PAD_MD, pady=(PAD_SM, 0))
 
             summary = None
             if self._summary_provider is not None:
@@ -371,15 +407,15 @@ class SearchableCombobox(ctk.CTkFrame):
                     row,
                     text=f"↳ {summary}",
                     query=query,
-                    font=ctk.CTkFont(size=10),
-                    text_color=("gray45", "gray65") if not is_selected else ("white", "white"),
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    text_color=COLOR_SUBTITLE_MUTED if not is_selected else ("white", "white"),
                     bg_color=row_bg,
                     wrap="word",
                     on_click=on_click,
                     scroll_frame=self.options_scroll,
-                ).pack(fill="x", anchor="w", padx=(16, 8), pady=(0, 4))
+                ).pack(fill="x", anchor="w", padx=(PAD_XL, PAD_MD), pady=(0, PAD_SM))
             else:
-                ctk.CTkFrame(row, fg_color="transparent", height=4).pack()
+                ctk.CTkFrame(row, fg_color="transparent", height=PAD_SM).pack()
 
             bind_mouse_wheel_to_canvas(row, self.options_scroll)
 

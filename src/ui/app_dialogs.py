@@ -9,14 +9,22 @@ und alle hier aufgerufenen self.-Attribute (self.storage_service, self.cases,
 self.cockpit_view, usw.) unveraendert funktionieren. Reines Verschieben von
 Code, keine Verhaltensaenderung.
 """
-from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 import customtkinter as ctk
+
+from constants import (
+    DEFAULT_FONT_SCALE,
+    DEFAULT_LANGUAGE,
+    DEFAULT_USER_COLOR,
+    THEME_DARK,
+    WINDOW_STATE_ZOOMED,
+)
 from enums import LayoutMode
 from models.case import Case
 from models.customer import Customer
-from models.schema import QuestionSchema
 from models.export_template import ExportTemplate
+from models.schema import QuestionSchema
 from services.schema_service import SchemaService
 from services.scoring_service import ScoringService
 
@@ -248,13 +256,31 @@ class DialogLaunchersMixin:
             self.user_btn.configure(text=f"👤 {self.profile.user.name}")
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
             self.cockpit_view.author_name = self.profile.user.name
+            if hasattr(self.cockpit_view, "left_frame") and hasattr(self.cockpit_view.left_frame, "set_user_color_settings"):
+                self.cockpit_view.left_frame.set_user_color_settings(
+                    self.profile.user.name,
+                    getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
+                    getattr(self.profile.user, "color_marker_enabled", False),
+                )
+            if hasattr(self.cockpit_view, "timeline_widget") and hasattr(self.cockpit_view.timeline_widget, "set_user_color_settings"):
+                self.cockpit_view.timeline_widget.author_name = self.profile.user.name
+                self.cockpit_view.timeline_widget.set_user_color_settings(
+                    getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
+                    getattr(self.profile.user, "color_marker_enabled", False),
+                )
+        if hasattr(self, "board_view") and hasattr(self.board_view, "set_user_color_settings"):
+            self.board_view.set_user_color_settings(
+                self.profile.user.name,
+                getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
+                getattr(self.profile.user, "color_marker_enabled", False),
+            )
         ctk.set_appearance_mode(self.profile.ui_settings.theme)
         if hasattr(self, "apply_windows_theme"):
-            self.apply_windows_theme(self.profile.ui_settings.theme == "Dark")
+            self.apply_windows_theme(self.profile.ui_settings.theme == THEME_DARK)
         if self.is_view_built(LayoutMode.COCKPIT.value) and hasattr(self.cockpit_view, "update_sash_color"):
             self.cockpit_view.update_sash_color()
-        font_scale = getattr(self.profile.ui_settings, "font_scale", 1.0)
-        is_zoomed = (self.state() == "zoomed")
+        font_scale = getattr(self.profile.ui_settings, "font_scale", DEFAULT_FONT_SCALE)
+        is_zoomed = (self.state() == WINDOW_STATE_ZOOMED)
         ctk.set_widget_scaling(font_scale)
         self._set_scaled_min_max()
         if is_zoomed:
@@ -262,7 +288,7 @@ class DialogLaunchersMixin:
         if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
-        lang_code = getattr(self.profile.ui_settings, "language", "de")
+        lang_code = getattr(self.profile.ui_settings, "language", DEFAULT_LANGUAGE)
         get_i18n().current_language = lang_code
         self.on_language_changed(lang_code)
 
@@ -310,17 +336,24 @@ class DialogLaunchersMixin:
         self.cockpit_view.on_select_case_from_list(new_case)
 
     def open_export_dialog(self, case: Case | None = None, event=None):
-        target_case = case or self.active_case
+        target_case = case or self.active_case or getattr(getattr(self, "cockpit_view", None), "current_case", None)
         if not target_case:
             return
-        ExportDialog(
-            self,
-            case=target_case,
-            templates=self.templates,
-            schemas=self.schemas,
-            export_service=self.export_service,
-            on_case_updated=self.on_case_updated,
-        )
+        kwargs = {
+            "case": target_case,
+            "templates": self.templates,
+            "schemas": self.schemas,
+            "export_service": self.export_service,
+            "on_case_updated": self.on_case_updated,
+        }
+        import inspect
+        try:
+            sig = inspect.signature(ExportDialog.__init__)
+            if "attachment_service" in sig.parameters or any(p.kind == inspect.Parameter.VAR_KEYWORD for p in sig.parameters.values()):
+                kwargs["attachment_service"] = getattr(self, "attachment_service", None)
+        except Exception:
+            pass
+        ExportDialog(self, **kwargs)
 
     def open_case_print_dialog(self, case: Case | None = None):
         target_case = case or self.active_case

@@ -45,6 +45,7 @@ from constants import (
     CORNER_RADIUS_MD,
     CORNER_RADIUS_SM,
     CORNER_RADIUS_XS,
+    CURSOR_HAND,
     FONT_SIZE_BODY,
     FONT_SIZE_CONFIRM,
     FONT_SIZE_SM,
@@ -383,7 +384,7 @@ class CaseListWidget(ctk.CTkFrame):
         row_bg = COLOR_CARD_SELECTED_BG if is_selected else COLOR_CARD_BG
         border_col = COLOR_CARD_SELECTED_BORDER if is_selected else COLOR_CARD_BORDER
 
-        card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=CORNER_RADIUS_CARD, border_width=1, border_color=border_col, cursor="hand2")
+        card = ctk.CTkFrame(self.scroll_frame, fg_color=row_bg, corner_radius=CORNER_RADIUS_CARD, border_width=1, border_color=border_col, cursor=CURSOR_HAND)
         card.pack(fill="x", pady=PAD_SM, padx=(PAD_SM, CORNER_RADIUS_MD))
         self._card_widgets[case.case_id] = card
 

@@ -13,6 +13,7 @@ from constants import (
     COLOR_WIKI_LINK,
     COLOR_WIKI_SNIPPET,
     CORNER_RADIUS_MD,
+    CURSOR_HAND,
     DEBOUNCE_KEY_WIKI_SEARCH,
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
@@ -127,7 +128,7 @@ class WikiWidget(ctk.CTkFrame):
                 corner_radius=CORNER_RADIUS_MD,
                 border_width=BORDER_WIDTH_CARD,
                 border_color=COLOR_CARD_BORDER,
-                cursor="hand2",
+                cursor=CURSOR_HAND,
             )
             card.pack(fill="x", pady=PAD_SM, padx=PAD_SM)
 

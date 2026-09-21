@@ -13,6 +13,7 @@ from constants import (
     COLOR_TOAST_BTN_HOVER,
     COLOR_TOAST_MSG,
     CORNER_RADIUS_CARD,
+    CURSOR_HAND,
     DEFAULT_POPUP_DISPLAY_TARGET,
     FONT_SIZE_BODY,
     FONT_SIZE_CONFIRM,
@@ -128,7 +129,7 @@ class ToastNotification(ctk.CTkToplevel):
 
         if on_open:
             try:
-                self.configure(cursor="hand2")
+                self.configure(cursor=CURSOR_HAND)
             except Exception:
                 pass
 

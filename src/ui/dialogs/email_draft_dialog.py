@@ -63,6 +63,7 @@ from constants import (
     CORNER_RADIUS_CARD,
     CORNER_RADIUS_LG,
     CORNER_RADIUS_MD,
+    CURSOR_HAND,
     DEBOUNCE_KEY_RECIPIENT_SEARCH,
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_OLLAMA_URL,
@@ -491,7 +492,7 @@ class EmailDraftDialog(BaseDialog):
             ), "email_draft.no_contacts_found", "Keine passenden Praxiskontakte gefunden.").pack(pady=PAD_MD + PAD_XS)
         else:
             for item in contacts[:MAX_SUGGESTIONS_COUNT]:
-                card = ctk.CTkFrame(self.suggestions_scroll, fg_color=COLOR_CARD_BG_SUGGESTION, corner_radius=CORNER_RADIUS_MD, cursor="hand2")
+                card = ctk.CTkFrame(self.suggestions_scroll, fg_color=COLOR_CARD_BG_SUGGESTION, corner_radius=CORNER_RADIUS_MD, cursor=CURSOR_HAND)
                 card.pack(fill="x", pady=PAD_XS, padx=PAD_XS)
 
                 contact_name = item.get("name", "")

@@ -445,12 +445,6 @@ TEXTBOX_HEIGHT_SM = 45
 BTN_WIDTH_ACTION = 140
 USER_COLOR_TILE_SIZE = 10
 COLOR_BORDER_DARK = "#18181b"
-TIMELINE_NOTE_WRAP_DEFAULT = 280
-TIMELINE_NOTE_WRAP_MIN = 180
-TIMELINE_NOTE_WRAP_OFFSET = 120
-#: Horizontal breathing room between a timeline note and the edge of
-#: its column, subtracted from the column width to get the wrap length.
-TIMELINE_NOTE_WRAP_INSET = 12
 #: Timeline notes are shown in full, so the shared highlight-label helper
 #: must not cap them at its usual few lines. A ceiling stays as a guard
 #: against a pathological note blowing up the layout.
@@ -557,6 +551,16 @@ AVAILABLE_GEMINI_MODELS = [
     "gemini-flash-latest",
     "gemini-2.5-pro",
     "gemini-2.5-flash-lite",
+]
+#: Models tried in order when the configured Gemini model fails. This is
+#: deliberately a subset of AVAILABLE_GEMINI_MODELS: 'gemini-2.5-flash-lite'
+#: is selectable but is not part of the automatic fallback chain.
+GEMINI_FALLBACK_MODELS = [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash",
+    "gemini-2.5-flash",
+    "gemini-flash-latest",
+    "gemini-2.5-pro",
 ]
 GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta"
 
@@ -1075,6 +1079,7 @@ COLOR_RESIZE_HANDLE = ("gray75", "gray35")
 HEIGHT_RESIZE_HANDLE = 7
 CURSOR_RESIZE_V = "sb_v_double_arrow"
 CURSOR_HAND = "hand2"
+CURSOR_ARROW = "arrow"
 TEXTBOX_MIN_HEIGHT = 50
 TEXTBOX_MAX_HEIGHT = 600
 TEXTBOX_DEFAULT_HEIGHT = 90

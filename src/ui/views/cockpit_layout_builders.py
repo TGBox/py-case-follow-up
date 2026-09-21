@@ -52,6 +52,7 @@ from constants import (
     PAD_XS,
     TOOLBAR_BREAK_WIDTH,
     TOOLTIP_SHORT_DELAY_MS,
+    VIP_TAG_DISPLAY,
 )
 
 from typing import TYPE_CHECKING, Any, cast
@@ -439,7 +440,7 @@ class CockpitLayoutBuilderMixin:
             else:
                 self.case_title_label.configure(text=tr("cockpit.select_case_prompt", "Bitte einen Fall auswählen"))
         if getattr(self, "current_case", None):
-            vip_str = " ★ VIP" if self.current_case.customer.is_vip else ""
+            vip_str = VIP_TAG_DISPLAY if self.current_case.customer.is_vip else ""
             if self.current_case.is_internal:
                 self.kunde_label.configure(text=f"🏢 {tr('cockpit.customer', 'Kunde')}: {tr('cockpit.internal_task_title', 'INTERNE AUFGABE / VORGANG')} ({self.current_case.customer.customer_id}){vip_str}")
             else:

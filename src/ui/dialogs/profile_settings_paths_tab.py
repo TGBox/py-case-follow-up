@@ -10,16 +10,20 @@ from constants import (
     BTN_WIDTH_MD,
     BTN_WIDTH_WIDE,
     COLOR_INFO,
+    COLOR_LABEL_GRAY70,
+    COLOR_MUTED_BODY,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
     COLOR_PANEL_BG,
     COLOR_PANEL_BORDER,
     COLOR_SUCCESS,
+    COLOR_TIP_TEXT,
     CORNER_RADIUS_CARD,
     DEFAULT_BACKUP_DAILY_DAYS,
     DEFAULT_BACKUP_MONTHLY_MONTHS,
     DEFAULT_BACKUP_WEEKLY_WEEKS,
     DEFAULT_BACKUP_ZIP_FILENAME,
+    ENTRY_WIDTH_NUMERIC,
     FILE_TYPES_ZIP,
     FILENAME_APP_PROFILE,
     FILENAME_ARCHIVE,
@@ -37,9 +41,12 @@ from constants import (
     PAD_NONE,
     PAD_XS,
     PAD_SM,
+    PAD_GAP,
     PAD_MD,
     PAD_LG,
     PAD_XL,
+    PROFILE_CARD_DESC_WRAPLENGTH,
+    PROFILE_DESC_WRAPLENGTH,
 )
 from models.profile import BackupSettings
 from services.i18n_service import tr
@@ -204,15 +211,15 @@ class PathsSettingsTabMixin:
                     "profile.retention_desc",
                     "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
                 ),
-                font=ctk.CTkFont(size=11),
-                text_color=("gray40", "gray70"),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
                 justify="left",
                 anchor="w",
-                wraplength=420,
+                wraplength=PROFILE_DESC_WRAPLENGTH,
             ),
             "profile.retention_desc",
             "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
-        ).pack(anchor="w", pady=(0, 6))
+        ).pack(anchor="w", pady=(PAD_NONE, PAD_GAP))
 
         retention_card = ctk.CTkFrame(left_col, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         retention_card.pack(fill="x", pady=(PAD_NONE, PAD_MD), padx=PAD_XS)
@@ -225,7 +232,7 @@ class PathsSettingsTabMixin:
             "profile.retention_daily",
             "Tägliche Backups (Tage vollständig behalten):",
         ).pack(side="left")
-        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=70)
+        self.retention_daily_entry = ctk.CTkEntry(row_daily, width=ENTRY_WIDTH_NUMERIC)
         self.retention_daily_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "daily_days", DEFAULT_BACKUP_DAILY_DAYS)))
         self.retention_daily_entry.pack(side="left", padx=PAD_SM)
 
@@ -237,7 +244,7 @@ class PathsSettingsTabMixin:
             "profile.retention_weekly",
             "Wöchentliche Backups (Wochen je 1 Backup):",
         ).pack(side="left")
-        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=70)
+        self.retention_weekly_entry = ctk.CTkEntry(row_weekly, width=ENTRY_WIDTH_NUMERIC)
         self.retention_weekly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "weekly_weeks", DEFAULT_BACKUP_WEEKLY_WEEKS)))
         self.retention_weekly_entry.pack(side="left", padx=PAD_SM)
 
@@ -249,7 +256,7 @@ class PathsSettingsTabMixin:
             "profile.retention_monthly",
             "Monatliche Backups (Monate je 1 Backup):",
         ).pack(side="left")
-        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=70)
+        self.retention_monthly_entry = ctk.CTkEntry(row_monthly, width=ENTRY_WIDTH_NUMERIC)
         self.retention_monthly_entry.insert(0, str(getattr(getattr(self.profile, "backup_settings", None), "monthly_months", DEFAULT_BACKUP_MONTHLY_MONTHS)))
         self.retention_monthly_entry.pack(side="left", padx=PAD_SM)
 
@@ -291,10 +298,10 @@ class PathsSettingsTabMixin:
             right_col,
             text=desc_str,
             font=ctk.CTkFont(size=FONT_SIZE_SM),
-            text_color=("gray30", "gray80"),
+            text_color=COLOR_MUTED_BODY,
             justify="left",
             anchor="w",
-            wraplength=420,
+            wraplength=PROFILE_DESC_WRAPLENGTH,
         ).pack(anchor="w", pady=(PAD_NONE, PAD_LG))
 
         # Section 2.1: Export
@@ -316,9 +323,9 @@ class PathsSettingsTabMixin:
                 exp_card,
                 text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
                 font=ctk.CTkFont(size=FONT_SIZE_SM),
-                text_color=("gray40", "gray70"),
+                text_color=COLOR_TIP_TEXT,
                 anchor="w",
-                wraplength=400,
+                wraplength=PROFILE_CARD_DESC_WRAPLENGTH,
                 justify="left",
             ),
             "profile.backup_exp_desc",
@@ -357,9 +364,9 @@ class PathsSettingsTabMixin:
                 imp_card,
                 text=tr("profile.backup_imp_desc", "Stellt Datensätze und Anhänge aus einem ZIP-Archiv an den von Ihnen gewählten Ziel-Speicherorten wieder her."),
                 font=ctk.CTkFont(size=FONT_SIZE_SM),
-                text_color=("gray40", "gray70"),
+                text_color=COLOR_TIP_TEXT,
                 anchor="w",
-                wraplength=400,
+                wraplength=PROFILE_CARD_DESC_WRAPLENGTH,
                 justify="left",
             ),
             "profile.backup_imp_desc",
@@ -515,7 +522,7 @@ class PathsSettingsTabMixin:
         else:
             self.status_lbl.configure(
                 text=tr("profile.retention_pruned_none", "ℹ Keine veralteten Backups zum Bereinigen gefunden."),
-                text_color="gray70",
+                text_color=COLOR_LABEL_GRAY70,
             )
 
     def reload_paths_fields(self) -> None:

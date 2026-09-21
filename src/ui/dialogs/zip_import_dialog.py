@@ -5,7 +5,39 @@ from tkinter import filedialog
 from pathlib import Path
 from collections.abc import Callable
 from services.zip_backup_service import ZipBackupService
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_WIDTH_CLOSE,
+    BTN_WIDTH_WIDE,
+    BTN_WIDTH_ZIP_MODE,
+    BYTES_PER_KB,
+    COLOR_BTN_CANCEL,
+    COLOR_BTN_CANCEL_HOVER,
+    COLOR_CARD_BG_ALT,
+    COLOR_NOTE_TEXT,
+    COLOR_PRIMARY_BLUE,
+    COLOR_SUCCESS,
+    COLOR_WARNING_NOTE,
+    CORNER_RADIUS_CARD,
+    CORNER_RADIUS_LG,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_ZIP_IMPORT,
+    DIALOG_TITLES,
+    ENTRY_WIDTH_IMPORT_PATH,
+    FONT_SIZE_BODY,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_WEIGHT_BOLD,
+    PAD_10,
+    PAD_15,
+    PAD_2XL,
+    PAD_CONTAINER,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+    ZIP_IMPORT_WARN_WRAPLENGTH,
+)
 
 
 class ZipImportPathDialog(BaseDialog):
@@ -30,7 +62,7 @@ class ZipImportPathDialog(BaseDialog):
             parent,
             DIALOG_TITLES["zip_import"],
             (w, h),
-            min_size=(760, 540),
+            min_size=DIALOG_MIN_SIZE_ZIP_IMPORT,
 
             title_factory=lambda: DIALOG_TITLES["zip_import"],
         )
@@ -47,23 +79,23 @@ class ZipImportPathDialog(BaseDialog):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=PAD_2XL, pady=PAD_2XL)
 
         # Header Info Card
-        header_card = ctk.CTkFrame(main_frame, fg_color=("gray85", "gray20"), corner_radius=8)
-        header_card.pack(fill="x", pady=(0, 15))
+        header_card = ctk.CTkFrame(main_frame, fg_color=COLOR_CARD_BG_ALT, corner_radius=CORNER_RADIUS_CARD)
+        header_card.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
         from services.i18n_service import tr
 
         title_lbl = self.register_i18n(ctk.CTkLabel(
             header_card,
             text=tr("zip_import.backup_file", "📦 Backup-Datei: {name}", name=self.zip_file_path.name),
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight=FONT_WEIGHT_BOLD),
             anchor="w",
         ), "zip_import.backup_file", "📦 Backup-Datei: {name}", name=self.zip_file_path.name)
-        title_lbl.pack(fill="x", padx=12, pady=(10, 2))
+        title_lbl.pack(fill="x", padx=PAD_LG, pady=(PAD_10, PAD_XS))
 
-        mb_size = self.zip_info["total_bytes"] / (1024 * 1024)
+        mb_size = self.zip_info["total_bytes"] / (BYTES_PER_KB * BYTES_PER_KB)
         info_str = tr(
             "zip_import.info_summary",
             "Enthält: {total} Dateien  ({data} Datendateien, {att} Anhänge)  •  Größe: {size:.2f} MB",
@@ -75,11 +107,11 @@ class ZipImportPathDialog(BaseDialog):
         sub_lbl = ctk.CTkLabel(
             header_card,
             text=info_str,
-            font=ctk.CTkFont(size=11),
-            text_color=("gray30", "gray70"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_NOTE_TEXT,
             anchor="w",
         )
-        sub_lbl.pack(fill="x", padx=12, pady=(0, 10))
+        sub_lbl.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_10))
 
         from services.i18n_service import tr
 
@@ -87,34 +119,34 @@ class ZipImportPathDialog(BaseDialog):
         self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("zip_import.select_mode", "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:"),
-            font=ctk.CTkFont(weight="bold", size=12),
-        ), "zip_import.select_mode", "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:").pack(anchor="w", pady=(5, 8))
+            font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD, size=FONT_SIZE_BODY),
+        ), "zip_import.select_mode", "Wählen Sie aus, wie die Zielspeicherorte festgelegt werden sollen:").pack(anchor="w", pady=(PAD_CONTAINER, PAD_MD))
 
         mode_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        mode_frame.pack(fill="x", pady=(0, 15))
+        mode_frame.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
         self.btn_mode_root = self.register_i18n(ctk.CTkButton(
             mode_frame,
             text=tr("zip_import.root_folder_btn", "📁 Gesamt-Zielordner wählen"),
             command=self.set_mode_root,
-            fg_color="dodgerblue",
-            width=230,
+            fg_color=COLOR_PRIMARY_BLUE,
+            width=BTN_WIDTH_ZIP_MODE,
         ), "zip_import.root_folder_btn", "📁 Gesamt-Zielordner wählen")
-        self.btn_mode_root.pack(side="left", padx=(0, 10))
+        self.btn_mode_root.pack(side="left", padx=(PAD_NONE, PAD_10))
 
         self.btn_mode_custom = self.register_i18n(ctk.CTkButton(
             mode_frame,
             text=tr("zip_import.custom_paths_btn", "⚙ Einzelne Pfade anpassen"),
             command=self.set_mode_custom,
-            fg_color=("gray70", "gray40"),
-            hover_color=("gray60", "gray50"),
-            width=230,
+            fg_color=COLOR_BTN_CANCEL,
+            hover_color=COLOR_BTN_CANCEL_HOVER,
+            width=BTN_WIDTH_ZIP_MODE,
         ), "zip_import.custom_paths_btn", "⚙ Einzelne Pfade anpassen")
         self.btn_mode_custom.pack(side="left")
 
         # Destination Paths Inputs Frame
-        self.paths_frame = ctk.CTkFrame(main_frame, corner_radius=8)
-        self.paths_frame.pack(fill="x", pady=(0, 15), padx=2)
+        self.paths_frame = ctk.CTkFrame(main_frame, corner_radius=CORNER_RADIUS_LG)
+        self.paths_frame.pack(fill="x", pady=(PAD_NONE, PAD_15), padx=PAD_XS)
 
         self.render_path_inputs()
 
@@ -122,12 +154,12 @@ class ZipImportPathDialog(BaseDialog):
         warn_lbl = self.register_i18n(ctk.CTkLabel(
             main_frame,
             text=tr("zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben."),
-            font=ctk.CTkFont(size=11),
-            text_color=("darkgoldenrod", "gold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_WARNING_NOTE,
             anchor="w",
-            wraplength=680,
+            wraplength=ZIP_IMPORT_WARN_WRAPLENGTH,
         ), "zip_import.warning_overwrite", "⚠ Hinweis: Beim Importieren werden vorhandene Dateien mit gleichem Namen am Zielspeicherort überschrieben.")
-        warn_lbl.pack(fill="x", pady=(0, 15))
+        warn_lbl.pack(fill="x", pady=(PAD_NONE, PAD_15))
 
         from services.i18n_service import tr
 
@@ -139,30 +171,30 @@ class ZipImportPathDialog(BaseDialog):
             bottom_bar,
             text=tr("common.cancel", "Abbrechen"),
             command=self.destroy,
-            fg_color=("gray70", "gray40"),
-            hover_color=("gray60", "gray50"),
-            width=120,
+            fg_color=COLOR_BTN_CANCEL,
+            hover_color=COLOR_BTN_CANCEL_HOVER,
+            width=BTN_WIDTH_CLOSE,
         ), "common.cancel", "Abbrechen").pack(side="left")
 
         self.register_i18n(ctk.CTkButton(
             bottom_bar,
             text=tr("zip_import.unpack_btn", "📥 Daten entpacken & importieren"),
             command=self.on_confirm,
-            fg_color="forestgreen",
-            width=240,
-            font=ctk.CTkFont(weight="bold"),
+            fg_color=COLOR_SUCCESS,
+            width=BTN_WIDTH_WIDE,
+            font=ctk.CTkFont(weight=FONT_WEIGHT_BOLD),
         ), "zip_import.unpack_btn", "📥 Daten entpacken & importieren").pack(side="right")
 
     def set_mode_root(self):
         self.mode = "root"
-        self.btn_mode_root.configure(fg_color="dodgerblue")
-        self.btn_mode_custom.configure(fg_color=("gray70", "gray40"))
+        self.btn_mode_root.configure(fg_color=COLOR_PRIMARY_BLUE)
+        self.btn_mode_custom.configure(fg_color=COLOR_BTN_CANCEL)
         self.render_path_inputs()
 
     def set_mode_custom(self):
         self.mode = "custom"
-        self.btn_mode_root.configure(fg_color=("gray70", "gray40"))
-        self.btn_mode_custom.configure(fg_color="dodgerblue")
+        self.btn_mode_root.configure(fg_color=COLOR_BTN_CANCEL)
+        self.btn_mode_custom.configure(fg_color=COLOR_PRIMARY_BLUE)
         self.render_path_inputs()
 
     def render_path_inputs(self):
@@ -175,21 +207,21 @@ class ZipImportPathDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(
                 self.paths_frame,
                 text=tr("zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):"),
-                font=ctk.CTkFont(size=11, weight="bold"),
-            ), "zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):").pack(anchor="w", padx=12, pady=(10, 2))
+                font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            ), "zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):").pack(anchor="w", padx=PAD_LG, pady=(PAD_10, PAD_XS))
 
             row = ctk.CTkFrame(self.paths_frame, fg_color="transparent")
-            row.pack(fill="x", padx=12, pady=(0, 12))
+            row.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
 
             root_parent = self.target_data_dir.parent if self.target_data_dir else Path.cwd()
-            self.root_entry = ctk.CTkEntry(row, width=480)
+            self.root_entry = ctk.CTkEntry(row, width=ENTRY_WIDTH_IMPORT_PATH)
             self.root_entry.insert(0, str(root_parent))
-            self.root_entry.pack(side="left", padx=(0, 8))
+            self.root_entry.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
             self.register_i18n(ctk.CTkButton(
                 row,
                 text=tr("common.browse", "Durchsuchen..."),
-                width=120,
+                width=BTN_WIDTH_CLOSE,
                 command=self.browse_root_dir,
             ), "common.browse", "Durchsuchen...").pack(side="left")
 
@@ -198,20 +230,20 @@ class ZipImportPathDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(
                 self.paths_frame,
                 text=tr("zip_import.data_loc", "1. Speicherort für Datendateien & Profile (data/):"),
-                font=ctk.CTkFont(size=11, weight="bold"),
-            ), "zip_import.data_loc", "1. Speicherort für Datendateien & Profile (data/):").pack(anchor="w", padx=12, pady=(10, 2))
+                font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            ), "zip_import.data_loc", "1. Speicherort für Datendateien & Profile (data/):").pack(anchor="w", padx=PAD_LG, pady=(PAD_10, PAD_XS))
 
             row1 = ctk.CTkFrame(self.paths_frame, fg_color="transparent")
-            row1.pack(fill="x", padx=12, pady=(0, 8))
+            row1.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_MD))
 
-            self.data_entry = ctk.CTkEntry(row1, width=480)
+            self.data_entry = ctk.CTkEntry(row1, width=ENTRY_WIDTH_IMPORT_PATH)
             self.data_entry.insert(0, str(self.target_data_dir))
-            self.data_entry.pack(side="left", padx=(0, 8))
+            self.data_entry.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
             self.register_i18n(ctk.CTkButton(
                 row1,
                 text=tr("common.browse", "Durchsuchen..."),
-                width=120,
+                width=BTN_WIDTH_CLOSE,
                 command=self.browse_data_dir,
             ), "common.browse", "Durchsuchen...").pack(side="left")
 
@@ -219,20 +251,20 @@ class ZipImportPathDialog(BaseDialog):
             self.register_i18n(ctk.CTkLabel(
                 self.paths_frame,
                 text=tr("zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):"),
-                font=ctk.CTkFont(size=11, weight="bold"),
-            ), "zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):").pack(anchor="w", padx=12, pady=(4, 2))
+                font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            ), "zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):").pack(anchor="w", padx=PAD_LG, pady=(PAD_SM, PAD_XS))
 
             row2 = ctk.CTkFrame(self.paths_frame, fg_color="transparent")
-            row2.pack(fill="x", padx=12, pady=(0, 12))
+            row2.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
 
-            self.att_entry = ctk.CTkEntry(row2, width=480)
+            self.att_entry = ctk.CTkEntry(row2, width=ENTRY_WIDTH_IMPORT_PATH)
             self.att_entry.insert(0, str(self.target_attachments_dir))
-            self.att_entry.pack(side="left", padx=(0, 8))
+            self.att_entry.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
             self.register_i18n(ctk.CTkButton(
                 row2,
                 text=tr("common.browse", "Durchsuchen..."),
-                width=120,
+                width=BTN_WIDTH_CLOSE,
                 command=self.browse_att_dir,
             ), "common.browse", "Durchsuchen...").pack(side="left")
 

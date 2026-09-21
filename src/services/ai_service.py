@@ -6,23 +6,27 @@ from models.case import Case
 from enums import get_actor_display, get_board_column_display
 from services.anonymizer_service import PiiAnonymizer
 from constants import (
-    DEFAULT_OLLAMA_URL,
-    DEFAULT_OLLAMA_MODEL,
-    DEFAULT_GEMINI_MODEL,
-    GEMINI_API_BASE_URL,
-    DEFAULT_MODELFILE_PATH,
-    DEFAULT_PVS_MODEL_NAME,
-    OLLAMA_FALLBACK_BASE_MODELS,
-    OLLAMA_TIMEOUT_STATUS,
-    OLLAMA_TIMEOUT_GENERATE,
-    AI_USER_AGENT,
-    AI_SYSTEM_ROLE_DEFAULT,
-    AI_SYSTEM_ROLE_EMAIL,
     AI_PROMPT_BASE_RULES_HEADER,
-    AI_PROMPT_PRACTICE_RULES_HEADER,
-    AI_PROMPT_OVERRIDE_NOTICE,
     AI_PROMPT_CUSTOM_INSTRUCTION_HEADER,
     AI_PROMPT_CUSTOM_INSTRUCTION_NOTICE,
+    AI_PROMPT_OVERRIDE_NOTICE,
+    AI_PROMPT_PRACTICE_RULES_HEADER,
+    AI_SYSTEM_ROLE_DEFAULT,
+    AI_SYSTEM_ROLE_EMAIL,
+    AI_USER_AGENT,
+    DEFAULT_GEMINI_MODEL,
+    DEFAULT_MODELFILE_PATH,
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_OLLAMA_URL,
+    DEFAULT_PVS_MODEL_NAME,
+    GEMINI_API_BASE_URL,
+    GEMINI_TIMEOUT_GENERATE,
+    GEMINI_TIMEOUT_STATUS,
+    OLLAMA_FALLBACK_BASE_MODELS,
+    OLLAMA_TIMEOUT_GENERATE,
+    OLLAMA_TIMEOUT_PRELOAD,
+    OLLAMA_TIMEOUT_STATUS,
+    OLLAMA_TIMEOUT_UNLOAD,
 )
 
 logger = logging.getLogger("AiService")
@@ -82,7 +86,7 @@ class AiService:
         try:
             url = f"{GEMINI_API_BASE_URL}/models?key={key.strip()}"
             req = urllib.request.Request(url, headers={"User-Agent": AI_USER_AGENT})
-            with urllib.request.urlopen(req, timeout=5.0) as resp:
+            with urllib.request.urlopen(req, timeout=GEMINI_TIMEOUT_STATUS) as resp:
                 if resp.status == 200:
                     return True, f"Google Gemini API Key gültig! (Modell: {model or self.gemini_model})"
         except urllib.error.HTTPError as e:
@@ -123,7 +127,7 @@ class AiService:
             payload = {"model": target_model, "prompt": ""}
             json_bytes = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=60.0) as resp:
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_PRELOAD) as resp:
                 if resp.status == 200:
                     return True, f"Modell '{target_model}' erfolgreich geladen!"
         except Exception as e:
@@ -138,7 +142,7 @@ class AiService:
             payload = {"model": target_model, "keep_alive": 0}
             json_bytes = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=10.0) as resp:
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_UNLOAD) as resp:
                 if resp.status == 200:
                     return True, f"Modell '{target_model}' erfolgreich aus Speicher entladen."
         except Exception as e:
@@ -179,7 +183,7 @@ class AiService:
             url = f"{self.ollama_url}/api/create"
             json_bytes = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(url, data=json_bytes, headers={"Content-Type": "application/json"})
-            with urllib.request.urlopen(req, timeout=120.0) as resp:
+            with urllib.request.urlopen(req, timeout=OLLAMA_TIMEOUT_GENERATE) as resp:
                 if resp.status == 200:
                     res_data = json.loads(resp.read().decode("utf-8"))
                     if res_data.get("status") == "success" or "error" not in res_data:
@@ -282,7 +286,7 @@ class AiService:
                     data=json_bytes,
                     headers={"Content-Type": "application/json", "User-Agent": AI_USER_AGENT}
                 )
-                with urllib.request.urlopen(req, timeout=30.0) as resp:
+                with urllib.request.urlopen(req, timeout=GEMINI_TIMEOUT_GENERATE) as resp:
                     if resp.status == 200:
                         res_data = json.loads(resp.read().decode("utf-8"))
                         candidates = res_data.get("candidates", [])

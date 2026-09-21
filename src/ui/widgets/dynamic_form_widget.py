@@ -50,9 +50,13 @@ from constants import (
     HEIGHT_OPEN_FILE_BTN,
     HEIGHT_RESIZE_HANDLE,
     MOUSEWHEEL_DELTA_UNIT,
+    PAD_10,
+    PAD_2XL,
     PAD_CONTAINER,
+    PAD_GAP,
     PAD_LG,
     PAD_MD,
+    PAD_NONE,
     PAD_SM,
     PAD_XL,
     PAD_XS,
@@ -292,7 +296,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
     def create_widgets(self):
         self.scroll_frame = ctk.CTkScrollableFrame(self, fg_color="transparent")
-        self.scroll_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        self.scroll_frame.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
         from utils.ui_utils import enable_auto_hiding_scrollbar
         enable_auto_hiding_scrollbar(self.scroll_frame)
 
@@ -379,14 +383,14 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         case: Case | None = None,
     ):
         row_frame = ctk.CTkFrame(parent_frame, fg_color="transparent")
-        row_frame.pack(fill="x", pady=6, padx=5)
+        row_frame.pack(fill="x", pady=PAD_GAP, padx=PAD_CONTAINER)
         self.field_row_frames[f.field_id] = row_frame
 
         req_mark = " *" if f.required else ""
         label_text = f"{f.label}{req_mark}:"
 
         label_row = ctk.CTkFrame(row_frame, fg_color="transparent")
-        label_row.pack(fill="x", anchor="w", pady=(0, 2))
+        label_row.pack(fill="x", anchor="w", pady=(PAD_NONE, PAD_XS))
 
         lbl = ctk.CTkLabel(
             label_row,
@@ -527,7 +531,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         if not schema or not schema.fields:
             from services.i18n_service import tr
-            ctk.CTkLabel(self.scroll_frame, text=tr("form.no_fields", "Keine Formularfelder definiert.")).pack(pady=20)
+            ctk.CTkLabel(self.scroll_frame, text=tr("form.no_fields", "Keine Formularfelder definiert.")).pack(pady=PAD_2XL)
             return
 
         sorted_fields = sorted(schema.fields, key=lambda f: f.order)
@@ -555,7 +559,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
                     self.current_file_requests = [{}]
 
             self.repeatable_container = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
-            self.repeatable_container.pack(fill="x", pady=10, padx=2)
+            self.repeatable_container.pack(fill="x", pady=PAD_10, padx=PAD_XS)
             self.render_repeatable_cards()
 
         else:
@@ -685,7 +689,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
                     should_show = p_str.lower() in valid_targets or (isinstance(parent_val, bool) and parent_val and "true" in valid_targets)
 
             if should_show:
-                row_frame.pack(fill="x", pady=6, padx=5)
+                row_frame.pack(fill="x", pady=PAD_GAP, padx=PAD_CONTAINER)
             else:
                 row_frame.pack_forget()
 
@@ -783,7 +787,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             return
 
         self.mini_attach_hdr_label.configure(text=f"📎 {tr('dynamic_form.files_attached', 'Abgelegte Dateien im Fallordner')} ({len(files)}):")
-        self.mini_attach_scroll.pack(fill="both", expand=True, padx=5, pady=(0, 4))
+        self.mini_attach_scroll.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=(PAD_NONE, PAD_SM))
 
         for f_name in files:
             f_path = os.path.join(target_dir, f_name)

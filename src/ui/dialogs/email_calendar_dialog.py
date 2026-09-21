@@ -6,7 +6,38 @@ from tkinter import filedialog
 from typing import Any
 from models.case import Case
 from services.calendar_email_service import CalendarEmailService
-from constants import DIALOG_DIMENSIONS, DIALOG_TITLES
+from constants import (
+    BTN_HEIGHT_LG,
+    BTN_WIDTH_CLOSE_SM,
+    BTN_WIDTH_MD,
+    COLOR_BTN_GRAY,
+    COLOR_BTN_SECONDARY,
+    COLOR_BTN_SECONDARY_HOVER,
+    COLOR_DEEPSKYBLUE_HOVER,
+    COLOR_LABEL_GRAY60,
+    COLOR_MAGENTA_HOVER,
+    COLOR_PRIMARY_BLUE,
+    COLOR_STATUS_SUCCESS_TEXT,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_TEXT_BLUE,
+    COLOR_TEXT_GRAY,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_EMAIL_CALENDAR,
+    DIALOG_TITLES,
+    FONT_SIZE_BODY,
+    FONT_SIZE_HEADER_BAR,
+    FONT_SIZE_SM,
+    PAD_10,
+    PAD_15,
+    PAD_CONTAINER,
+    PAD_GAP,
+    PAD_MD,
+    PAD_NONE,
+    PAD_TINY,
+    PAD_XS,
+    TEXTBOX_HEIGHT_EMAIL_CALENDAR_BODY,
+)
 
 
 class EmailCalendarDialog(BaseDialog):
@@ -31,7 +62,7 @@ class EmailCalendarDialog(BaseDialog):
             parent,
             f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}",
             (w, h),
-            min_size=(720, 540),
+            min_size=DIALOG_MIN_SIZE_EMAIL_CALENDAR,
 
             title_factory=lambda: f"{DIALOG_TITLES['email_calendar']} - Fall {case.case_id}",
         )
@@ -41,18 +72,18 @@ class EmailCalendarDialog(BaseDialog):
 
     def create_widgets(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+        main_frame.pack(fill="both", expand=True, padx=PAD_15, pady=PAD_15)
 
         # Header
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        hdr_frame.pack(fill="x", pady=(0, 10))
+        hdr_frame.pack(fill="x", pady=(PAD_NONE, PAD_10))
 
         from services.i18n_service import tr
 
         self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("email_calendar.header", "✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {case_id})", case_id=self.case.case_id),
-            font=ctk.CTkFont(size=16, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight="bold"),
         ), "email_calendar.header", "✉ E-Mail-Entwurf & 📅 Kalender-Export (Fall {case_id})", case_id=self.case.case_id).pack(anchor="w")
 
         practice_name = self.case.customer.practice_name if self.case.customer else tr("common.unknown_practice", "Unbekannte Praxis")
@@ -60,113 +91,113 @@ class EmailCalendarDialog(BaseDialog):
         self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("email_calendar.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str),
-            font=ctk.CTkFont(size=11),
-            text_color="gray",
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_TEXT_GRAY,
         ), "email_calendar.sub_header", "Praxis: {practice} | Rückruf-Deadline: {deadline}", practice=practice_name, deadline=deadline_str).pack(anchor="w")
 
         # Scrollable Content Box
         from utils.ui_utils import enable_auto_hiding_scrollbar
         content_scroll = ctk.CTkScrollableFrame(main_frame, fg_color="transparent")
-        content_scroll.pack(fill="both", expand=True, pady=(0, 10))
+        content_scroll.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_10))
         enable_auto_hiding_scrollbar(content_scroll)
 
         # Recipient Email
-        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.recipient_lbl", "Empfänger (E-Mail):"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.recipient_lbl", "Empfänger (E-Mail):").pack(anchor="w", pady=(2, 1))
+        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.recipient_lbl", "Empfänger (E-Mail):"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "email_calendar.recipient_lbl", "Empfänger (E-Mail):").pack(anchor="w", pady=(PAD_XS, PAD_TINY))
         self.to_entry = self.register_i18n(ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.to_placeholder", "praxis@beispiel.de...")), "email_calendar.to_placeholder", "praxis@beispiel.de...", attr="placeholder_text")
         if self.draft_data.get("to"):
             self.to_entry.insert(0, self.draft_data["to"])
-        self.to_entry.pack(fill="x", pady=(0, 8))
+        self.to_entry.pack(fill="x", pady=(PAD_NONE, PAD_MD))
 
         # Subject
-        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.subject_lbl", "Betreff:").pack(anchor="w", pady=(2, 1))
+        self.register_i18n(ctk.CTkLabel(content_scroll, text=tr("email_calendar.subject_lbl", "Betreff:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "email_calendar.subject_lbl", "Betreff:").pack(anchor="w", pady=(PAD_XS, PAD_TINY))
         self.subject_entry = self.register_i18n(ctk.CTkEntry(content_scroll, placeholder_text=tr("email_calendar.subject_placeholder", "Betreff eingeben...")), "email_calendar.subject_placeholder", "Betreff eingeben...", attr="placeholder_text")
         if self.draft_data.get("subject"):
             self.subject_entry.insert(0, self.draft_data["subject"])
-        self.subject_entry.pack(fill="x", pady=(0, 8))
+        self.subject_entry.pack(fill="x", pady=(PAD_NONE, PAD_MD))
 
         # Body Textbox Control Row
         body_hdr_row = ctk.CTkFrame(content_scroll, fg_color="transparent")
-        body_hdr_row.pack(fill="x", pady=(2, 1))
+        body_hdr_row.pack(fill="x", pady=(PAD_XS, PAD_TINY))
 
-        self.register_i18n(ctk.CTkLabel(body_hdr_row, text=tr("email_calendar.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=12, weight="bold")), "email_calendar.body_lbl", "E-Mail Nachrichtentext:").pack(side="left")
+        self.register_i18n(ctk.CTkLabel(body_hdr_row, text=tr("email_calendar.body_lbl", "E-Mail Nachrichtentext:"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")), "email_calendar.body_lbl", "E-Mail Nachrichtentext:").pack(side="left")
 
         if self.snippet_service:
             self.register_i18n(ctk.CTkButton(
                 body_hdr_row,
                 text=tr("email_calendar.snippet_btn", "🧩 Textbaustein"),
-                width=110,
-                fg_color="gray30",
-                hover_color="darkmagenta",
+                width=BTN_WIDTH_MD,
+                fg_color=COLOR_BTN_SECONDARY,
+                hover_color=COLOR_MAGENTA_HOVER,
                 command=self.open_snippet_picker,
             ), "email_calendar.snippet_btn", "🧩 Textbaustein").pack(side="right")
 
-        self.body_textbox = ctk.CTkTextbox(content_scroll, height=200)
+        self.body_textbox = ctk.CTkTextbox(content_scroll, height=TEXTBOX_HEIGHT_EMAIL_CALENDAR_BODY)
         if self.draft_data.get("body"):
             self.body_textbox.insert("1.0", self.draft_data["body"])
-        self.body_textbox.pack(fill="x", expand=True, pady=(0, 8))
+        self.body_textbox.pack(fill="x", expand=True, pady=(PAD_NONE, PAD_MD))
 
         # Status Label
-        self.status_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=11), text_color="dodgerblue")
-        self.status_lbl.pack(anchor="w", pady=(0, 5))
+        self.status_lbl = ctk.CTkLabel(main_frame, text="", font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TEXT_BLUE)
+        self.status_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_CONTAINER))
 
         # Action Buttons Container (2 structured rows)
         from services.i18n_service import tr
 
         btn_box = ctk.CTkFrame(main_frame, fg_color="transparent")
-        btn_box.pack(fill="x", pady=(8, 0))
+        btn_box.pack(fill="x", pady=(PAD_MD, PAD_NONE))
 
         # Row 1: E-Mail Actions
         row1_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
-        row1_btns.pack(fill="x", pady=(0, 6))
+        row1_btns.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
 
         self.register_i18n(ctk.CTkButton(
             row1_btns,
             text=tr("email_calendar.open_mailto", "✉ Im Mail-Client öffnen"),
-            fg_color="dodgerblue",
-            hover_color="deepskyblue",
+            fg_color=COLOR_PRIMARY_BLUE,
+            hover_color=COLOR_DEEPSKYBLUE_HOVER,
             command=self.on_open_mailto,
-            height=32,
-        ), "email_calendar.open_mailto", "✉ Im Mail-Client öffnen").pack(side="left", padx=(0, 8))
+            height=BTN_HEIGHT_LG,
+        ), "email_calendar.open_mailto", "✉ Im Mail-Client öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row1_btns,
             text=tr("ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren"),
-            fg_color="gray30",
-            hover_color="gray40",
+            fg_color=COLOR_BTN_SECONDARY,
+            hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=self.on_copy_text,
-            height=32,
-        ), "ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren").pack(side="left", padx=(0, 8))
+            height=BTN_HEIGHT_LG,
+        ), "ui_buttons.copy_clipboard", "📋 Text in Zwischenablage kopieren").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         # Row 2: Calendar Actions & Close
         row2_btns = ctk.CTkFrame(btn_box, fg_color="transparent")
-        row2_btns.pack(fill="x", pady=(2, 0))
+        row2_btns.pack(fill="x", pady=(PAD_XS, PAD_NONE))
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen"),
-            fg_color="forestgreen",
-            hover_color="darkgreen",
+            fg_color=COLOR_SUCCESS,
+            hover_color=COLOR_SUCCESS_HOVER,
             command=self.on_open_ics,
-            height=32,
-        ), "email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen").pack(side="left", padx=(0, 8))
+            height=BTN_HEIGHT_LG,
+        ), "email_calendar.open_ics", "📅 .ics Kalenderdatei öffnen").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("email_calendar.save_ics", "💾 .ics Datei speichern..."),
-            fg_color="gray30",
-            hover_color="gray40",
+            fg_color=COLOR_BTN_SECONDARY,
+            hover_color=COLOR_BTN_SECONDARY_HOVER,
             command=self.on_save_ics,
-            height=32,
-        ), "email_calendar.save_ics", "💾 .ics Datei speichern...").pack(side="left", padx=(0, 8))
+            height=BTN_HEIGHT_LG,
+        ), "email_calendar.save_ics", "💾 .ics Datei speichern...").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             row2_btns,
             text=tr("common.close", "Schließen"),
-            fg_color="gray50",
-            hover_color="gray60",
+            fg_color=COLOR_BTN_GRAY,
+            hover_color=COLOR_LABEL_GRAY60,
             command=self.destroy,
-            width=100,
-            height=32,
+            width=BTN_WIDTH_CLOSE_SM,
+            height=BTN_HEIGHT_LG,
         ), "common.close", "Schließen").pack(side="right")
 
     def open_snippet_picker(self):
@@ -191,20 +222,20 @@ class EmailCalendarDialog(BaseDialog):
 
         from services.i18n_service import tr
         self.service.open_mailto_link(to, subject, body)
-        self.status_lbl.configure(text=tr("email_calendar.client_opened", "✓ Mail-Client wurde mit dem Entwurf aufgerufen."), text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.client_opened", "✓ Mail-Client wurde mit dem Entwurf aufgerufen."), text_color=COLOR_STATUS_SUCCESS_TEXT)
 
     def on_copy_text(self):
         from services.i18n_service import tr
         body = self.body_textbox.get("1.0", "end-1c").strip()
         self.clipboard_clear()
         self.clipboard_append(body)
-        self.status_lbl.configure(text=tr("email_calendar.text_copied", "✓ E-Mail Text wurde in die Zwischenablage kopiert."), text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.text_copied", "✓ E-Mail Text wurde in die Zwischenablage kopiert."), text_color=COLOR_STATUS_SUCCESS_TEXT)
 
     def on_open_ics(self):
         from services.i18n_service import tr
         ics_path = self.service.generate_ics_file(self.case, user_name=self.user_name)
         self.service.open_ics_file(ics_path)
-        self.status_lbl.configure(text=tr("email_calendar.ics_opened", "✓ Kalendereintrag (.ics) geöffnet: {name}", name=ics_path.name), text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.ics_opened", "✓ Kalendereintrag (.ics) geöffnet: {name}", name=ics_path.name), text_color=COLOR_STATUS_SUCCESS_TEXT)
 
     def on_save_ics(self):
         from services.i18n_service import tr
@@ -220,4 +251,4 @@ class EmailCalendarDialog(BaseDialog):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(content)
 
-        self.status_lbl.configure(text=tr("email_calendar.ics_saved", "✓ .ics Kalenderdatei gespeichert unter: {name}", name=os.path.basename(file_path)), text_color="lightgreen")
+        self.status_lbl.configure(text=tr("email_calendar.ics_saved", "✓ .ics Kalenderdatei gespeichert unter: {name}", name=os.path.basename(file_path)), text_color=COLOR_STATUS_SUCCESS_TEXT)

@@ -34,6 +34,8 @@ from constants import (
     PAD_LG,
     PAD_XL,
     SCROLL_FRAME_HEIGHT_SM,
+    TEXTBOX_HEIGHT_EXPORT_PREVIEW,
+    TEXTBOX_WIDTH_EXPORT_PREVIEW,
 )
 from models.case import Case
 from models.export_template import ExportTemplate
@@ -214,7 +216,7 @@ class ExportDialog(BaseDialog):
             "Vorschau des exportierten Textes:",
         ).pack(anchor="w", pady=(PAD_XS, PAD_XS), padx=PAD_SM)
 
-        self.preview_textbox = ctk.CTkTextbox(parent, width=640, height=200)
+        self.preview_textbox = ctk.CTkTextbox(parent, width=TEXTBOX_WIDTH_EXPORT_PREVIEW, height=TEXTBOX_HEIGHT_EXPORT_PREVIEW)
         self.preview_textbox.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_MD), padx=PAD_SM)
 
         # Status Label

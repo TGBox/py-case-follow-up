@@ -9,6 +9,11 @@ import urllib.error
 from pathlib import Path
 from typing import Any
 from config import AppConfig
+from constants import (
+    WIKI_API_TIMEOUT_SECONDS,
+    WIKI_PAGE_SNIPPET_MAX_CHARS,
+    WIKI_SEARCH_SNIPPET_MAX_CHARS,
+)
 from models.profile import WikiSettings
 from utils.security import resolve_secret, normalize_url
 
@@ -147,7 +152,7 @@ class WikiSyncService:
             else:
                 endpoint = f"{api_url}/api/pages"
                 req = urllib.request.Request(endpoint, headers=headers)
-                with urllib.request.urlopen(req, timeout=10) as response:
+                with urllib.request.urlopen(req, timeout=WIKI_API_TIMEOUT_SECONDS) as response:
                     res_json = json.loads(response.read().decode("utf-8"))
                     pages_data = res_json.get("data", [])
 
@@ -177,7 +182,7 @@ class WikiSyncService:
                     try:
                         page_endpoint = f"{api_url}/api/pages/{page_id}"
                         p_req = urllib.request.Request(page_endpoint, headers=headers)
-                        with urllib.request.urlopen(p_req, timeout=10) as p_res:
+                        with urllib.request.urlopen(p_req, timeout=WIKI_API_TIMEOUT_SECONDS) as p_res:
                             p_json = json.loads(p_res.read().decode("utf-8"))
                             detail_url = p_json.get("url", "")
                             if detail_url and "/pages/" not in detail_url:
@@ -282,7 +287,7 @@ class WikiSyncService:
                 if not url or "/pages/" in url:
                     url = f"{api_url}/link/{p_id}" if api_url else (url or "")
 
-                content_snippet = (content_raw or raw_title)[:120]
+                content_snippet = (content_raw or raw_title)[:WIKI_SEARCH_SNIPPET_MAX_CHARS]
                 results.append({
                     "page_id": p_id,
                     "title": clean_html_snippet(raw_title),
@@ -317,7 +322,7 @@ class WikiSyncService:
                     "page_id": p_id,
                     "title": clean_html_snippet(raw_title),
                     "url": url,
-                    "snippet": clean_html_snippet((content_raw or raw_title)[:150]),
+                    "snippet": clean_html_snippet((content_raw or raw_title)[:WIKI_PAGE_SNIPPET_MAX_CHARS]),
                     "content": content_raw or "",
                 })
             return results

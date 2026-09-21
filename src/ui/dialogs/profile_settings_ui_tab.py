@@ -5,6 +5,8 @@ import customtkinter as ctk
 from constants import (
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
+    COLOR_TEXT_WHITE,
+    COLOR_TIP_TEXT,
     DEFAULT_COLUMN_WIDTHS,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
@@ -183,7 +185,7 @@ class UiSettingsTabMixin:
 
         widths = self.profile.ui_settings.column_widths
         w_str = self._build_widths_str(widths)
-        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=("gray40", "gray70"), justify="left", anchor="w")
+        self.widths_label = ctk.CTkLabel(right_col, text=w_str, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TIP_TEXT, justify="left", anchor="w")
         self.widths_label.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.btn_reset_widths = self.register_i18n(
@@ -193,7 +195,7 @@ class UiSettingsTabMixin:
                 command=self.on_reset_column_widths,
                 fg_color=COLOR_MUTED_GRAY_FG,
                 hover_color=COLOR_MUTED_GRAY_HOVER,
-                text_color="white",
+                text_color=COLOR_TEXT_WHITE,
                 width=PROFILE_TAB_FIELD_WIDTH,
             ),
             "profile.reset_widths_btn",

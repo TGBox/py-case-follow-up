@@ -12,29 +12,71 @@ from utils.ui_utils import enable_auto_hiding_scrollbar
 
 
 from constants import (
-    DIALOG_TITLES,
-    DIALOG_DIMENSIONS,
-    DEFAULT_OLLAMA_URL,
-    DEFAULT_OLLAMA_MODEL,
-    DEFAULT_GEMINI_MODEL,
     AI_BADGE_ACTIVE,
-    AI_BADGE_GEMINI_ACTIVE,
-    AI_BADGE_STANDBY,
     AI_BADGE_DISABLED,
+    AI_BADGE_GEMINI_ACTIVE,
     AI_BADGE_NLP_FALLBACK,
-    AI_STATUS_UNLOADING,
-    AI_STATUS_UNLOADED,
-    AI_STATUS_ACTIVATED,
+    AI_BADGE_STANDBY,
     AI_BTN_GLOBAL_TOGGLE_HEADER,
-    AI_LABEL_CUSTOM_INSTRUCTION,
     AI_HINT_CUSTOM_INSTRUCTION,
-    COLOR_BADGE_GREEN,
+    AI_LABEL_CUSTOM_INSTRUCTION,
+    AI_STATUS_ACTIVATED,
+    AI_STATUS_UNLOADED,
+    AI_STATUS_UNLOADING,
+    BTN_HEIGHT_ACTION,
+    BTN_HEIGHT_MD,
+    BTN_WIDTH_AI_ACTION,
+    BTN_WIDTH_AI_REGENERATE,
+    BTN_WIDTH_CLOSE_SM,
     COLOR_BADGE_BLUE,
     COLOR_BADGE_GRAY,
-    COLOR_TEXT_BLUE,
-    COLOR_TEXT_GRAY,
+    COLOR_BADGE_GREEN,
+    COLOR_CARD_ALT_BG,
+    COLOR_CARD_BG_SUBTLE,
+    COLOR_DEEPSKYBLUE_HOVER,
+    COLOR_MUTED_BODY,
     COLOR_MUTED_GRAY,
     COLOR_MUTED_HOVER,
+    COLOR_OUTLOOK_BLUE,
+    COLOR_OUTLOOK_HOVER,
+    COLOR_OVERLAY_BG,
+    COLOR_PRIMARY_BLUE,
+    COLOR_SUCCESS,
+    COLOR_SUCCESS_HOVER,
+    COLOR_TAG_PICKER_BTN_BG,
+    COLOR_TEXT_BLUE,
+    COLOR_TEXT_GRAY,
+    COLOR_TEXT_GREEN,
+    COLOR_TEXT_ORANGE,
+    COLOR_TEXT_RED,
+    COLOR_TIP_TEXT,
+    CORNER_RADIUS_CARD,
+    CORNER_RADIUS_MD,
+    CORNER_RADIUS_XL,
+    DEFAULT_GEMINI_MODEL,
+    DEFAULT_OLLAMA_MODEL,
+    DEFAULT_OLLAMA_URL,
+    DIALOG_DIMENSIONS,
+    DIALOG_MIN_SIZE_AI_ASSISTANT,
+    DIALOG_TITLES,
+    ENTRY_HEIGHT_MD,
+    FONT_SIZE_BODY,
+    FONT_SIZE_HEADER_BAR,
+    FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
+    FONT_SIZE_XS,
+    OVERLAY_CARD_HEIGHT_LG,
+    OVERLAY_CARD_WIDTH,
+    PAD_10,
+    PAD_15,
+    PAD_2XL,
+    PAD_GAP,
+    PAD_LG,
+    PAD_MD,
+    PAD_NONE,
+    PAD_SM,
+    PAD_XS,
+    PROGRESS_BAR_WIDTH_MD,
 )
 
 
@@ -80,7 +122,7 @@ class AiAssistantDialog(BaseDialog):
             parent,
             f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]",
             (w, h),
-            min_size=(720, 480),
+            min_size=DIALOG_MIN_SIZE_AI_ASSISTANT,
 
             title_factory=lambda: f"{DIALOG_TITLES['ai_assistant']} — Fall [{case.case_id}]",
         )
@@ -93,16 +135,16 @@ class AiAssistantDialog(BaseDialog):
     def create_widgets(self):
         from services.i18n_service import tr
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=15, pady=12)
+        main_frame.pack(fill="both", expand=True, padx=PAD_15, pady=PAD_LG)
 
         # Status & Header Bar
         hdr_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        hdr_frame.pack(fill="x", pady=(0, 6))
+        hdr_frame.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
 
         self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("ai_assistant.header", "🤖 KI-Assistent für Fall [{case_id}]", case_id=self.case.case_id),
-            font=ctk.CTkFont(size=16, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_HEADER_BAR, weight="bold"),
         ), "ai_assistant.header", "🤖 KI-Assistent für Fall [{case_id}]", case_id=self.case.case_id).pack(side="left")
 
         # Global AI Toggle Switch
@@ -110,44 +152,44 @@ class AiAssistantDialog(BaseDialog):
             hdr_frame,
             text=AI_BTN_GLOBAL_TOGGLE_HEADER,
             command=self.on_toggle_global_ai,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
         )
         if self.profile and self.profile.ai_settings.enable_ai:
             self.ai_toggle_switch.select()
         else:
             self.ai_toggle_switch.deselect()
-        self.ai_toggle_switch.pack(side="right", padx=(0, 10))
+        self.ai_toggle_switch.pack(side="right", padx=(PAD_NONE, PAD_10))
 
         self.status_badge = self.register_i18n(ctk.CTkLabel(
             hdr_frame,
             text=tr("ai_assistant.checking_status", "Prüfe Status..."),
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
             text_color=COLOR_TEXT_GRAY,
         ), "ai_assistant.checking_status", "Prüfe Status...")
-        self.status_badge.pack(side="right", padx=(0, 10))
+        self.status_badge.pack(side="right", padx=(PAD_NONE, PAD_10))
 
         # Priority Custom Instruction Bar
-        ci_frame = ctk.CTkFrame(main_frame, fg_color=("gray90", "gray20"), corner_radius=6)
-        ci_frame.pack(fill="x", pady=(0, 6))
+        ci_frame = ctk.CTkFrame(main_frame, fg_color=COLOR_CARD_ALT_BG, corner_radius=CORNER_RADIUS_MD)
+        ci_frame.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
 
         ctk.CTkLabel(
             ci_frame,
             text=AI_LABEL_CUSTOM_INSTRUCTION,
-            font=ctk.CTkFont(size=11, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"),
             text_color=COLOR_TEXT_BLUE,
-        ).pack(side="left", padx=(10, 4), pady=4)
+        ).pack(side="left", padx=(PAD_10, PAD_SM), pady=PAD_SM)
 
         self.custom_instruction_entry = ctk.CTkEntry(
             ci_frame,
             placeholder_text=AI_HINT_CUSTOM_INSTRUCTION,
-            height=28,
-            font=ctk.CTkFont(size=11),
+            height=ENTRY_HEIGHT_MD,
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
         )
-        self.custom_instruction_entry.pack(side="left", fill="x", expand=True, padx=(0, 8), pady=4)
+        self.custom_instruction_entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_MD), pady=PAD_SM)
 
         # Tabview for Features
         self.tabview = ctk.CTkTabview(main_frame)
-        self.tabview.pack(fill="both", expand=True, pady=(0, 8))
+        self.tabview.pack(fill="both", expand=True, pady=(PAD_NONE, PAD_MD))
 
         self.tab_summary = self.tabview.add(tr("ai_assistant.tab_summary", "📋 Zusammenfassung"))
         self.tab_solutions = self.tabview.add(tr("ai_assistant.tab_solutions", "💡 Lösungsvorschläge"))
@@ -161,16 +203,16 @@ class AiAssistantDialog(BaseDialog):
 
         # Footer Close Button
         footer = ctk.CTkFrame(main_frame, fg_color="transparent")
-        footer.pack(fill="x", pady=(4, 0))
+        footer.pack(fill="x", pady=(PAD_SM, PAD_NONE))
 
-        self.status_lbl = ctk.CTkLabel(footer, text="", font=ctk.CTkFont(size=11), text_color=COLOR_TEXT_BLUE)
+        self.status_lbl = ctk.CTkLabel(footer, text="", font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_TEXT_BLUE)
         self.status_lbl.pack(side="left")
 
         self.register_i18n(ctk.CTkButton(
             footer,
             text=tr("common.close", "Schließen"),
-            width=100,
-            height=30,
+            width=BTN_WIDTH_CLOSE_SM,
+            height=BTN_HEIGHT_ACTION,
             fg_color=COLOR_MUTED_GRAY,
             hover_color=COLOR_MUTED_HOVER,
             command=self.destroy,
@@ -179,27 +221,27 @@ class AiAssistantDialog(BaseDialog):
     def create_loading_overlay(self):
         """Creates a smooth, semi-transparent loading spinner overlay frame."""
         from services.i18n_service import tr
-        self.overlay_frame = ctk.CTkFrame(self, fg_color=("gray95", "gray15"))
+        self.overlay_frame = ctk.CTkFrame(self, fg_color=COLOR_OVERLAY_BG)
 
-        card = ctk.CTkFrame(self.overlay_frame, fg_color=("gray85", "gray25"), corner_radius=12, width=380, height=140)
+        card = ctk.CTkFrame(self.overlay_frame, fg_color=COLOR_TAG_PICKER_BTN_BG, corner_radius=CORNER_RADIUS_XL, width=OVERLAY_CARD_WIDTH, height=OVERLAY_CARD_HEIGHT_LG)
         card.place(relx=0.5, rely=0.5, anchor="center")
 
         self.overlay_msg_lbl = self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("ai_assistant.loading_overlay_msg", "🤖 KI verarbeitet Anfrage..."),
-            font=ctk.CTkFont(size=14, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
         ), "ai_assistant.loading_overlay_msg", "🤖 KI verarbeitet Anfrage...")
-        self.overlay_msg_lbl.pack(pady=(20, 10))
+        self.overlay_msg_lbl.pack(pady=(PAD_2XL, PAD_10))
 
-        self.overlay_progress = ctk.CTkProgressBar(card, width=280, mode="indeterminate", progress_color="dodgerblue")
-        self.overlay_progress.pack(pady=(0, 10))
+        self.overlay_progress = ctk.CTkProgressBar(card, width=PROGRESS_BAR_WIDTH_MD, mode="indeterminate", progress_color=COLOR_PRIMARY_BLUE)
+        self.overlay_progress.pack(pady=(PAD_NONE, PAD_10))
 
         self.register_i18n(ctk.CTkLabel(
             card,
             text=tr("ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort"),
-            font=ctk.CTkFont(size=11),
-            text_color=("gray40", "gray70"),
-        ), "ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort").pack(pady=(0, 15))
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_TIP_TEXT,
+        ), "ai_assistant.loading_overlay_sub", "Bitte einen Moment gedulden — Modell generiert Antwort").pack(pady=(PAD_NONE, PAD_15))
 
     def _show_overlay(self, message: str = "🤖 KI verarbeitet Anfrage..."):
         self.overlay_msg_lbl.configure(text=message)
@@ -233,7 +275,7 @@ class AiAssistantDialog(BaseDialog):
                     on_success(res)
                 else:
                     from services.i18n_service import tr
-                    self.status_lbl.configure(text=tr("ai_assistant.error_generation", "⚠ Fehler bei KI-Generierung: {error}", error=res), text_color="red")
+                    self.status_lbl.configure(text=tr("ai_assistant.error_generation", "⚠ Fehler bei KI-Generierung: {error}", error=res), text_color=COLOR_TEXT_RED)
 
             try:
                 self.after(0, ui_callback)
@@ -299,7 +341,7 @@ class AiAssistantDialog(BaseDialog):
             self.profile.ai_settings.enable_ai = enabled
 
         if not enabled:
-            self.status_lbl.configure(text=AI_STATUS_UNLOADING, text_color="orange")
+            self.status_lbl.configure(text=AI_STATUS_UNLOADING, text_color=COLOR_TEXT_ORANGE)
             def worker():
                 try:
                     self.ai_service.unload_model()
@@ -309,7 +351,7 @@ class AiAssistantDialog(BaseDialog):
                 def done():
                     if not self.winfo_exists():
                         return
-                    self.status_lbl.configure(text=AI_STATUS_UNLOADED, text_color="gray")
+                    self.status_lbl.configure(text=AI_STATUS_UNLOADED, text_color=COLOR_TEXT_GRAY)
                     self.update_ai_buttons_state()
                     self.update_status_header_async()
                     from ui.widgets.toast_notification import ToastNotification
@@ -320,7 +362,7 @@ class AiAssistantDialog(BaseDialog):
             import threading
             threading.Thread(target=worker, daemon=True).start()
         else:
-            self.status_lbl.configure(text=AI_STATUS_ACTIVATED, text_color="green")
+            self.status_lbl.configure(text=AI_STATUS_ACTIVATED, text_color=COLOR_TEXT_GREEN)
             self.update_ai_buttons_state()
             self.update_status_header_async()
             from ui.widgets.toast_notification import ToastNotification
@@ -339,7 +381,7 @@ class AiAssistantDialog(BaseDialog):
 
         if not is_enabled:
             from services.i18n_service import tr
-            self.status_lbl.configure(text=tr("ai_assistant.disabled_warning", "⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert."), text_color="orange")
+            self.status_lbl.configure(text=tr("ai_assistant.disabled_warning", "⚠ KI global deaktiviert (Schalter oben rechts auf OFF). Buttons deaktiviert."), text_color=COLOR_TEXT_ORANGE)
 
     # --- TAB 1: SUMMARY ---
     def setup_summary_tab(self):
@@ -349,36 +391,36 @@ class AiAssistantDialog(BaseDialog):
         self.btn_gen_summary = self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.regen_summary", "🔄 Zusammenfassung neu generieren"),
-            width=210,
-            height=28,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
+            width=BTN_WIDTH_AI_REGENERATE,
+            height=BTN_HEIGHT_MD,
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
             command=self.generate_summary,
         ), "ai_assistant.regen_summary", "🔄 Zusammenfassung neu generieren")
-        self.btn_gen_summary.pack(side="left", padx=(0, 8))
+        self.btn_gen_summary.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren"),
-            width=190,
-            height=28,
-            fg_color="dodgerblue",
-            hover_color="deepskyblue",
+            width=BTN_WIDTH_AI_ACTION,
+            height=BTN_HEIGHT_MD,
+            fg_color=COLOR_PRIMARY_BLUE,
+            hover_color=COLOR_DEEPSKYBLUE_HOVER,
             command=self.copy_summary,
-        ), "ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren").pack(side="left", padx=(0, 8))
+        ), "ai_assistant.copy_clipboard", "📋 In Zwischenablage kopieren").pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         self.register_i18n(ctk.CTkButton(
             btn_bar,
             text=tr("ai_assistant.append_timeline", "📌 In Fall-Zeitleiste einfügen"),
-            width=190,
-            height=28,
-            fg_color="forestgreen",
-            hover_color="darkgreen",
+            width=BTN_WIDTH_AI_ACTION,
+            height=BTN_HEIGHT_MD,
+            fg_color=COLOR_SUCCESS,
+            hover_color=COLOR_SUCCESS_HOVER,
             command=self.append_summary_to_timeline,
         ), "ai_assistant.append_timeline", "📌 In Fall-Zeitleiste einfügen").pack(side="left")
 
         self.summary_textbox = ctk.CTkTextbox(self.tab_summary)
-        self.summary_textbox.pack(fill="both", expand=True, pady=(4, 0))
+        self.summary_textbox.pack(fill="both", expand=True, pady=(PAD_SM, PAD_NONE))
 
     def get_custom_instruction(self) -> str:
         if hasattr(self, "custom_instruction_entry") and self.custom_instruction_entry:
@@ -409,7 +451,7 @@ class AiAssistantDialog(BaseDialog):
             ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
             info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
             from services.i18n_service import tr
-            self.status_lbl.configure(text=tr("ai_assistant.summary_generated", "✓ Zusammenfassung erfolgreich generiert{info}.", info=info), text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.summary_generated", "✓ Zusammenfassung erfolgreich generiert{info}.", info=info), text_color=COLOR_TEXT_BLUE)
 
         self._run_async(worker, on_success, "🤖 KI generiert Zusammenfassung... Bitte warten")
 
@@ -419,7 +461,7 @@ class AiAssistantDialog(BaseDialog):
         if txt:
             self.clipboard_clear()
             self.clipboard_append(txt)
-            self.status_lbl.configure(text=tr("ai_assistant.summary_copied", "✓ Zusammenfassung in Zwischenablage kopiert."), text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.summary_copied", "✓ Zusammenfassung in Zwischenablage kopiert."), text_color=COLOR_TEXT_BLUE)
 
     def append_summary_to_timeline(self):
         from services.i18n_service import tr
@@ -434,33 +476,33 @@ class AiAssistantDialog(BaseDialog):
             )
             self.case.timeline.append(entry)
             self.on_case_updated(self.case)
-            self.status_lbl.configure(text=tr("ai_assistant.summary_saved_timeline", "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert."), text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.summary_saved_timeline", "✓ KI-Zusammenfassung als Zeitleisten-Eintrag gespeichert."), text_color=COLOR_TEXT_BLUE)
 
     # --- TAB 2: SOLUTIONS ---
     def setup_solutions_tab(self):
         from services.i18n_service import tr
         hdr_bar = ctk.CTkFrame(self.tab_solutions, fg_color="transparent")
-        hdr_bar.pack(fill="x", pady=(4, 6))
+        hdr_bar.pack(fill="x", pady=(PAD_SM, PAD_GAP))
 
         self.register_i18n(ctk.CTkLabel(
             hdr_bar,
             text=tr("ai_assistant.solutions_header", "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:"),
-            font=ctk.CTkFont(size=12, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
         ), "ai_assistant.solutions_header", "💡 Automatisch ermittelte Lösungsschritte & Wiki-Referenzen:").pack(side="left")
 
         self.btn_gen_solutions = self.register_i18n(ctk.CTkButton(
             hdr_bar,
             text=tr("ai_assistant.regen_solutions", "🔄 Lösungssuche erneut ausführen"),
-            width=210,
-            height=28,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
+            width=BTN_WIDTH_AI_REGENERATE,
+            height=BTN_HEIGHT_MD,
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
             command=self.load_solutions,
         ), "ai_assistant.regen_solutions", "🔄 Lösungssuche erneut ausführen")
         self.btn_gen_solutions.pack(side="right")
 
         self.solutions_scroll = ctk.CTkScrollableFrame(self.tab_solutions, fg_color="transparent")
-        self.solutions_scroll.pack(fill="both", expand=True, pady=(4, 0))
+        self.solutions_scroll.pack(fill="both", expand=True, pady=(PAD_SM, PAD_NONE))
         enable_auto_hiding_scrollbar(self.solutions_scroll)
 
     def load_solutions(self):
@@ -473,34 +515,34 @@ class AiAssistantDialog(BaseDialog):
                 w.destroy()
 
             for sol in solutions:
-                card = ctk.CTkFrame(self.solutions_scroll, fg_color=("gray85", "gray22"), corner_radius=8)
-                card.pack(fill="x", pady=4, padx=2)
+                card = ctk.CTkFrame(self.solutions_scroll, fg_color=COLOR_CARD_BG_SUBTLE, corner_radius=CORNER_RADIUS_CARD)
+                card.pack(fill="x", pady=PAD_SM, padx=PAD_XS)
 
                 top_r = ctk.CTkFrame(card, fg_color="transparent")
-                top_r.pack(fill="x", padx=10, pady=(6, 2))
+                top_r.pack(fill="x", padx=PAD_10, pady=(PAD_GAP, PAD_XS))
 
                 ctk.CTkLabel(
                     top_r,
                     text=sol.get("title", tr("ai_assistant.default_solution_title", "Lösung")),
-                    font=ctk.CTkFont(size=12, weight="bold"),
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
                     anchor="w",
                 ).pack(side="left")
 
                 self.register_i18n(ctk.CTkLabel(
                     top_r,
                     text=tr("ai_assistant.relevance_info", "Relevanz: {conf} ({source})", conf=sol.get('confidence', '80%'), source=sol.get('source', '')),
-                    font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color="dodgerblue",
+                    font=ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"),
+                    text_color=COLOR_TEXT_BLUE,
                 ), "ai_assistant.relevance_info", "Relevanz: {conf} ({source})", conf=sol.get('confidence', '80%'), source=sol.get('source', '')).pack(side="right")
 
                 ctk.CTkLabel(
                     card,
                     text=sol.get("snippet", ""),
-                    font=ctk.CTkFont(size=11),
-                    text_color=("gray30", "gray80"),
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
+                    text_color=COLOR_MUTED_BODY,
                     anchor="w",
                     justify="left",
-                ).pack(fill="x", padx=10, pady=(2, 6))
+                ).pack(fill="x", padx=PAD_10, pady=(PAD_XS, PAD_GAP))
 
         self._run_async(worker, on_success, "💡 Analyse von Wiki & Fehlercodes... Bitte warten")
 
@@ -508,32 +550,32 @@ class AiAssistantDialog(BaseDialog):
     def setup_response_tab(self):
         from services.i18n_service import tr
         hdr_bar = ctk.CTkFrame(self.tab_response, fg_color="transparent")
-        hdr_bar.pack(fill="x", pady=(4, 6))
+        hdr_bar.pack(fill="x", pady=(PAD_SM, PAD_GAP))
 
         self.btn_gen_draft = self.register_i18n(ctk.CTkButton(
             hdr_bar,
             text=tr("ai_assistant.regen_draft", "🔄 Antwort-Entwurf generieren"),
-            width=210,
-            height=28,
-            fg_color=("gray75", "gray30"),
-            hover_color=("gray65", "gray40"),
+            width=BTN_WIDTH_AI_REGENERATE,
+            height=BTN_HEIGHT_MD,
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
             command=self.generate_draft,
         ), "ai_assistant.regen_draft", "🔄 Antwort-Entwurf generieren")
-        self.btn_gen_draft.pack(side="left", padx=(0, 8))
+        self.btn_gen_draft.pack(side="left", padx=(PAD_NONE, PAD_MD))
 
         if self.on_open_email_draft:
             self.register_i18n(ctk.CTkButton(
                 hdr_bar,
                 text=tr("ai_assistant.open_email_draft", "✉ In E-Mail-Entwurf öffnen"),
-                width=190,
-                height=28,
-                fg_color="royalblue",
-                hover_color="blue",
+                width=BTN_WIDTH_AI_ACTION,
+                height=BTN_HEIGHT_MD,
+                fg_color=COLOR_OUTLOOK_BLUE,
+                hover_color=COLOR_OUTLOOK_HOVER,
                 command=self.open_in_email_draft,
             ), "ai_assistant.open_email_draft", "✉ In E-Mail-Entwurf öffnen").pack(side="left")
 
         self.draft_textbox = ctk.CTkTextbox(self.tab_response)
-        self.draft_textbox.pack(fill="both", expand=True, pady=(4, 0))
+        self.draft_textbox.pack(fill="both", expand=True, pady=(PAD_SM, PAD_NONE))
 
     def generate_draft(self):
         def worker():
@@ -556,7 +598,7 @@ class AiAssistantDialog(BaseDialog):
             ci_info = " + ⚡ Sonderanweisung" if has_ci else ""
             info = f" ({b_cnt} Basis-Regeln, {p_cnt} Praxis-Regeln{ci_info})" if (b_cnt or p_cnt or has_ci) else ""
             from services.i18n_service import tr
-            self.status_lbl.configure(text=tr("ai_assistant.reply_generated", "✓ E-Mail-Antwort-Entwurf generiert{info}.", info=info), text_color="dodgerblue")
+            self.status_lbl.configure(text=tr("ai_assistant.reply_generated", "✓ E-Mail-Antwort-Entwurf generiert{info}.", info=info), text_color=COLOR_TEXT_BLUE)
 
         self._run_async(worker, on_success, "✉ KI generiert E-Mail-Antwort... Bitte warten")
 

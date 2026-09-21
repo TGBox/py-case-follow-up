@@ -17,11 +17,14 @@ import tkinter as tk
 from enums import ACTOR_DISPLAY
 from constants import (
     BTN_WIDTH_ACTION_SM,
+    BTN_WIDTH_EMAIL_AI,
     BTN_WIDTH_MD,
     COLOR_AI_PURPLE,
     COLOR_AI_PURPLE_HOVER,
     COLOR_CARD_BG,
+    COLOR_COLLAPSED_COL_BG,
     COLOR_DANGER,
+    COLOR_HELP_NAV_HOVER,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
     COLOR_PANED_PANE_BG,
@@ -30,7 +33,10 @@ from constants import (
     COLOR_SASH_LIGHT,
     COLOR_SUCCESS,
     COLOR_SUCCESS_HOVER,
+    COLOR_TOOLTIP_BORDER,
     COLOR_WARNING_ORANGE,
+    COMBO_WIDTH_ACTOR,
+    COMBO_WIDTH_MORE_ACTIONS,
     CORNER_RADIUS_CARD,
     CORNER_RADIUS_MD,
     DEFAULT_COLUMN_WIDTHS,
@@ -39,7 +45,9 @@ from constants import (
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_TITLE,
+    PAD_3,
     PAD_MD,
+    PAD_NONE,
     PAD_SM,
     PAD_XS,
     TOOLBAR_BREAK_WIDTH,
@@ -264,7 +272,7 @@ class CockpitLayoutBuilderMixin:
 
     def _build_toolbar_row(self):
         # Row 3: Integrated Action Toolbar
-        self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=("gray80", "gray25"), corner_radius=CORNER_RADIUS_MD)
+        self.toolbar_row = ctk.CTkFrame(self.header_card, fg_color=COLOR_COLLAPSED_COL_BG, corner_radius=CORNER_RADIUS_MD)
         self.toolbar_row.pack(fill="x", padx=PAD_MD, pady=(PAD_XS, PAD_MD))
 
         self.toolbar_left = ctk.CTkFrame(self.toolbar_row, fg_color="transparent")
@@ -279,7 +287,7 @@ class CockpitLayoutBuilderMixin:
         self.add_note_btn.pack(side="left", padx=PAD_XS)
 
         # Retained as non-packed widgets for backwards compatibility with tests and callers
-        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=130, state="disabled", fg_color=COLOR_AI_PURPLE, hover_color=COLOR_AI_PURPLE_HOVER)
+        self.email_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.email_ai", "✉ E-Mail & 🤖 KI"), command=self.on_click_email, width=BTN_WIDTH_EMAIL_AI, state="disabled", fg_color=COLOR_AI_PURPLE, hover_color=COLOR_AI_PURPLE_HOVER)
         self.cal_btn = ctk.CTkButton(self.toolbar_left, text=tr("cockpit.calendar", "📅 Kalender"), command=self.on_click_calendar, width=BTN_WIDTH_ACTION_SM, state="disabled", fg_color=COLOR_SUCCESS, hover_color=COLOR_SUCCESS_HOVER)
 
         # Right Side of Toolbar: Handover + Complete + Save + Integrated Dropdown Menu for Utilities
@@ -290,7 +298,7 @@ class CockpitLayoutBuilderMixin:
             self.toolbar_right,
             values=list(ACTOR_DISPLAY.values()),
             command=self.on_actor_changed,
-            width=105,
+            width=COMBO_WIDTH_ACTOR,
         )
         self.actor_combo.set(tr("cockpit.handover_action", "Übergabe"))
         self.actor_combo.pack(side="left", padx=PAD_XS)
@@ -317,9 +325,9 @@ class CockpitLayoutBuilderMixin:
                 tr("cockpit.convert_form", "🔄 Formular umwandeln"),
             ],
             command=self.on_more_actions_selected,
-            width=165,
-            fg_color=("gray70", "gray35"),
-            button_color=("gray60", "gray40"),
+            width=COMBO_WIDTH_MORE_ACTIONS,
+            fg_color=COLOR_HELP_NAV_HOVER,
+            button_color=COLOR_TOOLTIP_BORDER,
         )
         self.more_actions_combo.set(tr("cockpit.more_actions", "⚙ Weitere Aktionen..."))
         self.more_actions_combo.pack(side="left", padx=PAD_XS)
@@ -350,20 +358,20 @@ class CockpitLayoutBuilderMixin:
             # Restore side-by-side layout
             self.toolbar_left.pack_forget()
             self.toolbar_right.pack_forget()
-            self.toolbar_left.pack(side="left", padx=4, pady=4)
-            self.toolbar_right.pack(side="right", padx=4, pady=4)
+            self.toolbar_left.pack(side="left", padx=PAD_SM, pady=PAD_SM)
+            self.toolbar_right.pack(side="right", padx=PAD_SM, pady=PAD_SM)
             for btn in (self.followup_btn, self.add_note_btn):
                 btn.pack_forget()
-                btn.pack(side="left", padx=3)
+                btn.pack(side="left", padx=PAD_3)
             for w in (self.actor_combo, self.complete_btn, self.save_btn, self.more_actions_combo):
                 w.pack_forget()
-                w.pack(side="left", padx=3)
+                w.pack(side="left", padx=PAD_3)
         else:
             # Stack everything top-to-bottom
             self.toolbar_left.pack_forget()
             self.toolbar_right.pack_forget()
-            self.toolbar_left.pack(side="top", fill="x", padx=4, pady=(4, 0))
-            self.toolbar_right.pack(side="top", fill="x", padx=4, pady=(0, 4))
+            self.toolbar_left.pack(side="top", fill="x", padx=PAD_SM, pady=(PAD_SM, PAD_NONE))
+            self.toolbar_right.pack(side="top", fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
             for btn in (self.followup_btn, self.add_note_btn):
                 btn.pack_forget()
                 btn.pack(side="top", fill="x", pady=1)

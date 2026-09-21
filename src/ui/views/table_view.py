@@ -14,7 +14,18 @@ from enums import get_actor_display
 from utils.datetime_utils import format_german_datetime
 
 
-from constants import LocalizedDict
+from constants import (
+    BTN_WIDTH_SAVE_TABLE,
+    COLOR_SUCCESS,
+    FONT_SIZE_CONFIRM,
+    HEIGHT_TABLE_DETAIL_HEADER,
+    LocalizedDict,
+    PAD_10,
+    PAD_CONTAINER,
+    PAD_GAP,
+    PAD_NONE,
+    PAD_XS,
+)
 
 COL_TITLE_MAP = LocalizedDict("table_columns", {
     "case_id": "ID ⇅",
@@ -88,7 +99,7 @@ class TableView(ctk.CTkFrame):
 
         # 1. Top Section: Data Table Frame with ttk.Treeview
         top_frame = ctk.CTkFrame(self)
-        top_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=(5, 2))
+        top_frame.grid(row=0, column=0, sticky="nsew", padx=PAD_CONTAINER, pady=(PAD_CONTAINER, PAD_XS))
 
         # Setup ttk Style for Dark/Light Mode
         self.setup_treeview_style()
@@ -124,18 +135,18 @@ class TableView(ctk.CTkFrame):
 
         # 2. Bottom Section: Collapsible Detail Panel
         bottom_frame = ctk.CTkFrame(self)
-        bottom_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=(2, 5))
+        bottom_frame.grid(row=1, column=0, sticky="nsew", padx=PAD_CONTAINER, pady=(PAD_XS, PAD_CONTAINER))
 
         # Detail Header & Save Button
-        bottom_header = ctk.CTkFrame(bottom_frame, height=38, fg_color="transparent")
-        bottom_header.pack(fill="x", padx=10, pady=(6, 2))
+        bottom_header = ctk.CTkFrame(bottom_frame, height=HEIGHT_TABLE_DETAIL_HEADER, fg_color="transparent")
+        bottom_header.pack(fill="x", padx=PAD_10, pady=(PAD_GAP, PAD_XS))
 
         from services.i18n_service import tr
 
         self.detail_title_label = ctk.CTkLabel(
             bottom_header,
             text=tr("table.details_header", "📋 Falldetails & Formular (Wählen Sie einen Fall aus der Tabelle)"),
-            font=ctk.CTkFont(size=13, weight="bold"),
+            font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight="bold"),
             anchor="w",
         )
         self.detail_title_label.pack(side="left")
@@ -144,15 +155,15 @@ class TableView(ctk.CTkFrame):
             bottom_header,
             text=tr("table.save_btn", "💾 Ändern & Speichern"),
             command=self.on_click_save,
-            fg_color="forestgreen",
-            width=150,
+            fg_color=COLOR_SUCCESS,
+            width=BTN_WIDTH_SAVE_TABLE,
             state="disabled",
         )
         self.save_btn.pack(side="right")
 
         # Detail Tabs (Form, Timeline, Attachments)
         self.detail_tabview = ctk.CTkTabview(bottom_frame)
-        self.detail_tabview.pack(fill="both", expand=True, padx=5, pady=(0, 5))
+        self.detail_tabview.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=(PAD_NONE, PAD_CONTAINER))
 
         from services.i18n_service import tr
         t_form = tr("table.tab_form", "📝 Formular & Ausfüllen")
@@ -182,7 +193,7 @@ class TableView(ctk.CTkFrame):
                 btns["📎 Anhänge"].configure(text=t_attachments)
 
         self.form_widget = DynamicFormWidget(tab_form)
-        self.form_widget.pack(fill="both", expand=True, padx=5, pady=5)
+        self.form_widget.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
 
         self.timeline_widget = TimelineWidget(tab_timeline, self.author_name, self.on_timeline_updated)
         self.timeline_widget.pack(fill="both", expand=True)

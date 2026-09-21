@@ -14,6 +14,7 @@ from constants import (
     WIKI_PAGE_SNIPPET_MAX_CHARS,
     WIKI_SEARCH_SNIPPET_MAX_CHARS,
 )
+from enums import SyncMode
 from models.profile import WikiSettings
 from utils.security import resolve_secret, normalize_url
 
@@ -126,6 +127,15 @@ class WikiSyncService:
 
     def sync_from_bookstack(self, mock_client: Any | None = None) -> tuple[bool, str]:
         """Synchronizes articles from BookStack REST API according to configured sync mode.
+
+        FULL_OFFLINE fetches every page body, so the whole wiki stays searchable
+        without a connection - one request for the page list plus one per page.
+        METADATA_ONLY stops after the page list: titles still go into the index,
+        so pages remain findable by name, but no article text is held offline and
+        the sync costs a single request. Switching back to METADATA_ONLY clears
+        the bodies a previous full sync had stored, because keeping them would
+        contradict the setting.
+
         Accepts optional mock_client for unit testing.
         """
         from services.i18n_service import tr
@@ -160,8 +170,11 @@ class WikiSyncService:
 
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            # Resolve once - the table layout cannot change during the run.
+            # Resolve once - neither the table layout nor the mode can change
+            # during the run. The settings combo stores a plain string, which
+            # compares equal to the StrEnum member.
             has_fts = self.is_fts5_available()
+            full_offline = self.settings.sync_mode == SyncMode.FULL_OFFLINE
 
             for item in pages_data:
                 page_id = item.get("id")
@@ -178,23 +191,27 @@ class WikiSyncService:
                 updated_at = item.get("updated_at", "")
                 content = ""
 
-                if mock_client:
-                    content = mock_client.get_page_content(page_id)
-                else:
-                    try:
-                        page_endpoint = f"{api_url}/api/pages/{page_id}"
-                        p_req = urllib.request.Request(page_endpoint, headers=headers)
-                        with urllib.request.urlopen(p_req, timeout=WIKI_API_TIMEOUT_SECONDS) as p_res:
-                            p_json = json.loads(p_res.read().decode("utf-8"))
-                            detail_url = p_json.get("url", "")
-                            if detail_url and "/pages/" not in detail_url:
-                                if detail_url.startswith("/"):
-                                    detail_url = f"{api_url}{detail_url}"
-                                url = detail_url
+                # METADATA_ONLY skips the per-page request entirely - that is
+                # what makes it one call instead of 1 + N. content stays empty,
+                # and the index below falls back to the title.
+                if full_offline:
+                    if mock_client:
+                        content = mock_client.get_page_content(page_id)
+                    else:
+                        try:
+                            page_endpoint = f"{api_url}/api/pages/{page_id}"
+                            p_req = urllib.request.Request(page_endpoint, headers=headers)
+                            with urllib.request.urlopen(p_req, timeout=WIKI_API_TIMEOUT_SECONDS) as p_res:
+                                p_json = json.loads(p_res.read().decode("utf-8"))
+                                detail_url = p_json.get("url", "")
+                                if detail_url and "/pages/" not in detail_url:
+                                    if detail_url.startswith("/"):
+                                        detail_url = f"{api_url}{detail_url}"
+                                    url = detail_url
 
-                            content = p_json.get("markdown", p_json.get("html", ""))
-                    except Exception as detail_err:
-                        logger.warning(f"Could not fetch detail for page {page_id}: {detail_err}")
+                                content = p_json.get("markdown", p_json.get("html", ""))
+                        except Exception as detail_err:
+                            logger.warning(f"Could not fetch detail for page {page_id}: {detail_err}")
 
                 cursor.execute("""
                     INSERT OR REPLACE INTO wiki_pages (page_id, book_id, title, slug, url, updated_at, content_markdown)

@@ -170,10 +170,15 @@ class _FakeBookStackApi:
         return _FakeResponse(self.details.get(page_id, {}))
 
 
-def _service(tmp_path: Path, api_url: str = "https://wiki.example", **kwargs) -> WikiSyncService:
+def _service(
+    tmp_path: Path,
+    api_url: str = "https://wiki.example",
+    sync_mode=SyncMode.FULL_OFFLINE,
+    **kwargs,
+) -> WikiSyncService:
     return WikiSyncService(
         AppConfig(workspace_dir=tmp_path),
-        WikiSettings(api_url=api_url, sync_mode=SyncMode.FULL_OFFLINE, **kwargs),
+        WikiSettings(api_url=api_url, sync_mode=sync_mode, **kwargs),
     )
 
 
@@ -356,3 +361,139 @@ def test_clean_html_snippet_handles_empty_and_nested_markup():
 
     assert clean_html_snippet("") == ""
     assert clean_html_snippet("<div><p>A&nbsp;&amp;&nbsp;B</p></div>") == "A & B"
+
+
+# ---------------------------------------------------------------------------
+# sync_mode
+#
+# The setting was stored, shown and saved, but sync_from_bookstack never read
+# it - both modes fetched every page body. These pin down the difference.
+# ---------------------------------------------------------------------------
+
+
+class _RecordingMockClient:
+    """A mock_client that remembers whether its page bodies were asked for."""
+
+    def __init__(self):
+        self.content_requested_for: list[int] = []
+
+    def get_pages(self):
+        return [_page(1, "Abrechnung FAQ")]
+
+    def get_page_content(self, page_id):
+        self.content_requested_for.append(page_id)
+        return "Volltext zur KV-Abrechnung"
+
+
+def test_metadata_only_asks_for_the_page_list_and_nothing_else(tmp_path: Path, wiki_tokens, monkeypatch):
+    service = _service(tmp_path, sync_mode=SyncMode.METADATA_ONLY)
+    fake = _FakeBookStackApi(
+        pages=[_page(1, "Abrechnung FAQ"), _page(2, "Fehlercode ERR_DB_902")],
+        details={1: {"markdown": "Volltext"}, 2: {"markdown": "Volltext"}},
+    )
+    monkeypatch.setattr(urllib.request, "urlopen", fake)
+
+    success, _msg = service.sync_from_bookstack()
+
+    assert success is True
+    # One request for the list, none per page - that is the point of the mode.
+    assert fake.requested_urls == ["https://wiki.example/api/pages"]
+    pages = {p["page_id"]: p for p in service.get_all_pages()}
+    assert set(pages) == {1, 2}
+    assert all(p["content"] == "" for p in pages.values())
+
+
+def test_metadata_only_still_finds_pages_by_title(tmp_path: Path, wiki_tokens, monkeypatch):
+    service = _service(tmp_path, sync_mode=SyncMode.METADATA_ONLY)
+    monkeypatch.setattr(urllib.request, "urlopen", _FakeBookStackApi(
+        pages=[_page(1, "Fehlercode ERR_DB_902")], details={1: {"markdown": "Volltext"}},
+    ))
+
+    service.sync_from_bookstack()
+
+    assert service.search("ERR_DB_902")
+
+
+def test_full_offline_fetches_every_page_body(tmp_path: Path, wiki_tokens, monkeypatch):
+    service = _service(tmp_path, sync_mode=SyncMode.FULL_OFFLINE)
+    fake = _FakeBookStackApi(
+        pages=[_page(1, "Abrechnung FAQ"), _page(2, "Fehlercode ERR_DB_902")],
+        details={1: {"markdown": "KV-Abrechnung und Nachforderungen"},
+                 2: {"markdown": "Datenbank-Patch"}},
+    )
+    monkeypatch.setattr(urllib.request, "urlopen", fake)
+
+    service.sync_from_bookstack()
+
+    assert fake.requested_urls == [
+        "https://wiki.example/api/pages",
+        "https://wiki.example/api/pages/1",
+        "https://wiki.example/api/pages/2",
+    ]
+    # Only the full mode makes the article text searchable offline.
+    assert service.search("Nachforderungen")
+
+
+def test_metadata_only_does_not_find_body_text(tmp_path: Path, wiki_tokens, monkeypatch):
+    service = _service(tmp_path, sync_mode=SyncMode.METADATA_ONLY)
+    monkeypatch.setattr(urllib.request, "urlopen", _FakeBookStackApi(
+        pages=[_page(1, "Abrechnung FAQ")],
+        details={1: {"markdown": "KV-Abrechnung und Nachforderungen"}},
+    ))
+
+    service.sync_from_bookstack()
+
+    assert service.search("Abrechnung FAQ")
+    assert service.search("Nachforderungen") == []
+
+
+def test_switching_back_to_metadata_only_drops_the_stored_bodies(tmp_path: Path, wiki_tokens, monkeypatch):
+    """Keeping bodies from an earlier full sync would contradict the setting."""
+    service = _service(tmp_path, sync_mode=SyncMode.FULL_OFFLINE)
+    monkeypatch.setattr(urllib.request, "urlopen", _FakeBookStackApi(
+        pages=[_page(1, "Abrechnung FAQ")],
+        details={1: {"markdown": "KV-Abrechnung und Nachforderungen"}},
+    ))
+    service.sync_from_bookstack()
+    assert service.get_all_pages()[0]["content"] != ""
+
+    service.settings.sync_mode = SyncMode.METADATA_ONLY
+    service.sync_from_bookstack()
+
+    assert service.get_all_pages()[0]["content"] == ""
+    assert service.search("Nachforderungen") == []
+    assert service.search("Abrechnung FAQ")
+
+
+def test_mode_read_from_a_plain_settings_string(tmp_path: Path, wiki_tokens, monkeypatch):
+    """The settings combo hands over a str, not the enum member."""
+    service = _service(tmp_path, sync_mode="FULL_OFFLINE")
+    fake = _FakeBookStackApi(pages=[_page(1, "Abrechnung")], details={1: {"markdown": "Volltext"}})
+    monkeypatch.setattr(urllib.request, "urlopen", fake)
+
+    service.sync_from_bookstack()
+
+    assert "https://wiki.example/api/pages/1" in fake.requested_urls
+    assert service.get_all_pages()[0]["content"] == "Volltext"
+
+
+def test_mock_client_path_honours_metadata_only(tmp_path: Path):
+    """The mode has to hold on the mock path too, or the tests above would be
+    testing something the mocked callers never see."""
+    service = _service(tmp_path, sync_mode=SyncMode.METADATA_ONLY)
+    client = _RecordingMockClient()
+
+    service.sync_from_bookstack(mock_client=client)
+
+    assert client.content_requested_for == []
+    assert service.get_all_pages()[0]["content"] == ""
+
+
+def test_mock_client_path_honours_full_offline(tmp_path: Path):
+    service = _service(tmp_path, sync_mode=SyncMode.FULL_OFFLINE)
+    client = _RecordingMockClient()
+
+    service.sync_from_bookstack(mock_client=client)
+
+    assert client.content_requested_for == [1]
+    assert service.get_all_pages()[0]["content"] == "Volltext zur KV-Abrechnung"

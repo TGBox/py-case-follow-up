@@ -324,6 +324,32 @@ class StorageService:
         logger.info(f"Archived case {case_id}")
         return True
 
+    def delete_case_permanently(self, case_id: str) -> bool:
+        """Removes a case permanently from both the active cases list and the archive.
+
+        Writes both files synchronously (sync=True) so the deletion is on disk
+        immediately before the caller removes the case from the app's in-memory list.
+        Returns True if the case was found in at least one of the two lists.
+        """
+        cases = self.load_cases()
+        archive = self.load_archive()
+
+        remaining_cases = [c for c in cases if c.case_id != case_id]
+        remaining_archive = [c for c in archive if c.case_id != case_id]
+
+        found = len(remaining_cases) < len(cases) or len(remaining_archive) < len(archive)
+
+        if not found:
+            logger.warning(f"delete_case_permanently: case {case_id} not found in cases or archive")
+            return False
+
+        self._cases_cache = remaining_cases
+        self._archive_cache = remaining_archive
+        self.save_cases(remaining_cases, sync=True)
+        self.save_archive(remaining_archive, sync=True)
+        logger.info(f"Permanently deleted case {case_id}")
+        return True
+
     def auto_archive_completed_cases(self, threshold_days: int = DEFAULT_AUTO_ARCHIVE_THRESHOLD_DAYS) -> int:
         """Automatically archives cases completed >= threshold_days ago."""
         cases = self.load_cases()

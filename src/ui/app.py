@@ -557,6 +557,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             on_open_email=self.open_email_draft_dialog,
             on_open_calendar=self.open_calendar_export_dialog,
             on_open_snippet_picker=self.open_snippet_picker_dialog,
+            on_change_practice=self.on_change_practice,
+            on_delete_case=self.on_delete_case,
         )
 
     def _get_view(self, layout_value: str) -> Any:

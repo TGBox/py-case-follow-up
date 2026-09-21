@@ -374,7 +374,9 @@
     "tab_attachments": "Anhänge",
     "tab_timeline": "Zeitleiste",
     "tab_wiki": "Wiki / Wissensdatenbank",
-    "timeline_title": "Verlauf & Timeline Notizen"
+    "timeline_title": "Verlauf & Timeline Notizen",
+    "change_practice": "🏥 Praxis wechseln",
+    "delete_case": "🗑 Fall löschen"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Neuen Mitarbeiter anlegen",
@@ -771,7 +773,8 @@
     "template_mgmt": "📄 Export-Vorlagen verwalten",
     "zip_export": "Komplett-Datensicherung als ZIP speichern",
     "zip_import": "📥 Datensicherung Importieren — Zielpfade festlegen",
-    "followup": "🔔 Wiedervorlage & Nachfrage-Erinnerung"
+    "followup": "🔔 Wiedervorlage & Nachfrage-Erinnerung",
+    "change_practice": "🏥 Praxis wechseln"
   },
   "dynamic_form": {
     "add_card": "➕ Weitere {title} anfordern",
@@ -1937,5 +1940,31 @@
     "dark": "Dunkel",
     "light": "Hell",
     "system": "System"
+  },
+  "change_practice": {
+    "confirm_btn": "Praxis wechseln",
+    "confirm_msg": "Alle Kundendaten dieses Falls werden durch die Daten der neu gewählten Praxis \"{new}\" ersetzt. Fortfahren?",
+    "current": "Aktuelle Praxis: {name}",
+    "header": "Neue Praxis für diesen Fall auswählen:",
+    "no_customer": "Bitte eine Praxis auswählen.",
+    "note_label": "Notiz zum Praxiswechsel (optional):",
+    "note_placeholder": "z. B. Praxis fusioniert mit...",
+    "success_msg": "Praxis wurde zu \"{name}\" geändert.",
+    "success_toast": "✅ Praxis geändert",
+    "timeline_note": "Praxis geändert von \"{old}\" zu \"{new}\".",
+    "timeline_status": "PRAXIS: {old} → {new}",
+    "title": "Praxis wechseln"
+  },
+  "delete_case": {
+    "attachments_cancel_btn": "Nur Datensatz löschen",
+    "attachments_confirm_btn": "Anhänge löschen",
+    "attachments_msg": "Soll auch der Anhang-Ordner dieses Falls gelöscht werden? ({path})",
+    "attachments_title": "Anhänge löschen?",
+    "confirm_btn": "Endgültig löschen",
+    "confirm_msg": "Fall \"{case_id}\" wird unwiderruflich gelöscht. Diese Aktion kann nicht rükgängig gemacht werden!",
+    "confirm_title": "Fall löschen",
+    "not_found": "Fall nicht gefunden oder bereits gelöscht.",
+    "success_msg": "Fall \"{case_id}\" wurde gelöscht.",
+    "success_toast": "🗑 Fall gelöscht"
   }
 }

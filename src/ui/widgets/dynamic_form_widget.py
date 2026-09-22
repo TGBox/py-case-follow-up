@@ -77,6 +77,7 @@ from enums import FieldType
 from models.case import Case
 from models.profile import UserProfile
 from models.schema import QuestionSchema, SchemaField
+from services.schema_i18n import schema_field_label, schema_repeatable_title
 from services.attachment_service import AttachmentService
 from services.storage_service import StorageService
 from ui.widgets.dynamic_form_field_renderers import FieldRendererMixin
@@ -386,8 +387,9 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         row_frame.pack(fill="x", pady=PAD_GAP, padx=PAD_CONTAINER)
         self.field_row_frames[f.field_id] = row_frame
 
+        schema_id = self.schema.schema_id if self.schema else ""
         req_mark = " *" if f.required else ""
-        label_text = f"{f.label}{req_mark}:"
+        label_text = f"{schema_field_label(schema_id, f)}{req_mark}:"
 
         label_row = ctk.CTkFrame(row_frame, fg_color="transparent")
         label_row.pack(fill="x", anchor="w", pady=(PAD_NONE, PAD_XS))
@@ -583,7 +585,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.card_field_widgets = []
 
         from services.i18n_service import tr
-        group_title = self.schema.repeatable_group_title if self.schema else tr("dynamic_form.repeatable_default_group_title", "Datei / Korrektur-Anforderung")
+        group_title = schema_repeatable_title(self.schema) if self.schema else tr("dynamic_form.repeatable_default_group_title", "Datei / Korrektur-Anforderung")
 
         for idx, req_data in enumerate(self.current_file_requests):
             card_frame = ctk.CTkFrame(

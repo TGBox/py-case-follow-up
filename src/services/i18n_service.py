@@ -116,6 +116,19 @@ class I18nService:
                 return result
         return str(result) if isinstance(result, str) else result
 
+    def translations_for(self, key: str) -> list[str]:
+        """Alle hinterlegten Varianten eines Keys ueber saemtliche Sprachen.
+
+        Gebraucht, um einen gespeicherten Text als 'noch der geseedete' zu
+        erkennen: er muss einer dieser Varianten entsprechen.
+        """
+        found: list[str] = []
+        for lang in SUPPORTED_LANGUAGES:
+            val = self._get_nested_val(self._translations.get(lang, {}), key)
+            if isinstance(val, str) and val.strip() and val not in found:
+                found.append(val)
+        return found
+
     def _get_nested_val(self, data: dict[str, Any], key: str) -> Any:
         keys = key.split(".")
         curr = data
@@ -141,6 +154,10 @@ def get_i18n() -> I18nService:
 
 def tr(key: str, default: Any = None, **kwargs: Any) -> Any:
     return get_i18n().tr(key, default=default, **kwargs)
+
+
+def tr_all(key: str) -> list[str]:
+    return get_i18n().translations_for(key)
 
 
 class LocalizedDict(dict):

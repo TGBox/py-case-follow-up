@@ -5,61 +5,14 @@ from constants import (
     IMAGE_FILE_EXTENSIONS,
     PRINT_AUTO_DELAY_MS,
     REPORT_FIELD_LONG_TEXT_THRESHOLD,
-    SCHEMA_ID_PREFIX,
-    SCHEMA_LOCALE_SECTIONS,
 )
 from enums import get_actor_display, get_board_column_display, get_channel_display, get_urgency_display
 from models.case import Case, TimelineEntry
 from models.schema import QuestionSchema
 from services.attachment_service import AttachmentService
 from services.i18n_service import tr
+from services.schema_i18n import field_label_resolver
 from utils.datetime_utils import format_german_datetime
-
-_MISSING = object()
-
-
-def _schema_locale_section(schema_id: str) -> str:
-    """Locale-Sektion zu einer schema_id ('schema_quick' -> 'quick')."""
-    if not schema_id:
-        return ""
-    known = SCHEMA_LOCALE_SECTIONS.get(schema_id)
-    if known:
-        return known
-    return schema_id[len(SCHEMA_ID_PREFIX):] if schema_id.startswith(SCHEMA_ID_PREFIX) else schema_id
-
-
-def build_field_label_resolver(
-    schema_id: str,
-    schemas: Sequence[QuestionSchema] | None = None,
-):
-    """Liefert eine Funktion field_id -> Beschriftung fuer den Bericht.
-
-    Ohne sie standen im Bericht die rohen Schluessel aus case.form_data
-    ('module_name', 'unformatted_description'), waehrend das Formular selbst
-    laengst lesbare Beschriftungen zeigt.
-
-    Reihenfolge: erst der Locale-Eintrag schemas.<sektion>.<field_id>, damit der
-    Bericht der eingestellten Sprache folgt; dann das im Schema gespeicherte
-    Label, das Schemata aus dem Schema-Builder abdeckt, fuer die es keine
-    Locale-Eintraege gibt; zuletzt der rohe Schluessel, damit nie etwas fehlt.
-    """
-    stored_labels: dict[str, str] = {}
-    for schema in schemas or []:
-        if schema.schema_id == schema_id:
-            stored_labels = {f.field_id: f.label for f in schema.fields if f.label}
-            break
-
-    sections = [s for s in (_schema_locale_section(schema_id), schema_id) if s]
-
-    def resolve(field_id: str) -> str:
-        for section in sections:
-            translated = tr(f"schemas.{section}.{field_id}", default=_MISSING)
-            if translated is not _MISSING and isinstance(translated, str) and translated.strip():
-                return translated
-        return stored_labels.get(field_id) or field_id
-
-    return resolve
-
 
 def generate_case_report_html(
     case: Case,
@@ -85,7 +38,7 @@ def generate_case_report_html(
         score=f"{case.classification.calculated_score:.0f}",
         urgency=urgency_disp,
     )
-    field_label = build_field_label_resolver(case.classification.schema_id, schemas)
+    field_label = field_label_resolver(case.classification.schema_id, schemas)
     created_str = case.formatted_created_at or format_german_datetime(case.created_at)
     deadline_str = case.formatted_deadline or tr("case_print.no_deadline", "Keine Frist gesetzt")
     followup_str = case.formatted_followup or tr("case_print.no_followup", "Keine Wiedervorlage gesetzt")

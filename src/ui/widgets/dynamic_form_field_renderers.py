@@ -18,7 +18,8 @@ import customtkinter as ctk
 from tkinter import filedialog
 from typing import Any
 from collections.abc import Callable
-from models.schema import SchemaField
+from models.schema import QuestionSchema, SchemaField
+from services.schema_i18n import schema_field_label
 from models.case import Case
 from constants import (
     BROWSER_OPTION_UNKNOWN,
@@ -71,6 +72,7 @@ class FieldRendererMixin:
     profile: Any = None
     storage_service: Any = None
     current_case: Case | None = None
+    schema: QuestionSchema | None = None
     on_manage_module_tags: Callable[[], None] | None = None
 
     def update_conditional_visibility(self) -> None:
@@ -260,9 +262,10 @@ class FieldRendererMixin:
         chk_frame = ctk.CTkFrame(row_frame, fg_color="transparent")
         chk_frame.pack(fill="x")
 
+        schema_id = self.schema.schema_id if self.schema else ""
         chk = ctk.CTkCheckBox(
             chk_frame,
-            text=f.label,
+            text=schema_field_label(schema_id, f),
             variable=bool_var,
             command=self.update_conditional_visibility,
             **entry_kwargs,
@@ -306,7 +309,8 @@ class FieldRendererMixin:
         def open_file_picker(e=file_entry, f_item=f):
             exts = f_item.allowed_extensions
             ftypes = [(tr("common.files", "Dateien"), " ".join(f"*{x}" for x in exts))] if exts else [(tr("common.all_files", "Alle Dateien"), "*.*")]
-            chosen = filedialog.askopenfilename(title=tr("dynamic_form.select_file_for", "Datei auswählen für '{label}'", label=f_item.label), filetypes=ftypes)
+            schema_id = self.schema.schema_id if self.schema else ""
+            chosen = filedialog.askopenfilename(title=tr("dynamic_form.select_file_for", "Datei auswählen für '{label}'", label=schema_field_label(schema_id, f_item)), filetypes=ftypes)
             if chosen:
                 e.delete(0, "end")
                 e.insert(0, chosen)

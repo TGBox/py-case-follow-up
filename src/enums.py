@@ -9,6 +9,7 @@ from constants import (
     DISPLAY_LAYOUT_NAMES,
     DISPLAY_SORT_CRITERION_NAMES,
     DISPLAY_THEME_NAMES,
+    DISPLAY_URGENCY_NAMES,
     LAYOUT_KEY_MAP,
     LEGACY_ACTOR_MAP,
     SORT_CRITERION_KEY_MAP,
@@ -76,6 +77,7 @@ ACTOR_DISPLAY = DISPLAY_ACTOR_NAMES
 LAYOUT_DISPLAY = DISPLAY_LAYOUT_NAMES
 BOARD_COLUMN_DISPLAY = DISPLAY_BOARD_COLUMN_NAMES
 THEME_DISPLAY = DISPLAY_THEME_NAMES
+URGENCY_DISPLAY = DISPLAY_URGENCY_NAMES
 
 
 def get_channel_display(val: str) -> str:
@@ -98,6 +100,10 @@ def get_layout_display(val: str) -> str:
 
 def get_board_column_display(val: str) -> str:
     return BOARD_COLUMN_DISPLAY.get(val, val)
+
+
+def get_urgency_display(val: str) -> str:
+    return URGENCY_DISPLAY.get(val, val)
 
 
 def get_theme_display(val: str) -> str:

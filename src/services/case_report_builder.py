@@ -5,12 +5,60 @@ from constants import (
     IMAGE_FILE_EXTENSIONS,
     PRINT_AUTO_DELAY_MS,
     REPORT_FIELD_LONG_TEXT_THRESHOLD,
+    SCHEMA_ID_PREFIX,
+    SCHEMA_LOCALE_SECTIONS,
 )
-from enums import get_actor_display, get_board_column_display
+from enums import get_actor_display, get_board_column_display, get_channel_display, get_urgency_display
 from models.case import Case, TimelineEntry
+from models.schema import QuestionSchema
 from services.attachment_service import AttachmentService
 from services.i18n_service import tr
 from utils.datetime_utils import format_german_datetime
+
+_MISSING = object()
+
+
+def _schema_locale_section(schema_id: str) -> str:
+    """Locale-Sektion zu einer schema_id ('schema_quick' -> 'quick')."""
+    if not schema_id:
+        return ""
+    known = SCHEMA_LOCALE_SECTIONS.get(schema_id)
+    if known:
+        return known
+    return schema_id[len(SCHEMA_ID_PREFIX):] if schema_id.startswith(SCHEMA_ID_PREFIX) else schema_id
+
+
+def build_field_label_resolver(
+    schema_id: str,
+    schemas: Sequence[QuestionSchema] | None = None,
+):
+    """Liefert eine Funktion field_id -> Beschriftung fuer den Bericht.
+
+    Ohne sie standen im Bericht die rohen Schluessel aus case.form_data
+    ('module_name', 'unformatted_description'), waehrend das Formular selbst
+    laengst lesbare Beschriftungen zeigt.
+
+    Reihenfolge: erst der Locale-Eintrag schemas.<sektion>.<field_id>, damit der
+    Bericht der eingestellten Sprache folgt; dann das im Schema gespeicherte
+    Label, das Schemata aus dem Schema-Builder abdeckt, fuer die es keine
+    Locale-Eintraege gibt; zuletzt der rohe Schluessel, damit nie etwas fehlt.
+    """
+    stored_labels: dict[str, str] = {}
+    for schema in schemas or []:
+        if schema.schema_id == schema_id:
+            stored_labels = {f.field_id: f.label for f in schema.fields if f.label}
+            break
+
+    sections = [s for s in (_schema_locale_section(schema_id), schema_id) if s]
+
+    def resolve(field_id: str) -> str:
+        for section in sections:
+            translated = tr(f"schemas.{section}.{field_id}", default=_MISSING)
+            if translated is not _MISSING and isinstance(translated, str) and translated.strip():
+                return translated
+        return stored_labels.get(field_id) or field_id
+
+    return resolve
 
 
 def generate_case_report_html(
@@ -21,6 +69,7 @@ def generate_case_report_html(
     selected_entries: Sequence[TimelineEntry] | None = None,
     attachment_service: AttachmentService | None = None,
     auto_print: bool = False,
+    schemas: Sequence[QuestionSchema] | None = None,
 ) -> str:
     """Generates a compact HTML report for a case.
 
@@ -29,6 +78,14 @@ def generate_case_report_html(
     """
     status_disp = get_board_column_display(case.workflow_status.board_column)
     actor_disp = get_actor_display(case.workflow_status.current_actor)
+    urgency_disp = get_urgency_display(case.classification.urgency_level)
+    score_disp = tr(
+        "case_print.score_value",
+        "{score} Pkt. ({urgency})",
+        score=f"{case.classification.calculated_score:.0f}",
+        urgency=urgency_disp,
+    )
+    field_label = build_field_label_resolver(case.classification.schema_id, schemas)
     created_str = case.formatted_created_at or format_german_datetime(case.created_at)
     deadline_str = case.formatted_deadline or tr("case_print.no_deadline", "Keine Frist gesetzt")
     followup_str = case.formatted_followup or tr("case_print.no_followup", "Keine Wiedervorlage gesetzt")
@@ -76,10 +133,23 @@ window.addEventListener('DOMContentLoaded', function() {{
     lbl_filename = tr("case_print.col_filename", "Dateiname")
     lbl_filesize = tr("case_print.col_filesize", "Dateigröße")
 
+    doc_title = tr(
+        "case_print.report_doc_title",
+        "Fall-Akte {case_id} — {title}",
+        case_id=case.case_id,
+        title=case.classification.title,
+    )
+    heading = tr(
+        "case_print.report_heading",
+        "Fall-Akte: {case_id} — {title}",
+        case_id=case.case_id,
+        title=case.classification.title,
+    )
+
     html_lines = [
         "<!DOCTYPE html>",
         "<html><head><meta charset='utf-8'>",
-        f"<title>Fall-Akte {case.case_id} — {case.classification.title}</title>",
+        f"<title>{doc_title}</title>",
         "<style>",
         "@page { size: A4 portrait; margin: 8mm 10mm; }",
         "* { box-sizing: border-box; }",
@@ -126,7 +196,7 @@ window.addEventListener('DOMContentLoaded', function() {{
         f"  <div>{banner_text}</div>",
         f"  <button class='print-btn' onclick='window.print()'>{btn_print_pdf_txt}</button>",
         "</div>",
-        f"<h1>Fall-Akte: {case.case_id} — {case.classification.title}</h1>",
+        f"<h1>{heading}</h1>",
     ]
 
     has_customer = include_customer and case.customer is not None
@@ -139,7 +209,7 @@ window.addEventListener('DOMContentLoaded', function() {{
             f"    <h2>{hdr_meta}</h2>",
             "    <table>",
             f"      <tr><th>{lbl_case_id}</th><td><strong>{case.case_id}</strong></td></tr>",
-            f"      <tr><th>{lbl_score}</th><td>{case.classification.calculated_score:.0f} Pkt. ({case.classification.urgency_level})</td></tr>",
+            f"      <tr><th>{lbl_score}</th><td>{score_disp}</td></tr>",
             f"      <tr><th>{lbl_status}</th><td>{status_disp}</td></tr>",
             f"      <tr><th>{lbl_actor}</th><td>{actor_disp}</td></tr>",
             f"      <tr><th>{lbl_created}</th><td>{created_str} ({case.created_by})</td></tr>",
@@ -163,7 +233,7 @@ window.addEventListener('DOMContentLoaded', function() {{
         html_lines.extend([
             f"<h2>{hdr_meta}</h2>",
             "<table>",
-            f"<tr><th>{lbl_case_id}</th><td><strong>{case.case_id}</strong></td><th>{lbl_score}</th><td>{case.classification.calculated_score:.0f} Pkt. ({case.classification.urgency_level})</td></tr>",
+            f"<tr><th>{lbl_case_id}</th><td><strong>{case.case_id}</strong></td><th>{lbl_score}</th><td>{score_disp}</td></tr>",
             f"<tr><th>{lbl_status}</th><td>{status_disp}</td><th>{lbl_actor}</th><td>{actor_disp}</td></tr>",
             f"<tr><th>{lbl_created}</th><td>{created_str} ({case.created_by})</td><th>{lbl_deadline}</th><td>{deadline_str}</td></tr>",
             f"<tr><th>{lbl_followup}</th><td colspan='3'>{followup_str}</td></tr>",
@@ -179,7 +249,7 @@ window.addEventListener('DOMContentLoaded', function() {{
             is_long = len(v_str) > REPORT_FIELD_LONG_TEXT_THRESHOLD or "\n" in v_str
             full_cls = " full-width" if is_long else ""
             html_lines.append(
-                f"<div class='field-card{full_cls}'><div class='field-label'>{k}</div><div class='field-value'>{val_disp}</div></div>"
+                f"<div class='field-card{full_cls}'><div class='field-label'>{field_label(k)}</div><div class='field-value'>{val_disp}</div></div>"
             )
         html_lines.append("</div>")
 
@@ -191,7 +261,7 @@ window.addEventListener('DOMContentLoaded', function() {{
             ts_str = format_german_datetime(entry.timestamp)
             note_html = "<br>".join(entry.note.splitlines())
             html_lines.append(
-                f"<div class='entry'><div class='entry-header'>[{ts_str}] {entry.author} ({entry.channel}):</div><div class='entry-note'>{note_html}</div></div>"
+                f"<div class='entry'><div class='entry-header'>[{ts_str}] {entry.author} ({get_channel_display(entry.channel)}):</div><div class='entry-note'>{note_html}</div></div>"
             )
         html_lines.append("</div>")
 

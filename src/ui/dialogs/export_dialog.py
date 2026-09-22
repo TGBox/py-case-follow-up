@@ -490,6 +490,7 @@ class ExportDialog(BaseDialog):
             selected_entries=selected_entries,
             attachment_service=self.attachment_service,
             auto_print=auto_print,
+            schemas=self.schemas,
         )
 
 

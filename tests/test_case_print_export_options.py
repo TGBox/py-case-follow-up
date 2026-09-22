@@ -137,3 +137,90 @@ def test_export_dialog_build_html_content(tmp_path: Path):
     dialog.destroy()
     app.destroy()
 
+
+
+# ---------------------------------------------------------------------------
+# Lokalisierung des Berichts
+#
+# Gemeldet: im fertigen Bericht standen die internen Bezeichner - PHONE_INBOUND,
+# INTERNAL_NOTE als Kanal, module_name und unformatted_description als
+# Feldbeschriftung, RED als Dringlichkeit -, waehrend die Oberflaeche daneben
+# laengst lesbare Texte zeigt.
+# ---------------------------------------------------------------------------
+
+def _localization_case() -> Case:
+    return Case(
+        case_id="T-I18N-01",
+        classification=Classification(
+            schema_id="schema_quick",
+            title="Lokalisierungstest",
+            urgency_level="RED",
+            calculated_score=820.0,
+        ),
+        workflow_status=WorkflowStatus(board_column=BoardColumn.ACTION_REQUIRED, current_actor=Actor.SUPPORT),
+        created_by="Agent1",
+        form_data={"module_name": "Abrechnung", "unformatted_description": "Text"},
+        timeline=[
+            TimelineEntry(timestamp="2026-08-04T16:05:00", author="Agent1", channel="PHONE_INBOUND", note="Anruf"),
+            TimelineEntry(timestamp="2026-09-14T13:46:00", author="Agent1", channel="INTERNAL_NOTE", note="Vermerk"),
+        ],
+    )
+
+
+def test_report_uses_translations_instead_of_internal_identifiers():
+    """Kein roher Bezeichner darf im Bericht landen."""
+    from services.case_report_builder import generate_case_report_html
+
+    html = generate_case_report_html(_localization_case(), include_customer=False, include_fields=True)
+
+    for raw in ("PHONE_INBOUND", "INTERNAL_NOTE", "module_name", "unformatted_description", "(RED)"):
+        assert raw not in html, f"Interner Bezeichner '{raw}' steht noch im Bericht"
+
+    assert "Telefonat" in html
+    assert "Interner Vermerk" in html
+    assert "Betroffenes Modul / Programmbereich (optional)" in html
+    assert "Unformatierte Informationen / Beschreibung" in html
+    assert "820 Pkt. (Hoch)" in html
+
+
+def test_report_falls_back_to_the_stored_schema_label():
+    """Schemata aus dem Schema-Builder haben keine Locale-Eintraege.
+
+    Fuer die muss die im Schema gespeicherte Beschriftung greifen - sonst stuende
+    dort wieder der rohe Schluessel.
+    """
+    from models.schema import QuestionSchema, SchemaField
+    from services.case_report_builder import generate_case_report_html
+
+    case = _localization_case()
+    case.form_data = {"eigenes_feld": "Wert"}
+    schemas = [QuestionSchema(
+        schema_id="schema_quick",
+        fields=[SchemaField(field_id="eigenes_feld", label="Selbstgebautes Feld")],
+    )]
+
+    html = generate_case_report_html(case, include_customer=False, include_fields=True, schemas=schemas)
+    assert "Selbstgebautes Feld" in html
+    assert "eigenes_feld" not in html
+
+    # Ohne Schema bleibt nur der Schluessel - besser als eine leere Beschriftung.
+    html_ohne = generate_case_report_html(case, include_customer=False, include_fields=True)
+    assert "eigenes_feld" in html_ohne
+
+
+def test_report_follows_the_selected_language():
+    """Der Bericht muss der eingestellten Sprache folgen, nicht fest deutsch sein."""
+    from services.case_report_builder import generate_case_report_html
+    from services.i18n_service import get_i18n
+
+    i18n = get_i18n()
+    vorher = i18n.current_language
+    try:
+        i18n.current_language = "en"
+        html = generate_case_report_html(_localization_case(), include_customer=False, include_fields=True)
+        assert "Phone Call" in html
+        assert "Internal Note" in html
+        assert "820 pts (High)" in html
+        assert "Telefonat" not in html
+    finally:
+        i18n.current_language = vorher

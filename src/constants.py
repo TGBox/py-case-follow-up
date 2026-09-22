@@ -772,7 +772,7 @@ DEFAULT_MODULE_TAGS = [
     "Benutzerrechte",
     "Patientenstamm",
     "Terminabrechnung",
-    "Rezeptnachvervollgung",
+    "Rezeptnachverfolgung",
     "Ausgangsbelege",
     "Kassenbuch",
     "Statistiken",

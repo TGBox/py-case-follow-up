@@ -1,6 +1,7 @@
 from pathlib import Path
+import pytest
 from enums import FieldType
-from models.schema import QuestionSchema, SchemaField
+from models.schema import QuestionSchema, SchemaField, looks_like_date_field
 from services.schema_service import SchemaService
 from services.seed_service import SeedService
 from services.storage_service import StorageService, AppConfig
@@ -115,3 +116,66 @@ def test_seed_service_creates_default_schemas(tmp_path: Path):
     assert "schema_zuzahlungsnachforderung" in schema_ids
     assert "schema_feature_request" in schema_ids
     assert "schema_bug_report" in schema_ids
+
+
+def test_seed_date_fields_use_date_field_type(tmp_path: Path):
+    """Echte Datumsfelder sind explizit als Datum typisiert - nur so bekommen
+    sie im Formular den Kalender-Button."""
+    seed = SeedService(StorageService(AppConfig(workspace_dir=tmp_path)))
+    zuzahlung = next(s for s in seed.create_seed_schemas() if s.schema_id == "schema_zuzahlungsnachforderung")
+    by_id = {f.field_id: f for f in zuzahlung.fields}
+
+    assert by_id["invoice_date"].field_type == FieldType.DATE
+    assert by_id["prescription_date"].field_type == FieldType.DATE
+    # Gegenprobe: "ESOL-Datei" ist ein Textfeld und darf kein Datumsfeld werden.
+    assert by_id["esol_filename"].field_type == FieldType.TEXT
+
+
+# --- Einmalige Migration alter Text-Datumsfelder auf FieldType.DATE ---
+
+@pytest.mark.parametrize("field_id,label", [
+    ("invoice_date", "Rechnungsdatum"),
+    ("prescription_date", "Datum der Verordnung"),
+    ("faelligkeit", "Bearbeitungsfrist"),
+    ("date", "Date"),
+    ("start_date", "Start"),
+])
+def test_looks_like_date_field_detects_real_dates(field_id: str, label: str):
+    assert looks_like_date_field(field_id, label) is True
+
+
+@pytest.mark.parametrize("field_id,label", [
+    ("esol_filename", "Name der originalen ESOL-Datei"),      # Regression: "Datei" enthaelt "date"
+    ("datei_upload", "Datei hochladen"),
+    ("update_info", "Update-Informationen"),
+    ("invoice_number", "Betroffene Rechnungsnummer"),
+    ("patient_names", "Namen der betroffenen Patienten"),
+])
+def test_looks_like_date_field_ignores_false_positives(field_id: str, label: str):
+    assert looks_like_date_field(field_id, label) is False
+
+
+def test_from_dict_migrates_legacy_text_date_field():
+    restored = SchemaField.from_dict({
+        "field_id": "invoice_date", "label": "Rechnungsdatum", "field_type": "text", "order": 1,
+    })
+    assert restored.field_type == FieldType.DATE
+
+
+def test_from_dict_keeps_esol_filename_as_text():
+    restored = SchemaField.from_dict({
+        "field_id": "esol_filename", "label": "Name der originalen ESOL-Datei",
+        "field_type": "text", "order": 1,
+    })
+    assert restored.field_type == FieldType.TEXT
+
+
+@pytest.mark.parametrize("explicit_type", [
+    FieldType.DROPDOWN, FieldType.BOOLEAN, FieldType.FILE, FieldType.NUMBER,
+])
+def test_from_dict_never_overrides_an_explicit_field_type(explicit_type: str):
+    restored = SchemaField.from_dict({
+        "field_id": "datum_bekannt", "label": "Datum bekannt?",
+        "field_type": explicit_type, "order": 1,
+    })
+    assert restored.field_type == explicit_type

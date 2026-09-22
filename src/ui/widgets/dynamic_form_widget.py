@@ -424,10 +424,14 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             self._render_browser_multiselect_field(row_frame, f, val, target_widget_dict)
 
         # 3. DATE FIELD
-        elif (
-            f.field_type == FieldType.DATE
-            or any(k in fid_lower or k in flabel_lower for k in ("datum", "date", "frist"))
-        ) and f.field_type not in (FieldType.DROPDOWN, FieldType.BOOLEAN, FieldType.FILE):
+        # Nur der explizit gesetzte Feldtyp entscheidet. Die frühere Namens-/
+        # Label-Heuristik ("datum", "date", "frist") hat u. a. bei "Name der
+        # originalen ESOL-Datei" fälschlich angeschlagen ("Datei" enthält
+        # "date") und dort einen sinnlosen Kalender-Button erzeugt. Altbestand
+        # wird beim Laden über models.schema.migrate_legacy_date_field_type()
+        # auf FieldType.DATE gehoben, damit echte Datumsfelder ihren Kalender
+        # behalten.
+        elif f.field_type == FieldType.DATE:
             self._render_date_field(row_frame, f, val, target_widget_dict, entry_kwargs)
 
         # 4. DROPDOWN FIELD

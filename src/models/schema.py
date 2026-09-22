@@ -1,7 +1,42 @@
+import re
 from dataclasses import dataclass, field
 from typing import Any
 from enums import FieldType
 from constants import VALIDATION_MESSAGES
+
+# "date" darf nur als eigenstaendiges Wort/Token treffen. Sonst wuerde z. B.
+# "Name der originalen ESOL-Datei" als Datumsfeld gelten ("Datei" enthaelt
+# "date") und einen Kalender-Button bekommen.
+_STANDALONE_DATE_RE = re.compile(r"(?<![a-zäöüß])date(?![a-zäöüß])", re.IGNORECASE)
+
+# Deutsche Komposita ("Rechnungsdatum", "Bearbeitungsfrist") werden als
+# Teilstring erkannt - dort gibt es keine Verwechslungsgefahr.
+_DATE_SUBSTRINGS = ("datum", "frist")
+
+
+def looks_like_date_field(field_id: str, label: str) -> bool:
+    """True, wenn Feld-ID oder Label eindeutig auf ein Datum hindeuten.
+
+    Nur fuer die einmalige Migration alter Vorlagen gedacht, in denen echte
+    Datumsfelder noch als field_type='text' gespeichert sind. Zur Laufzeit
+    entscheidet ausschliesslich field_type == FieldType.DATE darueber, ob ein
+    Kalender-Button gerendert wird.
+    """
+    haystack = f"{field_id} {label}".lower()
+    if any(token in haystack for token in _DATE_SUBSTRINGS):
+        return True
+    return _STANDALONE_DATE_RE.search(haystack) is not None
+
+
+def migrate_legacy_date_field_type(field_type: str, field_id: str, label: str) -> str:
+    """Hebt alte Text-Datumsfelder einmalig auf FieldType.DATE an.
+
+    Bewusst gesetzte Typen (dropdown, boolean, file, number, date) bleiben
+    unangetastet; migriert wird ausschliesslich FieldType.TEXT.
+    """
+    if field_type != FieldType.TEXT:
+        return field_type
+    return FieldType.DATE if looks_like_date_field(field_id, label) else field_type
 
 
 @dataclass
@@ -52,10 +87,14 @@ class SchemaField:
     def from_dict(cls, data: dict[str, Any]) -> SchemaField:
         exts_raw = data.get("allowed_extensions", [])
         exts = list(exts_raw) if isinstance(exts_raw, list) else []
+        field_id = data.get("field_id", "")
+        label = data.get("label", "")
         return cls(
-            field_id=data.get("field_id", ""),
-            label=data.get("label", ""),
-            field_type=data.get("field_type", FieldType.TEXT),
+            field_id=field_id,
+            label=label,
+            field_type=migrate_legacy_date_field_type(
+                data.get("field_type", FieldType.TEXT), field_id, label
+            ),
             options=list(data.get("options", [])) if data.get("options") else [],
             required=bool(data.get("required", False)),
             placeholder=data.get("placeholder", ""),

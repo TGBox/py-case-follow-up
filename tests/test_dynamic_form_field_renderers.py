@@ -6,7 +6,7 @@ _render_*_field() method per detected field type/keyword
 is already used by other tests (test_schema_v2_and_conditional_logic.py,
 test_ui_integration.py, test_views_and_widgets_comprehensive.py,
 test_zuzahlungsnachforderung_multi_requests.py) but none of them exercise
-every dispatch branch (module tags, browser multiselect, date-by-keyword,
+every dispatch branch (module tags, browser multiselect, date-by-field-type,
 dropdown, boolean incl. the DB-backup special case, file, number, textbox-
 by-keyword, plain text). This file builds one schema covering every branch
 and verifies both widget construction and that get_form_data() extracts the
@@ -57,7 +57,7 @@ def _full_schema() -> QuestionSchema:
         fields=[
             SchemaField(field_id="programmbereich", label="Programmbereich", field_type=FieldType.TEXT, order=1),
             SchemaField(field_id="tested_browsers", label="Getestete Browser", field_type=FieldType.TEXT, order=2),
-            SchemaField(field_id="fehlerdatum", label="Datum des Fehlers", field_type=FieldType.TEXT, order=3),
+            SchemaField(field_id="fehlerdatum", label="Datum des Fehlers", field_type=FieldType.DATE, order=3),
             SchemaField(field_id="prioritaet", label="Priorität", field_type=FieldType.DROPDOWN,
                         options=["Hoch", "Mittel", "Niedrig"], order=4),
             SchemaField(field_id="ist_dringend", label="Ist dringend", field_type=FieldType.BOOLEAN, order=5),
@@ -88,7 +88,7 @@ def test_all_field_types_dispatch_to_expected_widget_kind(widget):
 
     assert widget.field_widgets["programmbereich"][0] == "module_picker"
     assert widget.field_widgets["tested_browsers"][0] == "browser_pills"
-    assert widget.field_widgets["fehlerdatum"][0] == FieldType.TEXT  # date branch keeps the field's own type marker
+    assert widget.field_widgets["fehlerdatum"][0] == FieldType.DATE  # date branch keeps the field's own type marker
     assert widget.field_widgets["prioritaet"][0] == FieldType.DROPDOWN
     assert widget.field_widgets["ist_dringend"][0] == FieldType.BOOLEAN
     assert widget.field_widgets["anzahl_faelle"][0] == FieldType.NUMBER
@@ -227,7 +227,7 @@ def test_number_field_returns_none_when_empty(widget):
     assert widget.get_form_data()["anzahl"] is None
 
 
-def test_date_keyword_detection_is_overridden_by_explicit_dropdown_or_boolean_type(widget):
+def test_date_naming_is_overridden_by_explicit_dropdown_or_boolean_type(widget):
     """A field whose id/label mentions 'datum' but whose field_type is
     DROPDOWN or BOOLEAN must NOT be hijacked by the date branch."""
     schema = QuestionSchema(schema_id="s9", display_name="S9", fields=[
@@ -235,6 +235,49 @@ def test_date_keyword_detection_is_overridden_by_explicit_dropdown_or_boolean_ty
     ])
     widget.load_schema(schema, {"datum_bekannt": True})
     assert widget.field_widgets["datum_bekannt"][0] == FieldType.BOOLEAN
+
+
+# --- Kalender-Button haengt ausschliesslich am Feldtyp 'date' ---
+
+def _has_calendar_button(widget, field_id: str) -> bool:
+    """Sucht im Zeilen-Frame des Feldes nach dem Kalender-Button."""
+    def walk(w):
+        for child in w.winfo_children():
+            if isinstance(child, ctk.CTkButton) and "Kalender" in child.cget("text"):
+                return True
+            if walk(child):
+                return True
+        return False
+
+    return walk(widget.field_row_frames[field_id])
+
+
+def test_calendar_button_only_for_explicit_date_field_type(widget):
+    """Regression: 'Name der originalen ESOL-Datei' bekam einen Kalender-
+    Button, weil die alte Heuristik 'date' als Teilstring in 'Datei' fand."""
+    schema = QuestionSchema(schema_id="s10", display_name="S10", fields=[
+        SchemaField(field_id="esol_filename", label="Name der originalen ESOL-Datei",
+                    field_type=FieldType.TEXT, order=1),
+        SchemaField(field_id="invoice_date", label="Rechnungsdatum",
+                    field_type=FieldType.DATE, order=2),
+    ])
+    widget.load_schema(schema, {})
+
+    assert not _has_calendar_button(widget, "esol_filename")
+    assert _has_calendar_button(widget, "invoice_date")
+
+
+def test_calendar_button_appears_next_to_every_date_field(widget):
+    """Jedes explizit als Datum gekennzeichnete Feld bekommt den Kalender -
+    unabhaengig davon, wie es heisst."""
+    schema = QuestionSchema(schema_id="s11", display_name="S11", fields=[
+        SchemaField(field_id="termin", label="Termin", field_type=FieldType.DATE, order=1),
+        SchemaField(field_id="ablauf", label="Gültig bis", field_type=FieldType.DATE, order=2),
+    ])
+    widget.load_schema(schema, {})
+
+    assert _has_calendar_button(widget, "termin")
+    assert _has_calendar_button(widget, "ablauf")
 
 
 # --- Required-field borders update in place instead of rebuilding the form ---

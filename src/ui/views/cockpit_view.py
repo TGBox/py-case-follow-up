@@ -189,12 +189,14 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
     def _schedule_verify(self, w_left: int, w_right: int, attempt: int, delay: int | None):
         """Plant die Breitenkontrolle ein; ohne Tk-Kontext einfach nicht."""
+        def kontrolle():
+            self._verify_right_width(w_left, w_right, attempt)
+
         try:
-            cb = lambda: self._verify_right_width(w_left, w_right, attempt)
             if delay is None:
-                self.after_idle(cb)
+                self.after_idle(kontrolle)
             else:
-                self.after(delay, cb)
+                self.after(delay, kontrolle)
         except Exception:
             pass
 

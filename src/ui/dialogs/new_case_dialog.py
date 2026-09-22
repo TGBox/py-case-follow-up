@@ -381,7 +381,8 @@ class NewCaseDialog(BaseDialog):
             "new_case_dialog.schema",
             "Formular-Schema:",
         ).pack(anchor="w", pady=(PAD_SM, PAD_TINY))
-        schema_names = [f"{s.display_name} [{s.schema_id}]" for s in self.schemas]
+        from services.schema_i18n import schema_display_name
+        schema_names = [f"{schema_display_name(s)} [{s.schema_id}]" for s in self.schemas]
         self.schema_combo = ctk.CTkOptionMenu(form_scroll, values=schema_names if schema_names else ["Standard"])
         quick_opt = next((name for name in schema_names if "schema_quick" in name or "Schnellerfassung" in name), None)
         if quick_opt:

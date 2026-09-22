@@ -153,12 +153,19 @@ Das fertige Executable wird im Verzeichnis `dist/py-case-follow-up.exe` erzeugt.
 
 ### 2. Automatischer Git Pre-Push Hook
 
-Das Repository enthält einen `pre-push` Hook in `.githooks/pre-push`, der vor jedem `git push`:
+Das Repository enthält einen `pre-push` Hook in `.githooks/pre-push`, der vor jedem `git push`
+dieselben Prüfungen fährt wie die GitHub Actions — in der Reihenfolge ihrer Laufzeit, damit ein
+Lint-Verstoß in Sekunden auffällt statt erst nach einem kompletten Build:
 
-1. Automatisch eine frische `.exe` Datei anhand des Spec-Files baut.
-2. Die statische Typenprüfung (`uvx pyright src`) durchführt.
-3. Die gesamte Testsuite (`uv run pytest --no-cov`) ausführt und verifiziert.
-4. Den Push abbricht, falls Build, Typecheck oder Tests fehlschlagen.
+1. Linting (`uv run ruff check src main.py tests`).
+2. Statische Typenprüfung (`uvx pyright src`).
+3. Baut eine frische `.exe` anhand des Spec-Files (muss vor den Tests laufen: `dist/` ist
+   gitignored, und `test_pyinstaller_bundle.py` überspringt sich ohne gebaute Exe selbst).
+4. Die gesamte Testsuite (`uv run pytest --no-cov`).
+5. Den Push abbricht, falls einer der vier Schritte fehlschlägt.
+
+Dass Hook und CI nicht auseinanderlaufen, prüft `tests/test_git_hooks.py` gegen
+`.github/workflows/tests.yml`.
 
 Um den Hook für Ihr lokales Git-Repository zu aktivieren:
 

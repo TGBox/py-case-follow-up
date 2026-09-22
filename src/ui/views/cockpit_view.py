@@ -140,10 +140,10 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             s0, s1 = _coord(0), _coord(1)
 
             def _pane(attr):
-                w = getattr(self, attr, None)
-                if w is None or not w.winfo_exists():
-                    return "-/-"
                 try:
+                    w = getattr(self, attr, None)
+                    if w is None or not w.winfo_exists():
+                        return "-/-"
                     return f"{w.winfo_width()}/{w.winfo_reqwidth()}"
                 except Exception:
                     return "?/?"
@@ -178,7 +178,31 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             )
         except Exception as e:
             logger.warning(f"[SASH] debug failed at {tag}: {e}")
+
+    def _sash_debug_later(self, tag: str, delay: int | None = None):
+        """Plant einen Debug-Schnappschuss ein, ohne im Fehlerfall zu stoeren.
+
+        after()/after_idle() brauchen einen initialisierten Tk-Kontext. Unit-Tests
+        bauen die View mit __new__() ohne Tk auf und rufen einzelne Methoden
+        direkt - dort darf optionales Logging den Aufruf nicht sprengen.
+        """
+        if not SASH_DEBUG:
+            return
+        try:
+            if delay is None:
+                self.after_idle(lambda: self._sash_debug(tag))
+            else:
+                self.after(delay, lambda: self._sash_debug(tag))
+        except Exception:
+            pass
     # -----------------------------------------------------------------------
+
+    def _safe_width(self, attr: str) -> Any:
+        """winfo_width() eines Kindes, oder '?' wenn es das (noch) nicht gibt."""
+        try:
+            return getattr(self, attr).winfo_width()
+        except Exception:
+            return "?"
 
     def _sash_extra(self) -> int:
         """Pixel, die eine Sash zwischen zwei Panes belegt (sashwidth + 2*sashpad).
@@ -263,10 +287,21 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             self._sash_restored = True
             self._sash_debug("restore:after")
             # Zweiter Blick, nachdem Tk die Geometrie tatsaechlich angewandt hat.
-            self.after_idle(lambda: self._sash_debug("restore:after-idle"))
-            self.after_idle(lambda: self._verify_right_width(w_left, w_right, 0))
+            self._sash_debug_later("restore:after-idle")
+            self._schedule_verify(w_left, w_right, 0, None)
         except Exception as e:
             logger.warning(f"Could not restore sash positions: {e}")
+
+    def _schedule_verify(self, w_left: int, w_right: int, attempt: int, delay: int | None):
+        """Plant die Breitenkontrolle ein; ohne Tk-Kontext einfach nicht."""
+        try:
+            cb = lambda: self._verify_right_width(w_left, w_right, attempt)
+            if delay is None:
+                self.after_idle(cb)
+            else:
+                self.after(delay, cb)
+        except Exception:
+            pass
 
     def _verify_right_width(self, w_left: int, w_right: int, attempt: int):
         """Prueft nach dem Idle-Durchlauf, ob Tk die Breite behalten hat.
@@ -300,10 +335,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             total_w = self.paned.winfo_width()
             if total_w > PANED_MIN_TOTAL_WIDTH:
                 self._place_sashes(total_w, w_left, w_right)
-            self.after(
-                SASH_VERIFY_RETRY_MS,
-                lambda: self._verify_right_width(w_left, w_right, attempt + 1),
-            )
+            self._schedule_verify(w_left, w_right, attempt + 1, SASH_VERIFY_RETRY_MS)
         except Exception as e:
             logger.warning(f"Could not verify right column width: {e}")
 
@@ -313,8 +345,8 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.save_sash_widths()
         self._refresh_sidebar_after_resize()
         # Zeigt, ob Tk die Sash nach dem Loslassen noch verschiebt.
-        self.after_idle(lambda: self._sash_debug("release:after-idle"))
-        self.after(300, lambda: self._sash_debug("release:+300ms"))
+        self._sash_debug_later("release:after-idle")
+        self._sash_debug_later("release:+300ms", 300)
 
     def _refresh_sidebar_after_resize(self):
         """Erzwingt einen sauberen Neuaufbau der CTk-Zeichnungen rechts.
@@ -325,14 +357,17 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         unveraenderten Wert loest ein vollstaendiges _draw() aus und ist dabei
         oeffentliche API, im Gegensatz zu einem Griff in die Interna.
         """
+        combo = getattr(getattr(self, "timeline_widget", None), "channel_combo", None)
         try:
-            combo = getattr(getattr(self, "timeline_widget", None), "channel_combo", None)
             if combo is not None and combo.winfo_exists():
                 combo.configure(width=COMBO_WIDTH_SM)
-            if hasattr(self, "right_tabview") and self.right_tabview.winfo_exists():
-                self.right_tabview.update_idletasks()
         except Exception as e:
-            logger.warning(f"Could not refresh sidebar after resize: {e}")
+            # Reines Neuzeichnen - nie ein Grund, das Speichern zu stoeren.
+            logger.debug(f"Could not redraw channel combo: {e}")
+        try:
+            self.right_tabview.update_idletasks()
+        except Exception as e:
+            logger.debug(f"Could not refresh sidebar after resize: {e}")
 
     def _on_paned_configure(self, event=None):
         """Merkt sich die Breite und zieht den Erst-Restore nach, bis er sitzt.
@@ -414,7 +449,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
                 logger.info(
                     f"[SASH  ----] save: total={total_w} sash0={sash0} sash1={sash1} extra={extra} "
                     f"-> L={w_left} R={w_right} "
-                    f"(R_real={self.right_tabview.winfo_width() if hasattr(self, 'right_tabview') else '?'})"
+                    f"(R_real={self._safe_width('right_tabview')})"
                 )
 
             # Die gezogene Breite wird zur neuen Pane-Option, sonst holt sich Tk
@@ -639,7 +674,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         # Testet die Vermutung, dass der CTkTabview beim Redraw seine
         # Wunschbreite neu anmeldet und Tk die Pane-Breite verwirft.
         self._sash_debug(f"tab:{tab_name or '?'}:before")
-        self.after_idle(lambda: self._sash_debug(f"tab:{tab_name or '?'}:after-idle"))
+        self._sash_debug_later(f"tab:{tab_name or '?'}:after-idle")
         if not self.current_case:
             return
         curr_tab = tab_name or self.right_tabview.get()

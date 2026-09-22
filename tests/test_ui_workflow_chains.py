@@ -405,28 +405,45 @@ def test_cockpit_sidebar_resizable_and_persistent(tmp_path: Path):
     profile = storage.load_profile()
 
     class MockPaned:
+        def __init__(self):
+            self.pinned: dict[str, int] = {}
         def winfo_exists(self):
             return True
         def winfo_width(self):
             return 1000
+        def cget(self, option):
+            return {"sashwidth": 6, "sashpad": 1}[option]
         def sash_coord(self, index):
             if index == 0:
                 return (350, 0)
             return (680, 0)
+        def paneconfigure(self, pane, **kwargs):
+            self.pinned[pane] = kwargs["width"]
 
     view: Any = CockpitView.__new__(CockpitView)
     view.profile = profile
     view.storage_service = storage
     view.paned = MockPaned()
+    view.left_frame = "left"
+    view.right_tabview = "right"
 
     view.on_paned_sash_released()
 
+    # sash_coord() liefert die linke Kante der Sash, nicht den Anfang des Panes.
+    # Die rechte Spalte beginnt erst hinter sashwidth + 2*sashpad = 8px, ist also
+    # 1000 - 680 - 8 = 312 breit. Frueher wurden hier 320 gespeichert - diese 8px
+    # Differenz liess die Spalte bei jedem Speichern/Wiederherstellen wandern.
     assert profile.ui_settings.column_widths["cockpit_left"] == 350
-    assert profile.ui_settings.column_widths["cockpit_right"] == 320
+    assert profile.ui_settings.column_widths["cockpit_right"] == 312
+
+    # Die gezogenen Breiten muessen als -width in den Pane-Optionen landen, sonst
+    # leitet Tk die Pane-Groessen beim naechsten Geometry-Recompute wieder aus den
+    # Wunschbreiten der Kinder ab und die rechte Spalte faellt auf ihre minsize.
+    assert view.paned.pinned == {"left": 350, "right": 312}
 
     reloaded_profile = storage.load_profile()
     assert reloaded_profile.ui_settings.column_widths["cockpit_left"] == 350
-    assert reloaded_profile.ui_settings.column_widths["cockpit_right"] == 320
+    assert reloaded_profile.ui_settings.column_widths["cockpit_right"] == 312
 
 
 def test_notification_badge_updates_immediately_on_followup_or_complete(tmp_path: Path):

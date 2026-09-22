@@ -325,6 +325,14 @@ COCKPIT_SIDEBAR_MIN_WIDTH = 120
 COCKPIT_CENTER_MIN_WIDTH = 150
 SASH_RESTORE_DELAY_FAST_MS = 100
 SASH_RESTORE_DELAY_SLOW_MS = 500
+# Nach dem Wiederherstellen wird kontrolliert, ob Tk die Breite der rechten
+# Spalte behalten hat, und notfalls nachgezogen. Toleranz deckt die Rundung
+# durch Sash-Breite und Padding ab.
+SASH_WIDTH_TOLERANCE = 4
+SASH_VERIFY_MAX_ATTEMPTS = 4
+SASH_VERIFY_RETRY_MS = 120
+# Entprellung fuer den Restore, solange sich die Fensterbreite noch aendert.
+SASH_SETTLE_DELAY_MS = 60
 INFO_FRAME_RESIZE_DELTA = 8
 WIEDERVORLAGE_MIN_WRAP_WIDTH = 180
 WIEDERVORLAGE_WRAP_OFFSET = 10

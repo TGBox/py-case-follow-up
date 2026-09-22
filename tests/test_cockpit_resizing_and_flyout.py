@@ -159,19 +159,83 @@ def test_only_the_middle_column_is_stretchable(cockpit_im_fenster):
         assert ist == soll, f"{attr}: stretch={ist!r}, erwartet {soll!r}"
 
 
-def test_the_panes_are_not_pinned_to_a_fixed_width(cockpit_im_fenster):
-    """Ein gesetztes width= naegelt einen Bereich fest und war Teil der Ursache."""
+def test_the_side_columns_carry_their_restored_width(cockpit_im_fenster):
+    """Hier stand die umgekehrte Forderung: auf keinem Bereich duerfe width= stehen.
+
+    Diese Annahme stammte aus dem Mittelspalten-Bug, wo ein gesetztes width= gegen
+    das damalige _on_paned_configure gekaempft hat - das bei jedem Configure alle
+    drei Breiten neu ausgerechnet und beide Sashes neu gesetzt hat. Dieser Code
+    ist weg, und ohne width= zeigte sich der Fehler in der Gegenrichtung.
+
+    Gemessen im laufenden Programm: sash_place() setzt nur die momentane Groesse.
+    Sobald ein Kind eine neue Wunschbreite anmeldet - der CTkTabview rechts tut
+    das bei jedem Tab-Wechsel, seine reqwidth pendelt zwischen 303 und 361 -
+    leitet Tk die Pane-Groessen neu aus den Wunschbreiten ab und die
+    wiederhergestellte Breite ist weg. Im Log fiel die rechte Spalte dabei
+    innerhalb eines Idle-Durchlaufs von 614 auf 120 px (ihre minsize), waehrend
+    die Mitte als einziger stretch="always"-Bereich alles geschluckt hat. Damit
+    war die Spaltenbreite nach jedem Neustart wieder verstellt.
+
+    Die beiden Seitenspalten tragen ihre Breite deshalb als -width; die Mitte
+    bleibt frei, damit weiterhin sie den Zuwachs bekommt. Dass das der Fall ist,
+    messen test_extra_window_width_goes_to_the_middle_column und
+    test_the_form_scrollbar_follows_the_middle_column an einem echten Fenster.
+
+    Gemessen wird an einer Attrappe statt am echten PanedWindow: die
+    Testumgebung bildet das Fenster nicht ab, dort ist jede Breite 1 und
+    restore_sash_positions() steigt vorzeitig aus.
+    """
     _, view = cockpit_im_fenster
-    for attr in ("left_frame", "center_frame", "right_tabview"):
-        breite = view.paned.paneconfigure(getattr(view, attr))["width"][-1]
-        assert breite in ("", None), f"{attr} ist auf width={breite!r} festgenagelt"
+    view.profile.ui_settings.column_widths["cockpit_left"] = 430
+    view.profile.ui_settings.column_widths["cockpit_right"] = 250
+
+    echtes_paned = view.paned
+    attrappe = MagicMock()
+    attrappe.winfo_exists.return_value = True
+    attrappe.winfo_width.return_value = 1600
+    attrappe.cget.side_effect = lambda option: {"sashwidth": 6, "sashpad": 1}[option]
+    view.paned = attrappe
+    try:
+        view.restore_sash_positions()
+
+        gepinnt = {
+            aufruf.args[0]: aufruf.kwargs["width"]
+            for aufruf in attrappe.paneconfigure.call_args_list
+        }
+        assert gepinnt.get(view.left_frame) == 430, f"linke Spalte nicht gepinnt: {gepinnt}"
+        assert gepinnt.get(view.right_tabview) == 250, f"rechte Spalte nicht gepinnt: {gepinnt}"
+        assert view.center_frame not in gepinnt, "Mittelspalte darf nicht festgenagelt werden"
+
+        # Die rechte Sash sitzt um sashwidth + 2*sashpad = 8px vor dem Pane:
+        # 1600 - 250 - 8. Ohne diesen Zuschlag wandert die Spalte bei jedem
+        # Speichern und Wiederherstellen um 8px.
+        assert attrappe.sash_place.call_args_list[0].args == (0, 430, 0)
+        assert attrappe.sash_place.call_args_list[1].args == (1, 1342, 0)
+    finally:
+        offen = getattr(view, "_sash_restore_after_id", None)
+        if offen:
+            try:
+                view.after_cancel(offen)
+            except Exception:
+                pass
+            view._sash_restore_after_id = None
+        view.paned = echtes_paned
 
 
 def test_resizing_does_not_re_place_the_sashes(cockpit_im_fenster):
     """Wer bei jedem Configure nachschiebt, kaempft gegen den Geometriemanager.
 
     Genau das war der Fehler: die Rechnung stimmte, Tk hat sie danach wieder
-    ueberschrieben. Der Handler darf die Sashes nicht mehr anfassen.
+    ueberschrieben. Der Handler rechnet deshalb keine Breiten mehr aus und fasst
+    die Sashes nicht direkt an.
+
+    Eine Ausnahme gibt es seit dem Startzeitpunkt-Fix: solange der Nutzer noch
+    nicht selbst gezogen hat, plant der Handler *einen* entprellten Restore ein.
+    Noetig, weil das Fenster versteckt mit 1440x880 gebaut und erst danach
+    maximiert wird - der erste Restore lief auf total=1426, das PanedWindow
+    erreichte seine echten 1906 erst 40ms spaeter. Die rechte Spalte wird als
+    Abstand vom rechten Rand wiederhergestellt und braucht daher die endgueltige
+    Gesamtbreite. Direkt waehrend des Configure passiert aber weiterhin nichts.
     """
     _, view = cockpit_im_fenster
     echtes_paned = view.paned
@@ -187,6 +251,37 @@ def test_resizing_does_not_re_place_the_sashes(cockpit_im_fenster):
         assert attrappe.sash_place.call_count == 0, "Handler verschiebt die Sashes weiterhin"
         assert view._last_paned_width == 1600
     finally:
+        # Den entprellten Restore abraeumen, sonst laeuft er spaeter gegen das
+        # bereits zerstoerte Fenster.
+        offen = getattr(view, "_sash_restore_after_id", None)
+        if offen:
+            try:
+                view.after_cancel(offen)
+            except Exception:
+                pass
+            view._sash_restore_after_id = None
+        view.paned = echtes_paned
+
+
+def test_resizing_stops_nudging_once_the_user_has_dragged(cockpit_im_fenster):
+    """Nach dem ersten eigenen Zug darf nichts mehr automatisch nachziehen."""
+    _, view = cockpit_im_fenster
+    echtes_paned = view.paned
+    attrappe = MagicMock()
+    attrappe.winfo_exists.return_value = True
+    attrappe.winfo_width.return_value = 1700
+    view.paned = attrappe
+    view._sash_user_dragged = True
+    view._sash_restore_after_id = None
+    try:
+        ereignis = MagicMock()
+        ereignis.widget = attrappe
+        ereignis.width = 1700
+        view._on_paned_configure(ereignis)
+        assert attrappe.sash_place.call_count == 0
+        assert view._sash_restore_after_id is None, "Restore wird trotz Nutzerzug nachgeplant"
+    finally:
+        view._sash_user_dragged = False
         view.paned = echtes_paned
 
 

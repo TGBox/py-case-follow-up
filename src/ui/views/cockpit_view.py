@@ -16,6 +16,7 @@ from constants import (
     COLOR_PANED_PANE_BG,
     COLOR_SASH_DARK,
     COLOR_SASH_LIGHT,
+    COMBO_WIDTH_SM,
     DEFAULT_COLUMN_WIDTHS,
     DEFAULT_SIDEBAR_TAB_ATTACHMENTS,
     DEFAULT_SIDEBAR_TAB_TIMELINE,
@@ -28,6 +29,10 @@ from constants import (
     PANED_PANE_MIN_WIDTH,
     SASH_RESTORE_DELAY_FAST_MS,
     SASH_RESTORE_DELAY_SLOW_MS,
+    SASH_SETTLE_DELAY_MS,
+    SASH_VERIFY_MAX_ATTEMPTS,
+    SASH_VERIFY_RETRY_MS,
+    SASH_WIDTH_TOLERANCE,
     VIP_TAG_DISPLAY,
     WIEDERVORLAGE_FALLBACK_DEFAULT_WIDTH,
     WIEDERVORLAGE_FALLBACK_MIN_WIDTH,
@@ -96,6 +101,12 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
         self.current_case: Case | None = None
         self.schemas: list[QuestionSchema] = []
+
+        # Solange False, zieht jede Breitenaenderung des PanedWindow den Restore
+        # nach - noetig, weil das Fenster erst nach dem Bauen maximiert wird.
+        self._sash_user_dragged = False
+        self._sash_restored = False
+        self._sash_restore_after_id = None
 
         self.create_layout()
 
@@ -169,18 +180,70 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             logger.warning(f"[SASH] debug failed at {tag}: {e}")
     # -----------------------------------------------------------------------
 
+    def _sash_extra(self) -> int:
+        """Pixel, die eine Sash zwischen zwei Panes belegt (sashwidth + 2*sashpad).
+
+        sash_coord() liefert die linke Kante der Sash, nicht den Anfang des
+        rechten Panes. Ohne diesen Zuschlag ist die gespeicherte Breite der
+        rechten Spalte um genau diese Pixel zu gross.
+        """
+        try:
+            return int(self.paned.cget("sashwidth")) + 2 * int(self.paned.cget("sashpad"))
+        except Exception:
+            return 8
+
+    def _pin_pane_widths(self, w_left: int, w_right: int):
+        """Schreibt die Breiten als -width in die Pane-Optionen der Seitenspalten.
+
+        Der entscheidende Punkt gegen das Zurueckspringen: sash_place() setzt nur
+        die momentane Groesse. Sobald ein Kind eine neue Wunschbreite anmeldet -
+        und der CTkTabview rechts tut das bei jedem Tab-Wechsel, seine reqwidth
+        pendelt zwischen 303 und 361 - leitet Tk die Pane-Groessen neu aus den
+        Wunschbreiten ab und die per Sash gesetzte Breite ist weg. Im Log war das
+        als Sprung der rechten Spalte auf 120px (= minsize) sichtbar, wobei die
+        Mitte als einziger Pane mit stretch="always" alles geschluckt hat.
+
+        Mit gesetztem -width auf beiden Seitenspalten haelt Tk sie fest und gibt
+        nur noch der Mitte den Rest. Beim Ziehen aktualisiert save_sash_widths()
+        die Option, damit der neue Wert der massgebliche bleibt.
+        """
+        try:
+            self.paned.paneconfigure(self.left_frame, width=w_left)
+            self.paned.paneconfigure(self.right_tabview, width=w_right)
+        except Exception as e:
+            logger.warning(f"Could not pin pane widths: {e}")
+
+    def _stored_column_widths(self) -> tuple[int, int]:
+        widths = {}
+        if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
+            widths = self.profile.ui_settings.column_widths
+        elif self.app_config and hasattr(self.app_config, "column_widths"):
+            widths = self.app_config.column_widths
+        return (
+            widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"]),
+            widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"]),
+        )
+
     def apply_column_widths(self, widths: dict[str, int]):
         w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
         w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
         if hasattr(self, "paned"):
             try:
-                # Sashes only - see create_layout on why width= must stay off.
                 total_w = self.paned.winfo_width()
                 if total_w > PANED_MIN_TOTAL_WIDTH:
-                    self.paned.sash_place(0, w_left, 0)
-                    self.paned.sash_place(1, max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right), 0)
+                    self._place_sashes(total_w, w_left, w_right)
             except Exception:
                 pass
+
+    def _place_sashes(self, total_w: int, w_left: int, w_right: int):
+        extra = self._sash_extra()
+        self.paned.sash_place(0, w_left, 0)
+        self.paned.sash_place(
+            1,
+            max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right - extra),
+            0,
+        )
+        self._pin_pane_widths(w_left, w_right)
 
     def restore_sash_positions(self):
         try:
@@ -194,52 +257,131 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             self._sash_debug("restore:before")
 
-            widths = {}
-            if self.profile and hasattr(self.profile, "ui_settings") and hasattr(self.profile.ui_settings, "column_widths"):
-                widths = self.profile.ui_settings.column_widths
-            elif self.app_config and hasattr(self.app_config, "column_widths"):
-                widths = self.app_config.column_widths
-
-            w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
-            w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
-
-            self.paned.sash_place(0, w_left, 0)
-            self.paned.sash_place(1, max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right), 0)
+            w_left, w_right = self._stored_column_widths()
+            self._place_sashes(total_w, w_left, w_right)
             self._last_paned_width = total_w
+            self._sash_restored = True
             self._sash_debug("restore:after")
             # Zweiter Blick, nachdem Tk die Geometrie tatsaechlich angewandt hat.
             self.after_idle(lambda: self._sash_debug("restore:after-idle"))
+            self.after_idle(lambda: self._verify_right_width(w_left, w_right, 0))
         except Exception as e:
             logger.warning(f"Could not restore sash positions: {e}")
 
+    def _verify_right_width(self, w_left: int, w_right: int, attempt: int):
+        """Prueft nach dem Idle-Durchlauf, ob Tk die Breite behalten hat.
+
+        Guertel und Hosentraeger: sash_place() allein hat nicht gehalten, weil Tk
+        die Pane-Groessen beim naechsten Geometry-Recompute aus den Wunschbreiten
+        der Kinder neu ableitet - im Log fiel die rechte Spalte dabei jedes Mal
+        auf 120px. _pin_pane_widths() sollte das verhindern; falls nicht, merkt
+        es diese Kontrolle und zieht nach, statt die Spalte falsch stehen zu
+        lassen. Begrenzt auf wenige Versuche, damit daraus keine Endlosschleife
+        gegen den Geometry-Manager wird, und still, sobald der Nutzer selbst
+        zieht.
+        """
+        if getattr(self, "_sash_user_dragged", False):
+            return
+        try:
+            if not hasattr(self, "paned") or not self.paned.winfo_exists():
+                return
+            if not hasattr(self, "right_tabview") or not self.right_tabview.winfo_exists():
+                return
+            actual = self.right_tabview.winfo_width()
+            self._sash_debug(f"verify:{attempt} want={w_right} got={actual}")
+            if abs(actual - w_right) <= SASH_WIDTH_TOLERANCE:
+                return
+            if attempt >= SASH_VERIFY_MAX_ATTEMPTS:
+                logger.warning(
+                    f"Right column stayed at {actual}px instead of {w_right}px "
+                    f"after {attempt} corrections - giving up to avoid fighting the geometry manager."
+                )
+                return
+            total_w = self.paned.winfo_width()
+            if total_w > PANED_MIN_TOTAL_WIDTH:
+                self._place_sashes(total_w, w_left, w_right)
+            self.after(
+                SASH_VERIFY_RETRY_MS,
+                lambda: self._verify_right_width(w_left, w_right, attempt + 1),
+            )
+        except Exception as e:
+            logger.warning(f"Could not verify right column width: {e}")
+
     def on_paned_sash_released(self, event=None):
+        self._sash_user_dragged = True
         self._sash_debug("release:before-save")
         self.save_sash_widths()
+        self._refresh_sidebar_after_resize()
         # Zeigt, ob Tk die Sash nach dem Loslassen noch verschiebt.
         self.after_idle(lambda: self._sash_debug("release:after-idle"))
         self.after(300, lambda: self._sash_debug("release:+300ms"))
 
-    def _on_paned_configure(self, event=None):
-        """Only remembers the current width - Tk distributes the space itself.
+    def _refresh_sidebar_after_resize(self):
+        """Erzwingt einen sauberen Neuaufbau der CTk-Zeichnungen rechts.
 
-        This used to recompute all three column widths on every Configure and
-        re-place both sashes. That fought the geometry manager (which had
-        already handed the space to whichever pane its stretch setting named)
-        and lost: a window widened by 600px ended up with a *narrower* middle
-        column. The stretch settings in create_layout do the job now.
+        CustomTkinter zeichnet auf interne Canvas-Flaechen und raeumt die beim
+        Groessenwechsel des Panes nicht immer vollstaendig ab - sichtbar als
+        blauer Rest neben dem Kanal-Dropdown der Zeitleiste. configure() mit dem
+        unveraenderten Wert loest ein vollstaendiges _draw() aus und ist dabei
+        oeffentliche API, im Gegensatz zu einem Griff in die Interna.
+        """
+        try:
+            combo = getattr(getattr(self, "timeline_widget", None), "channel_combo", None)
+            if combo is not None and combo.winfo_exists():
+                combo.configure(width=COMBO_WIDTH_SM)
+            if hasattr(self, "right_tabview") and self.right_tabview.winfo_exists():
+                self.right_tabview.update_idletasks()
+        except Exception as e:
+            logger.warning(f"Could not refresh sidebar after resize: {e}")
+
+    def _on_paned_configure(self, event=None):
+        """Merkt sich die Breite und zieht den Erst-Restore nach, bis er sitzt.
+
+        Die drei Spaltenbreiten hier neu zu berechnen und beide Sashes neu zu
+        setzen war frueher falsch: das hat gegen den Geometry-Manager gearbeitet,
+        der den Platz laut stretch-Einstellung schon verteilt hatte, und verloren -
+        ein um 600px breiteres Fenster endete mit einer *schmaleren* Mitte.
+
+        Was hier passieren muss, ist etwas anderes: Das Fenster wird versteckt mit
+        1440x880 gebaut und erst in _reveal_window() maximiert. Im Log lag der
+        erste Restore bei 404ms noch auf total=1426, das PanedWindow erreichte
+        seine echten 1906 erst bei 443ms. Da die rechte Spalte als Abstand vom
+        rechten Rand wiederhergestellt wird, braucht sie zwingend die *endgueltige*
+        Gesamtbreite - feste Delays treffen die nicht zuverlaessig. Also wird bis
+        zum ersten Zug des Nutzers bei jeder Breitenaenderung nachgezogen.
         """
         if event is not None and getattr(event, "widget", None) != self.paned:
             return
         try:
             total_w = self.paned.winfo_width() if event is None else event.width
-            if total_w > PANED_MIN_TOTAL_WIDTH:
-                prev = getattr(self, "_last_paned_width", None)
-                self._last_paned_width = total_w
-                # Nur bei echter Breitenaenderung loggen, sonst flutet es das Log.
-                if prev != total_w:
-                    self._sash_debug(f"configure:{prev}->{total_w}")
+            if total_w <= PANED_MIN_TOTAL_WIDTH:
+                return
+            prev = getattr(self, "_last_paned_width", None)
+            self._last_paned_width = total_w
+            if prev == total_w:
+                return
+            # Nur bei echter Breitenaenderung loggen, sonst flutet es das Log.
+            self._sash_debug(f"configure:{prev}->{total_w}")
+
+            if getattr(self, "_sash_user_dragged", False):
+                return
+            # Entprellt: waehrend das Fenster maximiert wird, kommen mehrere
+            # Configure-Events kurz hintereinander.
+            pending = getattr(self, "_sash_restore_after_id", None)
+            if pending:
+                try:
+                    self.after_cancel(pending)
+                except Exception:
+                    pass
+            self._sash_restore_after_id = self.after(SASH_SETTLE_DELAY_MS, self._restore_after_settle)
         except Exception:
             pass
+
+    def _restore_after_settle(self):
+        self._sash_restore_after_id = None
+        if getattr(self, "_sash_user_dragged", False):
+            return
+        self.restore_sash_positions()
 
     def save_sash_widths(self):
         try:
@@ -253,23 +395,32 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             sash0 = self.paned.sash_coord(0)
             sash1 = self.paned.sash_coord(1)
-            if SASH_DEBUG:
-                logger.info(
-                    f"[SASH  ----] save: total={total_w} sash0={sash0} sash1={sash1} "
-                    f"-> L={max(PANED_PANE_MIN_WIDTH, sash0[0]) if sash0 else None} "
-                    f"R={max(PANED_PANE_MIN_WIDTH, total_w - sash1[0]) if sash1 else None} "
-                    f"(R_real={self.right_tabview.winfo_width() if hasattr(self, 'right_tabview') else '?'})"
-                )
+            extra = self._sash_extra()
 
+            w_left = w_right = None
             if sash0 and len(sash0) > 0 and sash0[0] > 0:
                 w_left = max(PANED_PANE_MIN_WIDTH, sash0[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_left"] = w_left
 
             if sash1 and len(sash1) > 0 and sash1[0] > 0:
-                w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0])
+                # extra abziehen: sash_coord() gibt die linke Sash-Kante zurueck,
+                # der rechte Pane beginnt erst dahinter.
+                w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0] - extra)
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_right"] = w_right
+
+            if SASH_DEBUG:
+                logger.info(
+                    f"[SASH  ----] save: total={total_w} sash0={sash0} sash1={sash1} extra={extra} "
+                    f"-> L={w_left} R={w_right} "
+                    f"(R_real={self.right_tabview.winfo_width() if hasattr(self, 'right_tabview') else '?'})"
+                )
+
+            # Die gezogene Breite wird zur neuen Pane-Option, sonst holt sich Tk
+            # beim naechsten Geometry-Recompute die alte zurueck.
+            if w_left is not None and w_right is not None:
+                self._pin_pane_widths(w_left, w_right)
 
             if self.profile and self.storage_service:
                 self.storage_service.save_profile(self.profile)
@@ -306,10 +457,14 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         # *narrower*. The middle column is the one that should grow; the two
         # outer ones keep the width the user dragged them to.
         #
-        # No width= on the panes either. In Tk that option pins a pane, which is
-        # what made the manual re-placing below fight the geometry manager and
-        # lose. The initial widths are set by placing the sashes instead
-        # (restore_sash_positions).
+        # Kein width= hier beim add(): zu diesem Zeitpunkt sind die gespeicherten
+        # Breiten noch nicht angewandt. Gesetzt wird -width nachtraeglich in
+        # _pin_pane_widths(), aufgerufen aus restore_sash_positions() und
+        # save_sash_widths(). Ohne dieses -width haelt Tk die per sash_place()
+        # gesetzten Groessen nicht: sobald ein Kind eine neue Wunschbreite
+        # anmeldet, leitet Tk die Pane-Groessen neu aus den Wunschbreiten ab, und
+        # die rechte Spalte fiel dabei auf minsize (120px) zurueck, waehrend die
+        # Mitte als einziger stretch="always"-Pane alles geschluckt hat.
         self.paned.add(self.left_frame, minsize=COCKPIT_SIDEBAR_MIN_WIDTH, stretch="never")
         self.paned.add(self.center_frame, minsize=COCKPIT_CENTER_MIN_WIDTH, stretch="always")
         self.paned.add(self.right_tabview, minsize=COCKPIT_SIDEBAR_MIN_WIDTH, stretch="never")

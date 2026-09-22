@@ -42,10 +42,13 @@ from constants import (
 class CasePrintDialog(BaseDialog):
     """Print preview and HTML report generator dialog allowing selective unchecking of timeline entries and fields."""
 
-    def __init__(self, parent, case: Case, attachment_service: Any | None = None):
+    def __init__(self, parent, case: Case, attachment_service: Any | None = None, schemas: Any | None = None):
         super().__init__(parent)
         self.case = case
         self.attachment_service = attachment_service
+        # Fuer die Feldbeschriftungen im Bericht: ohne das Schema stehen dort
+        # die rohen Schluessel aus form_data statt der uebersetzten Labels.
+        self.schemas = schemas or []
 
         from services.i18n_service import tr
         w, h = DIALOG_DIMENSIONS["print_report"]
@@ -166,6 +169,7 @@ class CasePrintDialog(BaseDialog):
             selected_entries=selected_entries,
             attachment_service=self.attachment_service,
             auto_print=auto_print,
+            schemas=self.schemas,
         )
 
     def generate_and_open_html(self):

@@ -52,6 +52,12 @@ FILE_EXT_ZIP = ".zip"
 
 
 # --- Enum Display Names & Labels ---
+DISPLAY_URGENCY_NAMES = LocalizedDict("urgency_levels", {
+    "RED": "Hoch",
+    "YELLOW": "Mittel",
+    "GREEN": "Niedrig",
+})
+
 DISPLAY_CHANNEL_NAMES = LocalizedDict("channels", {
     "PHONE_INBOUND": "Telefon (Eingang)",
     "PHONE_OUTBOUND": "Telefon (Ausgang)",
@@ -1428,6 +1434,13 @@ SCROLL_WIDTH_SCHEMA_FIELDS = 680
 SCROLL_HEIGHT_SCHEMA_FIELDS = 300
 BORDER_WIDTH_PANEL = 1
 SCHEMA_ID_PREFIX = "schema_"
+# Die Feldbeschriftungen liegen als schemas.<sektion>.<field_id> in den Locales.
+# Die Sektion ist normalerweise die schema_id ohne SCHEMA_ID_PREFIX; wo das nicht
+# stimmt, steht die Abweichung hier. Eigene Schemata aus dem Schema-Builder haben
+# keine Locale-Eintraege und fallen auf das im Schema gespeicherte Label zurueck.
+SCHEMA_LOCALE_SECTIONS = {
+    "schema_zuzahlungsnachforderung": "zuzahlung",
+}
 ICON_DELETE_X = "✕"
 
 # New Case Dialog Design Tokens

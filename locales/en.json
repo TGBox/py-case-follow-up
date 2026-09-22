@@ -255,7 +255,10 @@
     "col_value": "Value",
     "col_filename": "Filename",
     "col_filesize": "File Size",
-    "vip_suffix": " (VIP Customer)"
+    "vip_suffix": " (VIP Customer)",
+    "score_value": "{score} pts ({urgency})",
+    "report_doc_title": "Case file {case_id} — {title}",
+    "report_heading": "Case file: {case_id} — {title}"
   },
   "channels": {
     "DEV_TICKET": "GitLab Ticket",
@@ -1966,5 +1969,10 @@
     "not_found": "Case not found or already deleted.",
     "success_msg": "Case \"{case_id}\" was deleted.",
     "success_toast": "🗑 Case deleted"
+  },
+  "urgency_levels": {
+    "RED": "High",
+    "YELLOW": "Medium",
+    "GREEN": "Low"
   }
 }

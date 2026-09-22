@@ -255,7 +255,10 @@
     "col_value": "Wert",
     "col_filename": "Dateiname",
     "col_filesize": "Dateigröße",
-    "vip_suffix": " (VIP-Kunde)"
+    "vip_suffix": " (VIP-Kunde)",
+    "score_value": "{score} Pkt. ({urgency})",
+    "report_doc_title": "Fall-Akte {case_id} — {title}",
+    "report_heading": "Fall-Akte: {case_id} — {title}"
   },
   "channels": {
     "DEV_TICKET": "GitLab-Ticket",
@@ -1966,5 +1969,10 @@
     "not_found": "Fall nicht gefunden oder bereits gelöscht.",
     "success_msg": "Fall \"{case_id}\" wurde gelöscht.",
     "success_toast": "🗑 Fall gelöscht"
+  },
+  "urgency_levels": {
+    "RED": "Hoch",
+    "YELLOW": "Mittel",
+    "GREEN": "Niedrig"
   }
 }

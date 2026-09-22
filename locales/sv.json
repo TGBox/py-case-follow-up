@@ -255,7 +255,10 @@
     "col_value": "Värde",
     "col_filename": "Filnamn",
     "col_filesize": "Filstorlek",
-    "vip_suffix": " (VIP-kund)"
+    "vip_suffix": " (VIP-kund)",
+    "score_value": "{score} p ({urgency})",
+    "report_doc_title": "Ärendeakt {case_id} — {title}",
+    "report_heading": "Ärendeakt: {case_id} — {title}"
   },
   "channels": {
     "DEV_TICKET": "GitLab-ärende",
@@ -1966,5 +1969,10 @@
     "not_found": "Ärendet hittades inte eller är redan borttaget.",
     "success_msg": "Ärende \"{case_id}\" har tagits bort.",
     "success_toast": "🗑 Ärende borttaget"
+  },
+  "urgency_levels": {
+    "RED": "Hög",
+    "YELLOW": "Medel",
+    "GREEN": "Låg"
   }
 }

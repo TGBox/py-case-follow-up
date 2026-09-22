@@ -1451,6 +1451,14 @@ TAG_PILL_HEIGHT = 28
 TAG_PILL_RADIUS = 14
 TAG_PILL_PAD_X = 3
 TAG_PILL_PAD_Y = 2
+# The tag pills live in their own scrollable sub-panel: beyond this many rows the
+# panel stops growing and scrolls instead, so a long tag list can no longer push
+# the rest of the "Neuer Fall" form out of sight.
+TAG_PILL_MAX_VISIBLE_ROWS = 5
+TAG_PILL_ROW_HEIGHT = TAG_PILL_HEIGHT + 2 * TAG_PILL_PAD_Y
+# Breathing room inside the panel so the last visible row is not clipped by the
+# frame border.
+TAG_PANEL_INNER_PAD = 8
 COLOR_TAG_PILL_SELECTED = ("#2563eb", "#1d4ed8")
 COLOR_TAG_PILL_SELECTED_HOVER = ("#1d4ed8", "#1e40af")
 COLOR_TAG_PILL_DEFAULT = ("gray85", "gray28")
@@ -1471,8 +1479,8 @@ DEFAULT_PRACTICE_NAME = "Standard Praxis"
 COMBO_WIDTH_NEW_CASE_CHANNEL = 175
 
 # Followup Dialog Design Tokens
-DIALOG_SIZE_FOLLOWUP = (500, 385)
-DIALOG_MIN_SIZE_FOLLOWUP = (460, 350)
+DIALOG_SIZE_FOLLOWUP = (500, 425)
+DIALOG_MIN_SIZE_FOLLOWUP = (460, 390)
 HEIGHT_TOP_BAR_FOLLOWUP = 40
 FOLLOWUP_PRESET_COLS = 4
 FOLLOWUP_PRESET_UNIFORM = "fw_presets"
@@ -1493,6 +1501,8 @@ FOLLOWUP_TIME_1130 = "11:30"
 FOLLOWUP_TIME_1330 = "13:30"
 FOLLOWUP_TIME_0800 = "08:00"
 FOLLOWUP_DEFAULT_DAYS_AHEAD = 2
+FOLLOWUP_PRESET_MINUTES_15 = 15
+FOLLOWUP_PRESET_MINUTES_30 = 30
 FOLLOWUP_PRESET_HOURS_1 = 1
 FOLLOWUP_PRESET_HOURS_2 = 2
 FOLLOWUP_PRESET_DAYS_1 = 1

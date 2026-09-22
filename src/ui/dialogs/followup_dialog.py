@@ -31,6 +31,8 @@ from constants import (
     FOLLOWUP_PRESET_DAYS_7,
     FOLLOWUP_PRESET_HOURS_1,
     FOLLOWUP_PRESET_HOURS_2,
+    FOLLOWUP_PRESET_MINUTES_15,
+    FOLLOWUP_PRESET_MINUTES_30,
     FOLLOWUP_PRESET_UNIFORM,
     FOLLOWUP_TIME_0800,
     FOLLOWUP_TIME_1130,
@@ -111,43 +113,40 @@ class FollowupDialog(BaseDialog):
         for col in range(FOLLOWUP_PRESET_COLS):
             preset_grid.grid_columnconfigure(col, weight=1, uniform=FOLLOWUP_PRESET_UNIFORM)
 
-        presets_row1 = [
-            (tr("followup.preset_1h", "+ 1 Std."), lambda: self.set_preset_hours(FOLLOWUP_PRESET_HOURS_1)),
-            (tr("followup.preset_2h", "+ 2 Std."), lambda: self.set_preset_hours(FOLLOWUP_PRESET_HOURS_2)),
-            (tr("followup.preset_today_1630", "Heute 16:30"), self.set_preset_today_1630),
-            (tr("followup.preset_tomorrow_8am", "Morgen 08:00"), self.set_preset_tomorrow_8am),
+        # The rows escalate: minutes, then hours, then days - so the button you
+        # want sits roughly where you expect it by how far out the follow-up is.
+        preset_rows: list[list[tuple[str, str, Callable[[], None]]]] = [
+            [
+                ("followup.preset_now", "Jetzt", self.set_preset_now),
+                ("followup.preset_15min", "+ 15 Min.", lambda: self.set_preset_minutes(FOLLOWUP_PRESET_MINUTES_15)),
+                ("followup.preset_30min", "+ 30 Min.", lambda: self.set_preset_minutes(FOLLOWUP_PRESET_MINUTES_30)),
+                ("followup.preset_1h", "+ 1 Std.", lambda: self.set_preset_hours(FOLLOWUP_PRESET_HOURS_1)),
+            ],
+            [
+                ("followup.preset_2h", "+ 2 Std.", lambda: self.set_preset_hours(FOLLOWUP_PRESET_HOURS_2)),
+                ("followup.preset_today_1630", "Heute 16:30", self.set_preset_today_1630),
+                ("followup.preset_tomorrow_8am", "Morgen 08:00", self.set_preset_tomorrow_8am),
+                ("followup.preset_1d", "+ 1 Tag", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_1)),
+            ],
+            [
+                ("followup.preset_2d", "+ 2 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_2)),
+                ("followup.preset_3d", "+ 3 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_3)),
+                ("followup.preset_1w", "+ 1 Woche", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_7)),
+            ],
         ]
-        for col_idx, (text, cmd) in enumerate(presets_row1):
-            btn = ctk.CTkButton(
-                preset_grid,
-                text=text,
-                height=BTN_HEIGHT_PRESET,
-                corner_radius=CORNER_RADIUS_PRESET,
-                font=ctk.CTkFont(size=FONT_SIZE_SM),
-                fg_color=COLOR_PRESET_BTN,
-                hover_color=COLOR_PRESET_BTN_HOVER,
-                command=cmd,
-            )
-            btn.grid(row=0, column=col_idx, padx=PAD_XS, pady=PAD_XS, sticky="ew")
-
-        presets_row2 = [
-            (tr("followup.preset_1d", "+ 1 Tag"), lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_1)),
-            (tr("followup.preset_2d", "+ 2 Tage"), lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_2)),
-            (tr("followup.preset_3d", "+ 3 Tage"), lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_3)),
-            (tr("followup.preset_1w", "+ 1 Woche"), lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_7)),
-        ]
-        for col_idx, (text, cmd) in enumerate(presets_row2):
-            btn = ctk.CTkButton(
-                preset_grid,
-                text=text,
-                height=BTN_HEIGHT_PRESET,
-                corner_radius=CORNER_RADIUS_PRESET,
-                font=ctk.CTkFont(size=FONT_SIZE_SM),
-                fg_color=COLOR_PRESET_BTN,
-                hover_color=COLOR_PRESET_BTN_HOVER,
-                command=cmd,
-            )
-            btn.grid(row=1, column=col_idx, padx=PAD_XS, pady=PAD_XS, sticky="ew")
+        for row_idx, row in enumerate(preset_rows):
+            for col_idx, (key, default, cmd) in enumerate(row):
+                btn = self.register_i18n(ctk.CTkButton(
+                    preset_grid,
+                    text=tr(key, default),
+                    height=BTN_HEIGHT_PRESET,
+                    corner_radius=CORNER_RADIUS_PRESET,
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
+                    fg_color=COLOR_PRESET_BTN,
+                    hover_color=COLOR_PRESET_BTN_HOVER,
+                    command=cmd,
+                ), key, default)
+                btn.grid(row=row_idx, column=col_idx, padx=PAD_XS, pady=PAD_XS, sticky="ew")
 
         # Custom Date Entry using DatePickerWidget
         self.register_i18n(ctk.CTkLabel(
@@ -225,14 +224,26 @@ class FollowupDialog(BaseDialog):
             width=BTN_WIDTH_CANCEL_FOLLOWUP,
         ), "common.cancel", "Abbrechen").pack(side="left", padx=(PAD_NONE, PAD_SM))
 
-    def set_preset_hours(self, hours: int):
+        # Enter saves with whatever is currently in the fields - the note is a
+        # single-line entry, so typing it and hitting Enter is the fastest path
+        # through this dialog.
+        self.set_default_action(self.on_save)
+
+    def _bump_field(self, delta: timedelta):
         # If the field below already shows a date/time, add the increment on top of it
         # (so repeated clicks stack up); only fall back to "now" when the field is empty
         # or its content can't be parsed.
         base_dt = parse_followup_datetime(self.date_picker.get()) or get_local_now()
-        target_dt = base_dt + timedelta(hours=hours)
-        german_str = format_german_datetime(target_dt)
-        self.date_picker.set_date(german_str)
+        self.date_picker.set_date(format_german_datetime(base_dt + delta))
+
+    def set_preset_now(self):
+        self.date_picker.set_date(format_german_datetime(get_local_now()))
+
+    def set_preset_minutes(self, minutes: int):
+        self._bump_field(timedelta(minutes=minutes))
+
+    def set_preset_hours(self, hours: int):
+        self._bump_field(timedelta(hours=hours))
 
     def set_preset_today_1630(self):
         now = get_local_now()

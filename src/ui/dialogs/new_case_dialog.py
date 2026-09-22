@@ -56,11 +56,14 @@ from constants import (
     PAD_SM,
     PAD_TINY,
     PAD_XS,
+    TAG_PANEL_INNER_PAD,
     TAG_PILL_COLS,
     TAG_PILL_HEIGHT,
+    TAG_PILL_MAX_VISIBLE_ROWS,
     TAG_PILL_PAD_X,
     TAG_PILL_PAD_Y,
     TAG_PILL_RADIUS,
+    TAG_PILL_ROW_HEIGHT,
     TEXTBOX_HEIGHT_INITIAL_NOTE,
     TIMESTAMP_FORMAT_CASE_ID,
 )
@@ -461,46 +464,48 @@ class NewCaseDialog(BaseDialog):
         enable_textbox_cursor_autoscroll(self.note_textbox)
 
     def render_tags_checkboxes(self):
-        for w in self.tags_frame.winfo_children():
-            w.destroy()
-
-        grid_frame = ctk.CTkFrame(self.tags_frame, fg_color="transparent")
-        grid_frame.pack(fill="x", padx=PAD_XS, pady=PAD_TINY)
-
         num_cols = TAG_PILL_COLS
-        for col in range(num_cols):
-            grid_frame.grid_columnconfigure(col, weight=1, uniform="new_case_tag_pills")
+        # +1 for the "+ Tag" pill, which always occupies the slot after the last tag.
+        total_rows = -(-(len(self.available_tags) + 1) // num_cols)
+        visible_rows = min(total_rows, TAG_PILL_MAX_VISIBLE_ROWS)
+        panel_height = visible_rows * TAG_PILL_ROW_HEIGHT + TAG_PANEL_INNER_PAD
+
+        # The pill grid lives in a scrollable panel of its own, capped at
+        # TAG_PILL_MAX_VISIBLE_ROWS rows: with a few dozen tags configured the
+        # grid would otherwise grow until it pushed the rest of the form out of
+        # view. The panel is created once and only refilled afterwards, so
+        # toggling a tag does not scroll the list back to the top.
+        grid_frame = getattr(self, "tags_scroll", None)
+        if grid_frame is None or not grid_frame.winfo_exists():
+            from utils.ui_utils import AutoScrollableFrame
+            grid_frame = AutoScrollableFrame(self.tags_frame, fg_color="transparent", height=panel_height)
+            grid_frame.pack(fill="x", padx=PAD_XS, pady=PAD_TINY)
+            self.tags_scroll = grid_frame
+            for col in range(num_cols):
+                grid_frame.grid_columnconfigure(col, weight=1, uniform="new_case_tag_pills")
+        else:
+            for w in grid_frame.winfo_children():
+                w.destroy()
+        grid_frame.configure(height=panel_height)
+
+        self.tag_buttons: dict[str, ctk.CTkButton] = {}
 
         for idx, tag in enumerate(self.available_tags):
             if tag not in self.selected_tags_vars:
                 self.selected_tags_vars[tag] = ctk.BooleanVar(value=False)
 
-            is_selected = self.selected_tags_vars[tag].get()
-            btn_text = f"✓ {tag}" if is_selected else tag
-            btn_fg = COLOR_TAG_PILL_SELECTED if is_selected else COLOR_TAG_PILL_DEFAULT
-            btn_hover = COLOR_TAG_PILL_SELECTED_HOVER if is_selected else COLOR_TAG_PILL_DEFAULT_HOVER
-            btn_text_color = "white" if is_selected else COLOR_TAG_PILL_DEFAULT_TEXT
-
-            r = idx // num_cols
-            c = idx % num_cols
-
             btn = ctk.CTkButton(
                 grid_frame,
-                text=btn_text,
                 height=TAG_PILL_HEIGHT,
                 corner_radius=TAG_PILL_RADIUS,
-                font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD if is_selected else "normal"),
-                fg_color=btn_fg,
-                hover_color=btn_hover,
-                text_color=btn_text_color,
                 command=lambda t=tag: self.toggle_tag(t),
             )
-            btn.grid(row=r, column=c, padx=TAG_PILL_PAD_X, pady=TAG_PILL_PAD_Y, sticky="ew")
+            btn.grid(row=idx // num_cols, column=idx % num_cols, padx=TAG_PILL_PAD_X, pady=TAG_PILL_PAD_Y, sticky="ew")
+            self.tag_buttons[tag] = btn
+            self._style_tag_button(tag)
 
         # Place the + Tag button in the next slot
         next_idx = len(self.available_tags)
-        r = next_idx // num_cols
-        c = next_idx % num_cols
 
         add_tag_btn = self.register_i18n(
             ctk.CTkButton(
@@ -516,13 +521,29 @@ class NewCaseDialog(BaseDialog):
             "new_case.add_tag",
             "+ Tag",
         )
-        add_tag_btn.grid(row=r, column=c, padx=TAG_PILL_PAD_X, pady=TAG_PILL_PAD_Y, sticky="ew")
+        add_tag_btn.grid(row=next_idx // num_cols, column=next_idx % num_cols, padx=TAG_PILL_PAD_X, pady=TAG_PILL_PAD_Y, sticky="ew")
+
+    def _style_tag_button(self, tag_name: str):
+        """Applies the selected / unselected look to a single tag pill."""
+        btn = getattr(self, "tag_buttons", {}).get(tag_name)
+        if btn is None:
+            return
+        is_selected = self.selected_tags_vars[tag_name].get()
+        btn.configure(
+            text=f"✓ {tag_name}" if is_selected else tag_name,
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD if is_selected else "normal"),
+            fg_color=COLOR_TAG_PILL_SELECTED if is_selected else COLOR_TAG_PILL_DEFAULT,
+            hover_color=COLOR_TAG_PILL_SELECTED_HOVER if is_selected else COLOR_TAG_PILL_DEFAULT_HOVER,
+            text_color="white" if is_selected else COLOR_TAG_PILL_DEFAULT_TEXT,
+        )
 
     def toggle_tag(self, tag_name: str):
         if tag_name in self.selected_tags_vars:
             curr = self.selected_tags_vars[tag_name].get()
             self.selected_tags_vars[tag_name].set(not curr)
-            self.render_tags_checkboxes()
+            # Restyling the one pill instead of rebuilding the grid keeps the
+            # scroll position of the tag panel where the user left it.
+            self._style_tag_button(tag_name)
 
     def open_quick_add_tag(self):
         dialog = self.register_i18n(

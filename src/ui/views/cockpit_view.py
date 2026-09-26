@@ -149,17 +149,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"]),
         )
 
-    def apply_column_widths(self, widths: dict[str, int]):
-        w_left = widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"])
-        w_right = widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"])
-        if hasattr(self, "paned"):
-            try:
-                total_w = self.paned.winfo_width()
-                if total_w > PANED_MIN_TOTAL_WIDTH:
-                    self._place_sashes(total_w, w_left, w_right)
-            except Exception:
-                pass
-
     def _place_sashes(self, total_w: int, w_left: int, w_right: int):
         extra = self._sash_extra()
         self.paned.sash_place(0, w_left, 0)

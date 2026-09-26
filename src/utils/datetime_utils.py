@@ -119,16 +119,16 @@ def get_relative_date_text(val: str | datetime | None, ref_date: date | datetime
     target_date = target_dt.date() if isinstance(target_dt, datetime) else target_dt
     diff_days = (target_date - today).days
 
-    if diff_days == 0:
-        return tr("datetime.today", "heute")
-    if diff_days == 1:
-        return tr("datetime.tomorrow", "morgen")
-    if diff_days == 2:
-        return tr("datetime.day_after_tomorrow", "übermorgen")
-    if diff_days == -1:
-        return tr("datetime.yesterday", "gestern")
-    if diff_days == -2:
-        return tr("datetime.day_before_yesterday", "vorgestern")
+    fixed_rel = {
+        0: ("datetime.today", "heute"),
+        1: ("datetime.tomorrow", "morgen"),
+        2: ("datetime.day_after_tomorrow", "übermorgen"),
+        -1: ("datetime.yesterday", "gestern"),
+        -2: ("datetime.day_before_yesterday", "vorgestern"),
+    }
+    if diff_days in fixed_rel:
+        key, default = fixed_rel[diff_days]
+        return tr(key, default)
 
     target_year, target_week, _ = target_date.isocalendar()
     today_year, today_week, _ = today.isocalendar()

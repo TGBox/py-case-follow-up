@@ -5,9 +5,6 @@ from typing import Any
 from models.customer import Customer, Contact
 from constants import COBRA_FIELD_ALIAS_MAP
 
-FIELD_ALIAS_MAP = COBRA_FIELD_ALIAS_MAP
-
-
 class CobraCrmImportService:
     """Service for parsing and importing Cobra CRM customer/practice export files."""
 
@@ -33,15 +30,7 @@ class CobraCrmImportService:
             return [], []
 
         first_line = content.splitlines()[0]
-        delimiter = ";"
-        if ";" in first_line:
-            delimiter = ";"
-        elif "\t" in first_line:
-            delimiter = "\t"
-        elif "," in first_line:
-            delimiter = ","
-        elif "|" in first_line:
-            delimiter = "|"
+        delimiter = next((d for d in (";", "\t", ",", "|") if d in first_line), ";")
 
         lines = content.splitlines()
         reader = csv.reader(lines, delimiter=delimiter)
@@ -66,7 +55,7 @@ class CobraCrmImportService:
         mapping: dict[str, str] = {}
         headers_lower = {h.lower().strip(): h for h in headers}
 
-        for target_field, aliases in FIELD_ALIAS_MAP.items():
+        for target_field, aliases in COBRA_FIELD_ALIAS_MAP.items():
             found_header = ""
             for alias in aliases:
                 if alias in headers_lower:

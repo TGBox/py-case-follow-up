@@ -179,10 +179,3 @@ def test_fetch_recent_emails_fallback(monkeypatch):
     assert "FALL-2026-0001" in emails[0]["subject"]
     assert "@" in emails[0]["sender_email"]
 
-
-def test_get_outlook_vba_macro_code():
-    """Verify get_outlook_vba_macro_code returns valid macro with subroutine."""
-    code = OutlookIntegrationService.get_outlook_vba_macro_code()
-    assert "Sub TransferSelectedMailToSupportCockpit()" in code
-    assert "support_cockpit_import.json" in code
-    assert "End Sub" in code

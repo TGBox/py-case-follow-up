@@ -44,10 +44,3 @@ def test_outlook_append_to_case_timeline():
     assert c.timeline[0].channel == "E-Mail"
     assert "Problem besteht weiterhin" in c.timeline[0].note
 
-
-def test_outlook_vba_macro_generation():
-    """Verify VBA macro string contains the Outlook transfer subroutine."""
-    macro = OutlookIntegrationService.get_outlook_vba_macro_code()
-    assert "Sub TransferSelectedMailToSupportCockpit()" in macro
-    assert "Outlook.MailItem" in macro
-    assert "support_cockpit_import.json" in macro

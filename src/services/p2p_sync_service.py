@@ -60,38 +60,28 @@ class P2PSyncService:
         for r_case in remote_cases:
             l_case = local_cases.get(r_case.case_id)
             if not l_case:
-                diff_items.append(CaseDiffItem(
-                    case_id=r_case.case_id,
-                    remote_case=r_case,
-                    local_case=None,
-                    status="NEW",
-                    remote_updated_at=r_case.updated_at,
-                    local_updated_at="",
-                ))
+                status = "NEW"
+                l_updated = ""
+            elif r_case.updated_at == l_case.updated_at:
+                status = "IDENTICAL"
+                l_updated = l_case.updated_at
             else:
-                r_dt = parse_iso(r_case.updated_at) if r_case.updated_at else None
-                l_dt = parse_iso(l_case.updated_at) if l_case.updated_at else None
+                try:
+                    r_dt = parse_iso(r_case.updated_at) if r_case.updated_at else None
+                    l_dt = parse_iso(l_case.updated_at) if l_case.updated_at else None
+                    status = "REMOTE_NEWER" if (r_dt and l_dt and r_dt > l_dt) or (r_case.updated_at > l_case.updated_at) else "LOCAL_NEWER"
+                except Exception:
+                    status = "REMOTE_NEWER" if r_case.updated_at > l_case.updated_at else "LOCAL_NEWER"
+                l_updated = l_case.updated_at
 
-                if r_dt and l_dt:
-                    if r_dt > l_dt:
-                        status = "REMOTE_NEWER"
-                    elif r_dt < l_dt:
-                        status = "LOCAL_NEWER"
-                    else:
-                        status = "IDENTICAL"
-                elif r_case.updated_at != l_case.updated_at:
-                    status = "REMOTE_NEWER"
-                else:
-                    status = "IDENTICAL"
-
-                diff_items.append(CaseDiffItem(
-                    case_id=r_case.case_id,
-                    remote_case=r_case,
-                    local_case=l_case,
-                    status=status,
-                    remote_updated_at=r_case.updated_at,
-                    local_updated_at=l_case.updated_at,
-                ))
+            diff_items.append(CaseDiffItem(
+                case_id=r_case.case_id,
+                remote_case=r_case,
+                local_case=l_case,
+                status=status,
+                remote_updated_at=r_case.updated_at,
+                local_updated_at=l_updated,
+            ))
 
         return diff_items
 

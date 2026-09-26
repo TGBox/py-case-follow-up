@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from typing import Any
 from enums import TargetType
 
@@ -24,24 +24,9 @@ class ExportTemplate:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        return {
-            "template_id": self.template_id,
-            "display_name": self.display_name,
-            "target_type": self.target_type,
-            "applicable_cases": self.applicable_cases,
-            "description": self.description,
-            "required_schema_fields": self.required_schema_fields,
-            "template_string": self.template_string,
-        }
+        return asdict(self)
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ExportTemplate:
-        return cls(
-            template_id=data.get("template_id", ""),
-            display_name=data.get("display_name", ""),
-            target_type=data.get("target_type", TargetType.CLIPBOARD_TEXT),
-            applicable_cases=list(data.get("applicable_cases", [])),
-            description=data.get("description", ""),
-            required_schema_fields=list(data.get("required_schema_fields", [])),
-            template_string=data.get("template_string", ""),
-        )
+        fields = cls.__dataclass_fields__
+        return cls(**{k: v for k, v in data.items() if k in fields})

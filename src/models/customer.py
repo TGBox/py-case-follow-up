@@ -129,40 +129,9 @@ class Customer:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        res: dict[str, Any] = {
-            "customer_id": self.customer_id,
-            "vnum1": self.vnum1,
-            "practice_name": self.practice_name,
-            "practice_name_old": self.practice_name_old,
-            "salutation": self.salutation,
-            "first_name": self.first_name,
-            "last_name": self.last_name,
-            "street": self.street,
-            "zip_code": self.zip_code,
-            "city": self.city,
-            "phone_main": self.phone_main,
-            "phone_direct": self.phone_direct,
-            "phone_private": self.phone_private,
-            "phone2": self.phone2,
-            "phone3": self.phone3,
-            "mobile": self.mobile,
-            "mobile_private": self.mobile_private,
-            "email_address": self.email_address,
-            "email2": self.email2,
-            "email3": self.email3,
-            "website": self.website,
-            "system_version": self.system_version,
-            "dsc": self.dsc,
-            "dsc_neu": self.dsc_neu,
-            "is_vip": self.is_vip,
-            "vm_number": self.vm_number,
-            "instance_number": self.instance_number,
-            "general_notes": self.general_notes,
-            "additional_contacts": list(self.additional_contacts),
-            "contacts": [c.to_dict() for c in self.contacts],
-        }
-        if self.custom_ai_rules:
-            res["custom_ai_rules"] = list(self.custom_ai_rules)
+        res = asdict(self)
+        if not self.custom_ai_rules:
+            res.pop("custom_ai_rules", None)
         return res
 
     @classmethod

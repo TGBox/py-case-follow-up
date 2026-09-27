@@ -1,0 +1,6 @@
+customtkinter==6.0.0
+Jinja2==3.1.6
+pillow==12.3.0
+pyinstaller>=6.22.2
+pystray>=0.19.5
+winotify>=1.1.0

@@ -6,6 +6,8 @@ from pathlib import Path
 from collections.abc import Callable
 from services.zip_backup_service import ZipBackupService
 from constants import (
+    ATTACHMENTS_DIRNAME,
+    DATA_DIRNAME,
     BTN_WIDTH_CLOSE,
     BTN_WIDTH_WIDE,
     BTN_WIDTH_ZIP_MODE,
@@ -201,9 +203,9 @@ class ZipImportPathDialog(BaseDialog):
         if self.mode == "root":
             self.register_i18n(ctk.CTkLabel(
                 self.paths_frame,
-                text=tr("zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):"),
+                text=tr("zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und data/attachments/ Unterordner):"),
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
-            ), "zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und attachments/ Unterordner):").pack(anchor="w", padx=PAD_LG, pady=(PAD_10, PAD_XS))
+            ), "zip_import.main_target_dir", "Haupt-Zielverzeichnis (Erzeugt automatisch data/ und data/attachments/ Unterordner):").pack(anchor="w", padx=PAD_LG, pady=(PAD_10, PAD_XS))
 
             row = ctk.CTkFrame(self.paths_frame, fg_color="transparent")
             row.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
@@ -245,9 +247,9 @@ class ZipImportPathDialog(BaseDialog):
             # Custom Attachments Dir
             self.register_i18n(ctk.CTkLabel(
                 self.paths_frame,
-                text=tr("zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):"),
+                text=tr("zip_import.att_loc", "2. Speicherort für Fall-Anhänge (data/attachments/):"),
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
-            ), "zip_import.att_loc", "2. Speicherort für Fall-Anhänge (attachments/):").pack(anchor="w", padx=PAD_LG, pady=(PAD_SM, PAD_XS))
+            ), "zip_import.att_loc", "2. Speicherort für Fall-Anhänge (data/attachments/):").pack(anchor="w", padx=PAD_LG, pady=(PAD_SM, PAD_XS))
 
             row2 = ctk.CTkFrame(self.paths_frame, fg_color="transparent")
             row2.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
@@ -279,7 +281,7 @@ class ZipImportPathDialog(BaseDialog):
 
     def browse_att_dir(self):
         from services.i18n_service import tr
-        chosen = filedialog.askdirectory(title=tr("zip_import.browse_att_title", "Zielverzeichnis für Fall-Anhänge (attachments/) wählen"), parent=self)
+        chosen = filedialog.askdirectory(title=tr("zip_import.browse_att_title", "Zielverzeichnis für Fall-Anhänge (data/attachments/) wählen"), parent=self)
         if chosen:
             self.att_entry.delete(0, "end")
             self.att_entry.insert(0, chosen)
@@ -290,8 +292,8 @@ class ZipImportPathDialog(BaseDialog):
             if not r_str:
                 return
             root_p = Path(r_str)
-            target_data = root_p / "data"
-            target_att = root_p / "attachments"
+            target_data = root_p / DATA_DIRNAME
+            target_att = root_p / DATA_DIRNAME / ATTACHMENTS_DIRNAME
         else:
             d_str = self.data_entry.get().strip()
             a_str = self.att_entry.get().strip()

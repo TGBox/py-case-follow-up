@@ -322,7 +322,7 @@ class PathsSettingsTabMixin:
         self.register_i18n(
             ctk.CTkLabel(
                 exp_card,
-                text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/."),
+                text=tr("profile.backup_exp_desc", "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in data/attachments/."),
                 font=ctk.CTkFont(size=FONT_SIZE_SM),
                 text_color=COLOR_TIP_TEXT,
                 anchor="w",
@@ -330,7 +330,7 @@ class PathsSettingsTabMixin:
                 justify="left",
             ),
             "profile.backup_exp_desc",
-            "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in attachments/.",
+            "Erzeugt ein Backup-Archiv inklusive allen Dateien in data/ und allen Dokumenten in data/attachments/.",
         ).pack(anchor="w", padx=PAD_LG, pady=(PAD_NONE, PAD_MD))
 
         btn_export = self.register_i18n(

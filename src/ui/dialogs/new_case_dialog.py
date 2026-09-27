@@ -10,7 +10,9 @@ from services.i18n_service import tr
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, Channel
 from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
+from services.attachment_service import sanitize_filename
 from constants import (
+    REL_ATTACHMENTS_DIR,
     BTN_WIDTH_ACTION,
     BTN_WIDTH_CLOSE,
     BTN_WIDTH_MD,
@@ -677,7 +679,7 @@ class NewCaseDialog(BaseDialog):
                 contact_person="",
                 phone="",
             )
-            att_folder = f"attachments/{case_id}{INTERNAL_ATTACHMENT_SUFFIX}"
+            att_folder = f"{REL_ATTACHMENTS_DIR}/{case_id}{INTERNAL_ATTACHMENT_SUFFIX}"
         else:
             selected_str = self.customer_combo.get()
             customer_obj = next((c for c in self.customers if f"{c.practice_name} ({c.customer_id})" == selected_str or c.customer_id in selected_str), None)
@@ -691,7 +693,8 @@ class NewCaseDialog(BaseDialog):
                 contact_person=customer_obj.contacts[0].name if customer_obj.contacts else "",
                 phone=customer_obj.contacts[0].phone if customer_obj.contacts else "",
             )
-            att_folder = f"attachments/{case_id}_{customer_obj.practice_name.replace(' ', '_')}"
+            safe_practice = sanitize_filename(customer_obj.practice_name or "Praxis")
+            att_folder = f"{REL_ATTACHMENTS_DIR}/{case_id}_{safe_practice}"
 
         # Get selected schema
         selected_schema_idx = self.schema_combo.cget("values").index(self.schema_combo.get()) if self.schema_combo.get() in self.schema_combo.cget("values") else 0

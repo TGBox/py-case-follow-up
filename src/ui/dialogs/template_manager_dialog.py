@@ -9,6 +9,7 @@ from enums import TargetType
 from services.export_service import ExportService
 from services.storage_service import StorageService
 from constants import (
+    REL_ATTACHMENTS_DIR,
     BORDER_WIDTH_CARD,
     BTN_WIDTH_ACTION,
     BTN_WIDTH_ADOPT,
@@ -206,7 +207,7 @@ class EditTemplateDialog(BaseDialog):
             case_id="T-2026-DEMO",
             created_by="Support-Agent",
             form_data={"billing_quarter": "2026-Q2", "error_code": "ERR_DEMO_101", "database_dump_provided": True},
-            attachment_directory="attachments/T-2026-DEMO_Praxis",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-DEMO_Praxis",
         )
         sample_case.customer.practice_name = "Musterpraxis Dr. Test"
         sample_case.customer.customer_id = "K-99999"

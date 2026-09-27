@@ -34,7 +34,25 @@ class AttachmentService:
     def get_case_attachment_dir(self, case: Case) -> Path:
         """Returns Path to the case attachment directory, creating it if needed."""
         if case.attachment_directory:
-            case_dir = self.config.workspace_dir / case.attachment_directory
+            p = Path(case.attachment_directory)
+            if p.is_absolute():
+                case_dir = p
+            else:
+                norm_att = case.attachment_directory.replace("\\", "/")
+                if norm_att.startswith("attachments/"):
+                    old_path = self.config.workspace_dir / case.attachment_directory
+                    new_rel = f"data/{norm_att}"
+                    new_path = self.config.workspace_dir / new_rel
+                    if old_path.exists() and not new_path.exists():
+                        try:
+                            new_path.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.move(str(old_path), str(new_path))
+                        except Exception:
+                            pass
+                    case.attachment_directory = new_rel
+                    case_dir = new_path
+                else:
+                    case_dir = self.config.workspace_dir / case.attachment_directory
         else:
             safe_practice = sanitize_filename(case.customer.practice_name or "Praxis")
             dir_name = f"{case.case_id}_{safe_practice}"

@@ -79,3 +79,12 @@ ignore = [
 # off for tests rather than trading a lint warning for type errors.
 "tests/*" = ["F841", "B010"]
 
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["main"]
+
+[tool.setuptools.packages.find]
+where = ["src"]

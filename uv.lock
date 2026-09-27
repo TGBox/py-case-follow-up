@@ -254,7 +254,7 @@ wheels = [
 [[package]]
 name = "py-case-follow-up"
 version = "1.2.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "customtkinter" },
     { name = "jinja2" },

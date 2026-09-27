@@ -1,6 +1,5 @@
 from pathlib import Path
 import json
-import shutil
 from config import AppConfig
 from models.case import Case, CaseCustomer
 from services.storage_service import StorageService

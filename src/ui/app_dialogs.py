@@ -298,9 +298,18 @@ class DialogLaunchersMixin:
         # --- Stage 2: optionally delete attachment folder ---
         delete_attachments = False
         attachment_dir = getattr(case, "attachment_directory", "") or ""
+        att_path: Path | None = None
         if attachment_dir:
-            att_path = Path(attachment_dir)
-            if att_path.exists() and att_path.is_dir():
+            p = Path(attachment_dir)
+            if not p.is_absolute():
+                ws = getattr(getattr(self, "config", None), "workspace_dir", None)
+                if not ws and hasattr(self, "storage_service"):
+                    ws = getattr(self.storage_service.config, "workspace_dir", None)
+                att_path = (ws / p) if ws else p
+            else:
+                att_path = p
+
+            if att_path and att_path.exists() and att_path.is_dir():
                 delete_attachments = ask_confirmation(
                     self,
                     message=tr(
@@ -330,16 +339,14 @@ class DialogLaunchersMixin:
         self.active_case = None
 
         # Optionally delete attachment folder
-        if delete_attachments and attachment_dir:
+        if delete_attachments and att_path and att_path.exists():
             try:
                 import shutil
-                att_path = Path(attachment_dir)
-                if att_path.exists():
-                    shutil.rmtree(att_path)
+                shutil.rmtree(att_path)
             except Exception as err:
                 import logging
                 logging.getLogger("SupportCockpit").warning(
-                    f"Could not delete attachment folder {attachment_dir}: {err}"
+                    f"Could not delete attachment folder {att_path}: {err}"
                 )
 
         # Clear the cockpit detail pane if the deleted case is the one on screen.

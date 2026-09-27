@@ -11,6 +11,7 @@ from datetime import datetime, date
 
 from config import AppConfig
 from constants import (
+    ATTACHMENTS_DIRNAME,
     DAYS_PER_MONTH,
     DAYS_PER_WEEK,
     DEBOUNCE_DELAY_STORAGE_SAVE,
@@ -19,6 +20,7 @@ from constants import (
     LOG_BACKUP_COUNT,
     LOG_MAX_BYTES,
     REGEX_CASES_BACKUP,
+    REL_ATTACHMENTS_DIR,
     TIMEOUT_STORAGE_WRITE_COND,
 )
 from models.case import Case
@@ -206,6 +208,7 @@ class StorageService:
         self._templates_cache: list[ExportTemplate] | None = None
         self._colleagues_cache: list[Colleague] | None = None
         self.saver = DebouncedSaver()
+        self.migrate_legacy_attachments()
 
     def flush_all_saves(self) -> None:
         """Flushes all pending background saves to disk synchronously."""
@@ -222,6 +225,56 @@ class StorageService:
         self._templates_cache = None
         self._colleagues_cache = None
 
+    def migrate_legacy_attachments(self) -> None:
+        """Migrates legacy attachments folder (workspace_dir/attachments) into data/attachments.
+        Also migrates attachment_directory in active cases and archive from 'attachments/...' to 'data/attachments/...'.
+        """
+        workspace_dir = getattr(self.config, "workspace_dir", None)
+        target_att_dir = getattr(self.config, "attachments_dir", None)
+        if not isinstance(workspace_dir, Path) or not isinstance(target_att_dir, Path):
+            return
+
+        legacy_dir = workspace_dir / ATTACHMENTS_DIRNAME
+
+        if legacy_dir.exists() and legacy_dir.is_dir() and legacy_dir.resolve() != target_att_dir.resolve():
+            target_att_dir.mkdir(parents=True, exist_ok=True)
+            for item in list(legacy_dir.iterdir()):
+                dest = target_att_dir / item.name
+                try:
+                    if item.is_dir():
+                        if dest.exists() and dest.is_dir():
+                            for sub_item in list(item.iterdir()):
+                                sub_dest = dest / sub_item.name
+                                if not sub_dest.exists():
+                                    shutil.move(str(sub_item), str(sub_dest))
+                            try:
+                                item.rmdir()
+                            except OSError:
+                                shutil.rmtree(item, ignore_errors=True)
+                        else:
+                            shutil.move(str(item), str(dest))
+                    elif item.is_file():
+                        if not dest.exists():
+                            shutil.move(str(item), str(dest))
+                except Exception as e:
+                    logger.warning(f"Error migrating legacy attachment item {item} to {dest}: {e}")
+
+            try:
+                if not any(legacy_dir.iterdir()):
+                    legacy_dir.rmdir()
+                    logger.info(f"Removed legacy attachments directory: {legacy_dir}")
+            except Exception as e:
+                logger.debug(f"Could not remove legacy attachments directory: {e}")
+
+        # Check and migrate cases.json & archive.json files on disk
+        cases_path = getattr(self.config, "cases_path", None)
+        if isinstance(cases_path, Path) and cases_path.exists():
+            self.load_cases(use_cache=False)
+
+        archive_path = getattr(self.config, "archive_path", None)
+        if isinstance(archive_path, Path) and archive_path.exists():
+            self.load_archive(use_cache=False)
+
     # --- Cases & Archive ---
     def load_cases(self, use_cache: bool = True) -> list[Case]:
         if use_cache and self._cases_cache is not None:
@@ -233,7 +286,24 @@ class StorageService:
             example_path=self.config.get_example_path("cases.json")
         )
         if isinstance(data, list):
-            self._cases_cache = [Case.from_dict(item) for item in data if isinstance(item, dict)]
+            migrated = False
+            self._cases_cache = []
+            for item in data:
+                if isinstance(item, dict):
+                    att = str(item.get("attachment_directory") or "").replace("\\", "/")
+                    if att.startswith("attachments/"):
+                        item["attachment_directory"] = f"data/{att}"
+                        migrated = True
+                    elif att == "attachments":
+                        item["attachment_directory"] = REL_ATTACHMENTS_DIR
+                        migrated = True
+                    self._cases_cache.append(Case.from_dict(item))
+            if migrated:
+                try:
+                    atomic_save_json(self.config.cases_path, [c.to_dict() for c in self._cases_cache])
+                    logger.info("Persisted migrated attachment directories in cases.json")
+                except Exception as e:
+                    logger.warning(f"Could not persist migrated attachment directories in cases: {e}")
         else:
             self._cases_cache = []
         return self._cases_cache
@@ -280,7 +350,24 @@ class StorageService:
             example_path=self.config.get_example_path("archive.json")
         )
         if isinstance(data, list):
-            self._archive_cache = [Case.from_dict(item) for item in data if isinstance(item, dict)]
+            migrated = False
+            self._archive_cache = []
+            for item in data:
+                if isinstance(item, dict):
+                    att = str(item.get("attachment_directory") or "").replace("\\", "/")
+                    if att.startswith("attachments/"):
+                        item["attachment_directory"] = f"data/{att}"
+                        migrated = True
+                    elif att == "attachments":
+                        item["attachment_directory"] = REL_ATTACHMENTS_DIR
+                        migrated = True
+                    self._archive_cache.append(Case.from_dict(item))
+            if migrated:
+                try:
+                    atomic_save_json(self.config.archive_path, [c.to_dict() for c in self._archive_cache])
+                    logger.info("Persisted migrated attachment directories in archive.json")
+                except Exception as e:
+                    logger.warning(f"Could not persist migrated attachment directories in archive: {e}")
         else:
             self._archive_cache = []
         return self._archive_cache

@@ -43,7 +43,7 @@
     "missing_required_fields": [
       "database_dump_provided"
     ],
-    "attachment_directory": "attachments/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/",
+    "attachment_directory": "data/attachments/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/",
     "timeline": [
       {
         "timestamp": "2026-08-23T09:15:00",
@@ -103,7 +103,7 @@
       "stack_trace": "Access Violation at 0x0045A1"
     },
     "missing_required_fields": [],
-    "attachment_directory": "attachments/T-2026-0002_Praxisklinik_Stadtgarten/",
+    "attachment_directory": "data/attachments/T-2026-0002_Praxisklinik_Stadtgarten/",
     "timeline": [
       {
         "timestamp": "2026-08-20T11:00:00",
@@ -154,7 +154,7 @@
       "correction_reason": "Falsche KV-Nummer"
     },
     "missing_required_fields": [],
-    "attachment_directory": "attachments/T-2026-0003_Zahnarztpraxis_Schmidt/",
+    "attachment_directory": "data/attachments/T-2026-0003_Zahnarztpraxis_Schmidt/",
     "timeline": [
       {
         "timestamp": "2026-08-23T12:00:00",
@@ -207,7 +207,7 @@
     "missing_required_fields": [
       "database_dump_provided"
     ],
-    "attachment_directory": "attachments/T-2026-0004_MVZ_Kardiologie/",
+    "attachment_directory": "data/attachments/T-2026-0004_MVZ_Kardiologie/",
     "timeline": [
       {
         "timestamp": "2026-08-22T15:00:00",
@@ -258,7 +258,7 @@
       "reproduction_steps": "Laborblatt öffnen auf 4K Monitor"
     },
     "missing_required_fields": [],
-    "attachment_directory": "attachments/T-2026-0005_Hausarztpraxis_Fischer/",
+    "attachment_directory": "data/attachments/T-2026-0005_Hausarztpraxis_Fischer/",
     "timeline": [
       {
         "timestamp": "2026-08-23T13:00:00",
@@ -309,7 +309,7 @@
       "correction_reason": "Korrektur abgeschlossen"
     },
     "missing_required_fields": [],
-    "attachment_directory": "attachments/T-2026-0006_Gemeinschaftspraxis_Dr_Mueller/",
+    "attachment_directory": "data/attachments/T-2026-0006_Gemeinschaftspraxis_Dr_Mueller/",
     "timeline": [
       {
         "timestamp": "2026-08-16T10:00:00",
@@ -362,7 +362,7 @@
     "missing_required_fields": [
       "database_dump_provided"
     ],
-    "attachment_directory": "attachments/T-2026-0008_Zahnarztpraxis_Schmidt/",
+    "attachment_directory": "data/attachments/T-2026-0008_Zahnarztpraxis_Schmidt/",
     "timeline": [
       {
         "timestamp": "2026-08-23T14:00:00",

@@ -9,6 +9,7 @@ von is_demo_data=True bleiben bewusst in seed_service.py, da das Verhalten
 """
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus, TimelineEntry
 from enums import BoardColumn, Actor, Channel
+from constants import REL_ATTACHMENTS_DIR
 
 
 def build_seed_cases() -> list[Case]:
@@ -52,7 +53,7 @@ def build_seed_cases() -> list[Case]:
                 "has_forwarded_email_or_screenshot": True,
             },
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/",
             timeline=[
                 TimelineEntry(
                     timestamp="2026-08-23T09:15:00",
@@ -102,7 +103,7 @@ def build_seed_cases() -> list[Case]:
                 "stack_trace": "Access Violation at 0x0045A1",
             },
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0002_Praxisklinik_Stadtgarten/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0002_Praxisklinik_Stadtgarten/",
             timeline=[
                 TimelineEntry(timestamp="2026-08-20T11:00:00", author="Daniel Rösch", note="Rezeptdruck stürzt ab"),
             ],
@@ -135,7 +136,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"kv_region": "KV Berlin", "correction_reason": "Falsche KV-Nummer"},
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0003_Zahnarztpraxis_Schmidt/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0003_Zahnarztpraxis_Schmidt/",
             timeline=[TimelineEntry(timestamp="2026-08-23T12:00:00", author="Max Müller", note="Anfrage zur Korrektur")],
         ),
         Case(
@@ -166,7 +167,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"billing_quarter": "2026-Q1", "error_code": "ERR_CHECK_04"},
             missing_required_fields=["database_dump_provided"],
-            attachment_directory="attachments/T-2026-0004_MVZ_Kardiologie/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0004_MVZ_Kardiologie/",
             timeline=[TimelineEntry(timestamp="2026-08-22T15:00:00", author="Daniel Rösch", note="Warten auf DB-Dump der Praxis")],
         ),
         Case(
@@ -197,7 +198,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"module_name": "Labor", "reproduction_steps": "Laborblatt öffnen auf 4K Monitor"},
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0005_Hausarztpraxis_Fischer/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0005_Hausarztpraxis_Fischer/",
             timeline=[TimelineEntry(timestamp="2026-08-23T13:00:00", author="Daniel Rösch", note="Feedback erfasst")],
         ),
         Case(
@@ -226,7 +227,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"kv_region": "KV BW", "correction_reason": "Korrektur abgeschlossen"},
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0006_Gemeinschaftspraxis_Dr_Mueller/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0006_Gemeinschaftspraxis_Dr_Mueller/",
             timeline=[TimelineEntry(timestamp="2026-08-16T10:00:00", author="Daniel Rösch", note="Erfolgreich abgeschlossen")],
         ),
         Case(
@@ -255,7 +256,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"module_name": "System", "reproduction_steps": "Behoben"},
             missing_required_fields=[],
-            attachment_directory="attachments/T-2026-0007_Praxisklinik_Stadtgarten/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0007_Praxisklinik_Stadtgarten/",
             timeline=[TimelineEntry(timestamp="2026-07-05T12:00:00", author="Daniel Rösch", note="Geklärt")],
         ),
         Case(
@@ -285,7 +286,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"action_type": "Zuzahlungsnachforderung", "invoice_number": "RE-999"},
             missing_required_fields=["prescription_info"],
-            attachment_directory="attachments/T-2026-0008_Zahnarztpraxis_Schmidt/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0008_Zahnarztpraxis_Schmidt/",
             timeline=[TimelineEntry(timestamp="2026-08-23T14:00:00", author="Daniel Rösch", note="Neu erfasst")],
         ),
         Case(
@@ -321,7 +322,7 @@ def build_seed_cases() -> list[Case]:
                 "practice_benefit": "Zeitersparnis von ca. 30 Min pro Tag bei Rezeptausgabe.",
                 "has_mockup_or_screenshot": True,
             },
-            attachment_directory="attachments/T-2026-0009_Feature_eRezept/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0009_Feature_eRezept/",
             timeline=[
                 TimelineEntry(timestamp="2026-08-22T08:30:00", author="Max Müller", note="Kundenwunsch am Telefon erfasst"),
                 TimelineEntry(timestamp="2026-08-22T10:00:00", author="Daniel Rösch", note="An Produktmanagement/Dev übergeben", status_change="ZUSTÄNDIGKEIT: Support -> Entwicklung"),
@@ -360,7 +361,7 @@ def build_seed_cases() -> list[Case]:
                 "reproduction_steps": "Leser an USB 3.0 anschließen -> Dienst startet nicht",
                 "database_dump_provided": False,
             },
-            attachment_directory="attachments/T-2026-0010_Kartenleser/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0010_Kartenleser/",
             timeline=[TimelineEntry(timestamp="2026-08-23T15:20:00", author="Daniel Rösch", note="Fernwartungs-Termin vereinbart")],
         ),
         Case(
@@ -388,7 +389,7 @@ def build_seed_cases() -> list[Case]:
                 is_data_complete=True,
             ),
             form_data={"action_type": "Zuzahlungsnachforderung", "invoice_number": "RE-OLD-01"},
-            attachment_directory="attachments/T-2026-0011_Archiv/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0011_Archiv/",
             timeline=[TimelineEntry(timestamp="2026-08-02T12:00:00", author="Daniel Rösch", note="Fall abgeschlossen und archiviert")],
         ),
         Case(
@@ -419,7 +420,7 @@ def build_seed_cases() -> list[Case]:
             ),
             form_data={"module_name": "GKV-Export", "error_message": "ERR_ACCESS_VIOLATION_0x00FF"},
             missing_required_fields=["reproduction_steps", "database_dump_provided"],
-            attachment_directory="attachments/T-2026-0012_Absturz_PVS/",
+            attachment_directory=f"{REL_ATTACHMENTS_DIR}/T-2026-0012_Absturz_PVS/",
             timeline=[TimelineEntry(timestamp="2026-08-23T16:00:00", author="Max Müller", note="Kritischer Fehler bei Abrechnung")],
         ),
     ]

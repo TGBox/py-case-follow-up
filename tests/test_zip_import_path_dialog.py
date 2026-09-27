@@ -64,7 +64,7 @@ def test_zip_import_dialog_initialization_and_root_mode(app_root, dummy_zip, tmp
     assert len(confirmed_calls) == 1
     data_dir, att_dir = confirmed_calls[0]
     assert data_dir == chosen_root / "data"
-    assert att_dir == chosen_root / "attachments"
+    assert att_dir == chosen_root / "data" / "attachments"
 
 
 def test_zip_import_dialog_custom_mode(app_root, dummy_zip, tmp_path: Path):

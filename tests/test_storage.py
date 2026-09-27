@@ -59,7 +59,7 @@ def test_storage_service_cases_roundtrip(tmp_config: AppConfig):
         workflow_status=WorkflowStatus(board_column=BoardColumn.ACTION_REQUIRED, current_actor=Actor.DEVELOPMENT),
         form_data={"field1": "val1"},
         missing_required_fields=["field2"],
-        attachment_directory="attachments/T-2026-0001_Praxis_A",
+        attachment_directory="data/attachments/T-2026-0001_Praxis_A",
         timeline=[TimelineEntry(timestamp="2026-08-23T09:15:00", author="Daniel", note="Initial note")],
     )
 

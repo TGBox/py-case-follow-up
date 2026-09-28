@@ -62,16 +62,8 @@ class P2PSyncService:
             if not l_case:
                 status = "NEW"
                 l_updated = ""
-            elif r_case.updated_at == l_case.updated_at:
-                status = "IDENTICAL"
-                l_updated = l_case.updated_at
             else:
-                try:
-                    r_dt = parse_iso(r_case.updated_at) if r_case.updated_at else None
-                    l_dt = parse_iso(l_case.updated_at) if l_case.updated_at else None
-                    status = "REMOTE_NEWER" if (r_dt and l_dt and r_dt > l_dt) or (r_case.updated_at > l_case.updated_at) else "LOCAL_NEWER"
-                except Exception:
-                    status = "REMOTE_NEWER" if r_case.updated_at > l_case.updated_at else "LOCAL_NEWER"
+                status = self._compare_timestamps(r_case.updated_at, l_case.updated_at)
                 l_updated = l_case.updated_at
 
             diff_items.append(CaseDiffItem(
@@ -84,6 +76,32 @@ class P2PSyncService:
             ))
 
         return diff_items
+
+    @staticmethod
+    def _compare_timestamps(remote: str, local: str) -> str:
+        """Classifies two updated_at values by their actual point in time.
+
+        Parsed datetimes decide whenever both sides are valid, so differing
+        spellings of the same instant (offsets, microseconds) stay IDENTICAL.
+        If either side is missing or unparseable, a differing value is treated
+        as REMOTE_NEWER so the user gets to review the remote case.
+        """
+        def _parse(value: str):
+            if not value:
+                return None
+            try:
+                return parse_iso(value)
+            except ValueError:
+                return None
+
+        r_dt, l_dt = _parse(remote), _parse(local)
+        if r_dt and l_dt:
+            if r_dt > l_dt:
+                return "REMOTE_NEWER"
+            if r_dt < l_dt:
+                return "LOCAL_NEWER"
+            return "IDENTICAL"
+        return "IDENTICAL" if remote == local else "REMOTE_NEWER"
 
     def import_selected_cases(self, selected_remote_cases: list[Case]) -> int:
         """Imports selected remote cases into local cases atomically."""

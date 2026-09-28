@@ -168,6 +168,7 @@ tests/test_outlook_service_extended.py
 tests/test_outlook_transfer_and_bridge.py
 tests/test_p2p_advanced.py
 tests/test_p2p_sync.py
+tests/test_p2p_timestamp_compare.py
 tests/test_performance_and_scaling.py
 tests/test_performance_refactoring.py
 tests/test_profile_and_ai_management.py

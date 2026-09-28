@@ -130,3 +130,49 @@ def test_attachment_service_on_the_fly_folder_migration(tmp_path: Path):
     assert expected_dir.exists()
     assert (expected_dir / "data.log").read_text(encoding="utf-8") == "log content"
     assert case.attachment_directory == "data/attachments/CASE-303_Praxis"
+
+
+def test_migrate_legacy_attachments_conflicts_never_lose_data(tmp_path: Path):
+    """Colliding names and nested folders must survive the migration - nothing is deleted."""
+    workspace = tmp_path / "workspace"
+    legacy_case = workspace / "attachments" / "CASE-404_Praxis"
+    (legacy_case / "sub").mkdir(parents=True)
+    (legacy_case / "rechnung.pdf").write_text("ALT", encoding="utf-8")
+    (legacy_case / "sub" / "log.txt").write_text("NESTED-ALT", encoding="utf-8")
+    (legacy_case / "same.txt").write_text("gleich", encoding="utf-8")
+
+    target_case = workspace / "data" / "attachments" / "CASE-404_Praxis"
+    (target_case / "sub").mkdir(parents=True)
+    (target_case / "rechnung.pdf").write_text("NEU", encoding="utf-8")
+    (target_case / "same.txt").write_text("gleich", encoding="utf-8")
+
+    StorageService(AppConfig(workspace_dir=workspace))
+
+    # Existing target file untouched, legacy version kept under a new name
+    assert (target_case / "rechnung.pdf").read_text(encoding="utf-8") == "NEU"
+    assert (target_case / "rechnung_legacy.pdf").read_text(encoding="utf-8") == "ALT"
+    # Nested file from an already existing subfolder is merged, not dropped
+    assert (target_case / "sub" / "log.txt").read_text(encoding="utf-8") == "NESTED-ALT"
+    # Byte-identical duplicate is collapsed into one file
+    assert (target_case / "same.txt").read_text(encoding="utf-8") == "gleich"
+    assert not (target_case / "same_legacy.txt").exists()
+    # Legacy tree is empty now and therefore removed
+    assert not (workspace / "attachments").exists()
+
+
+def test_migrate_legacy_attachments_repeated_conflicts_get_unique_names(tmp_path: Path):
+    """A second collision must not overwrite an earlier '_legacy' copy."""
+    workspace = tmp_path / "workspace"
+    (workspace / "attachments").mkdir(parents=True)
+    (workspace / "attachments" / "notiz.txt").write_text("ALT-2", encoding="utf-8")
+
+    target = workspace / "data" / "attachments"
+    target.mkdir(parents=True)
+    (target / "notiz.txt").write_text("NEU", encoding="utf-8")
+    (target / "notiz_legacy.txt").write_text("ALT-1", encoding="utf-8")
+
+    StorageService(AppConfig(workspace_dir=workspace))
+
+    assert (target / "notiz.txt").read_text(encoding="utf-8") == "NEU"
+    assert (target / "notiz_legacy.txt").read_text(encoding="utf-8") == "ALT-1"
+    assert (target / "notiz_legacy2.txt").read_text(encoding="utf-8") == "ALT-2"

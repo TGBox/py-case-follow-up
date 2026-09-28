@@ -1,3 +1,4 @@
+import filecmp
 import json
 import logging
 import re
@@ -239,32 +240,14 @@ class StorageService:
         if legacy_dir.exists() and legacy_dir.is_dir() and legacy_dir.resolve() != target_att_dir.resolve():
             target_att_dir.mkdir(parents=True, exist_ok=True)
             for item in list(legacy_dir.iterdir()):
-                dest = target_att_dir / item.name
-                try:
-                    if item.is_dir():
-                        if dest.exists() and dest.is_dir():
-                            for sub_item in list(item.iterdir()):
-                                sub_dest = dest / sub_item.name
-                                if not sub_dest.exists():
-                                    shutil.move(str(sub_item), str(sub_dest))
-                            try:
-                                item.rmdir()
-                            except OSError:
-                                shutil.rmtree(item, ignore_errors=True)
-                        else:
-                            shutil.move(str(item), str(dest))
-                    elif item.is_file():
-                        if not dest.exists():
-                            shutil.move(str(item), str(dest))
-                except Exception as e:
-                    logger.warning(f"Error migrating legacy attachment item {item} to {dest}: {e}")
+                self._merge_move(item, target_att_dir / item.name)
 
+            # Only an empty legacy folder is removed - nothing is ever deleted recursively.
             try:
-                if not any(legacy_dir.iterdir()):
-                    legacy_dir.rmdir()
-                    logger.info(f"Removed legacy attachments directory: {legacy_dir}")
-            except Exception as e:
-                logger.debug(f"Could not remove legacy attachments directory: {e}")
+                legacy_dir.rmdir()
+                logger.info(f"Removed legacy attachments directory: {legacy_dir}")
+            except OSError as e:
+                logger.warning(f"Legacy attachments directory not empty, left in place: {legacy_dir} ({e})")
 
         # Check and migrate cases.json & archive.json files on disk
         cases_path = getattr(self.config, "cases_path", None)
@@ -274,6 +257,43 @@ class StorageService:
         archive_path = getattr(self.config, "archive_path", None)
         if isinstance(archive_path, Path) and archive_path.exists():
             self.load_archive(use_cache=False)
+
+    @staticmethod
+    def _merge_move(src: Path, dest: Path) -> None:
+        """Moves src to dest without ever losing data.
+
+        - dest missing: plain move.
+        - both directories: merge recursively, then remove src only if empty.
+        - identical files: the legacy duplicate is dropped.
+        - any other collision: src is moved next to dest under a '_legacy' name.
+        """
+        try:
+            if not dest.exists():
+                shutil.move(str(src), str(dest))
+                return
+
+            if src.is_dir() and dest.is_dir():
+                for child in list(src.iterdir()):
+                    StorageService._merge_move(child, dest / child.name)
+                try:
+                    src.rmdir()
+                except OSError:
+                    logger.warning(f"Legacy attachment folder not empty after merge, left in place: {src}")
+                return
+
+            if src.is_file() and dest.is_file() and filecmp.cmp(src, dest, shallow=False):
+                src.unlink()
+                return
+
+            counter = 1
+            alt = dest.with_name(f"{dest.stem}_legacy{dest.suffix}")
+            while alt.exists():
+                counter += 1
+                alt = dest.with_name(f"{dest.stem}_legacy{counter}{dest.suffix}")
+            shutil.move(str(src), str(alt))
+            logger.warning(f"Attachment name collision during migration: {src} kept as {alt}")
+        except Exception as e:
+            logger.warning(f"Error migrating legacy attachment item {src} to {dest}: {e}")
 
     # --- Cases & Archive ---
     def load_cases(self, use_cache: bool = True) -> list[Case]:

@@ -136,7 +136,7 @@ class TextboxResizeHandle(ctk.CTkFrame):
 
     def on_drag(self, event):
         delta = (event.y_root - self.start_y) / self._scaling()
-        new_h = int(max(self.min_height, min(self.max_height, self.start_height + delta)))
+        new_h = max(self.min_height, min(self.max_height, self.start_height + delta))
         self.current_height = new_h
         self.target_textbox.configure(height=new_h)
 

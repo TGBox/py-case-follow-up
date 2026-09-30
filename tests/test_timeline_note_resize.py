@@ -82,7 +82,7 @@ def test_drag_is_scaling_independent(root, monkeypatch):
     """Bei 150 % Schriftskalierung darf ein Klick ohne Bewegung die Hoehe nicht aendern."""
     p = UserProfile()
     w = _widget(root, profile=p, storage=MagicMock())
-    monkeypatch.setattr(w.note_textbox, "_get_widget_scaling", lambda: 1.5)
+    monkeypatch.setattr(ctk.ScalingTracker, "get_widget_scaling", classmethod(lambda cls, _w: 1.5))
     _drag(w.note_resize_handle, 0)
     assert p.ui_settings.custom_textbox_heights[TIMELINE_NOTE_HEIGHT_KEY] == TEXTBOX_HEIGHT_SM
     _drag(w.note_resize_handle, 150)  # 150 echte Pixel = 100 unskalierte

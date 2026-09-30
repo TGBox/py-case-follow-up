@@ -521,6 +521,8 @@ class CockpitLayoutBuilderMixin:
             on_open_snippet_picker=self.on_open_snippet_picker,
             user_color=user_color,
             color_marker_enabled=color_marker_enabled,
+            profile=getattr(self, "profile", None),
+            storage_service=getattr(self, "storage_service", None),
         )
         self.timeline_widget.pack(fill="both", expand=True)
 

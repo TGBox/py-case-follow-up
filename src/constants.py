@@ -464,6 +464,12 @@ COLOR_BORDER_DARK = "#18181b"
 #: must not cap them at its usual few lines. A ceiling stays as a guard
 #: against a pathological note blowing up the layout.
 TIMELINE_NOTE_MAX_DISPLAY_LINES = 500
+#: Eingabefeld "Neue Notiz" in der Timeline: per Griff in der Hoehe
+#: verstellbar, gespeichert in ui_settings.custom_textbox_heights unter
+#: diesem Schluessel (wird mit "Spaltenbreiten zuruecksetzen" mit geleert).
+TIMELINE_NOTE_HEIGHT_KEY = "cockpit_timeline_note"
+TIMELINE_NOTE_MIN_HEIGHT = 30
+TIMELINE_NOTE_MAX_HEIGHT = 600
 TOOLBAR_BREAK_WIDTH = 640
 BTN_WIDTH_ACTION_SM = 95
 TOOLTIP_SHORT_DELAY_MS = 250

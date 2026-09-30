@@ -119,7 +119,7 @@ class TextboxResizeHandle(ctk.CTkFrame):
 
     def _scaling(self) -> float:
         try:
-            return float(self.target_textbox._get_widget_scaling()) or 1.0
+            return float(ctk.ScalingTracker.get_widget_scaling(self.target_textbox)) or 1.0
         except Exception:
             return 1.0
 

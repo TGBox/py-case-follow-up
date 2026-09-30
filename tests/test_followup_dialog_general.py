@@ -175,7 +175,7 @@ def test_on_save_invokes_callback_with_iso_and_note(app_and_storage):
     from ui.dialogs.followup_dialog import FollowupDialog
 
     case = _make_case(followup_at="")
-    received = None
+    received: tuple[str, str] | None = None
 
     def on_set(iso_val, note):
         nonlocal received
@@ -241,9 +241,13 @@ def test_on_clear_invokes_callback_with_empty_strings(app_and_storage):
 # ---------------------------------------------------------------------------
 
 
-def test_preset_today_1630(app_and_storage):
+def test_preset_today_1630(app_and_storage, monkeypatch):
     app, storage, config = app_and_storage
     from ui.dialogs.followup_dialog import FollowupDialog
+
+    fixed_morning = get_local_now().replace(hour=8, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr("ui.dialogs.followup_dialog.get_local_now", lambda: fixed_morning)
+    monkeypatch.setattr("utils.datetime_utils.get_local_now", lambda: fixed_morning)
 
     case = _make_case()
     dialog = FollowupDialog(app, case=case, on_followup_set=lambda iso, note: None)
@@ -251,16 +255,20 @@ def test_preset_today_1630(app_and_storage):
 
     dialog.set_preset_today_1630()
     result = parse_followup_datetime(dialog.date_picker.get())
-    now = get_local_now()
-    assert result.date() == now.date()
+    assert result is not None
+    assert result.date() == fixed_morning.date()
     assert (result.hour, result.minute) == (16, 30)
 
     dialog.destroy()
 
 
-def test_preset_today_before_and_after_lunch(app_and_storage):
+def test_preset_today_before_and_after_lunch(app_and_storage, monkeypatch):
     app, storage, config = app_and_storage
     from ui.dialogs.followup_dialog import FollowupDialog
+
+    fixed_morning = get_local_now().replace(hour=8, minute=0, second=0, microsecond=0)
+    monkeypatch.setattr("ui.dialogs.followup_dialog.get_local_now", lambda: fixed_morning)
+    monkeypatch.setattr("utils.datetime_utils.get_local_now", lambda: fixed_morning)
 
     case = _make_case()
     dialog = FollowupDialog(app, case=case, on_followup_set=lambda iso, note: None)
@@ -268,10 +276,12 @@ def test_preset_today_before_and_after_lunch(app_and_storage):
 
     dialog.set_preset_today_before_lunch()
     before_lunch = parse_followup_datetime(dialog.date_picker.get())
+    assert before_lunch is not None
     assert (before_lunch.hour, before_lunch.minute) == (11, 30)
 
     dialog.set_preset_today_after_lunch()
     after_lunch = parse_followup_datetime(dialog.date_picker.get())
+    assert after_lunch is not None
     assert (after_lunch.hour, after_lunch.minute) == (13, 30)
 
     dialog.destroy()
@@ -287,6 +297,7 @@ def test_preset_tomorrow_8am(app_and_storage):
 
     dialog.set_preset_tomorrow_8am()
     result = parse_followup_datetime(dialog.date_picker.get())
+    assert result is not None
     now = get_local_now()
     assert result.date() == (now + timedelta(days=1)).date()
     assert (result.hour, result.minute) == (8, 0)
@@ -305,6 +316,7 @@ def test_preset_days(app_and_storage, days):
 
     dialog.set_preset_days(days)
     result = parse_followup_datetime(dialog.date_picker.get())
+    assert result is not None
     now = get_local_now()
     assert result.date() == (now + timedelta(days=days)).date()
     assert (result.hour, result.minute) == (9, 0)

@@ -446,6 +446,8 @@ class DialogLaunchersMixin:
                     getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
                     getattr(self.profile.user, "color_marker_enabled", False),
                 )
+            if hasattr(self.cockpit_view, "timeline_widget") and hasattr(self.cockpit_view.timeline_widget, "apply_stored_note_height"):
+                self.cockpit_view.timeline_widget.apply_stored_note_height(self.profile)
         if hasattr(self, "board_view") and hasattr(self.board_view, "set_user_color_settings"):
             self.board_view.set_user_color_settings(
                 self.profile.user.name,

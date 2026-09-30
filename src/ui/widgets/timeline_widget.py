@@ -32,7 +32,10 @@ from constants import (
     PAD_SM,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
+    TIMELINE_NOTE_HEIGHT_KEY,
     TIMELINE_NOTE_MAX_DISPLAY_LINES,
+    TIMELINE_NOTE_MAX_HEIGHT,
+    TIMELINE_NOTE_MIN_HEIGHT,
     USER_COLOR_TILE_SIZE,
 )
 from utils.datetime_utils import (
@@ -54,8 +57,12 @@ class TimelineWidget(ctk.CTkFrame):
         on_open_snippet_picker: Callable[[Callable[[str], None]], None] | None = None,
         user_color: str | None = None,
         color_marker_enabled: bool = False,
+        profile: Any | None = None,
+        storage_service: Any | None = None,
     ):
         super().__init__(parent)
+        self.profile = profile
+        self.storage_service = storage_service
         self.author_name = author_name
         self.on_timeline_updated = on_timeline_updated
         self.on_open_snippet_picker = on_open_snippet_picker
@@ -124,14 +131,47 @@ class TimelineWidget(ctk.CTkFrame):
         )
         self.time_picker.pack(side="left", fill="x", expand=True)
 
-        self.note_textbox = ctk.CTkTextbox(input_frame, height=TEXTBOX_HEIGHT_SM)
-        self.note_textbox.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+        self.note_textbox = ctk.CTkTextbox(input_frame, height=self._stored_note_height())
+        self.note_textbox.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+
+        # Griff unter dem Feld: nach unten ziehen macht es hoeher. Die Hoehe
+        # landet wie die Spaltenbreiten im Profil (ui_settings).
+        from ui.widgets.dynamic_form_widget import TextboxResizeHandle
+        self.note_resize_handle = TextboxResizeHandle(
+            input_frame,
+            target_textbox=self.note_textbox,
+            field_id=TIMELINE_NOTE_HEIGHT_KEY,
+            profile=self.profile,
+            storage_service=self.storage_service,
+            min_height=TIMELINE_NOTE_MIN_HEIGHT,
+            max_height=TIMELINE_NOTE_MAX_HEIGHT,
+            update_default_height=False,
+        )
+        self.note_resize_handle.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
 
         self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=BTN_WIDTH_ACTION)
         self.add_btn.pack(side="right", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+
+    def _stored_note_height(self) -> int:
+        ui = getattr(self.profile, "ui_settings", None)
+        heights = getattr(ui, "custom_textbox_heights", None)
+        if isinstance(heights, dict):
+            try:
+                h = int(heights.get(TIMELINE_NOTE_HEIGHT_KEY, TEXTBOX_HEIGHT_SM))
+            except (TypeError, ValueError):
+                h = TEXTBOX_HEIGHT_SM
+            return max(TIMELINE_NOTE_MIN_HEIGHT, min(TIMELINE_NOTE_MAX_HEIGHT, h))
+        return TEXTBOX_HEIGHT_SM
+
+    def apply_stored_note_height(self, profile: Any | None = None) -> None:
+        """Uebernimmt die gespeicherte Hoehe, z.B. nach "Spaltenbreiten zuruecksetzen"."""
+        if profile is not None:
+            self.profile = profile
+            self.note_resize_handle.profile = profile
+        self.note_textbox.configure(height=self._stored_note_height())
 
     def refresh_ui_labels(self):
         from services.i18n_service import tr

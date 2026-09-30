@@ -94,33 +94,61 @@ class TextboxResizeHandle(ctk.CTkFrame):
         profile: UserProfile | None,
         storage_service: StorageService | None,
         width: int = TEXTBOX_DEFAULT_WIDTH,
+        min_height: int = TEXTBOX_MIN_HEIGHT,
+        max_height: int = TEXTBOX_MAX_HEIGHT,
+        update_default_height: bool = True,
     ):
         super().__init__(parent, fg_color=COLOR_RESIZE_HANDLE, height=HEIGHT_RESIZE_HANDLE, width=width, cursor=CURSOR_RESIZE_V)
         self.target_textbox = target_textbox
         self.field_id = field_id
         self.profile = profile
         self.storage_service = storage_service
+        self.min_height = min_height
+        self.max_height = max_height
+        # Formularfelder teilen sich zusaetzlich eine Standardhoehe fuer neue
+        # Felder; ein Textfeld ausserhalb des Formulars (Timeline-Notiz) darf
+        # die nicht verstellen.
+        self.update_default_height = update_default_height
         self.start_y = 0
         self.start_height = 0
+        self.current_height: int | None = None
 
         self.bind("<Button-1>", self.on_press)
         self.bind("<B1-Motion>", self.on_drag)
         self.bind("<ButtonRelease-1>", self.on_release)
 
+    def _scaling(self) -> float:
+        try:
+            return float(self.target_textbox._get_widget_scaling()) or 1.0
+        except Exception:
+            return 1.0
+
     def on_press(self, event):
         self.start_y = event.y_root
-        self.start_height = self.target_textbox.winfo_height()
+        # Unskalierte Hoehe (die Einheit von configure(height=...)). winfo_height()
+        # liefert echte Pixel und ist bei Schriftskalierung != 100 % um diesen
+        # Faktor zu gross - damit wuchs das Feld bei jedem Ziehen ein Stueck.
+        try:
+            self.start_height = int(self.target_textbox.cget("height"))
+        except Exception:
+            self.start_height = int(self.target_textbox.winfo_height() / self._scaling())
+        self.current_height = self.start_height
 
     def on_drag(self, event):
-        delta = event.y_root - self.start_y
-        new_h = max(TEXTBOX_MIN_HEIGHT, min(TEXTBOX_MAX_HEIGHT, self.start_height + delta))
+        delta = (event.y_root - self.start_y) / self._scaling()
+        new_h = int(max(self.min_height, min(self.max_height, self.start_height + delta)))
+        self.current_height = new_h
         self.target_textbox.configure(height=new_h)
 
     def on_release(self, event):
-        final_h = self.target_textbox.winfo_height()
+        final_h = self.current_height
+        if final_h is None:
+            return
+        self.current_height = None
         if self.profile:
             self.profile.ui_settings.custom_textbox_heights[self.field_id] = final_h
-            self.profile.ui_settings.textbox_height = final_h
+            if self.update_default_height:
+                self.profile.ui_settings.textbox_height = final_h
             if self.storage_service:
                 self.storage_service.save_profile(self.profile)
 

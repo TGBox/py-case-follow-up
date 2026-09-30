@@ -777,7 +777,8 @@
     "zip_export": "Save complete data backup as ZIP",
     "zip_import": "📥 Import Backup — Set Target Paths",
     "followup": "🔔 Follow-up & Inquiry Reminder",
-    "change_practice": "🏥 Change Practice"
+    "change_practice": "🏥 Change Practice",
+    "timeline_edit": "✏ Edit timeline entry"
   },
   "dynamic_form": {
     "add_card": "➕ Request another {title}",
@@ -1814,7 +1815,21 @@
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Completed",
     "status_open": "STATUS: Open",
-    "status_prefix": "Status: {status}"
+    "status_prefix": "Status: {status}",
+    "time_lbl": "🕒 Time:",
+    "time_placeholder": "empty = now",
+    "edit_btn": "✏",
+    "edited_hint": "✏ edited {date} by {author}",
+    "edit_author_info": "Written by: {author}",
+    "edit_channel_lbl": "Channel:",
+    "edit_time_lbl": "🕒 Date & time (DD.MM.YYYY HH:MM):",
+    "edit_note_lbl": "📝 Note:",
+    "edit_save_btn": "💾 Save",
+    "edit_delete_btn": "🗑 Delete",
+    "edit_error_empty": "The note must not be empty.",
+    "edit_error_time": "Please enter a valid date and time (DD.MM.YYYY HH:MM).",
+    "delete_confirm": "Really delete this timeline entry? This cannot be undone.",
+    "delete_confirm_title": "Delete entry"
   },
   "toast": {
     "followup_due_title": "🔔 Follow-up due ({count})",

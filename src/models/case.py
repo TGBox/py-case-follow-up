@@ -16,6 +16,10 @@ class TimelineEntry:
     channel: str = Channel.INTERNAL_NOTE
     note: str = ""
     status_change: str = ""
+    # Set when an entry is changed after it was written (who/when), so the
+    # timeline shows that its content or time is not the original one.
+    edited_at: str = ""
+    edited_by: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -31,7 +35,12 @@ class TimelineEntry:
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        data = asdict(self)
+        # Unedited entries keep their previous on-disk shape.
+        for key in ("edited_at", "edited_by"):
+            if not data.get(key):
+                data.pop(key, None)
+        return data
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> TimelineEntry:
@@ -41,6 +50,8 @@ class TimelineEntry:
             channel=data.get("channel", Channel.INTERNAL_NOTE),
             note=data.get("note", ""),
             status_change=data.get("status_change", ""),
+            edited_at=data.get("edited_at", ""),
+            edited_by=data.get("edited_by", ""),
         )
 
 

@@ -197,6 +197,7 @@ DIALOG_TITLES = LocalizedDict("dialog_titles", {
     "ai_assistant": "🤖 KI- & Support-Assistent",
     "email_import": "📥 E-Mail Posteingang & Import Hub",
     "change_practice": "🏥 Praxis wechseln",
+    "timeline_edit": "✏ Timeline-Eintrag bearbeiten",
 })
 
 # --- Sub-Header Labels inside Dialogs ---
@@ -519,6 +520,7 @@ DIALOG_DIMENSIONS = {
     "confirm": (470, 215),
     "followup": (500, 385),
     "change_practice": (560, 400),
+    "timeline_edit": (560, 470),
 }
 
 DIALOG_MIN_DIMENSIONS = {
@@ -528,6 +530,7 @@ DIALOG_MIN_DIMENSIONS = {
     "handover": (520, 460),
     "followup": (460, 350),
     "followup_flyout": (640, 480),
+    "timeline_edit": (500, 420),
 }
 FONT_SIZE_TITLE_SM = 16
 COLOR_ABSENCE_WARNING = "darkorange"
@@ -1744,3 +1747,9 @@ ICON_KEY_HELP = "help"
 ICON_KEY_THEME = "theme"
 ICON_KEY_QUIT = "quit"
 ICON_KEY_COPY = "copy"
+
+# --- Timeline entry time selection & editing ---
+DATE_PICKER_WIDTH_TIMELINE = 170
+BTN_WIDTH_TIMELINE_EDIT = 28
+BTN_HEIGHT_TIMELINE_EDIT = 22
+TEXTBOX_HEIGHT_TIMELINE_EDIT = 160

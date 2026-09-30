@@ -64,8 +64,6 @@ from utils.datetime_utils import (
     format_german_date,
     format_german_datetime,
     get_local_now,
-    parse_flexible_followup_input,
-    parse_followup_datetime,
 )
 
 
@@ -162,7 +160,7 @@ class FollowupFlyoutDialog(BaseDialog):
                         btn.configure(state="normal" if val.strip() else "disabled")
                     return _on_change
 
-                picker = DatePickerWidget(picker_row, include_time=True, width=DATE_PICKER_WIDTH_FLYOUT, on_change=make_on_change(btn_apply))
+                picker = DatePickerWidget(picker_row, include_time=True, width=DATE_PICKER_WIDTH_FLYOUT, on_change=make_on_change(btn_apply), time_bound="future")
                 btn_apply.configure(command=lambda c=case, p=picker: self.apply_new_time(c, p))
 
                 # Row 1: Short term shifts (+1h, +2h, Heute 16:30, Erledigt)
@@ -254,7 +252,7 @@ class FollowupFlyoutDialog(BaseDialog):
         # If the field already shows a date/time, add the increment on top of it (so
         # repeated clicks stack up); only fall back to "now" when the field is empty
         # or its content can't be parsed.
-        base_dt = parse_followup_datetime(picker.get()) or get_local_now()
+        base_dt = picker.get_datetime() or get_local_now()
         picker.set_date(format_german_datetime(base_dt + timedelta(hours=hours)))
 
     def set_field_today_1630(self, picker: DatePickerWidget):
@@ -288,7 +286,8 @@ class FollowupFlyoutDialog(BaseDialog):
         raw_val = picker.get()
         if not raw_val:
             return
-        dt = parse_flexible_followup_input(raw_val)
+        # get_datetime() applies the picker's "not in the past" bound first.
+        dt = picker.get_datetime()
         if not dt:
             return
         case.workflow_status.followup_at = format_german_datetime(dt)

@@ -58,7 +58,6 @@ from utils.datetime_utils import (
     format_german_date,
     format_german_datetime,
     get_local_now,
-    parse_followup_datetime,
 )
 
 
@@ -169,6 +168,10 @@ class FollowupDialog(BaseDialog):
             include_time=True,
             initial_value=init_date,
             width=DATE_PICKER_WIDTH_FOLLOWUP,
+            # A follow-up can only be planned from now on: an old reminder that
+            # is reopened, or a preset like "Heute 16:30" clicked at 17:00,
+            # snaps to the current date and time instead of lying in the past.
+            time_bound="future",
         ), "date_picker.placeholder_datetime", "TT.MM.JJJJ 09:00", attr="placeholder_text")
         self.date_picker.pack(fill="x", padx=PAD_LG, pady=(PAD_NONE, PAD_GAP))
 
@@ -233,7 +236,9 @@ class FollowupDialog(BaseDialog):
         # If the field below already shows a date/time, add the increment on top of it
         # (so repeated clicks stack up); only fall back to "now" when the field is empty
         # or its content can't be parsed.
-        base_dt = parse_followup_datetime(self.date_picker.get()) or get_local_now()
+        # get_datetime() already moves a past value to now, so a stale date never
+        # becomes the base of the increment.
+        base_dt = self.date_picker.get_datetime() or get_local_now()
         self.date_picker.set_date(format_german_datetime(base_dt + delta))
 
     def set_preset_now(self):

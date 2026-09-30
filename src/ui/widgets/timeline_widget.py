@@ -4,7 +4,9 @@ from collections.abc import Callable
 from models.case import TimelineEntry
 from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
 from constants import (
+    BTN_HEIGHT_TIMELINE_EDIT,
     BTN_WIDTH_ACTION,
+    BTN_WIDTH_TIMELINE_EDIT,
     BTN_WIDTH_SM,
     COLOR_BORDER_DARK,
     COLOR_CARD_BG,
@@ -18,6 +20,7 @@ from constants import (
     COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_XS,
+    DATE_PICKER_WIDTH_TIMELINE,
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
@@ -32,7 +35,14 @@ from constants import (
     TIMELINE_NOTE_MAX_DISPLAY_LINES,
     USER_COLOR_TILE_SIZE,
 )
-from utils.datetime_utils import now_iso, format_german_date, format_german_time
+from utils.datetime_utils import (
+    format_german_date,
+    format_german_datetime,
+    format_german_time,
+    format_iso,
+    now_iso,
+    timeline_sort_key,
+)
 
 
 class TimelineWidget(ctk.CTkFrame):
@@ -98,6 +108,22 @@ class TimelineWidget(ctk.CTkFrame):
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
         self.channel_combo.pack(anchor="w", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
+        # Optional back-dating: empty means "now". The picker refuses the future,
+        # a timeline documents what already happened.
+        from ui.widgets.date_picker import DatePickerWidget
+        time_row = ctk.CTkFrame(input_frame, fg_color="transparent")
+        time_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+        self.time_lbl = ctk.CTkLabel(time_row, text=tr("timeline.time_lbl", "🕒 Zeitpunkt:"), font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"))
+        self.time_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+        self.time_picker = DatePickerWidget(
+            time_row,
+            placeholder_text=tr("timeline.time_placeholder", "leer = jetzt"),
+            include_time=True,
+            width=DATE_PICKER_WIDTH_TIMELINE,
+            time_bound="past",
+        )
+        self.time_picker.pack(side="left", fill="x", expand=True)
+
         self.note_textbox = ctk.CTkTextbox(input_frame, height=TEXTBOX_HEIGHT_SM)
         self.note_textbox.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
@@ -117,6 +143,12 @@ class TimelineWidget(ctk.CTkFrame):
             self.snip_btn.configure(text=tr("cockpit.snippets_btn", "📝 Textbaustein"))
         if hasattr(self, "add_btn"):
             self.add_btn.configure(text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"))
+        if hasattr(self, "time_lbl"):
+            self.time_lbl.configure(text=tr("timeline.time_lbl", "🕒 Zeitpunkt:"))
+        if hasattr(self, "time_picker"):
+            self.time_picker.refresh_ui_labels()
+            if not self.time_picker.get():
+                self.time_picker.entry.configure(placeholder_text=tr("timeline.time_placeholder", "leer = jetzt"))
         if hasattr(self, "channel_combo"):
             curr_val = get_channel_val_from_display(self.channel_combo.get())
             self.channel_combo.configure(values=[get_channel_display(c) for c in CHANNEL_DISPLAY])
@@ -196,6 +228,18 @@ class TimelineWidget(ctk.CTkFrame):
             author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
             author_frame.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
 
+            from services.i18n_service import tr
+            edit_btn = ctk.CTkButton(
+                right_col,
+                text=tr("timeline.edit_btn", "✏"),
+                width=BTN_WIDTH_TIMELINE_EDIT,
+                height=BTN_HEIGHT_TIMELINE_EDIT,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_PURPLE_DARK,
+                command=lambda e=entry: self.open_edit_dialog(e),
+            )
+            edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+
             is_own_entry = bool(
                 self.author_name
                 and entry.author
@@ -264,6 +308,21 @@ class TimelineWidget(ctk.CTkFrame):
                 )
                 sc_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 
+            if entry.edited_at:
+                from services.i18n_service import tr
+                ctk.CTkLabel(
+                    left_col,
+                    text=tr(
+                        "timeline.edited_hint",
+                        "✏ bearbeitet {date} von {author}",
+                        date=format_german_datetime(entry.edited_at),
+                        author=entry.edited_by or "-",
+                    ),
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    text_color=COLOR_MUTED_LABEL,
+                    height=LABEL_HEIGHT_SM,
+                ).pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+
         bind_mouse_wheel_to_canvas(self.scroll_frame)
 
     def on_add_note(self):
@@ -271,14 +330,79 @@ class TimelineWidget(ctk.CTkFrame):
         if not text:
             return
 
+        timestamp = now_iso()
+        if hasattr(self, "time_picker") and self.time_picker.get():
+            picked = self.time_picker.get_datetime()
+            if picked is None:
+                # Unreadable time: keep the note so nothing typed gets lost.
+                try:
+                    self.time_picker.entry.focus_set()
+                except Exception:
+                    pass
+                return
+            timestamp = format_iso(picked)
+
         channel_val = get_channel_val_from_display(self.channel_combo.get())
         new_entry = TimelineEntry(
-            timestamp=now_iso(),
+            timestamp=timestamp,
             author=self.author_name,
             channel=channel_val,
             note=text,
         )
         self.timeline_entries.append(new_entry)
+        self.timeline_entries = self._sorted(self.timeline_entries)
         self.note_textbox.delete("1.0", "end")
+        if hasattr(self, "time_picker"):
+            self.time_picker.set_date("")
+        self._commit_changes()
+
+    @staticmethod
+    def _sorted(entries: list[TimelineEntry]) -> list[TimelineEntry]:
+        """Chronological order, so a back-dated or re-timed entry lands in place.
+
+        Stable, so entries with the same timestamp keep their order. If any
+        timestamp is unreadable, the stored order is kept untouched instead of
+        guessing where that entry belongs.
+        """
+        keys = [timeline_sort_key(e.timestamp) for e in entries]
+        if any(k == float("-inf") for k in keys):
+            return list(entries)
+        return [e for _, e in sorted(zip(keys, entries, strict=True), key=lambda pair: pair[0])]
+
+    def _commit_changes(self) -> None:
         self.load_timeline(self.timeline_entries)
         self.on_timeline_updated(self.timeline_entries)
+
+    def open_edit_dialog(self, entry: TimelineEntry):
+        from ui.dialogs.timeline_entry_dialog import TimelineEntryDialog
+        TimelineEntryDialog(
+            self.winfo_toplevel(),
+            entry,
+            on_save=lambda dt, channel, note, e=entry: self.apply_entry_edit(e, dt, channel, note),
+            on_delete=lambda e=entry: self.delete_entry(e),
+        )
+
+    def apply_entry_edit(self, entry: TimelineEntry, dt, channel: str, note: str) -> None:
+        new_ts = format_iso(dt)
+        # Only whole minutes are editable - keep the original seconds when the
+        # user did not actually change the time.
+        if entry.timestamp and entry.timestamp[:16] == new_ts[:16]:
+            new_ts = entry.timestamp
+        if new_ts == entry.timestamp and channel == entry.channel and note == entry.note:
+            return
+        entry.timestamp = new_ts
+        entry.channel = channel
+        entry.note = note
+        entry.edited_at = now_iso()
+        entry.edited_by = self.author_name
+        if not any(existing is entry for existing in self.timeline_entries):
+            return
+        self.timeline_entries = self._sorted(self.timeline_entries)
+        self._commit_changes()
+
+    def delete_entry(self, entry: TimelineEntry) -> None:
+        for idx, existing in enumerate(self.timeline_entries):
+            if existing is entry:
+                del self.timeline_entries[idx]
+                self._commit_changes()
+                return

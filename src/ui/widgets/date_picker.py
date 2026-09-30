@@ -2,7 +2,15 @@ import calendar
 from datetime import datetime, timedelta
 from collections.abc import Callable
 import customtkinter as ctk
-from utils.datetime_utils import format_german_date, format_german_datetime, parse_german_date, parse_iso, get_local_now
+from utils.datetime_utils import (
+    clamp_datetime_to_now,
+    format_german_date,
+    format_german_datetime,
+    get_local_now,
+    parse_flexible_followup_input,
+    parse_german_date,
+    parse_iso,
+)
 from utils.ui_utils import center_window
 from constants import (
     BTN_HEIGHT_MD,
@@ -524,11 +532,16 @@ class DatePickerWidget(ctk.CTkFrame):
         initial_value: str = "",
         width: int = DATE_PICKER_WIDTH_DEFAULT,
         on_change: Callable[[str], None] | None = None,
+        time_bound: str | None = None,
         **kwargs,
     ):
         super().__init__(parent, fg_color="transparent", **kwargs)
         self.include_time = include_time
         self.on_change = on_change
+        # "future": a value in the past is moved to now (Wiedervorlage);
+        # "past": a value in the future is moved to now (timeline entries);
+        # None: no restriction.
+        self.time_bound = time_bound
         from services.i18n_service import tr
 
         ph = placeholder_text if placeholder_text is not None else (
@@ -538,6 +551,7 @@ class DatePickerWidget(ctk.CTkFrame):
         self.entry = ctk.CTkEntry(self, placeholder_text=ph, width=width)
         self.entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_CONTAINER))
         self.entry.bind("<KeyRelease>", self._on_key_release, add="+")
+        self.entry.bind("<FocusOut>", self._on_focus_out, add="+")
 
         if initial_value:
             if "." in initial_value:
@@ -545,6 +559,7 @@ class DatePickerWidget(ctk.CTkFrame):
             else:
                 formatted = format_german_datetime(initial_value) if include_time else format_german_date(initial_value)
                 self.entry.insert(0, formatted)
+            self.apply_time_bound()
 
         self.cal_btn = ctk.CTkButton(
             self, text=tr("cockpit.calendar", "📅 Kalender"), width=BTN_WIDTH_CALENDAR, command=self.open_calendar, fg_color=COLOR_MUTED_GRAY_FG, hover_color=COLOR_MUTED_GRAY_HOVER
@@ -554,6 +569,38 @@ class DatePickerWidget(ctk.CTkFrame):
     def _on_key_release(self, event=None):
         if self.on_change:
             self.on_change(self.get())
+
+    def _on_focus_out(self, event=None):
+        if self.apply_time_bound() and self.on_change:
+            self.on_change(self.get())
+
+    def apply_time_bound(self) -> bool:
+        """Moves the field's value to "now" if it lies on the forbidden side of it.
+
+        Returns True if the text was changed. Empty or unparseable input is left
+        alone - that is the caller's validation, not a bound violation.
+        """
+        if not self.time_bound:
+            return False
+        raw = self.get()
+        if not raw:
+            return False
+        dt = parse_flexible_followup_input(raw)
+        if dt is None:
+            return False
+        clamped = clamp_datetime_to_now(dt, self.time_bound)
+        if clamped == dt:
+            return False
+        new_text = format_german_datetime(clamped) if self.include_time else format_german_date(clamped)
+        self.entry.delete(0, "end")
+        self.entry.insert(0, new_text)
+        return True
+
+    def get_datetime(self):
+        """The field's value as a timezone-aware datetime (bound applied), or None."""
+        self.apply_time_bound()
+        raw = self.get()
+        return parse_flexible_followup_input(raw) if raw else None
 
     def open_calendar(self):
         curr_val = self.get()
@@ -567,6 +614,7 @@ class DatePickerWidget(ctk.CTkFrame):
     def set_date(self, date_str: str):
         self.entry.delete(0, "end")
         self.entry.insert(0, date_str)
+        self.apply_time_bound()
         if self.on_change:
             self.on_change(self.get())
 
@@ -574,6 +622,7 @@ class DatePickerWidget(ctk.CTkFrame):
         return self.entry.get().strip()
 
     def get_iso(self) -> str:
+        self.apply_time_bound()
         val = self.get()
         return parse_german_date(val) if val else ""
 

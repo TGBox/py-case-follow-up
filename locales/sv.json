@@ -777,7 +777,8 @@
     "zip_export": "Spara fullständig säkerhetskopia som ZIP",
     "zip_import": "📥 Importera säkerhetskopia — Ange målsökvägar",
     "followup": "🔔 Uppföljning & Påminnelse",
-    "change_practice": "🏥 Byt mottagning"
+    "change_practice": "🏥 Byt mottagning",
+    "timeline_edit": "✏ Redigera tidslinjepost"
   },
   "dynamic_form": {
     "add_card": "➕ Begär ytterligare {title}",
@@ -1814,7 +1815,21 @@
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Klart",
     "status_open": "STATUS: Öppen",
-    "status_prefix": "Status: {status}"
+    "status_prefix": "Status: {status}",
+    "time_lbl": "🕒 Tidpunkt:",
+    "time_placeholder": "tomt = nu",
+    "edit_btn": "✏",
+    "edited_hint": "✏ redigerad {date} av {author}",
+    "edit_author_info": "Skriven av: {author}",
+    "edit_channel_lbl": "Kanal:",
+    "edit_time_lbl": "🕒 Datum & tid (DD.MM.ÅÅÅÅ TT:MM):",
+    "edit_note_lbl": "📝 Anteckning:",
+    "edit_save_btn": "💾 Spara",
+    "edit_delete_btn": "🗑 Radera",
+    "edit_error_empty": "Anteckningen får inte vara tom.",
+    "edit_error_time": "Ange ett giltigt datum och tid (DD.MM.ÅÅÅÅ TT:MM).",
+    "delete_confirm": "Vill du verkligen radera denna tidslinjepost? Det kan inte ångras.",
+    "delete_confirm_title": "Radera post"
   },
   "toast": {
     "followup_due_title": "🔔 Uppföljning förfallen ({count})",

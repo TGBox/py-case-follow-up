@@ -409,6 +409,10 @@ class TableView(ctk.CTkFrame):
 
     def on_timeline_updated(self, timeline: list[Any] | None = None):
         if self.selected_case:
+            # The widget works on its own copy of the list - without handing it
+            # back, notes added, edited or deleted here never reached the case.
+            if timeline is not None:
+                self.selected_case.timeline = list(timeline)
             self.on_click_save()
 
     def refresh_ui_labels(self):

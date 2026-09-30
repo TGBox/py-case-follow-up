@@ -90,13 +90,52 @@ def test_dialog_prefills_field_with_existing_followup_at(app_and_storage):
     app, storage, config = app_and_storage
     from ui.dialogs.followup_dialog import FollowupDialog
 
-    case = _make_case(followup_at="2026-08-05T14:00:00")
+    future_iso = (get_local_now() + timedelta(days=5)).strftime("%Y-%m-%dT14:00:00")
+    case = _make_case(followup_at=future_iso)
     dialog = FollowupDialog(app, case=case, on_followup_set=lambda iso, note: None)
     dialog.update_idletasks()
 
-    assert dialog.date_picker.get() == format_german_datetime("2026-08-05T14:00:00")
+    assert dialog.date_picker.get() == format_german_datetime(future_iso)
 
     dialog.destroy()
+
+
+def test_dialog_moves_past_followup_at_to_now(app_and_storage):
+    """A reopened reminder that already lies in the past is prefilled with now."""
+    app, storage, config = app_and_storage
+    from ui.dialogs.followup_dialog import FollowupDialog
+
+    case = _make_case(followup_at="2026-08-05T14:00:00")
+    before = get_local_now().replace(second=0, microsecond=0)
+    dialog = FollowupDialog(app, case=case, on_followup_set=lambda iso, note: None)
+    dialog.update_idletasks()
+
+    shown = parse_followup_datetime(dialog.date_picker.get())
+    assert shown is not None
+    assert shown >= before
+    assert shown - before < timedelta(minutes=2)
+
+    dialog.destroy()
+
+
+def test_past_value_set_in_dialog_is_saved_as_now(app_and_storage):
+    """Presets like "Heute 16:30" clicked later, or a typed past date, end up as now."""
+    app, storage, config = app_and_storage
+    from ui.dialogs.followup_dialog import FollowupDialog
+
+    received = []
+    case = _make_case(followup_at="")
+    dialog = FollowupDialog(app, case=case, on_followup_set=lambda iso, note: received.append(iso))
+    dialog.update_idletasks()
+
+    before = get_local_now().replace(second=0, microsecond=0)
+    dialog.date_picker.entry.delete(0, "end")
+    dialog.date_picker.entry.insert(0, "01.01.2020 08:00")
+    dialog.on_save()
+
+    assert received, "callback must be called"
+    saved = parse_followup_datetime(received[0])
+    assert saved is not None and saved >= before
 
 
 def test_dialog_prefills_default_two_days_ahead_when_no_existing_followup(app_and_storage):
@@ -145,7 +184,8 @@ def test_on_save_invokes_callback_with_iso_and_note(app_and_storage):
     dialog = FollowupDialog(app, case=case, on_followup_set=on_set)
     dialog.update_idletasks()
 
-    dialog.date_picker.set_date("05.09.2026 10:15")
+    future_str = (get_local_now() + timedelta(days=30)).strftime("%d.%m.%Y 10:15")
+    dialog.date_picker.set_date(future_str)
     dialog.note_entry.delete(0, "end")
     dialog.note_entry.insert(0, "Rückruf vereinbart")
 
@@ -153,7 +193,7 @@ def test_on_save_invokes_callback_with_iso_and_note(app_and_storage):
 
     assert received is not None
     iso_val, note = received
-    assert parse_followup_datetime(iso_val) == parse_followup_datetime("05.09.2026 10:15")
+    assert parse_followup_datetime(iso_val) == parse_followup_datetime(future_str)
     assert note == "Rückruf vereinbart"
 
 

@@ -777,7 +777,8 @@
     "zip_export": "Komplett-Datensicherung als ZIP speichern",
     "zip_import": "📥 Datensicherung Importieren — Zielpfade festlegen",
     "followup": "🔔 Wiedervorlage & Nachfrage-Erinnerung",
-    "change_practice": "🏥 Praxis wechseln"
+    "change_practice": "🏥 Praxis wechseln",
+    "timeline_edit": "✏ Timeline-Eintrag bearbeiten"
   },
   "dynamic_form": {
     "add_card": "➕ Weitere {title} anfordern",
@@ -1814,7 +1815,21 @@
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Erledigt",
     "status_open": "STATUS: Offen",
-    "status_prefix": "Status: {status}"
+    "status_prefix": "Status: {status}",
+    "time_lbl": "🕒 Zeitpunkt:",
+    "time_placeholder": "leer = jetzt",
+    "edit_btn": "✏",
+    "edited_hint": "✏ bearbeitet {date} von {author}",
+    "edit_author_info": "Verfasst von: {author}",
+    "edit_channel_lbl": "Kanal:",
+    "edit_time_lbl": "🕒 Datum & Uhrzeit (TT.MM.JJJJ HH:MM):",
+    "edit_note_lbl": "📝 Notiz:",
+    "edit_save_btn": "💾 Speichern",
+    "edit_delete_btn": "🗑 Löschen",
+    "edit_error_empty": "Die Notiz darf nicht leer sein.",
+    "edit_error_time": "Bitte ein gültiges Datum mit Uhrzeit eingeben (TT.MM.JJJJ HH:MM).",
+    "delete_confirm": "Diesen Timeline-Eintrag wirklich löschen? Das kann nicht rückgängig gemacht werden.",
+    "delete_confirm_title": "Eintrag löschen"
   },
   "toast": {
     "followup_due_title": "🔔 Wiedervorlage fällig ({count})",

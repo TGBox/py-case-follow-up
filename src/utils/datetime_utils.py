@@ -320,6 +320,36 @@ def parse_flexible_followup_input(input_str: str) -> datetime | None:
     return parse_followup_datetime(s)
 
 
+def clamp_datetime_to_now(dt: datetime, direction: str, now: datetime | None = None) -> datetime:
+    """Keeps a picked date/time on one side of "now".
+
+    direction="future": a value in the past is replaced by now (follow-ups can
+    only be planned from now on). direction="past": a value in the future is
+    replaced by now (timeline entries document what already happened).
+    The comparison works at minute resolution - the pickers only show HH:MM, so
+    "now" itself (e.g. the "Jetzt" preset) must not count as past.
+    """
+    ref = now or get_local_now()
+    if ref.tzinfo is None:
+        ref = ref.replace(tzinfo=get_local_now().tzinfo)
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=ref.tzinfo)
+    ref_minute = ref.replace(second=0, microsecond=0)
+    if direction == "future" and dt < ref_minute:
+        return ref_minute
+    if direction == "past" and dt > ref:
+        return ref.replace(microsecond=0)
+    return dt
+
+
+def timeline_sort_key(timestamp: str) -> float:
+    """Chronological sort key for timeline timestamps (unparseable ones sort first)."""
+    try:
+        return parse_iso(timestamp).timestamp()
+    except Exception:
+        return float("-inf")
+
+
 # Generic and modern aliases
 format_date = format_german_date
 format_time = format_german_time

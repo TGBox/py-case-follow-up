@@ -73,6 +73,7 @@ src/ui/dialogs/snippet_management_dialog.py
 src/ui/dialogs/snippet_picker_dialog.py
 src/ui/dialogs/tag_management_dialog.py
 src/ui/dialogs/template_manager_dialog.py
+src/ui/dialogs/timeline_entry_dialog.py
 src/ui/dialogs/zip_import_dialog.py
 src/ui/views/analytics_view.py
 src/ui/views/board_view.py
@@ -200,6 +201,8 @@ tests/test_storage.py
 tests/test_storage_robustness_deep.py
 tests/test_template_field_width_constraints.py
 tests/test_time_picker_steppers_and_range.py
+tests/test_timeline_edit_and_time_bounds.py
+tests/test_timeline_note_resize.py
 tests/test_toast_notifications.py
 tests/test_translation_parity_and_quality.py
 tests/test_ui_contrast_and_form_safety.py

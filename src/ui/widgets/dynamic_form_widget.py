@@ -41,6 +41,7 @@ from constants import (
     FILE_NAME_DATA_BACKUP,
     FONT_SIZE_BODY,
     FONT_SIZE_CONFIRM,
+    FONT_SIZE_EMPTY_HERO,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
     FONT_SIZE_TITLE,
@@ -572,7 +573,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             ctk.CTkLabel(
                 empty_frame,
                 text="📋",
-                font=ctk.CTkFont(size=36),
+                font=ctk.CTkFont(size=FONT_SIZE_EMPTY_HERO),
             ).pack(pady=(PAD_2XL, PAD_MD))
             ctk.CTkLabel(
                 empty_frame,

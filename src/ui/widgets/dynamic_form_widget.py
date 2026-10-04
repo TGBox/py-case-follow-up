@@ -43,6 +43,7 @@ from constants import (
     FONT_SIZE_CONFIRM,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
+    FONT_SIZE_TITLE,
     FONT_WEIGHT_BOLD,
     FONT_WEIGHT_NORMAL,
     HEIGHT_MINI_ATTACH_ROW,
@@ -52,6 +53,7 @@ from constants import (
     MOUSEWHEEL_DELTA_UNIT,
     PAD_10,
     PAD_2XL,
+    PAD_3XL,
     PAD_CONTAINER,
     PAD_GAP,
     PAD_LG,
@@ -562,6 +564,28 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self._field_border_defaults.clear()
         self.card_field_widgets: list[dict[str, tuple[str, Any]]] = []
         self.field_row_frames: dict[str, ctk.CTkFrame] = {}
+
+        if not schema and not case:
+            from services.i18n_service import tr
+            empty_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+            empty_frame.pack(fill="both", expand=True, pady=PAD_3XL)
+            ctk.CTkLabel(
+                empty_frame,
+                text="📋",
+                font=ctk.CTkFont(size=36),
+            ).pack(pady=(PAD_2XL, PAD_MD))
+            ctk.CTkLabel(
+                empty_frame,
+                text=tr("cockpit.empty_title", "Kein Fall ausgewählt"),
+                font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight="bold"),
+            ).pack(pady=PAD_XS)
+            ctk.CTkLabel(
+                empty_frame,
+                text=tr("cockpit.empty_hint", "Wählen Sie einen Fall aus der Liste oder drücken Sie Strg+N für einen neuen Fall."),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                text_color=COLOR_MUTED_LABEL,
+            ).pack(pady=PAD_SM)
+            return
 
         if not schema or not schema.fields:
             from services.i18n_service import tr

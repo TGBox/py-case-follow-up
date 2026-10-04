@@ -163,3 +163,12 @@ def prevent_external_launch(monkeypatch: pytest.MonkeyPatch):
         monkeypatch.setattr(os, "startfile", lambda *args, **kwargs: None)
     import webbrowser
     monkeypatch.setattr(webbrowser, "open", lambda *args, **kwargs: True)
+
+
+@pytest.fixture(autouse=True)
+def reset_default_locale():
+    """Ensures each test starts and finishes with the default German locale."""
+    from services.i18n_service import get_i18n
+    get_i18n().current_language = "de"
+    yield
+    get_i18n().current_language = "de"

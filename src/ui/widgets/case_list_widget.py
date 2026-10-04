@@ -4,6 +4,7 @@ from collections.abc import Callable
 from models.case import Case
 from enums import UrgencyLevel, get_actor_display
 from constants import (
+    BTN_HEIGHT_SM,
     BTN_WIDTH_FILTER_ALL,
     BTN_WIDTH_FILTER_DEEP,
     BTN_WIDTH_FILTER_FOLLOWUP,
@@ -23,6 +24,8 @@ from constants import (
     COLOR_CARD_SELECTED_BG,
     COLOR_CARD_SELECTED_BORDER,
     COLOR_DEEP_ATTACHMENT,
+    COLOR_PRIMARY,
+    COLOR_PRIMARY_HOVER,
     COLOR_DEEP_SEARCH_ACTIVE,
     COLOR_DEEP_SEARCH_ACTIVE_HOVER,
     COLOR_DEEP_SEARCH_INACTIVE,
@@ -122,26 +125,52 @@ class CaseListWidget(ctk.CTkFrame):
         self.search_entry.pack(fill="x", expand=True)
         self.search_entry.bind("<KeyRelease>", self._on_search_keyrelease)
 
-        # Quick Filter Buttons Bar
+        # Quick Filter Buttons Bar (2-Row Responsive Layout)
         qfilter_frame = ctk.CTkFrame(self, fg_color="transparent")
-        qfilter_frame.pack(fill="x", padx=PAD_MD + PAD_XS, pady=(PAD_NONE, CORNER_RADIUS_ENTRY))
+        qfilter_frame.pack(fill="x", padx=PAD_MD, pady=(PAD_NONE, PAD_XS))
 
-        self.qfilter_all_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_all", "Alle"), width=BTN_WIDTH_FILTER_ALL, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter(""))
-        self.qfilter_all_btn.pack(side="left", padx=PAD_XS)
-        self.qfilter_urgent_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_urgent", "🔥 Dringend"), width=BTN_WIDTH_SM, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("vip:true"))
-        self.qfilter_urgent_btn.pack(side="left", padx=PAD_XS)
-        self.qfilter_followup_btn = ctk.CTkButton(qfilter_frame, text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"), width=BTN_WIDTH_FILTER_FOLLOWUP, fg_color=COLOR_MUTED_GRAY, hover_color=COLOR_MUTED_HOVER, command=lambda: self.apply_quick_filter("reminder:due"))
-        self.qfilter_followup_btn.pack(side="left", padx=PAD_XS)
+        row1_frame = ctk.CTkFrame(qfilter_frame, fg_color="transparent")
+        row1_frame.pack(fill="x", pady=(PAD_NONE, PAD_XS))
+
+        self.qfilter_all_btn = ctk.CTkButton(
+            row1_frame,
+            text=tr("cockpit.filter_all", "Alle"),
+            fg_color=COLOR_PRIMARY,
+            hover_color=COLOR_PRIMARY_HOVER,
+            command=lambda: self.apply_quick_filter(""),
+            height=BTN_HEIGHT_SM,
+        )
+        self.qfilter_all_btn.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_XS))
+
+        self.qfilter_urgent_btn = ctk.CTkButton(
+            row1_frame,
+            text=tr("cockpit.filter_urgent", "🔥 Dringend"),
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
+            command=lambda: self.apply_quick_filter("vip:true"),
+            height=BTN_HEIGHT_SM,
+        )
+        self.qfilter_urgent_btn.pack(side="left", fill="x", expand=True, padx=PAD_XS)
+
+        self.qfilter_followup_btn = ctk.CTkButton(
+            row1_frame,
+            text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"),
+            fg_color=COLOR_MUTED_GRAY,
+            hover_color=COLOR_MUTED_HOVER,
+            command=lambda: self.apply_quick_filter("reminder:due"),
+            height=BTN_HEIGHT_SM,
+        )
+        self.qfilter_followup_btn.pack(side="left", fill="x", expand=True, padx=(PAD_XS, PAD_NONE))
 
         self.deep_btn = ctk.CTkButton(
             qfilter_frame,
             text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
-            width=BTN_WIDTH_FILTER_DEEP,
             fg_color=COLOR_DEEP_SEARCH_INACTIVE,
             hover_color=COLOR_DEEP_SEARCH_ACTIVE,
             command=self.toggle_deep_search,
+            height=BTN_HEIGHT_SM,
         )
-        self.deep_btn.pack(side="left", padx=PAD_XS)
+        self.deep_btn.pack(fill="x", expand=True, pady=(PAD_NONE, PAD_XS))
 
         # Header Info
         self.count_label = ctk.CTkLabel(self, text=tr("case_list.zero_cases", "0 Fälle"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"), anchor="w")
@@ -224,6 +253,27 @@ class CaseListWidget(ctk.CTkFrame):
         if filter_token:
             self.search_entry.insert(0, filter_token)
         self.on_search_changed(filter_token)
+        self._update_quick_filter_styles(filter_token)
+
+    def _update_quick_filter_styles(self, active_token: str = ""):
+        if hasattr(self, "qfilter_all_btn") and self.qfilter_all_btn.winfo_exists():
+            is_all = (active_token == "")
+            self.qfilter_all_btn.configure(
+                fg_color=COLOR_PRIMARY if is_all else COLOR_MUTED_GRAY,
+                hover_color=COLOR_PRIMARY_HOVER if is_all else COLOR_MUTED_HOVER,
+            )
+        if hasattr(self, "qfilter_urgent_btn") and self.qfilter_urgent_btn.winfo_exists():
+            is_urgent = (active_token == "vip:true")
+            self.qfilter_urgent_btn.configure(
+                fg_color=COLOR_PRIMARY if is_urgent else COLOR_MUTED_GRAY,
+                hover_color=COLOR_PRIMARY_HOVER if is_urgent else COLOR_MUTED_HOVER,
+            )
+        if hasattr(self, "qfilter_followup_btn") and self.qfilter_followup_btn.winfo_exists():
+            is_followup = (active_token == "reminder:due")
+            self.qfilter_followup_btn.configure(
+                fg_color=COLOR_PRIMARY if is_followup else COLOR_MUTED_GRAY,
+                hover_color=COLOR_PRIMARY_HOVER if is_followup else COLOR_MUTED_HOVER,
+            )
 
     def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):
         """Sets cases list sorted by score descending."""
@@ -266,7 +316,24 @@ class CaseListWidget(ctk.CTkFrame):
         self._card_widgets: dict[str, Any] = {}
 
         if not self.cases:
-            ctk.CTkLabel(self.scroll_frame, text=tr("case_list.no_cases", "Keine Fälle gefunden.")).pack(pady=PAD_2XL)
+            empty_frame = ctk.CTkFrame(self.scroll_frame, fg_color="transparent")
+            empty_frame.pack(fill="both", expand=True, pady=PAD_2XL)
+            query_str = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
+            if query_str:
+                msg = tr("cockpit.empty_search", "Keine Fälle gefunden für '{query}'", query=query_str)
+                ctk.CTkLabel(empty_frame, text="🔍", font=ctk.CTkFont(size=24)).pack(pady=(PAD_MD, PAD_XS))
+                ctk.CTkLabel(empty_frame, text=msg, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"), wraplength=220).pack(pady=PAD_XS)
+                ctk.CTkButton(
+                    empty_frame,
+                    text=tr("cockpit.empty_reset_filter", "Filter zurücksetzen"),
+                    command=lambda: self.apply_quick_filter(""),
+                    width=BTN_WIDTH_SM + 20,
+                    height=BTN_HEIGHT_SM,
+                    fg_color=COLOR_PRIMARY,
+                    hover_color=COLOR_PRIMARY_HOVER,
+                ).pack(pady=PAD_MD)
+            else:
+                ctk.CTkLabel(empty_frame, text=tr("case_list.no_cases", "Keine Fälle gefunden.")).pack(pady=PAD_2XL)
             return
 
         w = self.winfo_width()

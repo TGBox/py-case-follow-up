@@ -248,7 +248,12 @@ class TableView(ctk.CTkFrame):
 
     def configure_tree_columns(self):
         for col_key in self.column_order:
-            title_txt = COL_TITLE_MAP.get(col_key, col_key)
+            base_txt = COL_TITLE_MAP.get(col_key, col_key)
+            if col_key == self.sort_column:
+                indicator = " ▼" if self.sort_reverse else " ▲"
+                title_txt = f"{base_txt}{indicator}"
+            else:
+                title_txt = base_txt
             w = self.column_widths.get(col_key, 150)
 
             self.tree.heading(
@@ -265,6 +270,7 @@ class TableView(ctk.CTkFrame):
         else:
             self.sort_column = col_key
             self.sort_reverse = True
+        self.configure_tree_columns()
         self.render_rows()
 
     def on_header_mouse_release(self, event=None):

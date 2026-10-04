@@ -19,10 +19,12 @@ from constants import (
     COLOR_ICON_WHITE,
     ICON_KEY_BELL,
     ICON_KEY_COPY,
+    ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
     ICON_KEY_USER,
+    ICON_KEY_WINDOWED,
     ICON_SIZE_HEADER,
     ICON_SUPERSAMPLE_CANVAS_SIZE,
 )
@@ -39,6 +41,8 @@ MDL2_GLYPHS: dict[str, str] = {
     ICON_KEY_THEME: "\uE771",  # Brightness / Contrast / Theme
     ICON_KEY_QUIT: "\uE711",  # ChromeClose / Cancel X
     ICON_KEY_COPY: "\uE8C8",  # Copy clipboard / two pages
+    ICON_KEY_FULLSCREEN: "\uE740",  # FullScreen
+    ICON_KEY_WINDOWED: "\uE1D9",  # BackToWindow
 }
 
 
@@ -115,6 +119,32 @@ def _draw_copy_procedural(draw: Any, s: int, color: str) -> None:
     )
 
 
+def _draw_fullscreen_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    pad = int(s * 0.18)
+    corner = int(s * 0.22)
+    # Top-left corner
+    draw.line([(pad, pad), (pad + corner, pad)], fill=color, width=w)
+    draw.line([(pad, pad), (pad, pad + corner)], fill=color, width=w)
+    # Top-right corner
+    draw.line([(s - pad, pad), (s - pad - corner, pad)], fill=color, width=w)
+    draw.line([(s - pad, pad), (s - pad, pad + corner)], fill=color, width=w)
+    # Bottom-left corner
+    draw.line([(pad, s - pad), (pad + corner, s - pad)], fill=color, width=w)
+    draw.line([(pad, s - pad), (pad, pad - corner + (s - 2 * pad))], fill=color, width=w)
+    # Bottom-right corner
+    draw.line([(s - pad, s - pad), (s - pad - corner, s - pad)], fill=color, width=w)
+    draw.line([(s - pad, s - pad), (s - pad, s - pad - corner)], fill=color, width=w)
+
+
+def _draw_windowed_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    # Back window
+    draw.rectangle([s * 0.32, s * 0.16, s * 0.82, s * 0.66], outline=color, width=w)
+    # Front window
+    draw.rectangle([s * 0.18, s * 0.32, s * 0.68, s * 0.82], fill=(0, 0, 0, 0), outline=color, width=w)
+
+
 _PROCEDURAL_DRAWERS: dict[
     str, Callable[[Any, int, str], None]
 ] = {
@@ -124,6 +154,8 @@ _PROCEDURAL_DRAWERS: dict[
     ICON_KEY_THEME: _draw_theme_procedural,
     ICON_KEY_QUIT: _draw_quit_procedural,
     ICON_KEY_COPY: _draw_copy_procedural,
+    ICON_KEY_FULLSCREEN: _draw_fullscreen_procedural,
+    ICON_KEY_WINDOWED: _draw_windowed_procedural,
 }
 
 

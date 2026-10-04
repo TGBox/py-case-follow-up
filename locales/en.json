@@ -379,7 +379,11 @@
     "tab_wiki": "Wiki / Knowledge Base",
     "timeline_title": "History & Timeline Notes",
     "change_practice": "🏥 Change Practice",
-    "delete_case": "🗑 Delete Case"
+    "delete_case": "🗑 Delete Case",
+    "empty_hint": "Select a case from the list or press Ctrl+N for a new case.",
+    "empty_reset_filter": "Reset filter",
+    "empty_search": "No cases found for '{query}'",
+    "empty_title": "No case selected"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Add New Colleague",
@@ -1242,6 +1246,8 @@
     "opt_modules": "🧩 Modules",
     "opt_p2p": "🔄 P2P Sync",
     "opt_practices": "🏥 Practices",
+    "fullscreen": "Fullscreen (F11)",
+    "more_actions": "Menu",
     "opt_snippets": "📝 Text Snippets",
     "opt_tags": "🏷 Tags",
     "opt_templates": "📄 Templates",
@@ -1249,7 +1255,8 @@
     "quit": "Exit",
     "templates": "📄 Templates & Forms",
     "theme": "Theme",
-    "title": " 🩺 Support Cockpit "
+    "title": " 🩺 Support Cockpit ",
+    "windowed": "Windowed mode (F11)"
   },
   "new_case": {
     "add_tag": "+ Tag",

@@ -379,7 +379,11 @@
     "tab_wiki": "Wiki / Kunskapsbas",
     "timeline_title": "Historik & tidslinjeanteckningar",
     "change_practice": "🏥 Byt mottagning",
-    "delete_case": "🗑 Ta bort ärende"
+    "delete_case": "🗑 Ta bort ärende",
+    "empty_hint": "Välj ett ärende från listan eller tryck Ctrl+N för ett nytt ärende.",
+    "empty_reset_filter": "Återställ filter",
+    "empty_search": "Inga ärenden hittades för '{query}'",
+    "empty_title": "Inget ärende valt"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Skapa ny medarbetare",
@@ -1242,6 +1246,8 @@
     "opt_modules": "🧩 Moduler",
     "opt_p2p": "🔄 P2P-synk",
     "opt_practices": "🏥 Mottagningar",
+    "fullscreen": "Helskärm (F11)",
+    "more_actions": "Meny",
     "opt_snippets": "📝 Textbyggblock",
     "opt_tags": "🏷 Taggar",
     "opt_templates": "📄 Mallar",
@@ -1249,7 +1255,8 @@
     "quit": "Avsluta",
     "templates": "📄 Mallar & Formulär",
     "theme": "Tema",
-    "title": " 🩺 Support-Cockpit "
+    "title": " 🩺 Support-Cockpit ",
+    "windowed": "Fönsterläge (F11)"
   },
   "new_case": {
     "add_tag": "+ Tagg",

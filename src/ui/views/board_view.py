@@ -16,6 +16,10 @@ from constants import (
     BTN_WIDTH_SM,
     BTN_WIDTH_XS,
     CASE_LIST_BATCH_SIZE,
+    COLOR_BOARD_BORDER_DONE,
+    COLOR_BOARD_BORDER_FOLLOWUP,
+    COLOR_BOARD_BORDER_HOTLINE,
+    COLOR_BOARD_BORDER_TECH,
     COLOR_BOARD_REMIND,
     COLOR_BORDER_DARK,
     COLOR_BTN_EXPAND_HOVER,
@@ -410,7 +414,13 @@ class BoardView(ctk.CTkFrame):
         else:
             # Expanded full column
             self.grid_columnconfigure(idx, weight=1, minsize=BOARD_EXPANDED_COL_MIN_WIDTH)
-            col_frame = ctk.CTkFrame(self)
+            border_color = (
+                COLOR_BOARD_BORDER_HOTLINE if col_key in ("hotline", "support")
+                else COLOR_BOARD_BORDER_TECH if col_key in ("tech", "dev", "customer")
+                else COLOR_BOARD_BORDER_FOLLOWUP if col_key == "followup"
+                else COLOR_BOARD_BORDER_DONE
+            )
+            col_frame = ctk.CTkFrame(self, border_width=1, border_color=border_color)
             col_frame.grid(row=0, column=idx, sticky="nsew", padx=PAD_SM, pady=PAD_SM)
             self.col_frames[col_key] = col_frame
 

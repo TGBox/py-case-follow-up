@@ -5,11 +5,7 @@ from models.case import Case
 from enums import UrgencyLevel, get_actor_display
 from constants import (
     BTN_HEIGHT_SM,
-    BTN_WIDTH_FILTER_ALL,
-    BTN_WIDTH_FILTER_DEEP,
-    BTN_WIDTH_FILTER_FOLLOWUP,
     BTN_WIDTH_RECORDER,
-    BTN_WIDTH_SM,
     CASE_LIST_BATCH_SIZE,
     CASE_LIST_PRACTICE_PREVIEW_LEN,
     CASE_LIST_SNIPPET_PREVIEW_LEN,
@@ -45,7 +41,6 @@ from constants import (
     COLOR_URGENCY_YELLOW,
     COLOR_WARNING_ORANGE,
     CORNER_RADIUS_CARD,
-    CORNER_RADIUS_ENTRY,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_SM,
     CORNER_RADIUS_XS,

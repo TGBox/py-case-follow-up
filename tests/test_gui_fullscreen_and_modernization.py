@@ -15,8 +15,6 @@ from constants import (
     COLOR_PRIMARY,
     COLOR_MUTED_GRAY,
     HEADER_BREAKPOINT_COMPACT,
-    ICON_KEY_FULLSCREEN,
-    ICON_KEY_WINDOWED,
 )
 
 

@@ -8,6 +8,7 @@ from constants import (
     BTN_WIDTH_FILTER_ALL,
     BTN_WIDTH_FILTER_DEEP,
     BTN_WIDTH_FILTER_FOLLOWUP,
+    BTN_WIDTH_RECORDER,
     BTN_WIDTH_SM,
     CASE_LIST_BATCH_SIZE,
     CASE_LIST_PRACTICE_PREVIEW_LEN,
@@ -51,6 +52,7 @@ from constants import (
     CURSOR_HAND,
     FONT_SIZE_BODY,
     FONT_SIZE_CONFIRM,
+    FONT_SIZE_SEARCH_ICON,
     FONT_SIZE_SM,
     FONT_SIZE_TITLE,
     FONT_SIZE_XS,
@@ -66,6 +68,7 @@ from constants import (
     TOOLTIP_LAZY_DELAY_MS,
     USER_COLOR_TILE_SIZE,
     VIP_TAG_DISPLAY,
+    WRAP_LENGTH_SEARCH_EMPTY,
 )
 from utils.ui_utils import create_highlighted_label, bind_mouse_wheel_to_canvas
 from services.search_service import parse_search_query, SearchService
@@ -321,13 +324,13 @@ class CaseListWidget(ctk.CTkFrame):
             query_str = self.search_entry.get().strip() if hasattr(self, "search_entry") else ""
             if query_str:
                 msg = tr("cockpit.empty_search", "Keine Fälle gefunden für '{query}'", query=query_str)
-                ctk.CTkLabel(empty_frame, text="🔍", font=ctk.CTkFont(size=24)).pack(pady=(PAD_MD, PAD_XS))
-                ctk.CTkLabel(empty_frame, text=msg, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"), wraplength=220).pack(pady=PAD_XS)
+                ctk.CTkLabel(empty_frame, text="🔍", font=ctk.CTkFont(size=FONT_SIZE_SEARCH_ICON)).pack(pady=(PAD_MD, PAD_XS))
+                ctk.CTkLabel(empty_frame, text=msg, font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"), wraplength=WRAP_LENGTH_SEARCH_EMPTY).pack(pady=PAD_XS)
                 ctk.CTkButton(
                     empty_frame,
                     text=tr("cockpit.empty_reset_filter", "Filter zurücksetzen"),
                     command=lambda: self.apply_quick_filter(""),
-                    width=BTN_WIDTH_SM + 20,
+                    width=BTN_WIDTH_RECORDER,
                     height=BTN_HEIGHT_SM,
                     fg_color=COLOR_PRIMARY,
                     hover_color=COLOR_PRIMARY_HOVER,

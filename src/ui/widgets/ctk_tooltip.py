@@ -89,6 +89,16 @@ class CTkTooltip:
 
         self._bind_events(self.widget)
 
+    @property
+    def text(self) -> str:
+        if callable(self.text_or_func):
+            return self.text_or_func()
+        return self.text_or_func
+
+    @text.setter
+    def text(self, value: str | Callable[[], str]):
+        self.text_or_func = value
+
     def _bind_events(self, w):
         try:
             w.bind(EVENT_ENTER, self.on_enter, add="+")

@@ -18,6 +18,7 @@ from constants import (
     APP_MIN_HEIGHT,
     APP_MIN_WIDTH,
     APP_WINDOW_TITLE,
+    BTN_WIDTH_FULLSCREEN,
     BTN_WIDTH_HELP,
     BTN_WIDTH_NEW_CASE,
     BTN_WIDTH_QUIT,
@@ -41,6 +42,7 @@ from constants import (
     COLOR_USER_BTN_TEXT,
     COMBO_WIDTH_DATENAUSTAUSCH,
     COMBO_WIDTH_LAYOUT,
+    COMBO_WIDTH_MORE_ACTIONS,
     COMBO_WIDTH_STAMMDATEN,
     COMBO_WIDTH_VORLAGEN,
     CORNER_RADIUS_CARD,
@@ -78,12 +80,16 @@ from constants import (
     WINDOW_STATE_ZOOMED,
     get_localized_menu_options_datenaustausch,
     COLOR_ICON_WHITE,
+    HEADER_BREAKPOINT_COMPACT,
     ICON_KEY_BELL,
+    ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
     ICON_KEY_USER,
+    ICON_KEY_WINDOWED,
     ICON_SIZE_HEADER,
+    TOOLTIP_SHORT_DELAY_MS,
     get_localized_menu_options_stammdaten,
     get_localized_menu_options_vorlagen,
 )
@@ -265,6 +271,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 x, y, w, h = self.winfo_x(), self.winfo_y(), self.winfo_width(), self.winfo_height()
                 if x > -30000 and y > -30000 and w > 100 and h > 100:
                     self._last_geometry = (x, y, w, h)
+                    self._update_header_responsive(w)
         except Exception:
             pass
 
@@ -415,6 +422,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.datenaustausch_combo.set(tr("menu.data_exchange", "🔄 Datenaustausch"))
         self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
+        # Responsive Compact "More" Menu (collapsed on narrow screens)
+        self.more_menu_combo = ctk.CTkOptionMenu(
+            menu_frame,
+            values=self._get_all_menu_options(),
+            command=self._on_more_menu_selected,
+            width=COMBO_WIDTH_MORE_ACTIONS,
+        )
+        self.more_menu_combo.set(tr("menu.more_actions", "Menü"))
+
         # Right side: User, Bell Badge, Help, Theme & Quit
         quit_btn = ctk.CTkButton(
             menu_frame,
@@ -438,6 +454,26 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             fg_color=COLOR_THEME_BTN,
         )
         theme_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
+
+        # Fullscreen Toggle Button
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        is_fs = getattr(self, "_is_fullscreen", False)
+        fs_icon_key = ICON_KEY_WINDOWED if is_fs else ICON_KEY_FULLSCREEN
+        self.fullscreen_btn = ctk.CTkButton(
+            menu_frame,
+            text="",
+            image=get_icon(fs_icon_key, size=ICON_SIZE_HEADER),
+            command=self.toggle_fullscreen,
+            width=BTN_WIDTH_FULLSCREEN,
+            fg_color=COLOR_THEME_BTN,
+        )
+        self.fullscreen_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
+        fs_tooltip_text = tr("menu.windowed", "Fenstermodus (F11)") if is_fs else tr("menu.fullscreen", "Vollbild (F11)")
+        self.fullscreen_tooltip = CTkTooltip(
+            self.fullscreen_btn,
+            fs_tooltip_text,
+            delay_ms=TOOLTIP_SHORT_DELAY_MS,
+        )
 
         self.help_btn = ctk.CTkButton(
             menu_frame,
@@ -517,6 +553,69 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.open_zip_export_dialog()
         elif choice.startswith("🔄"):
             self.open_p2p_dialog()
+
+    def _get_all_menu_options(self) -> list[str]:
+        return (
+            get_localized_menu_options_stammdaten()
+            + get_localized_menu_options_vorlagen()
+            + get_localized_menu_options_datenaustausch()
+        )
+
+    def _on_more_menu_selected(self, choice: str):
+        from services.i18n_service import tr
+        if hasattr(self, "more_menu_combo") and self.more_menu_combo.winfo_exists():
+            self.more_menu_combo.set(tr("menu.more_actions", "Menü"))
+        if choice in get_localized_menu_options_stammdaten():
+            self._on_stammdaten_selected(choice)
+        elif choice in get_localized_menu_options_vorlagen():
+            self._on_vorlagen_selected(choice)
+        elif choice in get_localized_menu_options_datenaustausch():
+            self._on_datenaustausch_selected(choice)
+
+    def toggle_fullscreen(self, event=None):
+        self._is_fullscreen = not getattr(self, "_is_fullscreen", False)
+        try:
+            self.attributes("-fullscreen", self._is_fullscreen)
+        except Exception as e:
+            logger.warning(f"Failed to toggle fullscreen: {e}")
+        if not self._is_fullscreen:
+            try:
+                self.state(WINDOW_STATE_ZOOMED)
+            except Exception:
+                pass
+        self._update_fullscreen_button()
+
+    def _update_fullscreen_button(self):
+        if hasattr(self, "fullscreen_btn") and self.fullscreen_btn and self.fullscreen_btn.winfo_exists():
+            from services.i18n_service import tr
+            is_fs = getattr(self, "_is_fullscreen", False)
+            icon_key = ICON_KEY_WINDOWED if is_fs else ICON_KEY_FULLSCREEN
+            self.fullscreen_btn.configure(
+                image=get_icon(icon_key, size=ICON_SIZE_HEADER),
+            )
+            if hasattr(self, "fullscreen_tooltip") and self.fullscreen_tooltip:
+                tooltip_text = tr("menu.windowed", "Fenstermodus (F11)") if is_fs else tr("menu.fullscreen", "Vollbild (F11)")
+                self.fullscreen_tooltip.text = tooltip_text
+
+    def _update_header_responsive(self, width: int):
+        is_compact = width < HEADER_BREAKPOINT_COMPACT
+        if getattr(self, "_header_is_compact", None) == is_compact:
+            return
+        self._header_is_compact = is_compact
+        if not hasattr(self, "stammdaten_combo") or not self.stammdaten_combo.winfo_exists():
+            return
+        if is_compact:
+            self.stammdaten_combo.pack_forget()
+            self.vorlagen_combo.pack_forget()
+            self.datenaustausch_combo.pack_forget()
+            if hasattr(self, "more_menu_combo") and self.more_menu_combo.winfo_exists():
+                self.more_menu_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
+        else:
+            if hasattr(self, "more_menu_combo") and self.more_menu_combo.winfo_exists():
+                self.more_menu_combo.pack_forget()
+            self.stammdaten_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
+            self.vorlagen_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
+            self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
@@ -871,6 +970,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         safe_bind(getattr(shortcuts, "view_analytics", DEFAULT_SHORTCUT_VIEW_ANALYTICS), lambda e: self.switch_layout(LayoutMode.ANALYTICS.value))
         safe_bind(shortcuts.toggle_theme, lambda e: self.toggle_theme())
         safe_bind("<F1>", lambda e: self.open_help_dialog())
+        safe_bind("<F11>", lambda e: self.toggle_fullscreen())
+        safe_bind("<Escape>", lambda e: self.toggle_fullscreen() if getattr(self, "_is_fullscreen", False) else None)
 
         # Global Font / UI Zoom shortcuts:
         safe_bind("<Control-plus>", lambda e: self.zoom_font(FONT_SCALE_STEP))

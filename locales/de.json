@@ -379,7 +379,11 @@
     "tab_wiki": "Wiki / Wissensdatenbank",
     "timeline_title": "Verlauf & Timeline Notizen",
     "change_practice": "🏥 Praxis wechseln",
-    "delete_case": "🗑 Fall löschen"
+    "delete_case": "🗑 Fall löschen",
+    "empty_hint": "Wählen Sie einen Fall aus der Liste oder drücken Sie Strg+N für einen neuen Fall.",
+    "empty_reset_filter": "Filter zurücksetzen",
+    "empty_search": "Keine Fälle gefunden für '{query}'",
+    "empty_title": "Kein Fall ausgewählt"
   },
   "colleague_mgmt": {
     "btn_new_colleague": "➕ Neuen Mitarbeiter anlegen",
@@ -1242,6 +1246,8 @@
     "opt_modules": "🧩 Programmbereiche",
     "opt_p2p": "🔄 P2P-Sync",
     "opt_practices": "🏥 Praxen",
+    "fullscreen": "Vollbild (F11)",
+    "more_actions": "Menü",
     "opt_snippets": "📝 Textbausteine",
     "opt_tags": "🏷 Tags",
     "opt_templates": "📄 Vorlagen",
@@ -1249,7 +1255,8 @@
     "quit": "Beenden",
     "templates": "📄 Vorlagen & Formulare",
     "theme": "Theme",
-    "title": " 🩺 Support-Cockpit "
+    "title": " 🩺 Support-Cockpit ",
+    "windowed": "Fenstermodus (F11)"
   },
   "new_case": {
     "add_tag": "+ Tag",

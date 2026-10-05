@@ -77,6 +77,7 @@ from constants import (
     TOAST_SNIPPET_NO_FOCUS,
     WIKI_STARTUP_SYNC_DELAY_MS,
     WINDOW_STATE_ICONIC,
+    WINDOW_STATE_NORMAL,
     WINDOW_STATE_ZOOMED,
     get_localized_menu_options_datenaustausch,
     COLOR_ICON_WHITE,
@@ -226,6 +227,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         # Geometry tracking for multi-monitor positioning
         self._last_geometry: tuple[int, int, int, int] | None = None
+        # What the window looked like the last time it was on screen, so that
+        # coming back from the tray (or the taskbar) restores exactly that
+        # instead of whatever Tk's deiconify makes of it. The app starts
+        # maximized, so that is the state to return to until the user changes it.
+        self._restore_state: str = WINDOW_STATE_ZOOMED
+        self._restore_geometry: str | None = None
+        self._restore_fullscreen: bool = False
         self.bind("<Configure>", self._on_window_configure, add="+")
 
         # System Tray Service
@@ -273,8 +281,48 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 if x > -30000 and y > -30000 and w > 100 and h > 100:
                     self._last_geometry = (x, y, w, h)
                     self._update_header_responsive(w)
+                    self._remember_window_state()
         except Exception:
             pass
+
+    def _remember_window_state(self) -> None:
+        """Records state (maximized/normal/fullscreen) and normal size of the visible window."""
+        try:
+            if not self.winfo_viewable():
+                return
+            state = self.state()
+            if state not in (WINDOW_STATE_ZOOMED, WINDOW_STATE_NORMAL):
+                return
+            self._restore_fullscreen = bool(getattr(self, "_is_fullscreen", False))
+            if self._restore_fullscreen:
+                # Fullscreen geometry is the screen; the state underneath is
+                # already kept in _pre_fullscreen_state by toggle_fullscreen().
+                return
+            self._restore_state = state
+            if state == WINDOW_STATE_NORMAL:
+                # Only real on-screen positions; a minimizing window briefly
+                # reports Windows' off-screen parking spot (-32000).
+                if self.winfo_x() > -30000 and self.winfo_y() > -30000:
+                    self._restore_geometry = self.geometry()
+        except Exception:
+            pass
+
+    def _apply_remembered_window_state(self) -> None:
+        """Re-applies what _remember_window_state() recorded, after the window was shown again."""
+        try:
+            if getattr(self, "_restore_fullscreen", False):
+                self.attributes("-fullscreen", True)
+                self._is_fullscreen = True
+                self._update_fullscreen_button()
+            elif getattr(self, "_restore_state", WINDOW_STATE_ZOOMED) == WINDOW_STATE_ZOOMED:
+                self.state(WINDOW_STATE_ZOOMED)
+            else:
+                self.state(WINDOW_STATE_NORMAL)
+                geom = getattr(self, "_restore_geometry", None)
+                if geom:
+                    self.geometry(geom)
+        except Exception as e:
+            logger.warning(f"Could not restore previous window state: {e}")
 
     def _show_splash_window(self) -> None:
         """Opens the small startup window shown while the main window is built."""
@@ -876,9 +924,12 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         def _restore():
             try:
                 if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
+                    # Tk's deiconify always comes back as a plain "normal"
+                    # window - a maximized window loses its maximized state
+                    # and is shown at its (default) normal size. Put back what
+                    # was on screen before it was hidden.
                     self.deiconify()
-                if self.state() == WINDOW_STATE_ICONIC:
-                    self.state(WINDOW_STATE_ZOOMED)
+                    self._apply_remembered_window_state()
                 self.lift()
                 self.focus_force()
                 self.attributes("-topmost", True)
@@ -1208,6 +1259,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)
         self.storage_service.flush_all_saves()
+        self._remember_window_state()
         self.withdraw()
 
     def find_case_by_id(self, case_id: str) -> Case | None:

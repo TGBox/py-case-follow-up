@@ -81,6 +81,7 @@ from constants import (
     get_localized_menu_options_datenaustausch,
     COLOR_ICON_WHITE,
     HEADER_BREAKPOINT_COMPACT,
+    MIN_WINDOW_VISIBLE_DIM,
     ICON_KEY_BELL,
     ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
@@ -518,6 +519,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         )
         self.user_btn.pack(side="right", padx=PAD_GAP, pady=PAD_SM)
 
+        # The menu bar was just rebuilt in wide layout, so the cached compact
+        # state no longer matches the widgets. Forget it and re-apply right away
+        # (once the window has a real size; before that the first <Configure> does it).
+        self._header_is_compact = None
+        try:
+            width = self.winfo_width()
+            if width > MIN_WINDOW_VISIBLE_DIM:
+                self._update_header_responsive(width)
+        except Exception:
+            pass
+
     def _on_stammdaten_selected(self, choice: str):
         from services.i18n_service import tr
         self.stammdaten_combo.set(tr("menu.master_data", "⚙ Stammdaten"))
@@ -573,12 +585,20 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self._on_datenaustausch_selected(choice)
 
     def toggle_fullscreen(self, event=None):
-        self._is_fullscreen = not getattr(self, "_is_fullscreen", False)
+        entering = not getattr(self, "_is_fullscreen", False)
+        if entering:
+            # Remember whether the window was maximized or a normal window,
+            # so leaving fullscreen returns to exactly that state.
+            try:
+                self._pre_fullscreen_state = self.state()
+            except Exception:
+                self._pre_fullscreen_state = WINDOW_STATE_ZOOMED
+        self._is_fullscreen = entering
         try:
-            self.attributes("-fullscreen", self._is_fullscreen)
+            self.attributes("-fullscreen", entering)
         except Exception as e:
             logger.warning(f"Failed to toggle fullscreen: {e}")
-        if not self._is_fullscreen:
+        if not entering and getattr(self, "_pre_fullscreen_state", WINDOW_STATE_ZOOMED) == WINDOW_STATE_ZOOMED:
             try:
                 self.state(WINDOW_STATE_ZOOMED)
             except Exception:

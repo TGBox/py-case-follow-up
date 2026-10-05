@@ -11,6 +11,7 @@ from services.storage_service import StorageService
 from ui.app import SupportCockpitApp
 from ui.widgets.case_list_widget import CaseListWidget
 from ui.views.table_view import TableView
+from services.i18n_service import get_i18n, tr
 from constants import (
     COLOR_PRIMARY,
     COLOR_MUTED_GRAY,
@@ -37,13 +38,32 @@ def test_fullscreen_toggle_and_f11_support(app_config: AppConfig):
         # Toggle to fullscreen
         app.toggle_fullscreen()
         app.update()
-        assert getattr(app, "_is_fullscreen", True) is True
+        assert app._is_fullscreen is True
 
         # Toggle back to windowed
         app.toggle_fullscreen()
         app.update()
-        assert getattr(app, "_is_fullscreen", False) is False
+        assert app._is_fullscreen is False
         assert app.state() == "zoomed"
+    finally:
+        app.destroy()
+
+
+def test_fullscreen_restores_normal_window_state(app_config: AppConfig):
+    """Leaving fullscreen must return a normal (non-maximized) window to normal, not maximize it."""
+    app = SupportCockpitApp(app_config)
+    try:
+        app.update()
+        app.state("normal")
+        app.update()
+
+        app.toggle_fullscreen()
+        app.update()
+        app.toggle_fullscreen()
+        app.update()
+
+        assert app._is_fullscreen is False
+        assert app.state() == "normal"
     finally:
         app.destroy()
 
@@ -57,18 +77,22 @@ def test_fullscreen_button_and_tooltip_update(app_config: AppConfig):
         assert app.fullscreen_btn is not None
         assert hasattr(app, "fullscreen_tooltip")
 
-        # Initial tooltip indicates fullscreen entry
-        assert "F11" in app.fullscreen_tooltip.text
+        enter_text = tr("menu.fullscreen", "Vollbild (F11)")
+        leave_text = tr("menu.windowed", "Fenstermodus (F11)")
+        assert enter_text != leave_text
 
-        # Toggle to fullscreen
+        # Initial tooltip offers entering fullscreen
+        assert app.fullscreen_tooltip.text == enter_text
+
+        # In fullscreen it offers going back to the window
         app.toggle_fullscreen()
         app.update()
-        assert "F11" in app.fullscreen_tooltip.text
+        assert app.fullscreen_tooltip.text == leave_text
 
         # Toggle back
         app.toggle_fullscreen()
         app.update()
-        assert "F11" in app.fullscreen_tooltip.text
+        assert app.fullscreen_tooltip.text == enter_text
     finally:
         app.destroy()
 
@@ -84,14 +108,45 @@ def test_responsive_header_mode_switching(app_config: AppConfig):
         # Trigger compact mode (< 1150px)
         app._update_header_responsive(HEADER_BREAKPOINT_COMPACT - 100)
         app.update()
-        assert getattr(app, "_header_is_compact", False) is True
+        assert app._header_is_compact is True
+        _assert_header_packed(app, compact=True)
 
         # Trigger wide mode (>= 1150px)
         app._update_header_responsive(HEADER_BREAKPOINT_COMPACT + 100)
         app.update()
-        assert getattr(app, "_header_is_compact", True) is False
+        assert app._header_is_compact is False
+        _assert_header_packed(app, compact=False)
     finally:
         app.destroy()
+
+
+def test_responsive_header_survives_menu_rebuild(app_config: AppConfig, monkeypatch: pytest.MonkeyPatch):
+    """A language change rebuilds the menu bar; a compact header must stay compact afterwards."""
+    app = SupportCockpitApp(app_config)
+    try:
+        app.update()
+        monkeypatch.setattr(app, "winfo_width", lambda: HEADER_BREAKPOINT_COMPACT - 100)
+        app._update_header_responsive(HEADER_BREAKPOINT_COMPACT - 100)
+        app.update()
+        _assert_header_packed(app, compact=True)
+
+        get_i18n().current_language = "en"
+        app.update()
+
+        assert app._header_is_compact is True
+        _assert_header_packed(app, compact=True)
+    finally:
+        app.destroy()
+
+
+def _assert_header_packed(app: SupportCockpitApp, compact: bool) -> None:
+    grouped = (app.stammdaten_combo, app.vorlagen_combo, app.datenaustausch_combo)
+    if compact:
+        assert app.more_menu_combo.winfo_manager() == "pack"
+        assert all(combo.winfo_manager() == "" for combo in grouped)
+    else:
+        assert app.more_menu_combo.winfo_manager() == ""
+        assert all(combo.winfo_manager() == "pack" for combo in grouped)
 
 
 def test_case_list_quick_filter_styling(tmp_path: Path):

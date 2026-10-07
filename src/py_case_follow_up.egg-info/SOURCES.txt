@@ -110,6 +110,7 @@ tests/test_ast_i18n_scanner.py
 tests/test_attachment_migration.py
 tests/test_attachment_service_extended.py
 tests/test_backup_retention.py
+tests/test_board_collapse_and_duplicates.py
 tests/test_bring_to_foreground.py
 tests/test_bugfixes_session.py
 tests/test_calendar_email.py
@@ -155,6 +156,7 @@ tests/test_followup_dialog_general.py
 tests/test_followup_time_stacking_and_language_deferral.py
 tests/test_full_app_lifecycle.py
 tests/test_git_hooks.py
+tests/test_gui_fullscreen_and_modernization.py
 tests/test_handover.py
 tests/test_help_dialog_content.py
 tests/test_i18n_service.py
@@ -205,6 +207,7 @@ tests/test_timeline_edit_and_time_bounds.py
 tests/test_timeline_note_resize.py
 tests/test_toast_notifications.py
 tests/test_translation_parity_and_quality.py
+tests/test_tray_restore_window_state.py
 tests/test_ui_contrast_and_form_safety.py
 tests/test_ui_improvements_screenshots.py
 tests/test_ui_integration.py

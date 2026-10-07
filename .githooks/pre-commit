@@ -3,7 +3,7 @@ set -e
 
 # Pre-Commit Hook um die SemVer Änderung abzufragen, und anschließend automatisch die Versionsnummer in der jeweiligen Config Datei anzupassen.
 
-# Eingabe erzwingen über Terminal (TTY), falls stdin umgeleitet ist
+# Eingabe über Terminal (TTY) erzwingen
 exec < /dev/tty
 
 echo "----------------------------------------"
@@ -24,7 +24,7 @@ case "$choice" in
   *) echo "Ungültige Auswahl, Commit abgebrochen."; exit 1 ;;
 esac
 
-# 1. Beispiel für pyproject.toml via Python
+# 1. Python-Projekt (pyproject.toml & uv.lock)
 if [ -f "pyproject.toml" ]; then
   python3 -c "
 import re, sys
@@ -37,14 +37,16 @@ with open(file, 'r', encoding='utf-8') as f:
 
 m = re.search(r'version\s*=\s*\"(\d+)\.(\d+)\.(\d+)\"', content)
 if not m:
-    sys.exit('Keine Version in pyproject.toml gefunden.')
+    sys.exit('Keine SemVer-Version in pyproject.toml gefunden.')
 
 major, minor, patch = map(int, m.groups())
 if part == 'major':
-    major, minor, patch = major + 1, 0, 0
+    major += 1
+    minor = 0
+    patch = 0
 elif part == 'minor':
-    minor, minor, patch = minor + 1, 0, 0  # minor + 1, patch = 0
-    minor = minor  # no-op
+    minor += 1
+    patch = 0
 elif part == 'patch':
     patch += 1
 
@@ -57,13 +59,22 @@ with open(file, 'w', encoding='utf-8') as f:
 print(f'pyproject.toml: {m.group(1)}.{m.group(2)}.{m.group(3)} -> {new_ver}')
 "
   git add pyproject.toml
+
+  if [ -f "uv.lock" ]; then
+    uv lock
+    git add uv.lock
+    echo "uv.lock aktualisiert und gestaged."
+  fi
 fi
 
-# 2. Beispiel für package.json / tsconfig-Projekte
+# 2. Node-Projekt (package.json)
 if [ -f "package.json" ]; then
-  # npm version aktualisiert package.json direkt ohne git-tag
   npm version "$BUMP" --no-git-tag-version
   git add package.json
+  
+  if [ -f "package-lock.json" ]; then
+    git add package-lock.json
+  fi
 fi
 
-echo "Versionsdateien aktualisiert und gestaged."
+echo "Versionsdateien erfolgreich aktualisiert."

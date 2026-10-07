@@ -1,6 +1,6 @@
 [project]
 name = "py-case-follow-up"
-version = "1.2.0"
+version = "1.2.1"
 description = "A python program to keep track of open processes where progress might be slow and responsibilities might shift over time. Including integration with other tools, customizable reminders, search functionality, different views and many other functions."
 readme = "README.md"
 requires-python = ">=3.14"

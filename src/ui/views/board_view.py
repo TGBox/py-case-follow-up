@@ -303,6 +303,8 @@ class BoardView(ctk.CTkFrame):
         current_user_name: str = "",
         user_color: str | None = None,
         color_marker_enabled: bool = False,
+        collapsed_states: dict[str, bool] | None = None,
+        on_collapsed_changed: Callable[[dict[str, bool]], None] | None = None,
     ):
         super().__init__(parent, fg_color="transparent")
         self.on_select_case = on_select_case
@@ -329,16 +331,27 @@ class BoardView(ctk.CTkFrame):
             "completed": False,
         }
 
-        # Load collapsed state from profile / app_config
-        if self.app_config:
-            if hasattr(self.app_config, "board_collapsed") and isinstance(self.app_config.board_collapsed, dict):
-                self.collapsed_states.update(self.app_config.board_collapsed)
-            elif hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):
-                self.collapsed_states.update(self.app_config.ui_settings.board_collapsed)
-
-        # Map legacy "support" key if present
-        if "support" in self.collapsed_states:
-            self.collapsed_states["hotline"] = self.collapsed_states.pop("support")
+        # Persisted per user in the profile (ui_settings.board_collapsed): the app
+        # passes the stored state in and is told about every toggle. app_config
+        # remains a fallback for callers that hand in board_collapsed themselves.
+        self.on_collapsed_changed = on_collapsed_changed
+        stored: dict | None = None
+        if isinstance(collapsed_states, dict):
+            stored = collapsed_states
+        elif self.app_config:
+            if isinstance(getattr(self.app_config, "board_collapsed", None), dict):
+                stored = self.app_config.board_collapsed
+            elif isinstance(getattr(getattr(self.app_config, "ui_settings", None), "board_collapsed", None), dict):
+                stored = self.app_config.ui_settings.board_collapsed
+        if stored:
+            stored = dict(stored)
+            # Legacy name of the hotline column - only if no real value exists.
+            legacy_support = stored.pop("support", None)
+            if legacy_support is not None and "hotline" not in stored:
+                stored["hotline"] = legacy_support
+            self.collapsed_states.update(
+                {k: bool(v) for k, v in stored.items() if k in self.collapsed_states}
+            )
 
         self.create_board()
 
@@ -458,7 +471,12 @@ class BoardView(ctk.CTkFrame):
         self.collapsed_states[col_key] = not curr
 
         # Save to profile / app_config
-        if self.app_config:
+        if self.on_collapsed_changed is not None:
+            try:
+                self.on_collapsed_changed(dict(self.collapsed_states))
+            except Exception:
+                pass
+        elif self.app_config:
             if hasattr(self.app_config, "board_collapsed") and isinstance(self.app_config.board_collapsed, dict):
                 self.app_config.board_collapsed[col_key] = not curr
             if hasattr(self.app_config, "ui_settings") and hasattr(self.app_config.ui_settings, "board_collapsed"):

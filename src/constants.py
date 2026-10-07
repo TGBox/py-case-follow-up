@@ -363,7 +363,14 @@ DEFAULT_SIGNATURE_FILENAME = "email_signature.txt"
 #: marker that is stored in the case file, so it stays language independent.
 DEFAULT_AUTHOR_EMAIL_IMPORT = "E-Mail Import"
 DEFAULT_UI_THEME = "SYSTEM"
-DEFAULT_BOARD_COLLAPSED = {"support": False, "dev": False, "followup": False, "completed": False}
+DEFAULT_BOARD_COLLAPSED = {
+    "hotline": False,
+    "tech": False,
+    "dev": False,
+    "customer": False,
+    "followup": False,
+    "completed": False,
+}
 DEFAULT_TABLE_COLUMN_WIDTHS = {"case_id": 120, "practice": 220, "title": 280, "actor": 130, "followup": 150, "score": 90}
 DEFAULT_TABLE_COLUMN_ORDER = ["case_id", "practice", "title", "actor", "followup", "score"]
 DEFAULT_TEXTBOX_HEIGHT = 90

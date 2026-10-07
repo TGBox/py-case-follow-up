@@ -308,8 +308,18 @@ class StorageService:
         if isinstance(data, list):
             migrated = False
             self._cases_cache = []
+            seen_items: dict[str, list[dict]] = {}
             for item in data:
                 if isinstance(item, dict):
+                    # Exact copies of an entry (same id, same content) are left
+                    # over from the duplicate-case bug and are dropped. Entries
+                    # that only share the id are kept - both are real data.
+                    item_id = str(item.get("case_id", ""))
+                    if item_id and item in seen_items.get(item_id, []):
+                        logger.warning(f"Dropped exact duplicate of case {item_id} from cases.json")
+                        migrated = True
+                        continue
+                    seen_items.setdefault(item_id, []).append(dict(item))
                     att = str(item.get("attachment_directory") or "").replace("\\", "/")
                     if att.startswith("attachments/"):
                         item["attachment_directory"] = f"data/{att}"
@@ -350,14 +360,16 @@ class StorageService:
         """Updates or adds a single case in the cache and persists the cases file."""
         case.invalidate_search_cache()
         cases = self.load_cases(use_cache=True)
-        updated = False
-        for idx, existing in enumerate(cases):
-            if existing.case_id == case.case_id:
-                cases[idx] = case
-                updated = True
-                break
-        if not updated:
+        # The very object first: if two cases ever share an id, matching by id
+        # alone overwrote the other one with this case - one case lost, this
+        # one listed twice.
+        idx = next((i for i, existing in enumerate(cases) if existing is case), None)
+        if idx is None:
+            idx = next((i for i, existing in enumerate(cases) if existing.case_id == case.case_id), None)
+        if idx is None:
             cases.append(case)
+        else:
+            cases[idx] = case
         self.save_cases(cases)
 
     def load_archive(self, use_cache: bool = True) -> list[Case]:

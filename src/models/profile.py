@@ -129,7 +129,14 @@ class UISettings:
 
         b_collapsed = dict(DEFAULT_BOARD_COLLAPSED)
         if isinstance(data.get("board_collapsed"), dict):
-            b_collapsed.update(data["board_collapsed"])
+            stored = {str(k): bool(v) for k, v in data["board_collapsed"].items()}
+            # The hotline column used to be called "support". Carried over only
+            # when there is no "hotline" entry yet: a stale "support": False
+            # would otherwise reopen a collapsed hotline column on every start.
+            legacy_support = stored.pop("support", None)
+            if legacy_support is not None and "hotline" not in stored:
+                stored["hotline"] = legacy_support
+            b_collapsed.update(stored)
 
         t_widths = dict(DEFAULT_TABLE_COLUMN_WIDTHS)
         if isinstance(data.get("table_column_widths"), dict):

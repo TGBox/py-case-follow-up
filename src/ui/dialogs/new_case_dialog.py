@@ -195,6 +195,7 @@ class NewCaseDialog(BaseDialog):
         on_customer_added: Callable[[Customer], None] | None = None,
         available_tags: list[str] | None = None,
         on_tag_added: Callable[[str], None] | None = None,
+        existing_case_ids: Callable[[], set[str]] | None = None,
     ):
         super().__init__(parent)
         w, h = DIALOG_DIMENSIONS["new_case"]
@@ -214,6 +215,10 @@ class NewCaseDialog(BaseDialog):
         self.on_customer_added = on_customer_added
         self.available_tags = list(available_tags) if available_tags else list(DEFAULT_TAGS)
         self.on_tag_added = on_tag_added
+        self.existing_case_ids = existing_case_ids
+        # Set once the case has been handed over - a second Enter/click that
+        # sneaks in before the dialog is gone must not create it twice.
+        self._case_submitted = False
 
         self.selected_tags_vars: dict[str, ctk.BooleanVar] = {}
         self.created_case: Case | None = None
@@ -638,9 +643,29 @@ class NewCaseDialog(BaseDialog):
     def generate_case_id(self, ref_year: int | None = None) -> str:
         year = ref_year or datetime.now().year
         timestamp_part = datetime.now().strftime(TIMESTAMP_FORMAT_CASE_ID)
-        return f"{CASE_ID_PREFIX}{year}-{timestamp_part}"
+        base_id = f"{CASE_ID_PREFIX}{year}-{timestamp_part}"
+
+        # The id only carries minute and second, so a case created at the same
+        # mm:ss in another hour gets the same id. Cases are looked up and saved
+        # by id, so a clash made one case overwrite the other in cases.json and
+        # show up twice on the board. Taken ids get a running suffix.
+        taken: set[str] = set()
+        existing_ids = getattr(self, "existing_case_ids", None)
+        if existing_ids is not None:
+            try:
+                taken = set(existing_ids())
+            except Exception:
+                taken = set()
+        case_id = base_id
+        suffix = 2
+        while case_id in taken:
+            case_id = f"{base_id}-{suffix}"
+            suffix += 1
+        return case_id
 
     def on_save(self):
+        if getattr(self, "_case_submitted", False):
+            return
         title = self.title_entry.get().strip()
         if not title:
             self.error_label.configure(text=tr("new_case.title_required", "Bitte einen Titel für den Fall eingeben."))
@@ -745,6 +770,7 @@ class NewCaseDialog(BaseDialog):
             timeline=timeline,
         )
 
+        self._case_submitted = True
         self.on_case_created(new_case)
         self.mark_clean()
         self.destroy()

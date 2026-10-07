@@ -728,6 +728,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 current_user_name=self.profile.user.name,
                 user_color=getattr(self.profile.user, "user_color", DEFAULT_USER_COLOR),
                 color_marker_enabled=getattr(self.profile.user, "color_marker_enabled", False),
+                collapsed_states=self.profile.ui_settings.board_collapsed,
+                on_collapsed_changed=self._on_board_collapsed_changed,
             )
         if layout_value == LayoutMode.TABLE.value:
             return TableView(
@@ -764,6 +766,15 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             on_change_practice=self.on_change_practice,
             on_delete_case=self.on_delete_case,
         )
+
+    def _on_board_collapsed_changed(self, states: dict[str, bool]) -> None:
+        """Stores which Kanban columns are collapsed in the user profile.
+
+        Goes through self.profile at call time, not a reference captured when
+        the board was built - on_profile_updated() swaps the profile object.
+        """
+        self.profile.ui_settings.board_collapsed = dict(states)
+        self.storage_service.save_profile(self.profile)
 
     def _get_view(self, layout_value: str) -> Any:
         """Returns the view for a layout, building it on first access."""

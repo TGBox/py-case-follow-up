@@ -9,6 +9,7 @@ und alle hier aufgerufenen self.-Attribute (self.storage_service, self.cases,
 self.cockpit_view, usw.) unveraendert funktionieren. Reines Verschieben von
 Code, keine Verhaltensaenderung.
 """
+import logging
 from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -502,13 +503,30 @@ class DialogLaunchersMixin:
             on_customer_added=self.on_quick_customer_added,
             available_tags=self.profile.available_tags,
             on_tag_added=self.on_tag_added,
+            existing_case_ids=self._all_known_case_ids,
         )
+
+    def _all_known_case_ids(self) -> set[str]:
+        """Every case id in use - active and archived - for unique new ids."""
+        ids = {c.case_id for c in self.cases}
+        try:
+            ids.update(c.case_id for c in self.storage_service.load_archive())
+        except Exception:
+            pass
+        return ids
 
     def on_quick_customer_added(self, new_customer: Customer):
         self.customer_service.save_customer(new_customer)
         self.customers = self.storage_service.load_customers()
 
     def on_case_created(self, new_case: Case):
+        # Last line of defence: a case that is already in the list (double
+        # submit) must not be added a second time.
+        if any(c is new_case or c.case_id == new_case.case_id for c in self.cases):
+            logging.getLogger("SupportCockpit").warning(
+                f"on_case_created: case {new_case.case_id} already exists, not added again"
+            )
+            return
         self.scoring_service.update_case_scoring(new_case)
         self.cases.append(new_case)
         self.storage_service.save_cases(self.cases)

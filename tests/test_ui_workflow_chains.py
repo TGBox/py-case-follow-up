@@ -309,6 +309,8 @@ def test_new_case_dialog_manual_creation_date_validation():
 
     # 2. Future date -> Should fail validation
     created_cases.clear()
+    # A real dialog closes after a successful save; this one is reused.
+    dialog._case_submitted = False
     dialog.created_at_picker = MockWidget("31.12.2099 12:00")
     dialog.on_save()
     assert len(created_cases) == 0

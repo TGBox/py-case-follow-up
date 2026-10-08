@@ -6,6 +6,8 @@ import tkinter as tk
 import customtkinter as ctk
 
 from constants import (
+    ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED,
+    ATTR_LINK_CLICK_HANDLER,
     COLOR_FALLBACK_TEXT_BG,
     COLOR_ON_ACCENT_DARK,
     COLOR_ON_ACCENT_LIGHT,
@@ -37,10 +39,10 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     # AutoScrollableFrame ends up with two independent controllers, each with its
     # own _last_visible memo, fighting over the same scrollbar and scheduling a
     # second set of <Configure> handlers and after() timers.
-    if getattr(scroll_frame, "_auto_hide_scrollbar_installed", False):
+    if getattr(scroll_frame, ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED, False):
         return
     try:
-        scroll_frame._auto_hide_scrollbar_installed = True  # pyright: ignore[reportAttributeAccessIssue]
+        setattr(scroll_frame, ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED, True)
     except Exception:
         pass
 
@@ -65,7 +67,7 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
 
     _updating = False
     _scheduled = False
-    _last_visible = None
+    _last_visible: bool | None = None
     # Showing or hiding the bar resizes the canvas, which re-wraps the content,
     # which can flip the decision straight back - an endless hide/show cascade
     # that keeps the idle queue full, so update_idletasks() never returns and the
@@ -103,7 +105,7 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
                 if canvas_dim <= 1:
                     return
 
-                if _last_visible is True:
+                if _last_visible:
                     # Already visible: only hide once the content clears the dead
                     # band, so a few pixels of reflow cannot toggle it back.
                     should_show = content_dim > (canvas_dim - _HYSTERESIS_PX)
@@ -117,7 +119,7 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
                     # This frame is oscillating. Settle on "visible", which is the
                     # harmless end state (a scrollbar too many beats content the
                     # user cannot reach), and stop reacting.
-                    if _last_visible is True:
+                    if _last_visible:
                         return
                     should_show = True
 
@@ -954,7 +956,7 @@ def linkify_text_widget(
     handler = LinkClickHandler(txt, opener or webbrowser.open)
     # Kept on the widget so the handler lives as long as the bindings do (and
     # tests can drive it without a mapped window).
-    setattr(txt, "link_click_handler", handler)
+    setattr(txt, ATTR_LINK_CLICK_HANDLER, handler)
     base_cursor = txt.cget("cursor") or CURSOR_ARROW
 
     txt.tag_configure("link", foreground=link_color, underline=True)

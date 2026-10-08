@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: py-case-follow-up
-Version: 2.1.0
+Version: 2.1.1
 Summary: A python program to keep track of open processes where progress might be slow and responsibilities might shift over time. Including integration with other tools, customizable reminders, search functionality, different views and many other functions.
 Requires-Python: >=3.14
 Description-Content-Type: text/markdown

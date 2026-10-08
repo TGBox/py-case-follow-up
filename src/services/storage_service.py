@@ -4,6 +4,7 @@ import logging
 import re
 import shutil
 import threading
+import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ from constants import (
     LOG_MAX_BYTES,
     REGEX_CASES_BACKUP,
     REL_ATTACHMENTS_DIR,
+    TIMEOUT_STORAGE_FLUSH_ALL,
     TIMEOUT_STORAGE_WRITE_COND,
 )
 from models.case import Case
@@ -63,10 +65,16 @@ def setup_logging(log_path: Path) -> None:
         logger.addHandler(handler)
 
 
-def atomic_save_json(target_path: Path, data: Any) -> None:
-    """Atomic JSON save using temporary file and atomic replace."""
+def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
+    """Atomic JSON save using temporary file and atomic replace.
+
+    temp_tag gives the temporary file its own name, for a write that must not
+    share the temp file with a background write of the same target that is
+    still in progress.
+    """
     target_path.parent.mkdir(parents=True, exist_ok=True)
-    temp_path = target_path.with_name(f"{target_path.name}.tmp.json")
+    tag = f".{temp_tag}" if temp_tag else ""
+    temp_path = target_path.with_name(f"{target_path.name}{tag}.tmp.json")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=JSON_INDENT, ensure_ascii=False)
@@ -144,6 +152,9 @@ class DebouncedSaver:
         self._data: dict[Path, Any] = {}
         self._lock = threading.Lock()
         self._active_writes: set[Path] = set()
+        #: What each running background write is saving, so flush_all can
+        #: write it itself if that write never finishes.
+        self._active_values: dict[Path, Any] = {}
         self._write_cond = threading.Condition(self._lock)
 
     def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = DEBOUNCE_DELAY_STORAGE_SAVE):
@@ -159,6 +170,7 @@ class DebouncedSaver:
                     if val is None:
                         return
                     self._active_writes.add(target_path)
+                    self._active_values[target_path] = val
                 try:
                     data = val() if callable(val) else val
                     atomic_save_json(target_path, data)
@@ -167,6 +179,7 @@ class DebouncedSaver:
                 finally:
                     with self._lock:
                         self._active_writes.discard(target_path)
+                        self._active_values.pop(target_path, None)
                         self._write_cond.notify_all()
 
             timer = threading.Timer(delay_seconds, flush)
@@ -174,8 +187,18 @@ class DebouncedSaver:
             self._timers[target_path] = timer
             timer.start()
 
-    def flush_all(self):
-        """Immediately flushes all pending debounced saves synchronously (used on app exit)."""
+    def flush_all(self, timeout: float = TIMEOUT_STORAGE_FLUSH_ALL):
+        """Immediately flushes all pending debounced saves synchronously (used on app exit).
+
+        Waits at most ``timeout`` seconds for background writes that are
+        already running. A background write can block for good: if the garbage
+        collector happens to run there and finalises a Tk object (a CTkFont's
+        __del__ calls into Tcl), Tcl hands that call to the main thread and
+        waits - while the main thread sits here waiting for the write. Without
+        the deadline the app hung on exit. A write still running at the
+        deadline is done here on the main thread instead, under its own temp
+        file name, so nothing is lost.
+        """
         with self._lock:
             pending_data = dict(self._data)
             for timer in self._timers.values():
@@ -190,9 +213,23 @@ class DebouncedSaver:
             except Exception as e:
                 logger.error(f"Flush save failed for {path}: {e}")
 
+        deadline = time.monotonic() + timeout
+        stuck: dict[Path, Any] = {}
         with self._lock:
             while self._active_writes:
-                self._write_cond.wait(timeout=TIMEOUT_STORAGE_WRITE_COND)
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    stuck = {p: self._active_values[p] for p in self._active_writes if p in self._active_values}
+                    break
+                self._write_cond.wait(timeout=min(remaining, TIMEOUT_STORAGE_WRITE_COND))
+
+        for path, val in stuck.items():
+            logger.warning(f"Background save for {path} did not finish in {timeout}s - writing it from the main thread.")
+            try:
+                data = val() if callable(val) else val
+                atomic_save_json(path, data, temp_tag="flush")
+            except Exception as e:
+                logger.error(f"Flush save failed for {path}: {e}")
 
 
 class StorageService:

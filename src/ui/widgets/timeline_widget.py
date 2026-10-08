@@ -34,6 +34,8 @@ from constants import (
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
     TIMELINE_ACCENT_RAIL_WIDTH,
+    TIMELINE_AUTHOR_CHIP_MIX_DARK,
+    TIMELINE_AUTHOR_CHIP_MIX_LIGHT,
     TIMELINE_AUTHOR_CHIP_RADIUS,
     TIMELINE_NOTE_HEIGHT_KEY,
     TIMELINE_NOTE_MAX_DISPLAY_LINES,
@@ -237,15 +239,21 @@ class TimelineWidget(ctk.CTkFrame):
         """
         if not (self.color_marker_enabled and self.user_color):
             return None
-        from utils.ui_utils import mix_colors, readable_text_on
+        from utils.ui_utils import mix_colors
         color = self.user_color
         try:
+            card_bg = (
+                mix_colors(self, color, COLOR_CARD_BG[0], TIMELINE_OWN_TINT_LIGHT),
+                mix_colors(self, color, COLOR_CARD_BG[1], TIMELINE_OWN_TINT_DARK),
+            )
             return {
                 "accent": color,
-                "on_accent": readable_text_on(self, color),
-                "card_bg": (
-                    mix_colors(self, color, COLOR_CARD_BG[0], TIMELINE_OWN_TINT_LIGHT),
-                    mix_colors(self, color, COLOR_CARD_BG[1], TIMELINE_OWN_TINT_DARK),
+                "card_bg": card_bg,
+                # Dezenter Namens-Chip: nur ein Hauch mehr Farbe als die Karte,
+                # damit er zur Karte gehoert statt ueber ihr zu leuchten.
+                "chip_bg": (
+                    mix_colors(self, color, card_bg[0], TIMELINE_AUTHOR_CHIP_MIX_LIGHT),
+                    mix_colors(self, color, card_bg[1], TIMELINE_AUTHOR_CHIP_MIX_DARK),
                 ),
                 "border": (
                     mix_colors(self, color, COLOR_CARD_BORDER[0], TIMELINE_OWN_BORDER_MIX_LIGHT),
@@ -344,13 +352,13 @@ class TimelineWidget(ctk.CTkFrame):
             edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
 
             if palette:
-                # Name als Chip in der Nutzerfarbe, Textfarbe nach Kontrast.
+                # Name als zurueckhaltender Chip im Kartenton, normale Schrift.
                 ctk.CTkLabel(
                     author_frame,
                     text=entry.author,
-                    font=ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"),
-                    fg_color=palette["accent"],
-                    text_color=palette["on_accent"],
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    fg_color=palette["chip_bg"],
+                    text_color=COLOR_SUBTITLE_MUTED,
                     corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
                     height=LABEL_HEIGHT_SM,
                     padx=PAD_GAP,

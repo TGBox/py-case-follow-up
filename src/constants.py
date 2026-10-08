@@ -486,9 +486,13 @@ TIMELINE_OWN_BORDER_MIX_LIGHT = 0.55
 TIMELINE_OWN_BORDER_MIX_DARK = 0.65
 TIMELINE_ACCENT_RAIL_WIDTH = 5
 TIMELINE_AUTHOR_CHIP_RADIUS = 8
-#: Anteil Nutzerfarbe im Namens-Chip, gemischt in den (schon getoenten) Kartenhintergrund.
-TIMELINE_AUTHOR_CHIP_MIX_LIGHT = 0.22
-TIMELINE_AUTHOR_CHIP_MIX_DARK = 0.28
+#: Fuellung des Namens-Chips: Anteil Nutzerfarbe auf dem (schon getoenten) Kartenhintergrund.
+TIMELINE_AUTHOR_CHIP_MIX_LIGHT = 0.10
+TIMELINE_AUTHOR_CHIP_MIX_DARK = 0.14
+#: Hover-Toenung des randlosen Bearbeiten-Stifts auf eigenen Karten.
+TIMELINE_EDIT_HOVER_MIX = 0.22
+#: Hover des Stifts auf neutralen Karten (hell, dunkel).
+COLOR_TIMELINE_EDIT_HOVER = ("gray88", "gray30")
 #: Textfarben auf dem Namens-Chip; gewaehlt wird die mit dem besseren Kontrast.
 COLOR_ON_ACCENT_LIGHT = "#ffffff"
 COLOR_ON_ACCENT_DARK = "#18181b"

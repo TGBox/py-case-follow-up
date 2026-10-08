@@ -866,6 +866,31 @@ def readable_text_on(widget: Any, color: str) -> str:
     return COLOR_ON_ACCENT_LIGHT if contrast_light >= contrast_dark else COLOR_ON_ACCENT_DARK
 
 
+
+def contrast_ratio(widget: Any, color_a: str, color_b: str) -> float:
+    """WCAG contrast ratio between two Tk colours (1.0 .. 21.0)."""
+    la = _relative_luminance(_rgb8(widget, color_a))
+    lb = _relative_luminance(_rgb8(widget, color_b))
+    hi, lo = max(la, lb), min(la, lb)
+    return (hi + 0.05) / (lo + 0.05)
+
+
+def readable_variant(widget: Any, color: str, background: str, min_contrast: float = 4.5) -> str:
+    """``color`` darkened (light background) or lightened (dark background)
+    just enough to be readable as text on ``background``.
+
+    Keeps the hue recognisable: a yellow user colour becomes a deep ochre on
+    a light card and stays a light yellow on a dark one.
+    """
+    bg_lum = _relative_luminance(_rgb8(widget, background))
+    toward = "#000000" if bg_lum > 0.18 else "#ffffff"
+    step = 0.0
+    candidate = mix_colors(widget, color, color, 1.0)
+    while contrast_ratio(widget, candidate, background) < min_contrast and step < 1.0:
+        step = min(1.0, step + 0.05)
+        candidate = mix_colors(widget, toward, color, step)
+    return candidate
+
 # ============================================================================
 # Klickbare Links in read-only tk.Text (Timeline-Notizen)
 # ============================================================================

@@ -1,11 +1,16 @@
 from collections.abc import Callable
+import re
+import webbrowser
 from typing import Any, Literal, cast
 import tkinter as tk
 import customtkinter as ctk
 
 from constants import (
     COLOR_FALLBACK_TEXT_BG,
+    COLOR_ON_ACCENT_DARK,
+    COLOR_ON_ACCENT_LIGHT,
     COLOR_SEARCH_HIGHLIGHT,
+    LINK_DRAG_TOLERANCE_PX,
     CURSOR_ARROW,
     CURSOR_HAND,
     DEFAULT_FONT_FAMILY_FALLBACK,
@@ -816,3 +821,160 @@ def create_highlighted_label(
         bind_mouse_wheel_to_canvas(txt, scroll_frame)
 
     return txt
+
+
+# ============================================================================
+# Farben mischen (Nutzerfarbe als Ton auf Karten)
+# ============================================================================
+
+def _rgb8(widget: Any, color: str) -> tuple[int, int, int]:
+    """Resolves any Tk colour (hex or a name like "gray23") to 8-bit RGB."""
+    r, g, b = widget.winfo_rgb(color)
+    return r >> 8, g >> 8, b >> 8
+
+
+def mix_colors(widget: Any, color: str, base: str, ratio: float) -> str:
+    """Blends ``ratio`` of ``color`` into ``base`` and returns a hex string.
+
+    Tk resolves both colours, so CTk-style names ("gray23") work as base.
+    Raises tk.TclError for an unknown colour, so the caller can fall back.
+    """
+    ratio = max(0.0, min(1.0, ratio))
+    c = _rgb8(widget, color)
+    b = _rgb8(widget, base)
+    mixed = (round(b[i] + (c[i] - b[i]) * ratio) for i in range(3))
+    return "#{:02x}{:02x}{:02x}".format(*mixed)
+
+
+def _relative_luminance(rgb: tuple[int, int, int]) -> float:
+    def _lin(v: int) -> float:
+        s = v / 255
+        return s / 12.92 if s <= 0.04045 else ((s + 0.055) / 1.055) ** 2.4
+    r, g, b = (_lin(v) for v in rgb)
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def readable_text_on(widget: Any, color: str) -> str:
+    """Light or dark text colour, whichever contrasts better with ``color`` (WCAG)."""
+    lum = _relative_luminance(_rgb8(widget, color))
+    light = _relative_luminance(_rgb8(widget, COLOR_ON_ACCENT_LIGHT))
+    dark = _relative_luminance(_rgb8(widget, COLOR_ON_ACCENT_DARK))
+    contrast_light = (light + 0.05) / (lum + 0.05)
+    contrast_dark = (lum + 0.05) / (dark + 0.05)
+    return COLOR_ON_ACCENT_LIGHT if contrast_light >= contrast_dark else COLOR_ON_ACCENT_DARK
+
+
+# ============================================================================
+# Klickbare Links in read-only tk.Text (Timeline-Notizen)
+# ============================================================================
+
+#: http(s)/ftp/file-URLs, mailto: und nacktes "www." - bis zum naechsten
+#: Leerzeichen oder Anfuehrungszeichen.
+_LINK_RE = re.compile(r"(?:https?://|ftp://|file:///?|mailto:|www\.)[^\s<>\"']+", re.IGNORECASE)
+#: Satzzeichen, die beim Tippen direkt hinter einem Link landen, aber nicht
+#: dazugehoeren ("siehe https://x.de/a." / "(https://x.de/a)").
+_LINK_TRAILING = ".,;:!?)]}>"
+_LINK_PAIRS = {")": "(", "]": "[", "}": "{"}
+
+
+def find_links(text: str) -> list[tuple[str, str]]:
+    """Links in ``text`` as (text as written, target to open), in order.
+
+    Trailing punctuation is dropped unless it closes a bracket that the link
+    itself opened (Wikipedia-style ``.../Foo_(Bar)``). A bare ``www.`` link
+    opens as https.
+    """
+    found: list[tuple[str, str]] = []
+    for m in _LINK_RE.finditer(text or ""):
+        raw = m.group(0)
+        while raw and raw[-1] in _LINK_TRAILING:
+            opener = _LINK_PAIRS.get(raw[-1])
+            if opener and raw.count(opener) >= raw.count(raw[-1]):
+                break
+            raw = raw[:-1]
+        scheme = re.match(r"(?:https?://|ftp://|file:///?|mailto:|www\.)", raw, re.IGNORECASE)
+        if not scheme or len(raw) == scheme.end():
+            continue  # nur "https://" o.ae. ohne Ziel
+        target = f"https://{raw}" if raw.lower().startswith("www.") else raw
+        found.append((raw, target))
+    return found
+
+
+class LinkClickHandler:
+    """Opens a link on a plain click; a press that turns into a drag is a
+    text selection (copying a link out of a note) and opens nothing."""
+
+    def __init__(self, txt: tk.Text, opener: Callable[[str], Any]):
+        self.txt = txt
+        self.opener = opener
+        self._press_xy: tuple[int, int] | None = None
+
+    def press(self, event: Any) -> None:
+        self._press_xy = (event.x, event.y)
+
+    def release(self, event: Any, target: str) -> bool:
+        start, self._press_xy = self._press_xy, None
+        if start is None:
+            return False
+        if abs(event.x - start[0]) > LINK_DRAG_TOLERANCE_PX or abs(event.y - start[1]) > LINK_DRAG_TOLERANCE_PX:
+            return False
+        try:
+            if self.txt.tag_ranges("sel"):
+                return False
+        except tk.TclError:
+            return False
+        try:
+            self.opener(target)
+        except Exception:
+            return False
+        return True
+
+
+def linkify_text_widget(
+    txt: tk.Text,
+    link_color: str | tuple[str, str],
+    opener: Callable[[str], Any] | None = None,
+) -> list[str]:
+    """Marks every link in a (read-only) tk.Text and makes it clickable.
+
+    A plain click opens the link in the default browser / mail program. A
+    press that turns into a drag is a text selection and opens nothing, so
+    copying a link out of a note keeps working. Returns the link targets.
+    """
+    try:
+        content = txt.get("1.0", "end-1c")
+    except tk.TclError:
+        return []
+    links = find_links(content)
+    if not links:
+        return []
+
+    if isinstance(link_color, (tuple, list)):
+        link_color = link_color[1] if ctk.get_appearance_mode().lower() == "dark" else link_color[0]
+    handler = LinkClickHandler(txt, opener or webbrowser.open)
+    # Kept on the widget so the handler lives as long as the bindings do (and
+    # tests can drive it without a mapped window).
+    setattr(txt, "link_click_handler", handler)
+    base_cursor = txt.cget("cursor") or CURSOR_ARROW
+
+    txt.tag_configure("link", foreground=link_color, underline=True)
+    txt.tag_raise("link")
+
+    search_from = "1.0"
+    for idx, (raw, target) in enumerate(links):
+        # Search instead of counting characters: Tk and Python count some
+        # characters (emoji) differently, a character offset could drift.
+        start = txt.search(raw, search_from, stopindex="end", exact=True)
+        if not start:
+            continue
+        end = f"{start}+{len(raw)}c"
+        tag = f"link-{idx}"
+        txt.tag_add("link", start, end)
+        txt.tag_add(tag, start, end)
+        txt.tag_bind(tag, "<ButtonPress-1>", handler.press, add="+")
+        txt.tag_bind(tag, "<ButtonRelease-1>", lambda e, t=target: handler.release(e, t), add="+")
+        search_from = end
+
+    txt.tag_bind("link", "<Enter>", lambda _e: txt.configure(cursor=CURSOR_HAND))
+    txt.tag_bind("link", "<Leave>", lambda _e: txt.configure(cursor=base_cursor))
+    return [t for _, t in links]

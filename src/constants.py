@@ -475,6 +475,25 @@ COLOR_BORDER_DARK = "#18181b"
 #: must not cap them at its usual few lines. A ceiling stays as a guard
 #: against a pathological note blowing up the layout.
 TIMELINE_NOTE_MAX_DISPLAY_LINES = 500
+#: Eigene Timeline-Eintraege bei aktivierter Farbkennzeichnung: die Karte
+#: bekommt einen Hauch der Nutzerfarbe als Hintergrund, einen Rahmen in einer
+#: abgeschwaechten Variante, eine durchgehende Farbleiste links und den Namen
+#: als farbigen Chip. Anteile = wie viel Nutzerfarbe in die Grundfarbe gemischt
+#: wird (0..1); im Dark Mode braucht es mehr, damit der Ton sichtbar bleibt.
+TIMELINE_OWN_TINT_LIGHT = 0.09
+TIMELINE_OWN_TINT_DARK = 0.16
+TIMELINE_OWN_BORDER_MIX_LIGHT = 0.55
+TIMELINE_OWN_BORDER_MIX_DARK = 0.65
+TIMELINE_ACCENT_RAIL_WIDTH = 5
+TIMELINE_AUTHOR_CHIP_RADIUS = 8
+#: Textfarben auf dem Namens-Chip; gewaehlt wird die mit dem besseren Kontrast.
+COLOR_ON_ACCENT_LIGHT = "#ffffff"
+COLOR_ON_ACCENT_DARK = "#18181b"
+#: Links in Timeline-Notizen. dodgerblue (COLOR_WIKI_LINK) ist auf Weiss zu
+#: kontrastarm, daher ein eigenes (hell, dunkel)-Paar.
+COLOR_TIMELINE_LINK = ("#1d4ed8", "#8ab4ff")
+#: Mausweg in Pixeln, ab dem ein Klick auf einen Link als Markieren gilt.
+LINK_DRAG_TOLERANCE_PX = 4
 #: Eingabefeld "Neue Notiz" in der Timeline: per Griff in der Hoehe
 #: verstellbar, gespeichert in ui_settings.custom_textbox_heights unter
 #: diesem Schluessel (wird mit "Spaltenbreiten zuruecksetzen" mit geleert).

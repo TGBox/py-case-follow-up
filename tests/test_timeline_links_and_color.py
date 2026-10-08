@@ -164,11 +164,11 @@ def test_own_card_is_tinted_with_chip_and_rail(root):
 
     chips = [c for c in _walk(own_card) if isinstance(c, ctk.CTkLabel) and c.cget("text") == "Daniel Rösch"]
     assert chips
-    chip_frame = chips[0].master
-    # Outlined chip: full user colour only on the border, barely any fill,
-    # the name in a readable variant of the user colour.
-    assert chip_frame.cget("border_color") == "#10b981"
-    fill = chip_frame.cget("fg_color")
+    # Borderless chip: a single label with its own rounded, lightly tinted
+    # fill (no frame whose 1px ring renders jagged on Windows), the name in a
+    # readable variant of the user colour.
+    assert not isinstance(chips[0].master, ctk.CTkFrame) or chips[0].master.cget("border_width") == 0
+    fill = chips[0].cget("fg_color")
     assert "#10b981" not in fill
     for mode_idx in (0, 1):
         text = chips[0].cget("text_color")[mode_idx]

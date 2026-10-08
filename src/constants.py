@@ -482,13 +482,17 @@ TIMELINE_NOTE_MAX_DISPLAY_LINES = 500
 #: wird (0..1); im Dark Mode braucht es mehr, damit der Ton sichtbar bleibt.
 TIMELINE_OWN_TINT_LIGHT = 0.09
 TIMELINE_OWN_TINT_DARK = 0.16
-TIMELINE_OWN_BORDER_MIX_LIGHT = 0.55
-TIMELINE_OWN_BORDER_MIX_DARK = 0.65
+#: Kartenrand: nur leicht in Richtung Nutzerfarbe. Ein kraeftiger 1-px-Rand
+#: wirkt an den (von CTk per Font-Glyphen gezeichneten) Ecken treppig.
+TIMELINE_OWN_BORDER_MIX_LIGHT = 0.25
+TIMELINE_OWN_BORDER_MIX_DARK = 0.30
 TIMELINE_ACCENT_RAIL_WIDTH = 5
 TIMELINE_AUTHOR_CHIP_RADIUS = 8
 #: Fuellung des Namens-Chips: Anteil Nutzerfarbe auf dem (schon getoenten) Kartenhintergrund.
-TIMELINE_AUTHOR_CHIP_MIX_LIGHT = 0.10
-TIMELINE_AUTHOR_CHIP_MIX_DARK = 0.14
+#: Der Chip hat keinen Rand (1-px-Ring auf kleiner Pille rendert unter Windows
+#: treppig), daher etwas mehr Farbe als frueher, damit er sich abhebt.
+TIMELINE_AUTHOR_CHIP_MIX_LIGHT = 0.18
+TIMELINE_AUTHOR_CHIP_MIX_DARK = 0.22
 #: Hover-Toenung des randlosen Bearbeiten-Stifts auf eigenen Karten.
 TIMELINE_EDIT_HOVER_MIX = 0.22
 #: Hover des Stifts auf neutralen Karten (hell, dunkel).

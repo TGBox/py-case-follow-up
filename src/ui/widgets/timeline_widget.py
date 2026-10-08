@@ -31,7 +31,6 @@ from constants import (
     PAD_MD,
     PAD_NONE,
     PAD_SM,
-    PAD_TINY,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
     TIMELINE_ACCENT_RAIL_WIDTH,
@@ -255,9 +254,9 @@ class TimelineWidget(ctk.CTkFrame):
             return {
                 "accent": color,
                 "card_bg": card_bg,
-                # Namens-Chip: Rand in voller Nutzerfarbe, kaum Fuellung, der
-                # Name in einer lesbaren Variante derselben Farbe - erkennbar,
-                # ohne zu leuchten (auch bei Gelb im Dark Mode).
+                # Namens-Chip: leicht getoente Fuellung, der Name in einer
+                # lesbaren Variante der Nutzerfarbe - erkennbar, ohne zu
+                # leuchten (auch bei Gelb im Dark Mode).
                 "chip_bg": chip_bg,
                 "chip_text": (
                     readable_variant(self, color, chip_bg[0]),
@@ -390,22 +389,19 @@ class TimelineWidget(ctk.CTkFrame):
             CTkTooltip(edit_btn, lambda: tr("timeline.edit_tooltip", "Eintrag bearbeiten"))
 
             if palette:
-                chip = ctk.CTkFrame(
-                    author_frame,
-                    fg_color=palette["chip_bg"],
-                    border_width=1,
-                    border_color=palette["accent"],
-                    corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
-                )
-                chip.pack(side="left")
+                # Ein einziges Label mit eigener runder Fuellung: kein Rahmen
+                # (1-px-Ring auf der kleinen Pille wird unter Windows treppig)
+                # und kein Kind-Widget, dessen Rechteck in die Rundung schneidet.
                 ctk.CTkLabel(
-                    chip,
+                    author_frame,
                     text=entry.author,
                     font=fonts["chip"],
-                    fg_color="transparent",
+                    fg_color=palette["chip_bg"],
                     text_color=palette["chip_text"],
+                    corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
                     height=LABEL_HEIGHT_SM,
-                ).pack(padx=PAD_GAP, pady=PAD_TINY)
+                    padx=PAD_GAP,
+                ).pack(side="left")
             else:
                 ctk.CTkLabel(
                     author_frame,

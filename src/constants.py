@@ -486,6 +486,9 @@ TIMELINE_OWN_BORDER_MIX_LIGHT = 0.55
 TIMELINE_OWN_BORDER_MIX_DARK = 0.65
 TIMELINE_ACCENT_RAIL_WIDTH = 5
 TIMELINE_AUTHOR_CHIP_RADIUS = 8
+#: Anteil Nutzerfarbe im Namens-Chip, gemischt in den (schon getoenten) Kartenhintergrund.
+TIMELINE_AUTHOR_CHIP_MIX_LIGHT = 0.22
+TIMELINE_AUTHOR_CHIP_MIX_DARK = 0.28
 #: Textfarben auf dem Namens-Chip; gewaehlt wird die mit dem besseren Kontrast.
 COLOR_ON_ACCENT_LIGHT = "#ffffff"
 COLOR_ON_ACCENT_DARK = "#18181b"
@@ -1078,6 +1081,8 @@ TOAST_SNIPPET_MACRO_TITLE = "Textbaustein Macro"
 TOAST_SNIPPET_NO_FOCUS = "Kein fokussiertes Eingabefeld vorhanden."
 
 # --- UI Utility Tokens ---
+ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED = "_auto_hide_scrollbar_installed"
+ATTR_LINK_CLICK_HANDLER = "link_click_handler"
 SCROLLBAR_HYSTERESIS_PX = 24
 SCROLLBAR_MAX_FLIPS = 12
 SCROLLBAR_CHECK_DELAYS_MS = (50, 150, 350)

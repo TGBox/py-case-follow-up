@@ -163,7 +163,12 @@ def test_own_card_is_tinted_with_chip_and_rail(root):
     assert other_card.cget("fg_color") == COLOR_CARD_BG
 
     chips = [c for c in _walk(own_card) if isinstance(c, ctk.CTkLabel) and c.cget("text") == "Daniel Rösch"]
-    assert chips and chips[0].cget("fg_color") == "#10b981"
+    assert chips
+    chip_bg = chips[0].cget("fg_color")
+    # Subtle chip: a soft tint of the card, never the full user colour.
+    assert "#10b981" not in chip_bg
+    assert chip_bg[0] == mix_colors(root, "#10b981", own_card.cget("fg_color")[0], 0.22)
+    assert chips[0].cget("font").cget("weight") == "normal"
 
     rails = [c for c in _walk(own_card) if isinstance(c, ctk.CTkFrame) and c.cget("fg_color") == "#10b981"]
     assert len(rails) == 1

@@ -1078,6 +1078,8 @@ TOAST_SNIPPET_MACRO_TITLE = "Textbaustein Macro"
 TOAST_SNIPPET_NO_FOCUS = "Kein fokussiertes Eingabefeld vorhanden."
 
 # --- UI Utility Tokens ---
+ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED = "_auto_hide_scrollbar_installed"
+ATTR_LINK_CLICK_HANDLER = "link_click_handler"
 SCROLLBAR_HYSTERESIS_PX = 24
 SCROLLBAR_MAX_FLIPS = 12
 SCROLLBAR_CHECK_DELAYS_MS = (50, 150, 350)

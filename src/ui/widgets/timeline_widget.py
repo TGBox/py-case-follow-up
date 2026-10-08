@@ -270,6 +270,22 @@ class TimelineWidget(ctk.CTkFrame):
             and entry.author.strip().lower() == self.author_name.strip().lower()
         )
 
+    def _card_fonts(self) -> dict[str, ctk.CTkFont]:
+        """Fonts for the timeline cards, created once and shared by all cards.
+
+        load_timeline rebuilds every card on each refresh (language switch,
+        new note). Fresh CTkFonts per label piled up as garbage, and when the
+        garbage collector finalised one on a background thread (CTkFont.__del__
+        calls into Tcl) that thread blocked until the main thread answered.
+        """
+        if not hasattr(self, "_fonts"):
+            self._fonts = {
+                "xs": ctk.CTkFont(size=FONT_SIZE_XS),
+                "channel": ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
+                "body": ctk.CTkFont(size=FONT_SIZE_BODY),
+            }
+        return self._fonts
+
     def load_timeline(self, entries: list[TimelineEntry]):
         from utils.ui_utils import bind_mouse_wheel_to_canvas, create_highlighted_label, linkify_text_widget
 
@@ -283,6 +299,7 @@ class TimelineWidget(ctk.CTkFrame):
             return
 
         own_palette = self._own_entry_palette()
+        fonts = self._card_fonts()
 
         for entry in reversed(self.timeline_entries):
             palette = own_palette if own_palette and self._is_own_entry(entry) else None
@@ -323,7 +340,7 @@ class TimelineWidget(ctk.CTkFrame):
             ctk.CTkLabel(
                 right_col,
                 text=formatted_d,
-                font=ctk.CTkFont(size=FONT_SIZE_XS),
+                font=fonts["xs"],
                 text_color=COLOR_MUTED_LABEL,
                 height=LABEL_HEIGHT_SM,
             ).pack(anchor="e")
@@ -331,7 +348,7 @@ class TimelineWidget(ctk.CTkFrame):
             ctk.CTkLabel(
                 right_col,
                 text=formatted_t,
-                font=ctk.CTkFont(size=FONT_SIZE_XS),
+                font=fonts["xs"],
                 text_color=COLOR_MUTED_LABEL,
                 height=LABEL_HEIGHT_SM,
             ).pack(anchor="e", pady=(PAD_XS, PAD_NONE))
@@ -356,7 +373,7 @@ class TimelineWidget(ctk.CTkFrame):
                 ctk.CTkLabel(
                     author_frame,
                     text=entry.author,
-                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    font=fonts["xs"],
                     fg_color=palette["chip_bg"],
                     text_color=COLOR_SUBTITLE_MUTED,
                     corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
@@ -367,7 +384,7 @@ class TimelineWidget(ctk.CTkFrame):
                 ctk.CTkLabel(
                     author_frame,
                     text=entry.author,
-                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    font=fonts["xs"],
                     text_color=COLOR_SUBTITLE_MUTED,
                     height=LABEL_HEIGHT_SM,
                 ).pack(side="left")
@@ -380,7 +397,7 @@ class TimelineWidget(ctk.CTkFrame):
             ctk.CTkLabel(
                 left_col,
                 text=channel_text,
-                font=ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
+                font=fonts["channel"],
                 height=LABEL_HEIGHT_MD,
             ).pack(anchor="w")
 
@@ -394,7 +411,7 @@ class TimelineWidget(ctk.CTkFrame):
                 left_col,
                 text=entry.note,
                 query="",
-                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                font=fonts["body"],
                 text_color=COLOR_TEXT_BODY,
                 bg_color=card_bg,
                 wrap="word",
@@ -411,7 +428,7 @@ class TimelineWidget(ctk.CTkFrame):
                 sc_lbl = ctk.CTkLabel(
                     left_col,
                     text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change),
-                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    font=fonts["xs"],
                     text_color=COLOR_INFO,
                     height=LABEL_HEIGHT_SM,
                 )
@@ -427,7 +444,7 @@ class TimelineWidget(ctk.CTkFrame):
                         date=format_german_datetime(entry.edited_at),
                         author=entry.edited_by or "-",
                     ),
-                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    font=fonts["xs"],
                     text_color=COLOR_MUTED_LABEL,
                     height=LABEL_HEIGHT_SM,
                 ).pack(anchor="w", pady=(PAD_XS, PAD_NONE))

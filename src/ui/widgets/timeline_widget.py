@@ -8,7 +8,6 @@ from constants import (
     BTN_WIDTH_ACTION,
     BTN_WIDTH_TIMELINE_EDIT,
     BTN_WIDTH_SM,
-    COLOR_BORDER_DARK,
     COLOR_CARD_BG,
     COLOR_CARD_BORDER,
     COLOR_INFO,
@@ -17,6 +16,7 @@ from constants import (
     COLOR_PURPLE_DARK,
     COLOR_SUBTITLE_MUTED,
     COLOR_TEXT_BODY,
+    COLOR_TIMELINE_LINK,
     COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_XS,
@@ -27,16 +27,22 @@ from constants import (
     FONT_SIZE_XS,
     LABEL_HEIGHT_MD,
     LABEL_HEIGHT_SM,
+    PAD_GAP,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
+    TIMELINE_ACCENT_RAIL_WIDTH,
+    TIMELINE_AUTHOR_CHIP_RADIUS,
     TIMELINE_NOTE_HEIGHT_KEY,
     TIMELINE_NOTE_MAX_DISPLAY_LINES,
     TIMELINE_NOTE_MAX_HEIGHT,
     TIMELINE_NOTE_MIN_HEIGHT,
-    USER_COLOR_TILE_SIZE,
+    TIMELINE_OWN_BORDER_MIX_DARK,
+    TIMELINE_OWN_BORDER_MIX_LIGHT,
+    TIMELINE_OWN_TINT_DARK,
+    TIMELINE_OWN_TINT_LIGHT,
 )
 from utils.datetime_utils import (
     format_german_date,
@@ -223,8 +229,41 @@ class TimelineWidget(ctk.CTkFrame):
 
         note_txt.bind("<Button-1>", _focus, add="+")
 
+    def _own_entry_palette(self) -> dict[str, Any] | None:
+        """Card colours for the user's own entries, derived from their colour.
+
+        Returns None when the colour marker is off or the stored colour is not
+        a colour Tk understands - the card then simply stays neutral.
+        """
+        if not (self.color_marker_enabled and self.user_color):
+            return None
+        from utils.ui_utils import mix_colors, readable_text_on
+        color = self.user_color
+        try:
+            return {
+                "accent": color,
+                "on_accent": readable_text_on(self, color),
+                "card_bg": (
+                    mix_colors(self, color, COLOR_CARD_BG[0], TIMELINE_OWN_TINT_LIGHT),
+                    mix_colors(self, color, COLOR_CARD_BG[1], TIMELINE_OWN_TINT_DARK),
+                ),
+                "border": (
+                    mix_colors(self, color, COLOR_CARD_BORDER[0], TIMELINE_OWN_BORDER_MIX_LIGHT),
+                    mix_colors(self, color, COLOR_CARD_BORDER[1], TIMELINE_OWN_BORDER_MIX_DARK),
+                ),
+            }
+        except Exception:
+            return None
+
+    def _is_own_entry(self, entry: TimelineEntry) -> bool:
+        return bool(
+            self.author_name
+            and entry.author
+            and entry.author.strip().lower() == self.author_name.strip().lower()
+        )
+
     def load_timeline(self, entries: list[TimelineEntry]):
-        from utils.ui_utils import bind_mouse_wheel_to_canvas, create_highlighted_label
+        from utils.ui_utils import bind_mouse_wheel_to_canvas, create_highlighted_label, linkify_text_widget
 
         self.timeline_entries = list(entries)
         for widget in self.scroll_frame.winfo_children():
@@ -235,12 +274,36 @@ class TimelineWidget(ctk.CTkFrame):
             ctk.CTkLabel(self.scroll_frame, text=tr("timeline.no_notes", "Keine Notizen vorhanden.")).pack(pady=PAD_MD)
             return
 
+        own_palette = self._own_entry_palette()
+
         for entry in reversed(self.timeline_entries):
-            card = ctk.CTkFrame(self.scroll_frame, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_MD, border_width=1, border_color=COLOR_CARD_BORDER)
+            palette = own_palette if own_palette and self._is_own_entry(entry) else None
+            card_bg = palette["card_bg"] if palette else COLOR_CARD_BG
+            card = ctk.CTkFrame(
+                self.scroll_frame,
+                fg_color=card_bg,
+                corner_radius=CORNER_RADIUS_MD,
+                border_width=1,
+                border_color=palette["border"] if palette else COLOR_CARD_BORDER,
+            )
             card.pack(fill="x", pady=PAD_XS, padx=PAD_SM)
 
+            if palette:
+                # Durchgehende Farbleiste am linken Rand: eigene Eintraege sind
+                # beim Scrollen sofort zu erkennen, ohne den Text zu lesen.
+                # height=1 + fill="y": die Leiste waechst mit der Karte mit,
+                # statt ihr die CTk-Standardhoehe aufzuzwingen.
+                rail = ctk.CTkFrame(
+                    card,
+                    width=TIMELINE_ACCENT_RAIL_WIDTH,
+                    height=1,
+                    corner_radius=CORNER_RADIUS_XS,
+                    fg_color=palette["accent"],
+                )
+                rail.pack(side="left", fill="y", padx=(PAD_SM, PAD_NONE), pady=PAD_SM)
+
             content_row = ctk.CTkFrame(card, fg_color="transparent")
-            content_row.pack(fill="x", padx=PAD_MD, pady=(PAD_SM, PAD_SM))
+            content_row.pack(fill="x", padx=(PAD_SM if palette else PAD_MD, PAD_MD), pady=(PAD_SM, PAD_SM))
 
             # Right Column: Date, Time (directly below date), Author & color marker (no person icon)
             right_col = ctk.CTkFrame(content_row, fg_color="transparent")
@@ -280,30 +343,26 @@ class TimelineWidget(ctk.CTkFrame):
             )
             edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
 
-            is_own_entry = bool(
-                self.author_name
-                and entry.author
-                and entry.author.strip().lower() == self.author_name.strip().lower()
-            )
-            if is_own_entry and self.color_marker_enabled and self.user_color:
-                color_tile = ctk.CTkFrame(
+            if palette:
+                # Name als Chip in der Nutzerfarbe, Textfarbe nach Kontrast.
+                ctk.CTkLabel(
                     author_frame,
-                    width=USER_COLOR_TILE_SIZE,
-                    height=USER_COLOR_TILE_SIZE,
-                    corner_radius=CORNER_RADIUS_XS,
-                    fg_color=self.user_color,
-                    border_width=1,
-                    border_color=COLOR_BORDER_DARK,
-                )
-                color_tile.pack(side="left", padx=(PAD_NONE, PAD_SM))
-
-            ctk.CTkLabel(
-                author_frame,
-                text=entry.author,
-                font=ctk.CTkFont(size=FONT_SIZE_XS),
-                text_color=COLOR_SUBTITLE_MUTED,
-                height=LABEL_HEIGHT_SM,
-            ).pack(side="left")
+                    text=entry.author,
+                    font=ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"),
+                    fg_color=palette["accent"],
+                    text_color=palette["on_accent"],
+                    corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
+                    height=LABEL_HEIGHT_SM,
+                    padx=PAD_GAP,
+                ).pack(side="left")
+            else:
+                ctk.CTkLabel(
+                    author_frame,
+                    text=entry.author,
+                    font=ctk.CTkFont(size=FONT_SIZE_XS),
+                    text_color=COLOR_SUBTITLE_MUTED,
+                    height=LABEL_HEIGHT_SM,
+                ).pack(side="left")
 
             # Left Column: Channel Title, Note text (directly below title), Status change
             left_col = ctk.CTkFrame(content_row, fg_color="transparent")
@@ -329,13 +388,15 @@ class TimelineWidget(ctk.CTkFrame):
                 query="",
                 font=ctk.CTkFont(size=FONT_SIZE_BODY),
                 text_color=COLOR_TEXT_BODY,
-                bg_color=COLOR_CARD_BG,
+                bg_color=card_bg,
                 wrap="word",
                 scroll_frame=self.scroll_frame,
                 max_display_lines=TIMELINE_NOTE_MAX_DISPLAY_LINES,
             )
             note_txt.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
             self._enable_text_selection(note_txt)
+            # Links in der Notiz: unterstrichen, Klick oeffnet im Browser.
+            linkify_text_widget(note_txt, COLOR_TIMELINE_LINK)
 
             if entry.status_change:
                 from services.i18n_service import tr

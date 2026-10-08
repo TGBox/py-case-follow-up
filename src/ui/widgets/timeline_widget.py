@@ -10,12 +10,12 @@ from constants import (
     BTN_WIDTH_SM,
     COLOR_CARD_BG,
     COLOR_CARD_BORDER,
-    COLOR_INFO,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_LABEL,
     COLOR_PURPLE_DARK,
     COLOR_SUBTITLE_MUTED,
     COLOR_TEXT_BODY,
+    COLOR_TIMELINE_EDIT_HOVER,
     COLOR_TIMELINE_LINK,
     COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
@@ -31,12 +31,14 @@ from constants import (
     PAD_MD,
     PAD_NONE,
     PAD_SM,
+    PAD_TINY,
     PAD_XS,
     TEXTBOX_HEIGHT_SM,
     TIMELINE_ACCENT_RAIL_WIDTH,
     TIMELINE_AUTHOR_CHIP_MIX_DARK,
     TIMELINE_AUTHOR_CHIP_MIX_LIGHT,
     TIMELINE_AUTHOR_CHIP_RADIUS,
+    TIMELINE_EDIT_HOVER_MIX,
     TIMELINE_NOTE_HEIGHT_KEY,
     TIMELINE_NOTE_MAX_DISPLAY_LINES,
     TIMELINE_NOTE_MAX_HEIGHT,
@@ -239,21 +241,31 @@ class TimelineWidget(ctk.CTkFrame):
         """
         if not (self.color_marker_enabled and self.user_color):
             return None
-        from utils.ui_utils import mix_colors
+        from utils.ui_utils import mix_colors, readable_variant
         color = self.user_color
         try:
             card_bg = (
                 mix_colors(self, color, COLOR_CARD_BG[0], TIMELINE_OWN_TINT_LIGHT),
                 mix_colors(self, color, COLOR_CARD_BG[1], TIMELINE_OWN_TINT_DARK),
             )
+            chip_bg = (
+                mix_colors(self, color, card_bg[0], TIMELINE_AUTHOR_CHIP_MIX_LIGHT),
+                mix_colors(self, color, card_bg[1], TIMELINE_AUTHOR_CHIP_MIX_DARK),
+            )
             return {
                 "accent": color,
                 "card_bg": card_bg,
-                # Dezenter Namens-Chip: nur ein Hauch mehr Farbe als die Karte,
-                # damit er zur Karte gehoert statt ueber ihr zu leuchten.
-                "chip_bg": (
-                    mix_colors(self, color, card_bg[0], TIMELINE_AUTHOR_CHIP_MIX_LIGHT),
-                    mix_colors(self, color, card_bg[1], TIMELINE_AUTHOR_CHIP_MIX_DARK),
+                # Namens-Chip: Rand in voller Nutzerfarbe, kaum Fuellung, der
+                # Name in einer lesbaren Variante derselben Farbe - erkennbar,
+                # ohne zu leuchten (auch bei Gelb im Dark Mode).
+                "chip_bg": chip_bg,
+                "chip_text": (
+                    readable_variant(self, color, chip_bg[0]),
+                    readable_variant(self, color, chip_bg[1]),
+                ),
+                "edit_hover": (
+                    mix_colors(self, color, card_bg[0], TIMELINE_EDIT_HOVER_MIX),
+                    mix_colors(self, color, card_bg[1], TIMELINE_EDIT_HOVER_MIX),
                 ),
                 "border": (
                     mix_colors(self, color, COLOR_CARD_BORDER[0], TIMELINE_OWN_BORDER_MIX_LIGHT),
@@ -283,6 +295,8 @@ class TimelineWidget(ctk.CTkFrame):
                 "xs": ctk.CTkFont(size=FONT_SIZE_XS),
                 "channel": ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
                 "body": ctk.CTkFont(size=FONT_SIZE_BODY),
+                "chip": ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"),
+                "edit": ctk.CTkFont(size=FONT_SIZE_BODY),
             }
         return self._fonts
 
@@ -357,29 +371,41 @@ class TimelineWidget(ctk.CTkFrame):
             author_frame.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
 
             from services.i18n_service import tr
+            # Nur der Stift, ohne eigene Flaeche: gehoert zur Karte statt als
+            # grauer Block auf ihr zu liegen. Beim Ueberfahren leicht getoent.
             edit_btn = ctk.CTkButton(
                 right_col,
                 text=tr("timeline.edit_btn", "✏"),
                 width=BTN_WIDTH_TIMELINE_EDIT,
                 height=BTN_HEIGHT_TIMELINE_EDIT,
-                fg_color=COLOR_MUTED_GRAY_FG,
-                hover_color=COLOR_PURPLE_DARK,
+                font=fonts["edit"],
+                fg_color="transparent",
+                text_color=COLOR_MUTED_LABEL,
+                hover_color=palette["edit_hover"] if palette else COLOR_TIMELINE_EDIT_HOVER,
+                corner_radius=CORNER_RADIUS_MD,
                 command=lambda e=entry: self.open_edit_dialog(e),
             )
             edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+            from ui.widgets.ctk_tooltip import CTkTooltip
+            CTkTooltip(edit_btn, lambda: tr("timeline.edit_tooltip", "Eintrag bearbeiten"))
 
             if palette:
-                # Name als zurueckhaltender Chip im Kartenton, normale Schrift.
-                ctk.CTkLabel(
+                chip = ctk.CTkFrame(
                     author_frame,
-                    text=entry.author,
-                    font=fonts["xs"],
                     fg_color=palette["chip_bg"],
-                    text_color=COLOR_SUBTITLE_MUTED,
+                    border_width=1,
+                    border_color=palette["accent"],
                     corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
+                )
+                chip.pack(side="left")
+                ctk.CTkLabel(
+                    chip,
+                    text=entry.author,
+                    font=fonts["chip"],
+                    fg_color="transparent",
+                    text_color=palette["chip_text"],
                     height=LABEL_HEIGHT_SM,
-                    padx=PAD_GAP,
-                ).pack(side="left")
+                ).pack(padx=PAD_GAP, pady=PAD_TINY)
             else:
                 ctk.CTkLabel(
                     author_frame,
@@ -422,17 +448,6 @@ class TimelineWidget(ctk.CTkFrame):
             self._enable_text_selection(note_txt)
             # Links in der Notiz: unterstrichen, Klick oeffnet im Browser.
             linkify_text_widget(note_txt, COLOR_TIMELINE_LINK)
-
-            if entry.status_change:
-                from services.i18n_service import tr
-                sc_lbl = ctk.CTkLabel(
-                    left_col,
-                    text=tr("timeline.status_prefix", "Status: {status}", status=entry.status_change),
-                    font=fonts["xs"],
-                    text_color=COLOR_INFO,
-                    height=LABEL_HEIGHT_SM,
-                )
-                sc_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 
             if entry.edited_at:
                 from services.i18n_service import tr

@@ -10,7 +10,7 @@ from constants import COLOR_CARD_BG, COLOR_ON_ACCENT_DARK, COLOR_ON_ACCENT_LIGHT
 from models.case import TimelineEntry
 from services.i18n_service import get_i18n
 from ui.widgets.timeline_widget import TimelineWidget
-from utils.ui_utils import find_links, linkify_text_widget, mix_colors, readable_text_on
+from utils.ui_utils import contrast_ratio, find_links, linkify_text_widget, mix_colors, readable_text_on, readable_variant
 
 
 @pytest.fixture
@@ -164,11 +164,15 @@ def test_own_card_is_tinted_with_chip_and_rail(root):
 
     chips = [c for c in _walk(own_card) if isinstance(c, ctk.CTkLabel) and c.cget("text") == "Daniel Rösch"]
     assert chips
-    chip_bg = chips[0].cget("fg_color")
-    # Subtle chip: a soft tint of the card, never the full user colour.
-    assert "#10b981" not in chip_bg
-    assert chip_bg[0] == mix_colors(root, "#10b981", own_card.cget("fg_color")[0], 0.22)
-    assert chips[0].cget("font").cget("weight") == "normal"
+    chip_frame = chips[0].master
+    # Outlined chip: full user colour only on the border, barely any fill,
+    # the name in a readable variant of the user colour.
+    assert chip_frame.cget("border_color") == "#10b981"
+    fill = chip_frame.cget("fg_color")
+    assert "#10b981" not in fill
+    for mode_idx in (0, 1):
+        text = chips[0].cget("text_color")[mode_idx]
+        assert contrast_ratio(root, text, fill[mode_idx]) >= 4.5
 
     rails = [c for c in _walk(own_card) if isinstance(c, ctk.CTkFrame) and c.cget("fg_color") == "#10b981"]
     assert len(rails) == 1
@@ -187,3 +191,26 @@ def test_invalid_user_color_falls_back_to_neutral(root):
     widget.load_timeline(_entries())
     own_card = widget.scroll_frame.winfo_children()[0]
     assert own_card.cget("fg_color") == COLOR_CARD_BG
+
+
+def test_readable_variant_keeps_hue_and_reaches_contrast(root):
+    light_bg, dark_bg = "#fdf8e6", "#3d3a2e"
+    on_light = readable_variant(root, "#eab308", light_bg)
+    on_dark = readable_variant(root, "#eab308", dark_bg)
+    assert contrast_ratio(root, on_light, light_bg) >= 4.5
+    assert contrast_ratio(root, on_dark, dark_bg) >= 4.5
+    # yellow is already readable on dark - left untouched
+    assert on_dark == "#eab308"
+
+
+def test_status_line_is_not_shown_and_edit_button_is_flat(root):
+    widget = TimelineWidget(root, author_name="Daniel Rösch", on_timeline_updated=lambda _e: None,
+                            user_color="#eab308", color_marker_enabled=True)
+    entry = TimelineEntry(timestamp="2026-10-07T10:24:00", author="Daniel Rösch", channel="EMAIL",
+                          note="Text", status_change="NEW -> ACTION_REQUIRED (SUPPORT)")
+    widget.load_timeline([entry])
+    card = widget.scroll_frame.winfo_children()[0]
+    texts = [c.cget("text") for c in _walk(card) if isinstance(c, ctk.CTkLabel)]
+    assert not any("ACTION_REQUIRED" in t or t.startswith("Status") for t in texts)
+    buttons = [c for c in _walk(card) if isinstance(c, ctk.CTkButton)]
+    assert len(buttons) == 1 and buttons[0].cget("fg_color") == "transparent"

@@ -1826,6 +1826,7 @@
     "time_lbl": "🕒 Tidpunkt:",
     "time_placeholder": "tomt = nu",
     "edit_btn": "✏",
+    "edit_tooltip": "Redigera post",
     "edited_hint": "✏ redigerad {date} av {author}",
     "edit_author_info": "Skriven av: {author}",
     "edit_channel_lbl": "Kanal:",
@@ -2000,4 +2001,4 @@
     "YELLOW": "Medel",
     "GREEN": "Låg"
   }
-}
+}

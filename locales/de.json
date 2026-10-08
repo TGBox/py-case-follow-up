@@ -1826,6 +1826,7 @@
     "time_lbl": "🕒 Zeitpunkt:",
     "time_placeholder": "leer = jetzt",
     "edit_btn": "✏",
+    "edit_tooltip": "Eintrag bearbeiten",
     "edited_hint": "✏ bearbeitet {date} von {author}",
     "edit_author_info": "Verfasst von: {author}",
     "edit_channel_lbl": "Kanal:",
@@ -2000,4 +2001,4 @@
     "YELLOW": "Mittel",
     "GREEN": "Niedrig"
   }
-}
+}

@@ -17,3 +17,4 @@ test_window_fullscreen_startup_NEU.txt
 revert_probe.txt
 src/*.egg-info
 src/*.egg-info/
+src/py_case_follow_up.egg-info/PKG-INFO

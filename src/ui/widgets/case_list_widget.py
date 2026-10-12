@@ -296,9 +296,10 @@ class CaseListWidget(ctk.CTkFrame):
             for case in self.cases:
                 is_selected = case.case_id == self.selected_case_id
                 row_bg = COLOR_CARD_SELECTED_BG if is_selected else COLOR_CARD_DESELECTED_BG
+                border_col = COLOR_CARD_SELECTED_BORDER if is_selected else COLOR_CARD_BORDER
                 if case.case_id in self._card_widgets:
                     try:
-                        self._card_widgets[case.case_id].configure(fg_color=row_bg)
+                        self._card_widgets[case.case_id].configure(fg_color=row_bg, border_color=border_col)
                     except Exception:
                         pass
             return
@@ -806,12 +807,12 @@ class CaseListWidget(ctk.CTkFrame):
             if prev_id and prev_id in self._card_widgets and prev_id != case.case_id:
                 try:
                     prev_card: Any = self._card_widgets[prev_id]
-                    prev_card.configure(fg_color=COLOR_CARD_DESELECTED_BG)
+                    prev_card.configure(fg_color=COLOR_CARD_DESELECTED_BG, border_color=COLOR_CARD_BORDER)
                 except Exception:
                     pass
             try:
                 curr_card: Any = self._card_widgets[case.case_id]
-                curr_card.configure(fg_color=COLOR_CARD_SELECTED_BG)
+                curr_card.configure(fg_color=COLOR_CARD_SELECTED_BG, border_color=COLOR_CARD_SELECTED_BORDER)
             except Exception:
                 pass
             self.on_case_selected(case)

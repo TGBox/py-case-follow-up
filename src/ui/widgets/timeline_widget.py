@@ -46,6 +46,7 @@ from constants import (
     TIMELINE_OWN_BORDER_MIX_LIGHT,
     TIMELINE_OWN_TINT_DARK,
     TIMELINE_OWN_TINT_LIGHT,
+    TIMELINE_PAGE_SIZE,
 )
 from utils.datetime_utils import (
     format_german_date,
@@ -78,6 +79,11 @@ class TimelineWidget(ctk.CTkFrame):
         self.user_color = user_color
         self.color_marker_enabled = color_marker_enabled
         self.timeline_entries: list[TimelineEntry] = []
+        # How many of the newest entries are built as cards. Every card costs
+        # ~20 Tk widgets, so long cases only show a page and load older entries
+        # on request instead of slowing down every case switch and resize.
+        self._shown_count = TIMELINE_PAGE_SIZE
+        self._older_btn: ctk.CTkButton | None = None
 
         self.create_widgets()
 
@@ -294,15 +300,22 @@ class TimelineWidget(ctk.CTkFrame):
                 "xs": ctk.CTkFont(size=FONT_SIZE_XS),
                 "channel": ctk.CTkFont(weight="bold", size=FONT_SIZE_SM),
                 "body": ctk.CTkFont(size=FONT_SIZE_BODY),
+                # Highlight font for create_highlighted_label: passed in so the
+                # helper does not create (and later finalise) one per note.
+                "body_bold": ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
                 "chip": ctk.CTkFont(size=FONT_SIZE_XS, weight="bold"),
                 "edit": ctk.CTkFont(size=FONT_SIZE_BODY),
             }
         return self._fonts
 
     def load_timeline(self, entries: list[TimelineEntry]):
-        from utils.ui_utils import bind_mouse_wheel_to_canvas, create_highlighted_label, linkify_text_widget
-
+        # Re-rendering the same list (new note, edit, language or colour
+        # change) keeps the entries the user already expanded; another case
+        # starts again with the newest page.
+        if entries is not self.timeline_entries:
+            self._shown_count = TIMELINE_PAGE_SIZE
         self.timeline_entries = list(entries)
+        self._older_btn = None
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
 
@@ -311,156 +324,191 @@ class TimelineWidget(ctk.CTkFrame):
             ctk.CTkLabel(self.scroll_frame, text=tr("timeline.no_notes", "Keine Notizen vorhanden.")).pack(pady=PAD_MD)
             return
 
+        self._render_cards(0, self._shown_count)
+
+    def show_older_entries(self) -> None:
+        """Appends the next page of older entries below the cards already shown."""
+        start = self._shown_count
+        self._shown_count += TIMELINE_PAGE_SIZE
+        self._render_cards(start, self._shown_count)
+
+    def _render_cards(self, start: int, stop: int) -> None:
+        """Builds the cards for the newest-first entries [start:stop] and the
+        "show older" button when entries remain below them."""
+        from utils.ui_utils import bind_mouse_wheel_to_canvas
+
+        if self._older_btn is not None:
+            self._older_btn.destroy()
+            self._older_btn = None
+
+        newest_first = list(reversed(self.timeline_entries))
         own_palette = self._own_entry_palette()
         fonts = self._card_fonts()
+        for entry in newest_first[start:stop]:
+            self._build_card(entry, own_palette, fonts)
 
-        for entry in reversed(self.timeline_entries):
-            palette = own_palette if own_palette and self._is_own_entry(entry) else None
-            card_bg = palette["card_bg"] if palette else COLOR_CARD_BG
-            card = ctk.CTkFrame(
-                self.scroll_frame,
-                fg_color=card_bg,
-                corner_radius=CORNER_RADIUS_MD,
-                border_width=1,
-                border_color=palette["border"] if palette else COLOR_CARD_BORDER,
-            )
-            card.pack(fill="x", pady=PAD_XS, padx=PAD_SM)
-
-            if palette:
-                # Durchgehende Farbleiste am linken Rand: eigene Eintraege sind
-                # beim Scrollen sofort zu erkennen, ohne den Text zu lesen.
-                # height=1 + fill="y": die Leiste waechst mit der Karte mit,
-                # statt ihr die CTk-Standardhoehe aufzuzwingen.
-                rail = ctk.CTkFrame(
-                    card,
-                    width=TIMELINE_ACCENT_RAIL_WIDTH,
-                    height=1,
-                    corner_radius=CORNER_RADIUS_XS,
-                    fg_color=palette["accent"],
-                )
-                rail.pack(side="left", fill="y", padx=(PAD_SM, PAD_NONE), pady=PAD_SM)
-
-            content_row = ctk.CTkFrame(card, fg_color="transparent")
-            content_row.pack(fill="x", padx=(PAD_SM if palette else PAD_MD, PAD_MD), pady=(PAD_SM, PAD_SM))
-
-            # Right Column: Date, Time (directly below date), Author & color marker (no person icon)
-            right_col = ctk.CTkFrame(content_row, fg_color="transparent")
-            right_col.pack(side="right", anchor="ne", padx=(PAD_SM, PAD_NONE))
-
-            formatted_d = format_german_date(entry.timestamp)
-            formatted_t = format_german_time(entry.timestamp, include_seconds=True, with_uhr=True)
-
-            ctk.CTkLabel(
-                right_col,
-                text=formatted_d,
-                font=fonts["xs"],
-                text_color=COLOR_MUTED_LABEL,
-                height=LABEL_HEIGHT_SM,
-            ).pack(anchor="e")
-
-            ctk.CTkLabel(
-                right_col,
-                text=formatted_t,
-                font=fonts["xs"],
-                text_color=COLOR_MUTED_LABEL,
-                height=LABEL_HEIGHT_SM,
-            ).pack(anchor="e", pady=(PAD_XS, PAD_NONE))
-
-            author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
-            author_frame.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
-
+        remaining = len(newest_first) - min(stop, len(newest_first))
+        if remaining > 0:
             from services.i18n_service import tr
-            # Nur der Stift, ohne eigene Flaeche: gehoert zur Karte statt als
-            # grauer Block auf ihr zu liegen. Beim Ueberfahren leicht getoent.
-            edit_btn = ctk.CTkButton(
-                right_col,
-                text=tr("timeline.edit_btn", "✏"),
-                width=BTN_WIDTH_TIMELINE_EDIT,
-                height=BTN_HEIGHT_TIMELINE_EDIT,
-                font=fonts["edit"],
-                fg_color="transparent",
-                text_color=COLOR_MUTED_LABEL,
-                hover_color=palette["edit_hover"] if palette else COLOR_TIMELINE_EDIT_HOVER,
-                corner_radius=CORNER_RADIUS_MD,
-                command=lambda e=entry: self.open_edit_dialog(e),
+            self._older_btn = ctk.CTkButton(
+                self.scroll_frame,
+                text=tr("timeline.show_older", "⬇ Ältere Einträge anzeigen ({count})", count=remaining),
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_PURPLE_DARK,
+                command=self.show_older_entries,
             )
-            edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
-            from ui.widgets.ctk_tooltip import CTkTooltip
-            CTkTooltip(edit_btn, lambda: tr("timeline.edit_tooltip", "Eintrag bearbeiten"))
-
-            if palette:
-                # Ein einziges Label mit eigener runder Fuellung: kein Rahmen
-                # (1-px-Ring auf der kleinen Pille wird unter Windows treppig)
-                # und kein Kind-Widget, dessen Rechteck in die Rundung schneidet.
-                ctk.CTkLabel(
-                    author_frame,
-                    text=entry.author,
-                    font=fonts["chip"],
-                    fg_color=palette["chip_bg"],
-                    text_color=palette["chip_text"],
-                    corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
-                    height=LABEL_HEIGHT_SM,
-                    padx=PAD_GAP,
-                ).pack(side="left")
-            else:
-                ctk.CTkLabel(
-                    author_frame,
-                    text=entry.author,
-                    font=fonts["xs"],
-                    text_color=COLOR_SUBTITLE_MUTED,
-                    height=LABEL_HEIGHT_SM,
-                ).pack(side="left")
-
-            # Left Column: Channel Title, Note text (directly below title), Status change
-            left_col = ctk.CTkFrame(content_row, fg_color="transparent")
-            left_col.pack(side="left", fill="both", expand=True)
-
-            channel_text = get_channel_display(entry.channel)
-            ctk.CTkLabel(
-                left_col,
-                text=channel_text,
-                font=fonts["channel"],
-                height=LABEL_HEIGHT_MD,
-            ).pack(anchor="w")
-
-            # The shared highlight-label helper, because a note has to be both
-            # fully visible and selectable. A CTkLabel cannot be selected and a
-            # CTkTextbox is a scrolling viewport that has to be told its pixel
-            # height - computing that from wrapped lines kept leaving the last
-            # lines hidden. The helper sizes a raw tk.Text in *lines*, which is
-            # the unit Tk itself uses, and re-measures on every resize.
-            note_txt = create_highlighted_label(
-                left_col,
-                text=entry.note,
-                query="",
-                font=fonts["body"],
-                text_color=COLOR_TEXT_BODY,
-                bg_color=card_bg,
-                wrap="word",
-                scroll_frame=self.scroll_frame,
-                max_display_lines=TIMELINE_NOTE_MAX_DISPLAY_LINES,
-            )
-            note_txt.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
-            self._enable_text_selection(note_txt)
-            # Links in der Notiz: unterstrichen, Klick oeffnet im Browser.
-            linkify_text_widget(note_txt, COLOR_TIMELINE_LINK)
-
-            if entry.edited_at:
-                from services.i18n_service import tr
-                ctk.CTkLabel(
-                    left_col,
-                    text=tr(
-                        "timeline.edited_hint",
-                        "✏ bearbeitet {date} von {author}",
-                        date=format_german_datetime(entry.edited_at),
-                        author=entry.edited_by or "-",
-                    ),
-                    font=fonts["xs"],
-                    text_color=COLOR_MUTED_LABEL,
-                    height=LABEL_HEIGHT_SM,
-                ).pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+            self._older_btn.pack(fill="x", pady=(PAD_SM, PAD_MD), padx=PAD_SM)
 
         bind_mouse_wheel_to_canvas(self.scroll_frame)
+
+    def _build_card(self, entry: TimelineEntry, own_palette: dict[str, Any] | None, fonts: dict[str, ctk.CTkFont]) -> None:
+        from utils.ui_utils import create_highlighted_label, linkify_text_widget
+
+        palette = own_palette if own_palette and self._is_own_entry(entry) else None
+        card_bg = palette["card_bg"] if palette else COLOR_CARD_BG
+        card = ctk.CTkFrame(
+            self.scroll_frame,
+            fg_color=card_bg,
+            corner_radius=CORNER_RADIUS_MD,
+            border_width=1,
+            border_color=palette["border"] if palette else COLOR_CARD_BORDER,
+        )
+        card.pack(fill="x", pady=PAD_XS, padx=PAD_SM)
+
+        if palette:
+            # Durchgehende Farbleiste am linken Rand: eigene Eintraege sind
+            # beim Scrollen sofort zu erkennen, ohne den Text zu lesen.
+            # height=1 + fill="y": die Leiste waechst mit der Karte mit,
+            # statt ihr die CTk-Standardhoehe aufzuzwingen.
+            rail = ctk.CTkFrame(
+                card,
+                width=TIMELINE_ACCENT_RAIL_WIDTH,
+                height=1,
+                corner_radius=CORNER_RADIUS_XS,
+                fg_color=palette["accent"],
+            )
+            rail.pack(side="left", fill="y", padx=(PAD_SM, PAD_NONE), pady=PAD_SM)
+
+        content_row = ctk.CTkFrame(card, fg_color="transparent")
+        content_row.pack(fill="x", padx=(PAD_SM if palette else PAD_MD, PAD_MD), pady=(PAD_SM, PAD_SM))
+
+        # Right Column: Date, Time (directly below date), Author & color marker (no person icon)
+        right_col = ctk.CTkFrame(content_row, fg_color="transparent")
+        right_col.pack(side="right", anchor="ne", padx=(PAD_SM, PAD_NONE))
+
+        formatted_d = format_german_date(entry.timestamp)
+        formatted_t = format_german_time(entry.timestamp, include_seconds=True, with_uhr=True)
+
+        ctk.CTkLabel(
+            right_col,
+            text=formatted_d,
+            font=fonts["xs"],
+            text_color=COLOR_MUTED_LABEL,
+            height=LABEL_HEIGHT_SM,
+        ).pack(anchor="e")
+
+        ctk.CTkLabel(
+            right_col,
+            text=formatted_t,
+            font=fonts["xs"],
+            text_color=COLOR_MUTED_LABEL,
+            height=LABEL_HEIGHT_SM,
+        ).pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+
+        author_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        author_frame.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+
+        from services.i18n_service import tr
+        # Nur der Stift, ohne eigene Flaeche: gehoert zur Karte statt als
+        # grauer Block auf ihr zu liegen. Beim Ueberfahren leicht getoent.
+        edit_btn = ctk.CTkButton(
+            right_col,
+            text=tr("timeline.edit_btn", "✏"),
+            width=BTN_WIDTH_TIMELINE_EDIT,
+            height=BTN_HEIGHT_TIMELINE_EDIT,
+            font=fonts["edit"],
+            fg_color="transparent",
+            text_color=COLOR_MUTED_LABEL,
+            hover_color=palette["edit_hover"] if palette else COLOR_TIMELINE_EDIT_HOVER,
+            corner_radius=CORNER_RADIUS_MD,
+            command=lambda e=entry: self.open_edit_dialog(e),
+        )
+        edit_btn.pack(anchor="e", pady=(PAD_XS, PAD_NONE))
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        CTkTooltip(edit_btn, lambda: tr("timeline.edit_tooltip", "Eintrag bearbeiten"))
+
+        if palette:
+            # Ein einziges Label mit eigener runder Fuellung: kein Rahmen
+            # (1-px-Ring auf der kleinen Pille wird unter Windows treppig)
+            # und kein Kind-Widget, dessen Rechteck in die Rundung schneidet.
+            ctk.CTkLabel(
+                author_frame,
+                text=entry.author,
+                font=fonts["chip"],
+                fg_color=palette["chip_bg"],
+                text_color=palette["chip_text"],
+                corner_radius=TIMELINE_AUTHOR_CHIP_RADIUS,
+                height=LABEL_HEIGHT_SM,
+                padx=PAD_GAP,
+            ).pack(side="left")
+        else:
+            ctk.CTkLabel(
+                author_frame,
+                text=entry.author,
+                font=fonts["xs"],
+                text_color=COLOR_SUBTITLE_MUTED,
+                height=LABEL_HEIGHT_SM,
+            ).pack(side="left")
+
+        # Left Column: Channel Title, Note text (directly below title), Status change
+        left_col = ctk.CTkFrame(content_row, fg_color="transparent")
+        left_col.pack(side="left", fill="both", expand=True)
+
+        channel_text = get_channel_display(entry.channel)
+        ctk.CTkLabel(
+            left_col,
+            text=channel_text,
+            font=fonts["channel"],
+            height=LABEL_HEIGHT_MD,
+        ).pack(anchor="w")
+
+        # The shared highlight-label helper, because a note has to be both
+        # fully visible and selectable. A CTkLabel cannot be selected and a
+        # CTkTextbox is a scrolling viewport that has to be told its pixel
+        # height - computing that from wrapped lines kept leaving the last
+        # lines hidden. The helper sizes a raw tk.Text in *lines*, which is
+        # the unit Tk itself uses, and re-measures on every resize.
+        note_txt = create_highlighted_label(
+            left_col,
+            text=entry.note,
+            query="",
+            font=fonts["body"],
+            highlight_font=fonts["body_bold"],
+            text_color=COLOR_TEXT_BODY,
+            bg_color=card_bg,
+            wrap="word",
+            scroll_frame=self.scroll_frame,
+            max_display_lines=TIMELINE_NOTE_MAX_DISPLAY_LINES,
+        )
+        note_txt.pack(fill="x", anchor="w", pady=(PAD_XS, PAD_XS))
+        self._enable_text_selection(note_txt)
+        # Links in der Notiz: unterstrichen, Klick oeffnet im Browser.
+        linkify_text_widget(note_txt, COLOR_TIMELINE_LINK)
+
+        if entry.edited_at:
+            from services.i18n_service import tr
+            ctk.CTkLabel(
+                left_col,
+                text=tr(
+                    "timeline.edited_hint",
+                    "✏ bearbeitet {date} von {author}",
+                    date=format_german_datetime(entry.edited_at),
+                    author=entry.edited_by or "-",
+                ),
+                font=fonts["xs"],
+                text_color=COLOR_MUTED_LABEL,
+                height=LABEL_HEIGHT_SM,
+            ).pack(anchor="w", pady=(PAD_XS, PAD_NONE))
 
     def on_add_note(self):
         text = self.note_textbox.get("1.0", "end-1c").strip()

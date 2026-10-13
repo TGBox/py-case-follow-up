@@ -1819,6 +1819,7 @@
     "handover_note": "Responsibility handed over to: {actor}{person} via {channel}{note}",
     "handover_status": "RESPONSIBILITY: {prev} -> {curr}",
     "no_notes": "No notes available.",
+    "show_older": "⬇ Show older entries ({count})",
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Completed",
     "status_open": "STATUS: Open",

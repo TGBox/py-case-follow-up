@@ -1819,6 +1819,7 @@
     "handover_note": "Zuständigkeit übergeben an: {actor}{person} via {channel}{note}",
     "handover_status": "ZUSTÄNDIGKEIT: {prev} -> {curr}",
     "no_notes": "Keine Notizen vorhanden.",
+    "show_older": "⬇ Ältere Einträge anzeigen ({count})",
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Erledigt",
     "status_open": "STATUS: Offen",

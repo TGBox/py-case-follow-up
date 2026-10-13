@@ -18,6 +18,8 @@ class WindowStub:
     _remember_window_state = SupportCockpitApp._remember_window_state
     _apply_remembered_window_state = SupportCockpitApp._apply_remembered_window_state
     bring_to_foreground = SupportCockpitApp.bring_to_foreground
+    _hide_until_drawn = SupportCockpitApp._hide_until_drawn
+    _reveal_after_restore = SupportCockpitApp._reveal_after_restore
 
     def __init__(self, state="zoomed", geometry="1200x800+40+30", viewable=True):
         self.tk = object()
@@ -78,6 +80,10 @@ class WindowStub:
     def after(self, _ms, fn):
         fn()
 
+    def after_idle(self, fn):
+        self.calls.append(("after_idle",))
+        fn()
+
 
 def _hide_and_restore(win: WindowStub):
     win._remember_window_state()
@@ -134,3 +140,23 @@ def test_visible_window_is_left_alone():
     win._restore_state = "zoomed"
     win.bring_to_foreground()
     assert not any(c[0] in ("deiconify", "state", "geometry") for c in win.calls)
+
+
+def test_restore_stays_transparent_until_drawn():
+    """Showing + re-maximizing redraws every widget; the user must not watch
+    that happen. The window is transparent before deiconify and only becomes
+    opaque once Tk is idle (after_idle), i.e. after the redraw."""
+    win = WindowStub(state="zoomed")
+    _hide_and_restore(win)
+    alpha_calls = [i for i, c in enumerate(win.calls) if c[:2] == ("attributes", "-alpha")]
+    first, last = win.calls[alpha_calls[0]], win.calls[alpha_calls[-1]]
+    assert first == ("attributes", "-alpha", 0.0)
+    assert alpha_calls[0] < win.calls.index(("deiconify",))
+    assert ("after_idle",) in win.calls
+    assert last == ("attributes", "-alpha", 1.0)
+
+
+def test_visible_window_is_not_made_transparent():
+    win = WindowStub(state="normal", geometry="900x600+10+10")
+    win.bring_to_foreground()
+    assert not any(c[:2] == ("attributes", "-alpha") for c in win.calls)

@@ -19,6 +19,12 @@ DEFAULT_LANGUAGE = "de"
 WINDOW_STATE_ZOOMED = "zoomed"
 WINDOW_STATE_ICONIC = "iconic"
 WINDOW_STATE_NORMAL = "normal"
+# Tray restore: the window stays transparent until Tk has worked off the
+# relayout/redraw that showing and re-maximizing it triggers, so the user does
+# not watch it paint piece by piece. MIN lets the window manager's resize
+# events arrive first; MAX reveals it even if the event queue never drains.
+WINDOW_RESTORE_REVEAL_MIN_MS = 60
+WINDOW_RESTORE_REVEAL_MAX_MS = 1500
 PAD_CONTAINER = 5
 WIKI_STARTUP_SYNC_DELAY_MS = 1000
 SPLASH_DIMENSIONS = (420, 150)
@@ -475,6 +481,8 @@ COLOR_BORDER_DARK = "#18181b"
 #: must not cap them at its usual few lines. A ceiling stays as a guard
 #: against a pathological note blowing up the layout.
 TIMELINE_NOTE_MAX_DISPLAY_LINES = 500
+# Timeline cards built per page (newest first); older ones load on request.
+TIMELINE_PAGE_SIZE = 15
 #: Eigene Timeline-Eintraege bei aktivierter Farbkennzeichnung: die Karte
 #: bekommt einen Hauch der Nutzerfarbe als Hintergrund, einen Rahmen in einer
 #: abgeschwaechten Variante, eine durchgehende Farbleiste links und den Namen

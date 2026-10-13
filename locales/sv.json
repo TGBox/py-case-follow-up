@@ -1819,6 +1819,7 @@
     "handover_note": "Ansvar överlämnat till: {actor}{person} via {channel}{note}",
     "handover_status": "ANSVAR: {prev} -> {curr}",
     "no_notes": "Inga anteckningar tillgängliga.",
+    "show_older": "⬇ Visa äldre poster ({count})",
     "status_change": "Status: {status}",
     "status_completed": "STATUS: Klart",
     "status_open": "STATUS: Öppen",

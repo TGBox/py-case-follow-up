@@ -79,6 +79,8 @@ from constants import (
     WINDOW_STATE_ICONIC,
     WINDOW_STATE_NORMAL,
     WINDOW_STATE_ZOOMED,
+    WINDOW_RESTORE_REVEAL_MAX_MS,
+    WINDOW_RESTORE_REVEAL_MIN_MS,
     get_localized_menu_options_datenaustausch,
     COLOR_ICON_WHITE,
     HEADER_BREAKPOINT_COMPACT,
@@ -935,6 +937,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         def _restore():
             try:
                 if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
+                    # Showing the window and putting back "maximized" are two
+                    # full relayouts of every widget. Keep the window
+                    # transparent until they are drawn instead of letting the
+                    # user watch half-painted cards and overlapping text.
+                    self._hide_until_drawn()
                     # Tk's deiconify always comes back as a plain "normal"
                     # window - a maximized window loses its maximized state
                     # and is shown at its (default) normal size. Put back what
@@ -952,6 +959,29 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.after(0, _restore)
         except Exception:
             pass
+
+    def _hide_until_drawn(self) -> None:
+        """Makes the window transparent and schedules the reveal once Tk is idle.
+
+        after_idle only runs when the event queue is empty, i.e. after the
+        <Configure> cascade of the restore has been drawn. The MAX timer is the
+        safety net: the window never stays invisible.
+        """
+        try:
+            self.attributes("-alpha", 0.0)
+        except Exception:
+            return
+        try:
+            self.after(WINDOW_RESTORE_REVEAL_MIN_MS, lambda: self.after_idle(self._reveal_after_restore))
+            self.after(WINDOW_RESTORE_REVEAL_MAX_MS, self._reveal_after_restore)
+        except Exception:
+            self._reveal_after_restore()
+
+    def _reveal_after_restore(self) -> None:
+        try:
+            self.attributes("-alpha", 1.0)
+        except Exception as e:
+            logger.warning(f"Could not reveal restored window: {e}")
 
     def switch_to_cockpit_view_for_case(self, case: Case):
         self.bring_to_foreground()

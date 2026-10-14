@@ -577,6 +577,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             width = self.winfo_width()
             if width > MIN_WINDOW_VISIBLE_DIM:
                 self._update_header_responsive(width)
+            # Die Wunschbreiten frisch gebauter CTk-Buttons stehen erst nach dem
+            # naechsten Idle-Durchlauf fest; dann noch einmal nachmessen.
+            self.after_idle(self._recheck_header_responsive)
         except Exception:
             pass
 
@@ -667,8 +670,53 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 tooltip_text = tr("menu.windowed", "Fenstermodus (F11)") if is_fs else tr("menu.fullscreen", "Vollbild (F11)")
                 self.fullscreen_tooltip.text = tooltip_text
 
+    @staticmethod
+    def _pack_padx_total(widget: Any) -> int:
+        """Summe aus linkem und rechtem padx eines gepackten Widgets (echte Pixel)."""
+        padx = widget.pack_info().get("padx", 0)
+        if isinstance(padx, (tuple, list)):
+            return sum(int(p) for p in padx)
+        return 2 * int(padx)
+
+    def _header_required_width(self) -> int:
+        """Fensterbreite, die die volle Kopfzeile braucht - gemessen, nicht geschaetzt.
+
+        Frueher galt eine feste Grenze von HEADER_BREAKPOINT_COMPACT Pixeln. Die
+        Kopfzeile braucht aber schon bei 100 % rund 1550 px, und mit Windows-
+        Skalierung oder Schriftzoom wachsen Buttons und Schrift mit. Bei 125 %
+        auf Full HD passte sie nicht mehr, blieb aber im breiten Modus: pack
+        hat den zuletzt gepackten Benutzer-Button gestaucht ("el R" statt des
+        Namens). Hier wird deshalb die tatsaechliche Wunschbreite addiert, so wie
+        die Leiste im breiten Modus aussaehe. 0 heisst: nicht messbar.
+        """
+        try:
+            menu_frame = self.menu_frame
+            if menu_frame is None or not menu_frame.winfo_exists():
+                return 0
+            packed = menu_frame.pack_slaves()
+            more = getattr(self, "more_menu_combo", None)
+            total = 0
+            for child in packed:
+                if child is more:
+                    continue
+                total += child.winfo_reqwidth() + self._pack_padx_total(child)
+            combo_pad = round(2 * PAD_3 * self.stammdaten_combo._get_widget_scaling())  # pyright: ignore[reportAttributeAccessIssue]
+            for combo in (self.stammdaten_combo, self.vorlagen_combo, self.datenaustausch_combo):
+                if combo not in packed:
+                    total += combo.winfo_reqwidth() + combo_pad
+            return total + self._pack_padx_total(menu_frame)
+        except Exception:
+            return 0
+
     def _update_header_responsive(self, width: int):
-        is_compact = width < HEADER_BREAKPOINT_COMPACT
+        required = self._header_required_width()
+        if required <= 0:
+            try:
+                scale = float(ctk.ScalingTracker.get_widget_scaling(self))
+            except Exception:
+                scale = 1.0
+            required = round(HEADER_BREAKPOINT_COMPACT * scale)
+        is_compact = width < required
         if getattr(self, "_header_is_compact", None) == is_compact:
             return
         self._header_is_compact = is_compact
@@ -686,6 +734,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.stammdaten_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
             self.vorlagen_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
             self.datenaustausch_combo.pack(side="left", padx=PAD_3, pady=PAD_SM)
+
+    def _recheck_header_responsive(self):
+        try:
+            width = self.winfo_width()
+            if width > MIN_WINDOW_VISIBLE_DIM:
+                self._update_header_responsive(width)
+        except Exception:
+            pass
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
@@ -1100,6 +1156,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 if snip.shortcut and snip.shortcut.strip():
                     safe_bind(snip.shortcut, lambda e, content=snip.content: self.insert_snippet_shortcut(content))
 
+    def _after_scaling_changed(self):
+        """Breitenabhaengiges Layout nach einer Skalierungsaenderung nachziehen.
+
+        CTk skaliert seine Widgets selbst, aber die Spalten des PanedWindows und
+        die Umschaltgrenze der Kopfzeile haengen an echten Pixeln.
+        """
+        self.after_idle(self._recheck_header_responsive)
+        if self.is_view_built(LayoutMode.COCKPIT.value) and hasattr(self.cockpit_view, "restore_sash_positions"):
+            self.after_idle(self.cockpit_view.restore_sash_positions)
+
     def zoom_font(self, delta: float, reset: bool = False):
         if reset:
             new_scale = DEFAULT_FONT_SCALE
@@ -1114,6 +1180,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._set_scaled_min_max()
         if is_zoomed:
             self._maximize_window()
+        self._after_scaling_changed()
         if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.storage_service.save_profile(self.profile)

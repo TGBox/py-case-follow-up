@@ -98,21 +98,32 @@ def test_fullscreen_button_and_tooltip_update(app_config: AppConfig):
 
 
 def test_responsive_header_mode_switching(app_config: AppConfig):
-    """Verifies that header collapses into more_menu_combo when width is compact (< HEADER_BREAKPOINT_COMPACT)."""
+    """Header collapses into more_menu_combo when the window is narrower than the full header needs.
+
+    The requirement is measured instead of a fixed breakpoint: with Windows display
+    scaling the full header did not fit on Full HD any more, but stayed wide and
+    pack squeezed the user button down to a few letters.
+    """
     app = SupportCockpitApp(app_config)
     try:
         app.update()
         assert hasattr(app, "more_menu_combo")
         assert hasattr(app, "stammdaten_combo")
 
-        # Trigger compact mode (< 1150px)
-        app._update_header_responsive(HEADER_BREAKPOINT_COMPACT - 100)
+        required = app._header_required_width()
+        assert required > 0
+
+        # Trigger compact mode: one pixel short of what the full header needs
+        app._update_header_responsive(required - 1)
         app.update()
         assert app._header_is_compact is True
         _assert_header_packed(app, compact=True)
 
-        # Trigger wide mode (>= 1150px)
-        app._update_header_responsive(HEADER_BREAKPOINT_COMPACT + 100)
+        # The requirement is measured for the wide layout, whichever mode is active
+        assert app._header_required_width() == required
+
+        # Trigger wide mode once the full header fits
+        app._update_header_responsive(required)
         app.update()
         assert app._header_is_compact is False
         _assert_header_packed(app, compact=False)
@@ -211,3 +222,18 @@ def test_table_sort_arrows_indicator(tmp_path: Path):
         assert hdr_text_toggled != hdr_text
     finally:
         root.destroy()
+
+
+def test_header_requirement_grows_with_scaling(app_config: AppConfig):
+    """At a larger scaling the full header needs more room, so it collapses earlier."""
+    app = SupportCockpitApp(app_config)
+    try:
+        app.update()
+        required_100 = app._header_required_width()
+        ctk.set_widget_scaling(1.5)
+        app.update()
+        required_150 = app._header_required_width()
+        assert required_150 > required_100
+    finally:
+        ctk.set_widget_scaling(1.0)
+        app.destroy()

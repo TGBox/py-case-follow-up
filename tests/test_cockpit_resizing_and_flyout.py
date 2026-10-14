@@ -187,7 +187,7 @@ def test_the_side_columns_carry_their_restored_width(cockpit_im_fenster):
     """
     _, view = cockpit_im_fenster
     view.profile.ui_settings.column_widths["cockpit_left"] = 430
-    view.profile.ui_settings.column_widths["cockpit_right"] = 250
+    view.profile.ui_settings.column_widths["cockpit_right"] = 350
 
     echtes_paned = view.paned
     attrappe = MagicMock()
@@ -203,14 +203,14 @@ def test_the_side_columns_carry_their_restored_width(cockpit_im_fenster):
             for aufruf in attrappe.paneconfigure.call_args_list
         }
         assert gepinnt.get(view.left_frame) == 430, f"linke Spalte nicht gepinnt: {gepinnt}"
-        assert gepinnt.get(view.right_tabview) == 250, f"rechte Spalte nicht gepinnt: {gepinnt}"
+        assert gepinnt.get(view.right_tabview) == 350, f"rechte Spalte nicht gepinnt: {gepinnt}"
         assert view.center_frame not in gepinnt, "Mittelspalte darf nicht festgenagelt werden"
 
         # Die rechte Sash sitzt um sashwidth + 2*sashpad = 8px vor dem Pane:
-        # 1600 - 250 - 8. Ohne diesen Zuschlag wandert die Spalte bei jedem
+        # 1600 - 350 - 8. Ohne diesen Zuschlag wandert die Spalte bei jedem
         # Speichern und Wiederherstellen um 8px.
         assert attrappe.sash_place.call_args_list[0].args == (0, 430, 0)
-        assert attrappe.sash_place.call_args_list[1].args == (1, 1342, 0)
+        assert attrappe.sash_place.call_args_list[1].args == (1, 1242, 0)
     finally:
         offen = getattr(view, "_sash_restore_after_id", None)
         if offen:
@@ -357,3 +357,75 @@ def test_the_form_scrollbar_follows_the_middle_column(cockpit_im_fenster):
     rechter_rand = view.center_frame.winfo_rootx() + view.center_frame.winfo_width()
     abstand = rechter_rand - balken.winfo_rootx()
     assert 0 <= abstand <= 40, f"Balken steht {abstand} px vom rechten Rand entfernt"
+
+
+# --- Anzeigeskalierung: das PanedWindow rechnet in echten Pixeln ---
+#
+# Gemeldet: auf einem Full-HD-Laptop mit 125 % Windows-Skalierung waren die
+# Reiter rechts abgeschnitten ("eitleist", "nhäng", "Wiki / Wissensdatenban").
+# CTk skaliert seinen Inhalt, das tk.PanedWindow aber nicht: die Spalte bekam
+# weiter 320 echte Pixel, die Reiterleiste brauchte mehr.
+
+def _pins_nach_restore(view, gesamt=1600):
+    echtes_paned = view.paned
+    attrappe = MagicMock()
+    attrappe.winfo_exists.return_value = True
+    attrappe.winfo_width.return_value = gesamt
+    attrappe.cget.side_effect = lambda option: {"sashwidth": 6, "sashpad": 1}[option]
+    view.paned = attrappe
+    try:
+        view.restore_sash_positions()
+        return {a.args[0]: a.kwargs for a in attrappe.paneconfigure.call_args_list}
+    finally:
+        offen = getattr(view, "_sash_restore_after_id", None)
+        if offen:
+            try:
+                view.after_cancel(offen)
+            except Exception:
+                pass
+            view._sash_restore_after_id = None
+        view.paned = echtes_paned
+
+
+def test_column_widths_are_stored_logically_and_scaled_on_restore(cockpit_im_fenster, monkeypatch):
+    _, view = cockpit_im_fenster
+    view.profile.ui_settings.column_widths["cockpit_left"] = 300
+    view.profile.ui_settings.column_widths["cockpit_right"] = 320
+    monkeypatch.setattr(view, "_ui_scale", lambda: 1.25)
+
+    gepinnt = _pins_nach_restore(view)
+    assert gepinnt[view.left_frame]["width"] == 375
+    assert gepinnt[view.right_tabview]["width"] == 400
+
+
+def test_saving_converts_back_to_logical_widths(cockpit_im_fenster, monkeypatch):
+    _, view = cockpit_im_fenster
+    monkeypatch.setattr(view, "_ui_scale", lambda: 1.25)
+    monkeypatch.setattr(view, "_min_right_width", lambda: 0)
+    echtes_paned = view.paned
+    attrappe = MagicMock()
+    attrappe.winfo_exists.return_value = True
+    attrappe.winfo_width.return_value = 1600
+    attrappe.cget.side_effect = lambda option: {"sashwidth": 6, "sashpad": 1}[option]
+    # links 375 echte px, rechts 1600 - 1192 - 8 = 400 echte px
+    attrappe.sash_coord.side_effect = lambda i: [(375, 0), (1192, 0)][i]
+    view.paned = attrappe
+    view.storage_service = None
+    try:
+        view.save_sash_widths()
+    finally:
+        view.paned = echtes_paned
+    assert view.profile.ui_settings.column_widths["cockpit_left"] == 300
+    assert view.profile.ui_settings.column_widths["cockpit_right"] == 320
+
+
+def test_right_column_never_narrower_than_its_tab_bar(cockpit_im_fenster):
+    _, view = cockpit_im_fenster
+    view.profile.ui_settings.column_widths["cockpit_right"] = 150
+    reiter = view.right_tabview._segmented_button.winfo_reqwidth()
+
+    gepinnt = _pins_nach_restore(view)
+    rechts = gepinnt[view.right_tabview]
+    assert rechts["width"] >= reiter, "Reiterbeschriftungen wuerden abgeschnitten"
+    # Auch per Sash darf die Spalte nicht unter die Reiterleiste gezogen werden.
+    assert rechts["minsize"] >= reiter

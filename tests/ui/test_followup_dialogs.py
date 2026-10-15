@@ -325,17 +325,61 @@ def test_restore_pins_side_column_widths(fake_paned):
     and the restored column widths were lost after each restart."""
     view, fake = fake_paned
     view.profile.ui_settings.column_widths["cockpit_left"] = 430
-    view.profile.ui_settings.column_widths["cockpit_right"] = 250
+    view.profile.ui_settings.column_widths["cockpit_right"] = 350
 
     view.restore_sash_positions()
 
     pinned = {c.args[0]: c.kwargs["width"] for c in fake.paneconfigure.call_args_list}
     assert pinned.get(view.left_frame) == 430
-    assert pinned.get(view.right_tabview) == 250
+    assert pinned.get(view.right_tabview) == 350
     assert view.center_frame not in pinned
-    # Right sash sits sashwidth + 2*sashpad = 8px before its pane (1600 - 250 - 8), else it drifts 8px per restart.
+    # Right sash sits sashwidth + 2*sashpad = 8px before its pane (1600 - 350 - 8), else it drifts 8px per restart.
     assert fake.sash_place.call_args_list[0].args == (0, 430, 0)
-    assert fake.sash_place.call_args_list[1].args == (1, 1342, 0)
+    assert fake.sash_place.call_args_list[1].args == (1, 1242, 0)
+
+
+# Display scaling: tk.PanedWindow works in real pixels while CTk scales its content. Reported at 125 %
+# Windows scaling on Full HD: the right tabs were cut off ("eitleist", "nhäng", "Wiki / Wissensdatenban").
+
+def _pins_after_restore(view, fake) -> dict:
+    view.restore_sash_positions()
+    return {c.args[0]: c.kwargs for c in fake.paneconfigure.call_args_list}
+
+
+def test_column_widths_are_stored_logically_and_scaled_on_restore(fake_paned, monkeypatch):
+    view, fake = fake_paned
+    view.profile.ui_settings.column_widths["cockpit_left"] = 300
+    view.profile.ui_settings.column_widths["cockpit_right"] = 320
+    monkeypatch.setattr(view, "_ui_scale", lambda: 1.25)
+
+    pinned = _pins_after_restore(view, fake)
+    assert pinned[view.left_frame]["width"] == 375
+    assert pinned[view.right_tabview]["width"] == 400
+
+
+def test_saving_converts_back_to_logical_widths(fake_paned, monkeypatch):
+    view, fake = fake_paned
+    monkeypatch.setattr(view, "_ui_scale", lambda: 1.25)
+    monkeypatch.setattr(view, "_min_right_width", lambda: 0)
+    # left 375 real px, right 1600 - 1192 - 8 = 400 real px
+    fake.sash_coord.side_effect = lambda i: [(375, 0), (1192, 0)][i]
+    view.storage_service = None
+
+    view.save_sash_widths()
+
+    assert view.profile.ui_settings.column_widths["cockpit_left"] == 300
+    assert view.profile.ui_settings.column_widths["cockpit_right"] == 320
+
+
+def test_right_column_never_narrower_than_its_tab_bar(fake_paned):
+    view, fake = fake_paned
+    view.profile.ui_settings.column_widths["cockpit_right"] = 150
+    tabs = view.right_tabview._segmented_button.winfo_reqwidth()
+
+    right = _pins_after_restore(view, fake)[view.right_tabview]
+    assert right["width"] >= tabs, "tab labels would be cut off"
+    # The sash must not drag the column below the tab bar either.
+    assert right["minsize"] >= tabs
 
 
 def test_resizing_neither_moves_sashes_nor_overwrites_saved_widths(fake_paned):

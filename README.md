@@ -160,11 +160,11 @@ Lint-Verstoß in Sekunden auffällt statt erst nach einem kompletten Build:
 1. Linting (`uv run ruff check src main.py tests`).
 2. Statische Typenprüfung (`uvx pyright src`).
 3. Baut eine frische `.exe` anhand des Spec-Files (muss vor den Tests laufen: `dist/` ist
-   gitignored, und `test_pyinstaller_bundle.py` überspringt sich ohne gebaute Exe selbst).
+   gitignored, und `tests/static/test_source_hygiene.py` überspringt den Exe-Test ohne gebaute Exe selbst).
 4. Die gesamte Testsuite (`uv run pytest --no-cov`).
 5. Den Push abbricht, falls einer der vier Schritte fehlschlägt.
 
-Dass Hook und CI nicht auseinanderlaufen, prüft `tests/test_git_hooks.py` gegen
+Dass Hook und CI nicht auseinanderlaufen, prüft `tests/static/test_source_hygiene.py` gegen
 `.github/workflows/tests.yml`.
 
 Um den Hook für Ihr lokales Git-Repository zu aktivieren:
@@ -227,33 +227,18 @@ uv run main.py --workspace "D:\Support_Workspace"
 
 ## 🧪 Tests ausführen
 
-Das Projekt verfügt über **über 840 automatisierte Tests** in der pytest-Testsuite:
-
 ```bash
-uv run pytest
+uv run pytest                      # alles (mit Coverage)
+uv run pytest tests/unit --no-cov  # schnell: nur Logik
 ```
 
-Abgedeckte Testbereiche:
+Aufbau der Testsuite (eine Datei pro Modul bzw. Dialog, nicht pro Feature):
 
-* `test_git_hooks.py`: Validierung des Git Pre-Push Hooks und der Build-Reihenfolge vor Tests.
-* `test_pyinstaller_bundle.py`: Verifikation des PyInstaller Spec-Files und der gebündelten Lokalisierungsdateien in der generierten `.exe`.
-* `test_case_print_export_options.py` & `test_case_print_dialog.py`: Komprimierter DIN A4 Fallbericht (`generate_case_report_html`), 2-Spalten Top-Grid, 2-Spalten Formular-Raster und PDF-Druck.
-* `test_color_marker_and_timeline_layout.py`: Persönliche Farbmarkierung im Profil, Modellpersistenz, dezente Farbkacheln und Timeline-Kartenlayout.
-* `test_translation_parity_and_quality.py` & `test_i18n_translation_parity_and_service.py`: 100% Parität aller Übersetzungsschlüssel über Deutsch, Englisch und Schwedisch hinweg.
-* `test_profile_and_ai_management.py`: Ollama Server Process Control (Start/Stop), Modell-Downloads, VRAM-Entladung & asynchroner Status-Scan.
-* `test_ai_text_generation_validation.py`: LLM-Generierung, Prompt-Hierarchien, Sonderanweisungen, Fall-ID-Ausschluss und NLP-Fallbacks.
-* `test_zuzahlungsnachforderung_multi_requests.py`: Dynamische wiederholbare Karten-Container für Multi-Datei-Anforderungen.
-* `test_analytics_metrics.py`: Auswertungs-Dashboard KPIs, Bearbeitungszeiten & Markdown-Berichtsexport.
-* `test_keyboard_macros.py`: Keyboard-Makros & Hotkey-Konfliktprüfungen.
-* `test_internal_cases.py`: Erfassung & Suche interner Vorgänge ohne Kundenelement.
-* `test_cobra_import.py`: Cobra CRM Kunden- & Praxenimport mit Spaltenerkennung.
-* `test_snippets.py`: Textbausteine-Verwaltung & Einfüge-Mechanik.
-* `test_email_and_calendar_dialog_separation.py`: Eigenständige Dialoge für E-Mail, Outlook-Transfer & .ics Kalenderexport.
-* `test_followup_and_relative_dates.py`: Fristen, Relativdaten & Toast-Benachrichtigungen.
-* `test_colleague_absence.py`: Abwesenheiten & Vertretungswarnungen.
-* `test_storage.py` & `test_storage_robustness_deep.py`: Atomares Schreiben, Backups, Archivierung & Crash-Recovery.
-* `test_scoring.py`: Urgency-Score Formel & Ampelschwellen.
-* `test_search_parser.py` & `test_quick_filter_search.py`: Token-Parsing & Schnellauswahl.
-* `test_export_engine.py`: Jinja2 Rendering, In-Place Validierung & Force-Export.
-* `test_p2p_sync.py` & `test_p2p_advanced.py`: Diff-Berechnung & selektiver P2P-Import.
-* `test_ui_integration.py` & `test_ui_workflow_chains.py`: E2E-Integrationstests aller GUI-Workflows.
+* `tests/unit/` – Logik der Services, Modelle und Utils (Storage, Suche, Scoring, Export, AI, Cobra, Outlook, Wiki, P2P …).
+* `tests/ui/` – Widgets, Views und Dialoge headless (CustomTkinter-Fenster bleiben unsichtbar, siehe `tests/conftest.py`).
+* `tests/static/` – Prüfungen über Repo-Dateien: Übersetzungs-Parität, AST-Scan auf hartcodierte UI-Texte, Unicode, Git-Hook vs. CI, PyInstaller-Spec.
+* `tests/integration/` – mehrere echte Services auf einem echten Arbeitsordner (z. B. Cobra-Import → Fall → Suche, ZIP-Backup → Restore, P2P zwischen zwei Arbeitsordnern).
+* `tests/e2e/` – die ganze App headless gestartet und über ihre Oberfläche bedient: Fall-Lebenszyklus, Suche & Filter, Backup/Import/Export, Sprachwechsel & Profil – jeweils inkl. Neustart.
+
+Gemeinsame Fixtures (`root`, `config`, `storage`, `seeded_storage`) liegen in `tests/conftest.py`.
+Bekannte, noch nicht behobene Bugs sind als `xfail(strict=True)` markiert: Sobald der Fix kommt, schlägt der Test als XPASS fehl und erinnert daran, die Markierung zu entfernen.

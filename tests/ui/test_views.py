@@ -242,12 +242,12 @@ def test_table_view_sorting_tabs_and_language_refresh(root, config, storage):
 
     tabs = ("📝 Formular & Ausfüllen", "🕒 Zeitleiste", "📎 Anhänge")
     keys = ("table.tab_form", "table.tab_timeline", "table.tab_attachments")
-    for lang, tab in zip(LANGS, tabs):
+    for lang, tab in zip(LANGS, tabs, strict=True):
         tv.detail_tabview.set(tab)
         get_i18n().current_language = lang
         tv.refresh_ui_labels()
         btns = tv.detail_tabview._segmented_button._buttons_dict
-        for name, key in zip(tabs, keys):
+        for name, key in zip(tabs, keys, strict=True):
             assert btns[name].cget("text") == tr(key, name)
     assert "spara" in tv.save_btn.cget("text").lower()
 
@@ -362,13 +362,13 @@ def test_cockpit_refresh_ui_labels_reflects_case_state(cockpit):
 def test_cockpit_tabs_follow_language_while_switching_tabs(root, cockpit):
     tabs = ("Zeitleiste", "Anhänge", "Wiki")
     keys = ("cockpit.tab_timeline", "cockpit.tab_attachments", "cockpit.tab_wiki")
-    for lang, tab in zip(LANGS, tabs):
+    for lang, tab in zip(LANGS, tabs, strict=True):
         cockpit.right_tabview.set(tab)
         get_i18n().current_language = lang
         cockpit.refresh_ui_labels()
         root.update_idletasks()
         btns = cockpit.right_tabview._segmented_button._buttons_dict
-        for name, key in zip(tabs, keys):
+        for name, key in zip(tabs, keys, strict=True):
             assert btns[name].cget("text") == tr(key, name)
 
 
@@ -417,7 +417,7 @@ def test_attachment_widget_lists_files_and_previews_every_type(root, config, tmp
     other_dir = tmp_path / "cases" / other.case_id / "attachments"
     other_dir.mkdir(parents=True)
     (other_dir / "file_0.txt").write_text("x", encoding="utf-8")
-    for lang, c in zip(LANGS, (other, case, None)):
+    for lang, c in zip(LANGS, (other, case, None), strict=True):
         get_i18n().current_language = lang
         widget.load_attachments(c)
         widget.refresh_ui_labels()
@@ -628,7 +628,7 @@ def test_app_language_and_layout_switching(config):
     try:
         # The last two switches hit already built views, so their debounced profile saves overlap.
         layouts = ("COCKPIT", "BOARD", "TABLE", "ANALYTICS", "COCKPIT", "BOARD")
-        for lang, layout in zip(("en", "sv", "de") * 2, layouts):
+        for lang, layout in zip(("en", "sv", "de") * 2, layouts, strict=True):
             get_i18n().current_language = lang  # the app listens and rebuilds its menu bar
             assert get_i18n().current_language == lang
             assert app.title() == tr("app.window_title")

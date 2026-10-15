@@ -88,11 +88,11 @@ def test_ui_components_build_in_light_and_dark_mode(tmp_path):
         case_list.set_cases([case])
         case_list.update_idletasks()
         for build in (
-            lambda: CalendarDialog(app, initial_date="2026-08-25T14:30:00", include_time=True),
-            lambda: EmailDraftDialog(app, case, calendar_email_service=cal_svc, user_name="DaniBani", snippet_service=SnippetService(tmp_path)),
-            lambda: CalendarExportDialog(app, case, calendar_email_service=cal_svc),
-            lambda: CasePrintDialog(app, case, attachment_service=att_svc),
-            lambda: HelpDialog(app),
+            lambda app=app: CalendarDialog(app, initial_date="2026-08-25T14:30:00", include_time=True),
+            lambda app=app: EmailDraftDialog(app, case, calendar_email_service=cal_svc, user_name="DaniBani", snippet_service=SnippetService(tmp_path)),
+            lambda app=app: CalendarExportDialog(app, case, calendar_email_service=cal_svc),
+            lambda app=app: CasePrintDialog(app, case, attachment_service=att_svc),
+            lambda app=app: HelpDialog(app),
         ):
             dlg = build()
             dlg.update_idletasks()

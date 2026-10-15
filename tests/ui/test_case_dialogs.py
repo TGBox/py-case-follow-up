@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import cast
 from unittest.mock import MagicMock, patch
 
-import customtkinter as ctk
 import pytest
 
 from config import AppConfig

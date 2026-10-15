@@ -154,7 +154,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         die Spaltenbreiten darum logisch; umgerechnet wird nur beim Anwenden.
         """
         try:
-            scale = float(self._get_widget_scaling())
+            scale = float(self._get_widget_scaling())  # pyright: ignore[reportAttributeAccessIssue]
             return scale if scale > 0 else 1.0
         except Exception:
             return 1.0

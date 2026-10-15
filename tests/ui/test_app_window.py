@@ -7,7 +7,7 @@ import tkinter as tk
 import customtkinter as ctk
 import pytest
 
-from constants import COLOR_MUTED_GRAY, COLOR_PRIMARY, DEFAULT_FONT_SCALE, FONT_SCALE_MAX, HEADER_BREAKPOINT_COMPACT
+from constants import COLOR_MUTED_GRAY, COLOR_PRIMARY, DEFAULT_FONT_SCALE, FONT_SCALE_MAX
 from services.i18n_service import get_i18n, tr
 from services.storage_service import StorageService
 from ui.app import SupportCockpitApp
@@ -196,22 +196,45 @@ def _assert_header_packed(app, compact: bool) -> None:
 
 
 def test_header_collapses_into_more_menu_when_narrow_and_survives_menu_rebuild(app, monkeypatch):
-    """A language change rebuilds the menu bar; a compact header must stay compact afterwards."""
-    app._update_header_responsive(HEADER_BREAKPOINT_COMPACT + 100)
+    """Header collapses once the window is narrower than the full header needs; a language change
+    rebuilds the menu bar and a compact header must stay compact afterwards.
+
+    The requirement is measured instead of a fixed breakpoint: with Windows display scaling the
+    full header did not fit on Full HD any more, but stayed wide and pack squeezed the user button.
+    """
+    required = app._header_required_width()
+    assert required > 0
+
+    app._update_header_responsive(required)
     app.update()
     _assert_header_packed(app, compact=False)
 
-    monkeypatch.setattr(app, "winfo_width", lambda: HEADER_BREAKPOINT_COMPACT - 100)
-    app._update_header_responsive(HEADER_BREAKPOINT_COMPACT - 100)
+    app._update_header_responsive(required - 1)
     app.update()
     _assert_header_packed(app, compact=True)
+    # Measured for the wide layout, whichever mode is active
+    assert app._header_required_width() == required
 
+    # The rebuild re-measures with the new labels; English is shorter than German, so a window
+    # just below the German requirement may legitimately fit. Use one that fits in no language.
+    monkeypatch.setattr(app, "winfo_width", lambda: required // 2)
     get_i18n().current_language = "en"
     end = time.monotonic() + 0.15  # also lets the deferred cockpit sash restore run on the rebuilt UI
     while time.monotonic() < end:
         app.update()
         time.sleep(0.01)
     _assert_header_packed(app, compact=True)
+
+
+def test_header_requirement_grows_with_scaling(app):
+    """At a larger scaling the full header needs more room, so it collapses earlier."""
+    required_100 = app._header_required_width()
+    try:
+        ctk.set_widget_scaling(1.5)
+        app.update()
+        assert app._header_required_width() > required_100
+    finally:
+        ctk.set_widget_scaling(1.0)
 
 
 # --- Case list quick filters and table sort arrows ---

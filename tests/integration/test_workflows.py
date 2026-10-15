@@ -32,6 +32,10 @@ from utils.datetime_utils import get_local_now, now_iso, parse_german_date
 
 # --- helpers -----------------------------------------------------------------
 
+class KnownBug(AssertionError):
+    """Raised only by the bug check of an xfail test, so unrelated errors still fail."""
+
+
 def _reopen(storage: StorageService, **config_kw) -> StorageService:
     """Flushes pending writes and opens the workspace again, as after an app restart."""
     storage.flush_all_saves()
@@ -233,7 +237,7 @@ def test_cobra_import_feeds_new_case_board_redirect_and_search(seeded_storage, t
         assert [c.case_id for c in SearchService.filter_cases(reopened.load_cases(), query)] == [stored.case_id], query
 
 
-@pytest.mark.xfail(strict=True, reason="NewCaseDialog.on_save matches the chosen customer with "
+@pytest.mark.xfail(strict=True, raises=KnownBug, reason="NewCaseDialog.on_save matches the chosen customer with "
                    "'customer_id in selected_str', so id '100' wins for 'Praxis Zwei (1001)'")
 def test_new_case_links_the_selected_cobra_customer_even_when_ids_share_a_prefix(seeded_storage, tmp_path: Path):
     imported = _cobra_customers(tmp_path, (
@@ -246,7 +250,9 @@ def test_new_case_links_the_selected_cobra_customer_even_when_ids_share_a_prefix
     created: list[Case] = []
     dialog = _new_case_dialog(storage.load_customers(), storage.load_schemas(), created.append)
     _fill_new_case(dialog, "Rückfrage", "Praxis Zwei (1001)", "20.08.2026 10:00", dialog.schema_combo.get())
-    assert created[0].customer.customer_id == "1001"
+    assert len(created) == 1
+    if created[0].customer.customer_id != "1001":
+        raise KnownBug(f"case linked to customer {created[0].customer.customer_id!r} instead of '1001'")
 
 
 # --- attachments -> deep search -> delete ------------------------------------
@@ -336,7 +342,7 @@ def test_zip_backup_restores_complete_workspace_elsewhere(seeded_storage, tmp_pa
     assert hits["T-2026-0001"]["attachment_matches"][0]["file_name"] == "zuzahlung.csv"
 
 
-@pytest.mark.xfail(strict=True, reason="export_backup_zip walks data_dir and attachments_dir, but attachments_dir "
+@pytest.mark.xfail(strict=True, raises=KnownBug, reason="export_backup_zip walks data_dir and attachments_dir, but attachments_dir "
                    "is data/attachments, so every attachment is written into the ZIP twice")
 def test_zip_backup_stores_each_attachment_once(seeded_storage, tmp_path: Path):
     att_dir = seeded_storage.config.attachments_dir / "T-2026-0001_Gemeinschaftspraxis_Dr_Mueller"
@@ -346,7 +352,9 @@ def test_zip_backup_stores_each_attachment_once(seeded_storage, tmp_path: Path):
     ZipBackupService.export_backup_zip(seeded_storage, zip_path)
     with zipfile.ZipFile(zip_path) as zf:
         copies = [n for n in zf.namelist() if n.replace("\\", "/").endswith("/sample_log.txt")]
-    assert len(copies) == 1
+    assert copies, "attachment missing from the backup"
+    if len(copies) != 1:
+        raise KnownBug(f"attachment stored {len(copies)}x in the ZIP: {copies}")
 
 
 # --- two colleagues -> P2P sync -> local rescoring ----------------------------

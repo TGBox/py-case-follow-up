@@ -6,11 +6,11 @@
 # Sekunden, der PyInstaller-Build Minuten. Frueher stand der Build vorn - ein
 # einzelner Lint-Verstoss kostete damit erst den kompletten Build und fiel
 # trotzdem durch. Vor pytest muss der Build aber bleiben: dist/ ist gitignored,
-# und test_pyinstaller_bundle.py ueberspringt sich selbst, solange es keine
+# und tests/static/test_source_hygiene.py ueberspringt sich selbst, solange es keine
 # gebaute .exe gibt.
 #
 # Die Befehle fuer ruff und pyright sind wortgleich zu den CI-Jobs. Dass sie es
-# bleiben, prueft tests/test_git_hooks.py gegen die Workflow-Datei - genau diese
+# bleiben, prueft tests/static/test_source_hygiene.py gegen die Workflow-Datei - genau diese
 # Abweichung war der Grund, warum ein E731 lokal durchrutschte und erst in den
 # GitHub Actions auffiel.
 

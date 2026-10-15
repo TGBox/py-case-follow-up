@@ -357,6 +357,12 @@ def test_ai_tab_provider_key_and_rules_controls(ai_dialog, monkeypatch):
     d.on_test_gemini_key()
     assert "API Key" in d.gemini_status_lbl.cget("text")
 
+    # Modelfile rules are read from ollama/Modelfile relative to the working directory
+    repo_modelfile = Path(__file__).resolve().parents[2] / "ollama" / "Modelfile"
+    (Path.cwd() / "ollama").mkdir(exist_ok=True)
+    (Path.cwd() / "ollama" / "Modelfile").write_text(repo_modelfile.read_text(encoding="utf-8"), encoding="utf-8")
+    assert d.get_modelfile_prompt_text()
+
     # Modelfile rules: empty Modelfile is a no-op
     def rules():
         return d.ai_base_rules_txt.get("1.0", "end-1c")

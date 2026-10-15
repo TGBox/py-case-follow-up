@@ -493,9 +493,13 @@ def test_outlook_email_to_case_and_timeline():
     assert len(case.timeline) == 2
     assert "Zusatzinfo: Fehlercode 404" in entry.note
 
-    assert OutlookIntegrationService.transfer_to_outlook(
-        to_email="support@medico.de", subject="Ticket #1234", body_text="Hallo Welt",
-    ) in (True, False)
+    # No Outlook COM available -> falls back to a mailto: link
+    from unittest.mock import patch
+    with patch("webbrowser.open") as opened:
+        assert OutlookIntegrationService.transfer_to_outlook(
+            to_email="support@medico.de", subject="Ticket #1234", body_text="Hallo Welt",
+        ) is True
+    assert opened.call_args[0][0] == "mailto:support@medico.de?subject=Ticket%20%231234&body=Hallo%20Welt"
 
 
 def test_deep_search_attachments_and_wiki_cache(tmp_path: Path):
@@ -600,15 +604,3 @@ def test_template_manager_and_edit_dialog(root, storage):
     assert [t.template_id for t in dialog.templates] == ["tpl_dev"]
     dialog.destroy()
 
-
-def test_wiki_widget_offline_search(root, config):
-    from services.wiki_sync_service import WikiSyncService
-    from ui.widgets.wiki_widget import WikiWidget
-
-    widget = WikiWidget(root, wiki_service=WikiSyncService(config))
-    widget.pack(fill="both", expand=True)
-    widget.update_idletasks()
-    widget.search_entry.insert(0, "Setup")
-    widget.on_search()
-    widget.update_idletasks()
-    widget.destroy()

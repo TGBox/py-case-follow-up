@@ -154,6 +154,9 @@ def isolate_global_supportcockpit_config(tmp_path: Path, monkeypatch: pytest.Mon
     fake_config_dir = tmp_path / "global_config_mock"
     fake_config_dir.mkdir(parents=True, exist_ok=True)
     monkeypatch.setenv("SUPPORTCOCKPIT_CONFIG_DIR", str(fake_config_dir))
+    # In a source run the default workspace is Path.cwd() (= the repo with the
+    # developer's real data/), so no test may run with the repo as cwd.
+    monkeypatch.chdir(tmp_path)
 
 
 @pytest.fixture(autouse=True)

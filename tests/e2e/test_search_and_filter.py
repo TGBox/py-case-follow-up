@@ -7,7 +7,8 @@ from ui.dialogs.new_case_dialog import NewCaseDialog
 from ui.widgets.searchable_combobox import SearchableCombobox
 
 from e2e_helpers import (
-    click, dialog_closed, find_button, find_dialog, fresh_storage, press_key, type_into, wait_until, walk,
+    click, dialog_closed, find_button, find_dialog, fresh_storage, press_key, quit_via_menu, type_into,
+    wait_until, walk,
 )
 
 ZANDER = Customer(customer_id="K-4711", practice_name="Praxis Dr. Zander", is_vip=True, city="Leipzig",
@@ -28,11 +29,17 @@ def _listed_ids(app) -> set[str]:
     return set(app.cockpit_view.left_frame._card_widgets)
 
 
-def _search(app, text: str) -> None:
-    """Types into the case list's search field; the list filters after the typing pause."""
+def _search(app, text: str) -> set[str]:
+    """Types into the case list's search field and waits until the debounced search really ran with it."""
+    assert app.search_query != text, "same query again - waiting for it would prove nothing"
     entry = app.cockpit_view.left_frame.search_entry
     type_into(entry, text)
     press_key(entry, "<KeyRelease>")
+    # The list only filters after the typing pause; waiting on the list alone could
+    # return on the previous query's identical result.
+    wait_until(app, lambda: app.search_query == text, what=f"search {text!r} to be applied")
+    app.update()
+    return _listed_ids(app)
 
 
 def test_search_and_filter(tmp_path, start_app):
@@ -74,13 +81,11 @@ def test_search_and_filter(tmp_path, start_app):
         "Halle": set(),                           # city is not part of the case snapshot
     }
     for query, ids in expected.items():
-        _search(app, query)
-        wait_until(app, lambda ids=ids: _listed_ids(app) == ids, what=f"list for {query!r} == {ids}")
+        assert _search(app, query) == ids, query
         assert left.count_label.cget("text") == tr("case_list.count_cases", "{count} Support-Fälle", count=len(ids))
 
     # Quick filter button "Dringend" (vip:true): only the VIP practice remains.
-    _search(app, "")
-    wait_until(app, lambda: len(_listed_ids(app)) == 2, what="unfiltered list")
+    assert _search(app, "") == {MUELLER_CASE.case_id, zander_case.case_id}
     left.qfilter_urgent_btn.invoke()
     assert left.search_entry.get() == "vip:true"
     assert _listed_ids(app) == {zander_case.case_id}
@@ -97,3 +102,12 @@ def test_search_and_filter(tmp_path, start_app):
     left.qfilter_all_btn.invoke()
     assert left.search_entry.get() == ""
     assert _listed_ids(app) == {MUELLER_CASE.case_id, zander_case.case_id}
+
+    # Restart on the same workspace: the new case is still found and opens.
+    quit_via_menu(app)
+    app2 = start_app(tmp_path)
+    assert {c.case_id for c in fresh_storage(tmp_path).load_cases()} == {MUELLER_CASE.case_id, zander_case.case_id}
+    assert _search(app2, "K-4711") == {zander_case.case_id}
+    click(app2.cockpit_view.left_frame._card_widgets[zander_case.case_id])
+    assert app2.cockpit_view.current_case.case_id == zander_case.case_id
+    assert app2.cockpit_view.case_title_label.cget("text") == f"{zander_case.case_id}: {TITLE}"

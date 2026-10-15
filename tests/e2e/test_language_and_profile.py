@@ -12,10 +12,15 @@ from e2e_helpers import (
 )
 
 
-class KnownBug(AssertionError):
-    """Raised only for the known bugs below, so any other failure of this flow still fails the test."""
+class FontScaleLostBug(AssertionError):
+    """Raised only for the known font-scale bug, so any other failure of the flow still fails the test."""
 
 
+class GermanTitleBug(AssertionError):
+    """Raised only for the known window-title bug."""
+
+
+ENGLISH_TITLE = "Support Cockpit & Ticket Management"
 NAME = "Dana Hotline"
 SIGNATURE = "Viele Grüße\nDana Hotline\nSupport-Team"
 
@@ -46,27 +51,21 @@ def _assert_english_ui(app):
 
 
 @pytest.mark.xfail(
-    raises=KnownBug,
+    raises=FontScaleLostBug,
     strict=True,
     reason=(
-        "BUG 1: saving a new font scale together with a language switch drops the font scale. "
+        "BUG: saving a new font scale together with a language switch drops the font scale. "
         "save_ui_settings() sets the language first; that fires the dialog's refresh_ui_tab_labels(), which "
         "resets font_scale_combo to the stored profile value, and only then is the combo read. "
-        "Repro: profile settings -> 110% + English -> save -> profile.ui_settings.font_scale == 1.0. "
-        "BUG 2: after a restart in English the window title stays German ('Support-Cockpit & ...'): "
-        "SupportCockpitApp.__init__ sets the title before it applies the profile language."
+        "Repro: profile settings -> 110% + English -> save -> profile.ui_settings.font_scale == 1.0."
     ),
 )
 def test_language_and_profile(tmp_path, start_app):
-    known_bugs: list[str] = []  # collected along the flow, raised at the very end
+    font_scale_lost: list[str] = []  # known bug: collected along the flow, raised at the very end
 
     def check_font_scale(where: str, actual) -> None:
         if actual != 1.1:
-            known_bugs.append(f"font scale lost ({where}: {actual!r})")
-
-    def check_title(app) -> None:
-        if app.title() != "Support Cockpit & Ticket Management":
-            known_bugs.append(f"window title not English: {app.title()!r}")
+            font_scale_lost.append(f"{where}: {actual!r}")
 
     app = start_app(tmp_path)
     assert get_i18n().current_language == "de"
@@ -91,7 +90,7 @@ def test_language_and_profile(tmp_path, start_app):
     assert app.user_btn.cget("text") == NAME
     check_font_scale("scaling after save", ctk.ScalingTracker.widget_scaling)
     _assert_english_ui(app)
-    check_title(app)
+    assert app.title() == ENGLISH_TITLE  # switched live
 
     on_disk = fresh_storage(tmp_path).load_profile()
     assert (on_disk.user.name, on_disk.user.email_signature) == (NAME, SIGNATURE)
@@ -107,17 +106,37 @@ def test_language_and_profile(tmp_path, start_app):
     assert get_i18n().current_language == "en"
     check_font_scale("scaling after restart", ctk.ScalingTracker.widget_scaling)
     assert app2.user_btn.cget("text") == NAME
-    _assert_english_ui(app2)
-    check_title(app2)
+    _assert_english_ui(app2)  # (window title after restart: see the separate test below)
 
     dlg = _open_profile_settings(app2)
     assert dlg.user_name_entry.get() == NAME
     assert dlg.user_sig_txt.get("1.0", "end-1c") == SIGNATURE
     assert dlg.language_combo.get() == "English"
     if dlg.font_scale_combo.get() != "110% (Medium)":
-        known_bugs.append(f"font scale lost (settings after restart: {dlg.font_scale_combo.get()!r})")
+        font_scale_lost.append(f"settings after restart: {dlg.font_scale_combo.get()!r}")
     find_button(dlg, "Close").invoke()
     dialog_closed(app2, dlg)
 
-    if known_bugs:
-        raise KnownBug("; ".join(known_bugs))
+    if font_scale_lost:
+        raise FontScaleLostBug("font scale 110% not kept - " + "; ".join(font_scale_lost))
+
+
+@pytest.mark.xfail(
+    raises=GermanTitleBug,
+    strict=True,
+    reason=(
+        "BUG: after a restart in English the window title stays German ('Support-Cockpit & ...'): "
+        "SupportCockpitApp.__init__ sets the title before it applies the profile language."
+    ),
+)
+def test_window_title_follows_saved_language_on_start(tmp_path, start_app):
+    storage = fresh_storage(tmp_path)
+    profile = storage.load_profile()
+    profile.ui_settings.language = "en"
+    storage.save_profile(profile, sync=True)
+
+    app = start_app(tmp_path)
+    assert get_i18n().current_language == "en"
+    assert find_button(app.menu_frame, "+ New Case (Ctrl+N)")  # the rest of the UI is English
+    if app.title() != ENGLISH_TITLE:
+        raise GermanTitleBug(f"window title after start in English: {app.title()!r}")

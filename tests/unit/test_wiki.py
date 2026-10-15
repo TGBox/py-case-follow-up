@@ -272,3 +272,13 @@ def test_reading_edge_cases(tmp_path):
     assert service.search("") == [] and service.search("   ") == []
     Path(service.db_path).unlink()
     assert service.get_all_pages() == []
+
+
+def test_wiki_widget_search_shows_no_results_hint_on_empty_index(root, config):
+    from ui.widgets.wiki_widget import WikiWidget
+
+    widget = WikiWidget(root, wiki_service=WikiSyncService(config))
+    widget.search_entry.insert(0, "Setup")
+    widget.on_search()
+    texts = [w.cget("text") for w in widget.scroll_frame.winfo_children()]
+    assert texts == [tr("wiki.no_results", "Keine treffenden Artikel im Offline-Index.")]

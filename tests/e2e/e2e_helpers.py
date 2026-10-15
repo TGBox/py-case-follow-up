@@ -112,7 +112,9 @@ def fresh_storage(workspace: Path) -> StorageService:
 def quit_via_menu(app) -> None:
     """Clicks the menu bar's quit button - the path that flushes all pending saves before exiting."""
     from services.i18n_service import tr
-    find_button(app.menu_frame, tr("menu.quit", "Beenden")).invoke()
+    quit_btn = find_button(app.menu_frame, tr("menu.quit", "Beenden"))
+    app._e2e_shutting_down = True  # tells the fixture's callback-error check that shutdown races are expected
+    quit_btn.invoke()
     assert not is_alive(app)
     cancel_pending_afters(app)
 

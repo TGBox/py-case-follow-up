@@ -28,12 +28,16 @@ def start_app(monkeypatch: pytest.MonkeyPatch):
     apps: list = []
     callback_errors: list[str] = []
 
-    def record_callback_error(exc, val, tb):
-        # A queued <Configure> hitting a widget of an already destroyed dialog is a
-        # harmless Tk teardown race (Tk only prints it); everything else fails the test.
-        if isinstance(val, tk.TclError) and "invalid command name" in str(val):
-            return
-        callback_errors.append("".join(traceback.format_exception(exc, val, tb)))
+    def error_recorder(app):
+        def record_callback_error(exc, val, tb):
+            # Once the app is quitting, queued events can still reach widgets that
+            # are already destroyed ("invalid command name") - a harmless Tk
+            # shutdown race. During the flow itself it is a use-after-destroy bug.
+            shutting_down = getattr(app, "_e2e_shutting_down", False) or not is_alive(app)
+            if shutting_down and isinstance(val, tk.TclError) and "invalid command name" in str(val):
+                return
+            callback_errors.append("".join(traceback.format_exception(exc, val, tb)))
+        return record_callback_error
 
     def _start(workspace: Path):
         config = AppConfig.load_user_config(cli_workspace=workspace)
@@ -43,7 +47,7 @@ def start_app(monkeypatch: pytest.MonkeyPatch):
         app = SupportCockpitApp(config)
         # An exception inside a Tk callback (binding, after-timer) never reaches
         # the test on its own - collect it and fail the test at teardown.
-        app.report_callback_exception = record_callback_error
+        app.report_callback_exception = error_recorder(app)
         apps.append(app)
         app.update()
         return app
@@ -51,6 +55,7 @@ def start_app(monkeypatch: pytest.MonkeyPatch):
     yield _start
 
     for app in apps:
+        app._e2e_shutting_down = True
         if is_alive(app):
             try:
                 app.on_quit_app()

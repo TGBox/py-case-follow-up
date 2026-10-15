@@ -466,6 +466,8 @@ class DialogLaunchersMixin:
         self._set_scaled_min_max()
         if is_zoomed:
             self._maximize_window()
+        if hasattr(self, "_after_scaling_changed"):
+            self._after_scaling_changed()
         if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)

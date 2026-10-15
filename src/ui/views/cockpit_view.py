@@ -24,6 +24,7 @@ from constants import (
     INFO_FRAME_MIN_WIDTH_THRESHOLD,
     INFO_FRAME_RESIZE_DELTA,
     PAD_NONE,
+    PAD_SM,
     PAD_XS,
     PANED_MIN_TOTAL_WIDTH,
     PANED_PANE_MIN_WIDTH,
@@ -134,9 +135,41 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         """
         try:
             self.paned.paneconfigure(self.left_frame, width=w_left)
-            self.paned.paneconfigure(self.right_tabview, width=w_right)
+            # minsize mitziehen: sonst laesst sich die Spalte per Sash wieder so
+            # schmal ziehen, dass die Reiterbeschriftungen abgeschnitten werden.
+            right_min = max(COCKPIT_SIDEBAR_MIN_WIDTH, self._min_right_width())
+            self.paned.paneconfigure(self.right_tabview, width=w_right, minsize=right_min)
         except Exception as e:
             logger.warning(f"Could not pin pane widths: {e}")
+
+    def _ui_scale(self) -> float:
+        """Faktor zwischen logischen Pixeln (wie bei 100 %) und echten Bildschirmpixeln.
+
+        Enthaelt die Windows-Anzeigeskalierung und den Schriftzoom der App. Das
+        tk.PanedWindow ist kein CTk-Widget: seine Breiten sind echte Pixel und
+        werden von CustomTkinter nicht mitskaliert, der Inhalt der Spalten aber
+        schon. Bei 125 % Windows-Skalierung bekam die rechte Spalte deshalb
+        weiterhin 320 echte Pixel, ihre Reiterleiste brauchte aber rund 350 - die
+        Beschriftungen wurden links und rechts abgeschnitten. Gespeichert werden
+        die Spaltenbreiten darum logisch; umgerechnet wird nur beim Anwenden.
+        """
+        try:
+            scale = float(self._get_widget_scaling())
+            return scale if scale > 0 else 1.0
+        except Exception:
+            return 1.0
+
+    def _min_right_width(self) -> int:
+        """Echte Pixel, die die Reiterleiste rechts braucht, ohne Text abzuschneiden.
+
+        Gemessen statt geschaetzt, weil die Beschriftungen uebersetzt sind
+        ("Wiki / Wissensdatenbank" ist deutlich laenger als "Wiki").
+        """
+        try:
+            seg = self.right_tabview._segmented_button  # pyright: ignore[reportAttributeAccessIssue]
+            return int(seg.winfo_reqwidth()) + round(2 * PAD_SM * self._ui_scale())
+        except Exception:
+            return 0
 
     def _stored_column_widths(self) -> tuple[int, int]:
         widths = {}
@@ -144,10 +177,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             widths = self.profile.ui_settings.column_widths
         elif self.app_config and hasattr(self.app_config, "column_widths"):
             widths = self.app_config.column_widths
-        return (
-            widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"]),
-            widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"]),
-        )
+        # Gespeichert sind logische Pixel, das PanedWindow arbeitet mit echten.
+        scale = self._ui_scale()
+        w_left = round(widths.get("cockpit_left", DEFAULT_COLUMN_WIDTHS["cockpit_left"]) * scale)
+        w_right = round(widths.get("cockpit_right", DEFAULT_COLUMN_WIDTHS["cockpit_right"]) * scale)
+        return w_left, max(w_right, self._min_right_width())
 
     def _place_sashes(self, total_w: int, w_left: int, w_right: int):
         extra = self._sash_extra()
@@ -312,17 +346,18 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             extra = self._sash_extra()
 
             w_left = w_right = None
+            scale = self._ui_scale()
             if sash0 and len(sash0) > 0 and sash0[0] > 0:
                 w_left = max(PANED_PANE_MIN_WIDTH, sash0[0])
                 if self.profile and hasattr(self.profile, "ui_settings"):
-                    self.profile.ui_settings.column_widths["cockpit_left"] = w_left
+                    self.profile.ui_settings.column_widths["cockpit_left"] = round(w_left / scale)
 
             if sash1 and len(sash1) > 0 and sash1[0] > 0:
                 # extra abziehen: sash_coord() gibt die linke Sash-Kante zurueck,
                 # der rechte Pane beginnt erst dahinter.
                 w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0] - extra)
                 if self.profile and hasattr(self.profile, "ui_settings"):
-                    self.profile.ui_settings.column_widths["cockpit_right"] = w_right
+                    self.profile.ui_settings.column_widths["cockpit_right"] = round(w_right / scale)
 
 
             # Die gezogene Breite wird zur neuen Pane-Option, sonst holt sich Tk

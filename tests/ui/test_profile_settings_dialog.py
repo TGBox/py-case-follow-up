@@ -412,7 +412,7 @@ def test_ai_tab_async_actions_report_service_results(ai_dialog):
         d.gemini_key_entry.delete(0, "end")
         d.gemini_key_entry.insert(0, "AIzaSyKEY")
         d.on_test_gemini_key()
-        assert _pump(app, lambda: msg in d.gemini_status_lbl.cget("text"))
+        assert _pump(app, lambda msg=msg: msg in d.gemini_status_lbl.cget("text"))
         assert icon in d.gemini_status_lbl.cget("text")
 
     # Ollama status scan: offline, online with models, online without models
@@ -441,7 +441,7 @@ def test_ai_tab_async_actions_report_service_results(ai_dialog):
         setattr(fake, f"{knob}_ok", ok)
         setattr(fake, f"{knob}_msg", msg)
         action()
-        assert _pump(app, lambda: msg in lbl()), msg
+        assert _pump(app, lambda msg=msg: msg in lbl()), msg
         assert icon in lbl()
 
     fake.create_pvs_ok, fake.create_pvs_msg = True, "pvs-support erstellt"

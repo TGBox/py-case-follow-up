@@ -128,7 +128,7 @@ def test_profile_settings_dialog_edits_retention(root, storage, config):
     dialog = ProfileSettingsDialog(parent=root, profile=profile, storage_service=storage)
     entries = (dialog.retention_daily_entry, dialog.retention_weekly_entry, dialog.retention_monthly_entry)
     assert [e.get() for e in entries] == ["14", "8", "12"]
-    for entry, value in zip(entries, ("5", "2", "3")):
+    for entry, value in zip(entries, ("5", "2", "3"), strict=True):
         entry.delete(0, "end")
         entry.insert(0, value)
     dialog.save_settings()

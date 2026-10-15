@@ -146,9 +146,9 @@ SPOT_CONTAINS = [
 
 def test_spot_check_key_translations(flat):
     for key, *expected in SPOT_CHECKS:
-        for lang, exp in zip(LANGUAGES, expected):
+        for lang, exp in zip(LANGUAGES, expected, strict=True):
             assert flat[lang][key] == exp, f"{lang} {key}"
     for key, *expected in SPOT_CONTAINS:
-        for lang, exp in zip(LANGUAGES, expected):
+        for lang, exp in zip(LANGUAGES, expected, strict=True):
             if exp is not None:
                 assert exp in flat[lang][key], f"{lang} {key}: {flat[lang][key]!r}"

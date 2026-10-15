@@ -22,7 +22,10 @@ def scoring_service():
     ))
 
 
-def _case(vip=False, deadline="", actor_since=format_iso(NOW), completed=False, archived=False, **kw):
+NOW_ISO = format_iso(NOW)
+
+
+def _case(vip=False, deadline="", actor_since=NOW_ISO, completed=False, archived=False, **kw):
     return Case(
         case_id="T-001",
         customer=CaseCustomer(is_vip=vip),

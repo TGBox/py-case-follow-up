@@ -172,3 +172,38 @@ def reset_default_locale():
     get_i18n().current_language = "de"
     yield
     get_i18n().current_language = "de"
+
+
+# --- Shared fixtures (use these instead of redefining per file) -------------
+
+@pytest.fixture
+def root():
+    """Headless CustomTkinter root, destroyed after the test."""
+    app = ctk.CTk()
+    app.withdraw()
+    yield app
+    try:
+        app.destroy()
+    except Exception:
+        pass
+
+
+@pytest.fixture
+def config(tmp_path: Path):
+    from config import AppConfig
+    return AppConfig(workspace_dir=tmp_path, username="test_agent")
+
+
+@pytest.fixture
+def storage(config):
+    """Empty workspace in tmp_path."""
+    from services.storage_service import StorageService
+    return StorageService(config)
+
+
+@pytest.fixture
+def seeded_storage(storage):
+    """Workspace with the demo seed (12 cases, customers, schemas, templates)."""
+    from services.seed_service import SeedService
+    SeedService(storage).run_seed(force=True)
+    return storage

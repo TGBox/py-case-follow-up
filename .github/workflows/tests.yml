@@ -77,7 +77,7 @@ jobs:
         # Has to be the same job as the build: dist/ does not carry over to
         # another job. --no-cov because coverage of a four-test file would only
         # produce a misleading second report.
-        run: uv run pytest tests/test_pyinstaller_bundle.py -q --no-cov
+        run: uv run pytest tests/static/test_source_hygiene.py -k built_executable -q --no-cov
 
       - name: Upload executable
         uses: actions/upload-artifact@v4

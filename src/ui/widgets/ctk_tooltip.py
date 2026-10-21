@@ -1,3 +1,5 @@
+import tkinter as tk
+from tkinter import font as tkfont
 import customtkinter as ctk
 from typing import Any
 from collections.abc import Callable
@@ -7,7 +9,6 @@ from constants import (
     COLOR_TOOLTIP_BG,
     COLOR_TOOLTIP_BORDER,
     COLOR_TOOLTIP_TEXT,
-    CORNER_RADIUS_CARD,
     EVENT_BUTTON_1,
     EVENT_BUTTON_2,
     EVENT_BUTTON_3,
@@ -22,18 +23,38 @@ from constants import (
     JUSTIFY_LEFT,
     PAD_10,
     PAD_MD,
-    PAD_XS,
     TOOLTIP_DEFAULT_DELAY_MS,
     TOOLTIP_POINTER_OFFSET_X,
     TOOLTIP_POINTER_OFFSET_Y,
+    TOOLTIP_WATCHDOG_MS,
     WINDOW_ATTR_TOPMOST,
 )
 
 
+def _mode_color(color: str | tuple[str, str]) -> str:
+    if isinstance(color, str):
+        return color
+    return color[1] if ctk.get_appearance_mode() == "Dark" else color[0]
+
+
 class CTkTooltip:
-    """Hover Overlay Tooltip for CustomTkinter widgets and containers."""
+    """Hover Overlay Tooltip for CustomTkinter widgets and containers.
+
+    The overlay is a plain tkinter.Toplevel on purpose. CTkToplevel runs
+    withdraw() + update() inside its constructor on Windows, i.e. the whole
+    event loop re-enters show_tooltip before the window is registered. A
+    nested show of the same tooltip could then overwrite tooltip_window and
+    leave a topmost window that nothing references any more - an overlay
+    that survived even minimizing to the tray. CTkToplevel also added a
+    global <Button-1> binding and a delayed focus() call per tooltip.
+    """
 
     _active_tooltips: set[CTkTooltip] = set()
+    # Every overlay window that exists, registered the moment it is created, so
+    # dismiss_all can still destroy one whose owner lost track of it.
+    _open_windows: set[tk.Toplevel] = set()
+    _hooked_toplevels: set[str] = set()
+    _showing: bool = False
 
     @classmethod
     def dismiss_all(cls):
@@ -41,6 +62,32 @@ class CTkTooltip:
         for tooltip in list(cls._active_tooltips):
             tooltip.cancel_timer()
             tooltip.hide_tooltip()
+        for window in list(cls._open_windows):
+            cls._destroy_window(window)
+
+    @classmethod
+    def _destroy_window(cls, window: tk.Toplevel) -> None:
+        try:
+            window.destroy()
+        except Exception:
+            try:
+                window.withdraw()
+            except Exception:
+                pass
+        cls._open_windows.discard(window)
+
+    @classmethod
+    def _hook_toplevel(cls, toplevel: Any) -> None:
+        """Dismisses tooltips on focus loss / unmap / click of the main window - bound once, not per show."""
+        try:
+            key = str(toplevel)
+            if key in cls._hooked_toplevels:
+                return
+            for event in (EVENT_FOCUS_OUT, EVENT_UNMAP, EVENT_BUTTON_PRESS):
+                toplevel.bind(event, lambda e: CTkTooltip.dismiss_all(), add="+")
+            cls._hooked_toplevels.add(key)
+        except Exception:
+            pass
 
     @classmethod
     def attach_lazy(
@@ -84,8 +131,9 @@ class CTkTooltip:
         self.widget = widget
         self.text_or_func = text_or_func
         self.delay_ms = delay_ms
-        self.tooltip_window: ctk.CTkToplevel | None = None
+        self.tooltip_window: tk.Toplevel | None = None
         self._timer_id: str | None = None
+        self._watch_id: str | None = None
 
         self._bind_events(self.widget)
 
@@ -127,7 +175,7 @@ class CTkTooltip:
     def on_enter(self, event=None):
         self.cancel_timer()
         try:
-            self._timer_id = self.widget.after(self.delay_ms, self.show_tooltip)
+            self._timer_id = self.widget.after(self.delay_ms, self._on_timer)
         except Exception:
             pass
 
@@ -143,9 +191,24 @@ class CTkTooltip:
                 pass
             self._timer_id = None
 
+    def _on_timer(self):
+        self._timer_id = None
+        self.show_tooltip()
+
+    def _pointer_inside_widget(self) -> bool:
+        w = self.widget
+        if not w.winfo_exists():
+            return False
+        px, py = w.winfo_pointerx(), w.winfo_pointery()
+        wx, wy = w.winfo_rootx(), w.winfo_rooty()
+        return wx <= px <= wx + w.winfo_width() and wy <= py <= wy + w.winfo_height()
+
     def show_tooltip(self):
+        if CTkTooltip._showing:
+            return
         CTkTooltip.dismiss_all()
 
+        CTkTooltip._showing = True
         try:
             if not hasattr(self.widget, "winfo_exists") or not self.widget.winfo_exists():
                 return
@@ -155,61 +218,85 @@ class CTkTooltip:
                 return
 
             # Verify pointer is still inside the target widget bounds
-            px = self.widget.winfo_pointerx()
-            py = self.widget.winfo_pointery()
-            wx = self.widget.winfo_rootx()
-            wy = self.widget.winfo_rooty()
-            ww = self.widget.winfo_width()
-            wh = self.widget.winfo_height()
-            if not (wx <= px <= wx + ww and wy <= py <= wy + wh):
+            if not self._pointer_inside_widget():
                 return
 
-            x = px + TOOLTIP_POINTER_OFFSET_X
-            y = py + TOOLTIP_POINTER_OFFSET_Y
+            x = self.widget.winfo_pointerx() + TOOLTIP_POINTER_OFFSET_X
+            y = self.widget.winfo_pointery() + TOOLTIP_POINTER_OFFSET_Y
 
             toplevel = self.widget.winfo_toplevel()
-            self.tooltip_window = ctk.CTkToplevel(toplevel)
-            self.tooltip_window.wm_overrideredirect(True)
-            self.tooltip_window.attributes(WINDOW_ATTR_TOPMOST, True)
-            self.tooltip_window.geometry(f"+{x}+{y}")
+            CTkTooltip._hook_toplevel(toplevel)
 
-            # Bind to top level window focus out / unmap to auto dismiss floating tooltip
+            window = tk.Toplevel(toplevel)
+            # Registered before anything else can run, so no path leaves it untracked.
+            CTkTooltip._open_windows.add(window)
+            self.tooltip_window = window
+            CTkTooltip._active_tooltips.add(self)
+
+            window.wm_overrideredirect(True)
+            window.attributes(WINDOW_ATTR_TOPMOST, True)
+            window.geometry(f"+{x}+{y}")
+            window.configure(bg=_mode_color(COLOR_TOOLTIP_BG))
+
             try:
-                toplevel.bind(EVENT_FOCUS_OUT, lambda e: CTkTooltip.dismiss_all(), add="+")
-                toplevel.bind(EVENT_UNMAP, lambda e: CTkTooltip.dismiss_all(), add="+")
-                toplevel.bind(EVENT_BUTTON_PRESS, lambda e: CTkTooltip.dismiss_all(), add="+")
+                scaling = ctk.ScalingTracker.get_widget_scaling(self.widget)
             except Exception:
-                pass
-
-            frame = ctk.CTkFrame(
-                self.tooltip_window,
-                fg_color=COLOR_TOOLTIP_BG,
-                border_color=COLOR_TOOLTIP_BORDER,
-                border_width=BORDER_WIDTH_TOOLTIP,
-                corner_radius=CORNER_RADIUS_CARD,
-            )
-            frame.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
-
-            lbl = ctk.CTkLabel(
-                frame,
+                scaling = 1.0
+            theme_font = ctk.CTkFont()  # theme default family; keep a reference while reading it
+            family = tkfont.nametofont(str(theme_font)).actual("family")
+            lbl = tk.Label(
+                window,
                 text=text,
                 justify=JUSTIFY_LEFT,
                 anchor=ANCHOR_WEST,
-                font=ctk.CTkFont(size=FONT_SIZE_SM),
-                text_color=COLOR_TOOLTIP_TEXT,
+                font=(family, -round(FONT_SIZE_SM * scaling)),
+                fg=_mode_color(COLOR_TOOLTIP_TEXT),
+                bg=_mode_color(COLOR_TOOLTIP_BG),
+                padx=round(PAD_10 * scaling),
+                pady=round(PAD_MD * scaling),
+                highlightthickness=BORDER_WIDTH_TOOLTIP,
+                highlightbackground=_mode_color(COLOR_TOOLTIP_BORDER),
+                highlightcolor=_mode_color(COLOR_TOOLTIP_BORDER),
             )
-            lbl.pack(padx=PAD_10, pady=PAD_MD)
+            lbl.pack(fill="both", expand=True)
+            # Hovering or clicking the overlay itself closes it.
+            lbl.bind(EVENT_BUTTON_PRESS, lambda e: CTkTooltip.dismiss_all())
 
-            CTkTooltip._active_tooltips.add(self)
+            self._watch_id = window.after(TOOLTIP_WATCHDOG_MS, self._watchdog)
+        except Exception:
+            self.hide_tooltip()
+        finally:
+            CTkTooltip._showing = False
+
+    def _watchdog(self):
+        """Closes the overlay once the pointer is gone, even if no <Leave> ever arrived."""
+        self._watch_id = None
+        window = self.tooltip_window
+        if window is None:
+            return
+        try:
+            # winfo_viewable is False once the main window is withdrawn to the tray or iconified.
+            keep = self.widget.winfo_viewable() and self._pointer_inside_widget()
+        except Exception:
+            keep = False
+        if not keep:
+            self.cancel_timer()
+            self.hide_tooltip()
+            return
+        try:
+            self._watch_id = window.after(TOOLTIP_WATCHDOG_MS, self._watchdog)
         except Exception:
             self.hide_tooltip()
 
     def hide_tooltip(self):
         CTkTooltip._active_tooltips.discard(self)
-        if self.tooltip_window:
-            try:
-                self.tooltip_window.destroy()
-            except Exception:
-                pass
-            self.tooltip_window = None
-
+        window = self.tooltip_window
+        self.tooltip_window = None
+        if window is not None:
+            if self._watch_id:
+                try:
+                    window.after_cancel(self._watch_id)
+                except Exception:
+                    pass
+            CTkTooltip._destroy_window(window)
+        self._watch_id = None

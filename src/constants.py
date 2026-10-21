@@ -1033,6 +1033,10 @@ TOAST_DURATION_DEFAULT_MS = 5000
 TOOLTIP_DEFAULT_DELAY_MS = 300
 TOOLTIP_POINTER_OFFSET_X = 15
 TOOLTIP_POINTER_OFFSET_Y = 15
+# Solange ein Tooltip offen ist, prueft ein Waechter in diesem Takt, ob der
+# Mauszeiger noch ueber dem Widget liegt - verlorene <Leave>-Events (Windows,
+# Fenster ins Tray, Neuaufbau unter dem Zeiger) lassen sonst ein Overlay stehen.
+TOOLTIP_WATCHDOG_MS = 250
 
 # --- Date & Time Formats ---
 GERMAN_DATE_FORMAT = "%d.%m.%Y"

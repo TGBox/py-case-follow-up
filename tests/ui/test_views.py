@@ -656,3 +656,65 @@ def test_app_language_and_layout_switching(config):
             app.destroy()
         except Exception:
             pass
+
+
+def _shown_tooltip(root, text="Hinweis"):
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    lbl = ctk.CTkLabel(root, text="Ziel")
+    lbl.pack(padx=20, pady=20)
+    root.update_idletasks()
+    inside = {"on": True}
+    lbl.winfo_pointerx = lambda: lbl.winfo_rootx() + (1 if inside["on"] else 5000)
+    lbl.winfo_pointery = lambda: lbl.winfo_rooty() + 1
+    tip = CTkTooltip(lbl, text, delay_ms=0)
+    tip.show_tooltip()
+    assert tip.tooltip_window is not None
+    return tip, lbl, inside
+
+
+def test_tooltip_window_that_lost_its_owner_is_still_dismissed(root):
+    """An overlay whose instance dropped the reference used to stay on screen forever (even after tray)."""
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    tip, lbl, _ = _shown_tooltip(root)
+    window = tip.tooltip_window
+    assert window is not None
+    tip.tooltip_window = None  # simulate the overwritten reference
+    CTkTooltip._active_tooltips.discard(tip)
+    CTkTooltip.dismiss_all()
+    assert not window.winfo_exists()
+    assert window not in CTkTooltip._open_windows
+    lbl.destroy()
+
+
+def test_tooltip_watchdog_closes_overlay_without_leave_event(root):
+    """A lost <Leave> (window withdrawn, list rebuilt under the pointer) must not leave the overlay up."""
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    tip, lbl, inside = _shown_tooltip(root)
+    lbl.winfo_viewable = lambda: True  # the headless test root is withdrawn
+    tip._watchdog()
+    assert tip.tooltip_window is not None  # pointer still inside -> stays
+    inside["on"] = False
+    tip._watchdog()
+    assert tip.tooltip_window is None
+    assert tip not in CTkTooltip._active_tooltips and not CTkTooltip._open_windows
+    lbl.destroy()
+
+
+def test_tooltip_show_does_not_pile_up_global_bindings(root):
+    from ui.widgets.ctk_tooltip import CTkTooltip
+
+    def count(seq: str) -> int:
+        return len([ln for ln in (root.bind(seq) or "").splitlines() if ln.strip()])
+
+    tip, lbl, _ = _shown_tooltip(root)
+    CTkTooltip.dismiss_all()
+    unmap, button_all = count("<Unmap>"), len((root.bind_all("<Button-1>") or "").splitlines())
+    for _ in range(5):
+        tip.show_tooltip()
+        CTkTooltip.dismiss_all()
+    assert count("<Unmap>") == unmap
+    assert len((root.bind_all("<Button-1>") or "").splitlines()) == button_all
+    lbl.destroy()

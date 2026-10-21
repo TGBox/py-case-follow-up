@@ -1363,6 +1363,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def on_closing(self):
         """Minimize to system tray instead of closing the application."""
         logger.info("Minimizing to system tray...")
+        from ui.widgets.ctk_tooltip import CTkTooltip
+        CTkTooltip.dismiss_all()
         if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.save_sash_widths()
         self.storage_service.save_profile(self.profile)

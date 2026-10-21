@@ -1,0 +1,137 @@
+diff --git a/locales/de.json b/locales/de.json
+index 63c8b4a..6d3e06e 100644
+--- a/locales/de.json
++++ b/locales/de.json
+@@ -997,6 +997,7 @@
+     "preset_3d": "+ 3 Tage",
+     "preset_today_1630": "Heute 16:30",
+     "preset_tomorrow_8am": "Morgen 08:00",
++    "preset_next_monday_8am": "Montag 08:00",
+     "new_time_lbl": "🕒 Neue Zeit:"
+   },
+   "form": {
+diff --git a/locales/en.json b/locales/en.json
+index 7189551..34b221c 100644
+--- a/locales/en.json
++++ b/locales/en.json
+@@ -997,6 +997,7 @@
+     "preset_3d": "+ 3 Days",
+     "preset_today_1630": "Today 16:30",
+     "preset_tomorrow_8am": "Tomorrow 08:00",
++    "preset_next_monday_8am": "Monday 08:00",
+     "new_time_lbl": "🕒 New time:"
+   },
+   "form": {
+diff --git a/locales/sv.json b/locales/sv.json
+index 3878cc8..a30f4b6 100644
+--- a/locales/sv.json
++++ b/locales/sv.json
+@@ -997,6 +997,7 @@
+     "preset_3d": "+ 3 dagar",
+     "preset_today_1630": "Idag 16:30",
+     "preset_tomorrow_8am": "Imorgon 08:00",
++    "preset_next_monday_8am": "Måndag 08:00",
+     "new_time_lbl": "🕒 Ny tid:"
+   },
+   "form": {
+diff --git a/src/constants.py b/src/constants.py
+index 31aea81..e4423e6 100644
+--- a/src/constants.py
++++ b/src/constants.py
+@@ -1567,7 +1567,6 @@ FOLLOWUP_TIME_1630 = "16:30"
+ FOLLOWUP_TIME_1130 = "11:30"
+ FOLLOWUP_TIME_1330 = "13:30"
+ FOLLOWUP_TIME_0800 = "08:00"
+-FOLLOWUP_DEFAULT_DAYS_AHEAD = 2
+ FOLLOWUP_PRESET_MINUTES_15 = 15
+ FOLLOWUP_PRESET_MINUTES_30 = 30
+ FOLLOWUP_PRESET_HOURS_1 = 1
+diff --git a/src/ui/dialogs/followup_dialog.py b/src/ui/dialogs/followup_dialog.py
+index 0405cf4..21a5c20 100644
+--- a/src/ui/dialogs/followup_dialog.py
++++ b/src/ui/dialogs/followup_dialog.py
+@@ -21,7 +21,6 @@ from constants import (
+     DIALOG_MIN_SIZE_FOLLOWUP,
+     DIALOG_SIZE_FOLLOWUP,
+     ENTRY_START_INDEX,
+-    FOLLOWUP_DEFAULT_DAYS_AHEAD,
+     FOLLOWUP_DEFAULT_TIME,
+     FOLLOWUP_DELAY_DESTROY_MS,
+     FOLLOWUP_PRESET_COLS,
+@@ -131,6 +130,7 @@ class FollowupDialog(BaseDialog):
+                 ("followup.preset_2d", "+ 2 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_2)),
+                 ("followup.preset_3d", "+ 3 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_3)),
+                 ("followup.preset_1w", "+ 1 Woche", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_7)),
++                ("followup.preset_next_monday_8am", "Montag 08:00", self.set_preset_next_monday_8am),
+             ],
+         ]
+         for row_idx, row in enumerate(preset_rows):
+@@ -155,12 +155,13 @@ class FollowupDialog(BaseDialog):
+             anchor=ANCHOR_WEST,
+         ), "followup.date_lbl", "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(fill="x", padx=PAD_LG, pady=(PAD_GAP, PAD_XS))
+ 
+-        init_date = ""
++        # Without an existing reminder the field starts at "now": a default that
++        # already lies in the future made it easy to queue a case too late.
++        # The presets above move it forward deliberately.
+         if self.case.workflow_status.followup_at:
+             init_date = self.case.workflow_status.followup_at
+         else:
+-            target_dt = get_local_now() + timedelta(days=FOLLOWUP_DEFAULT_DAYS_AHEAD)
+-            init_date = f"{format_german_date(target_dt)} {FOLLOWUP_DEFAULT_TIME}"
++            init_date = format_german_datetime(get_local_now())
+ 
+         self.date_picker = self.register_i18n(DatePickerWidget(
+             main_frame,
+@@ -270,6 +271,14 @@ class FollowupDialog(BaseDialog):
+         german_str = f"{format_german_date(tmw)} {FOLLOWUP_TIME_0800}"
+         self.date_picker.set_date(german_str)
+ 
++    def set_preset_next_monday_8am(self):
++        # Always the Monday of the coming week - on a Monday itself that is
++        # seven days ahead, never today.
++        now = get_local_now()
++        next_monday = now + timedelta(days=7 - now.weekday())
++        german_str = f"{format_german_date(next_monday)} {FOLLOWUP_TIME_0800}"
++        self.date_picker.set_date(german_str)
++
+     def set_preset_days(self, days: int):
+         target_dt = get_local_now() + timedelta(days=days)
+         german_str = f"{format_german_date(target_dt)} {FOLLOWUP_DEFAULT_TIME}"
+diff --git a/tests/ui/test_followup_dialogs.py b/tests/ui/test_followup_dialogs.py
+index 04ad318..6a06556 100644
+--- a/tests/ui/test_followup_dialogs.py
++++ b/tests/ui/test_followup_dialogs.py
+@@ -76,8 +76,10 @@ def test_dialog_prefill_and_remove_button(root):
+     assert existing.note_entry.get() == "Beim Entwickler nachfragen"
+     assert len(_buttons_with_text(existing, clear_text)) == 1
+ 
++    before = get_local_now().replace(second=0, microsecond=0)
+     fresh = _dialog(root, _case())
+-    assert fresh.date_picker.get() == f"{format_german_date(get_local_now() + timedelta(days=2))} 09:00"
++    shown = _shown(fresh.date_picker)
++    assert shown is not None and timedelta(0) <= shown - before < timedelta(minutes=2)
+     assert _buttons_with_text(fresh, clear_text) == []
+ 
+ 
+@@ -152,6 +154,20 @@ def test_presets_in_dialog_and_flyout(root, fixed_morning, dialog_call, flyout_c
+         assert (result.date(), (result.hour, result.minute)) == (expected_date, hm)
+ 
+ 
++@pytest.mark.parametrize("weekday, days_ahead", [(0, 7), (1, 6), (4, 3), (6, 1)])
++def test_next_monday_preset(root, monkeypatch, weekday, days_ahead):
++    """"Montag 08:00" always targets the coming week's Monday, never today."""
++    # 2026-10-19 is a Monday; shift to the wanted weekday at 07:00.
++    fake_now = datetime(2026, 10, 19, 7, 0) + timedelta(days=weekday)
++    monkeypatch.setattr("ui.dialogs.followup_dialog.get_local_now", lambda: fake_now)
++    dialog = _dialog(root, _case())
++    dialog.set_preset_next_monday_8am()
++    shown = dialog.date_picker.get()
++    expected = fake_now.replace(hour=8) + timedelta(days=days_ahead)
++    assert shown == format_german_datetime(expected)
++    assert expected.weekday() == 0
++
++
+ # ---------------------------------------------------------------------------
+ # "+1/+2 Std." stacking (FollowupDialog.set_preset_hours, FollowupFlyoutDialog.bump_hours)
+ # ---------------------------------------------------------------------------

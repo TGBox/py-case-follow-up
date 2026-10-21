@@ -21,7 +21,6 @@ from constants import (
     DIALOG_MIN_SIZE_FOLLOWUP,
     DIALOG_SIZE_FOLLOWUP,
     ENTRY_START_INDEX,
-    FOLLOWUP_DEFAULT_DAYS_AHEAD,
     FOLLOWUP_DEFAULT_TIME,
     FOLLOWUP_DELAY_DESTROY_MS,
     FOLLOWUP_PRESET_COLS,
@@ -131,6 +130,7 @@ class FollowupDialog(BaseDialog):
                 ("followup.preset_2d", "+ 2 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_2)),
                 ("followup.preset_3d", "+ 3 Tage", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_3)),
                 ("followup.preset_1w", "+ 1 Woche", lambda: self.set_preset_days(FOLLOWUP_PRESET_DAYS_7)),
+                ("followup.preset_next_monday_8am", "Montag 08:00", self.set_preset_next_monday_8am),
             ],
         ]
         for row_idx, row in enumerate(preset_rows):
@@ -155,12 +155,13 @@ class FollowupDialog(BaseDialog):
             anchor=ANCHOR_WEST,
         ), "followup.date_lbl", "📅 Erinnerungs-Datum & Uhrzeit (TT.MM.JJJJ HH:MM):").pack(fill="x", padx=PAD_LG, pady=(PAD_GAP, PAD_XS))
 
-        init_date = ""
+        # Without an existing reminder the field starts at "now": a default that
+        # already lies in the future made it easy to queue a case too late.
+        # The presets above move it forward deliberately.
         if self.case.workflow_status.followup_at:
             init_date = self.case.workflow_status.followup_at
         else:
-            target_dt = get_local_now() + timedelta(days=FOLLOWUP_DEFAULT_DAYS_AHEAD)
-            init_date = f"{format_german_date(target_dt)} {FOLLOWUP_DEFAULT_TIME}"
+            init_date = format_german_datetime(get_local_now())
 
         self.date_picker = self.register_i18n(DatePickerWidget(
             main_frame,
@@ -268,6 +269,14 @@ class FollowupDialog(BaseDialog):
     def set_preset_tomorrow_8am(self):
         tmw = get_local_now() + timedelta(days=FOLLOWUP_PRESET_DAYS_1)
         german_str = f"{format_german_date(tmw)} {FOLLOWUP_TIME_0800}"
+        self.date_picker.set_date(german_str)
+
+    def set_preset_next_monday_8am(self):
+        # Always the Monday of the coming week - on a Monday itself that is
+        # seven days ahead, never today.
+        now = get_local_now()
+        next_monday = now + timedelta(days=7 - now.weekday())
+        german_str = f"{format_german_date(next_monday)} {FOLLOWUP_TIME_0800}"
         self.date_picker.set_date(german_str)
 
     def set_preset_days(self, days: int):

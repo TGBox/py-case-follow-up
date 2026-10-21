@@ -10,7 +10,6 @@ from enums import BoardColumn
 from models.case import Case, CaseCustomer, Classification, WorkflowStatus
 from services.i18n_service import tr
 from utils.datetime_utils import (
-    format_german_date,
     format_german_datetime,
     get_local_now,
     parse_flexible_followup_input,
@@ -76,8 +75,10 @@ def test_dialog_prefill_and_remove_button(root):
     assert existing.note_entry.get() == "Beim Entwickler nachfragen"
     assert len(_buttons_with_text(existing, clear_text)) == 1
 
+    before = get_local_now().replace(second=0, microsecond=0)
     fresh = _dialog(root, _case())
-    assert fresh.date_picker.get() == f"{format_german_date(get_local_now() + timedelta(days=2))} 09:00"
+    shown = _shown(fresh.date_picker)
+    assert shown is not None and timedelta(0) <= shown - before < timedelta(minutes=2)
     assert _buttons_with_text(fresh, clear_text) == []
 
 
@@ -150,6 +151,23 @@ def test_presets_in_dialog_and_flyout(root, fixed_morning, dialog_call, flyout_c
         flyout_call(flyout, picker)
         result = _shown(picker)
         assert (result.date(), (result.hour, result.minute)) == (expected_date, hm)
+
+
+@pytest.mark.parametrize("weekday, days_ahead", [(0, 7), (1, 6), (4, 3), (6, 1)])
+def test_next_monday_preset(root, monkeypatch, weekday, days_ahead):
+    """"Montag 08:00" always targets the coming week's Monday, never today."""
+    # 2099-01-05 is a Monday; shift to the wanted weekday at 07:00. A date far
+    # ahead keeps the picker's "not in the past" bound from snapping it to now.
+    fake_now = datetime(2099, 1, 5, 7, 0).astimezone() + timedelta(days=weekday)
+    monkeypatch.setattr("ui.dialogs.followup_dialog.get_local_now", lambda: fake_now)
+    dialog = _dialog(root, _case())
+    dialog.set_preset_next_monday_8am()
+    result = _shown(dialog.date_picker)
+    # Compare wall-clock date and time only: parsing attaches today's UTC offset,
+    # which differs from the January date's offset during summer time.
+    assert result is not None
+    assert (result.date(), (result.hour, result.minute)) == ((fake_now + timedelta(days=days_ahead)).date(), (8, 0))
+    assert result.weekday() == 0
 
 
 # ---------------------------------------------------------------------------

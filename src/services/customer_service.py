@@ -5,7 +5,7 @@ from constants import (
     SEARCH_STRIP_PUNCTUATION,
     SEPARATOR_COMMA_SPACE,
 )
-from models.customer import Contact, Customer
+from models.customer import Customer
 from services.storage_service import StorageService
 
 
@@ -158,12 +158,4 @@ class CustomerService:
         else:
             customers.append(customer)
         self.storage_service.save_customers(customers)
-
-    def add_contact(self, customer_id: str, contact: Contact) -> bool:
-        customer = self.get_customer_by_id(customer_id)
-        if not customer:
-            return False
-        customer.contacts.append(contact)
-        self.save_customer(customer)
-        return True
 

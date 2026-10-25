@@ -611,16 +611,6 @@ class DialogLaunchersMixin:
         self.load_all_data()
         self.refresh_views()
 
-    def open_email_calendar_dialog(self, case: Case):
-        from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
-        EmailCalendarDialog(
-            self,
-            case=case,
-            calendar_email_service=self.calendar_email_service,
-            user_name=self.profile.user.name,
-            snippet_service=self.snippet_service,
-        )
-
     def open_email_draft_dialog(self, case: Case | None = None):
         from ui.dialogs.email_draft_dialog import EmailDraftDialog
         customers = self.storage_service.load_customers() if self.storage_service else []

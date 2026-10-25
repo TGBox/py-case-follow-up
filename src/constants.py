@@ -1149,8 +1149,6 @@ COLOR_TOAST_BORDER = "dodgerblue"
 BORDER_WIDTH_TOAST = 2
 COLOR_TOAST_BTN_HOVER = "deepskyblue"
 COLOR_TOAST_MSG = ("gray10", "white")
-SYSTEM_APP_ID = "Support-Cockpit"
-WINOTIFY_DURATION_SHORT = "short"
 
 # --- Dynamic Form Tokens ---
 COLOR_RESIZE_HANDLE = ("gray75", "gray35")

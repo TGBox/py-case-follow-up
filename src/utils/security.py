@@ -56,12 +56,3 @@ def resolve_secret(secret_ref: str) -> str:
         return val
 
     return secret_ref
-
-
-def mask_secret(secret_val: str) -> str:
-    """Masks secret value for logging purposes."""
-    if not secret_val:
-        return "<EMPTY>"
-    if len(secret_val) <= 4:
-        return "****"
-    return secret_val[:2] + "****" + secret_val[-2:]

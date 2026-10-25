@@ -203,21 +203,8 @@ class ShortcutSettings:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ShortcutSettings:
-        return cls(
-            new_case=data.get("new_case", DEFAULT_SHORTCUTS["new_case"]),
-            search_customer=data.get("search_customer", DEFAULT_SHORTCUTS["search_customer"]),
-            wiki_search=data.get("wiki_search", DEFAULT_SHORTCUTS["wiki_search"]),
-            export_dialog=data.get("export_dialog", DEFAULT_SHORTCUTS["export_dialog"]),
-            save_case=data.get("save_case", DEFAULT_SHORTCUTS["save_case"]),
-            archive_case=data.get("archive_case", DEFAULT_SHORTCUTS["archive_case"]),
-            open_settings=data.get("open_settings", DEFAULT_SHORTCUTS["open_settings"]),
-            snippet_picker=data.get("snippet_picker", DEFAULT_SHORTCUTS["snippet_picker"]),
-            view_cockpit=data.get("view_cockpit", DEFAULT_SHORTCUTS["view_cockpit"]),
-            view_board=data.get("view_board", DEFAULT_SHORTCUTS["view_board"]),
-            view_table=data.get("view_table", DEFAULT_SHORTCUTS["view_table"]),
-            view_analytics=data.get("view_analytics", DEFAULT_SHORTCUTS["view_analytics"]),
-            toggle_theme=data.get("toggle_theme", DEFAULT_SHORTCUTS["toggle_theme"]),
-        )
+        valid = {k: v for k, v in data.items() if k in cls.__dataclass_fields__ and isinstance(v, str)}
+        return cls(**valid)
 
 
 @dataclass
@@ -253,15 +240,14 @@ class ScoringMatrix:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> ScoringMatrix:
-        return cls(
-            vip_bonus_points=int(data.get("vip_bonus_points", DEFAULT_VIP_BONUS_POINTS)),
-            points_per_idle_day=int(data.get("points_per_idle_day", DEFAULT_POINTS_PER_IDLE_DAY)),
-            deadline_close_hours=int(data.get("deadline_close_hours", DEFAULT_DEADLINE_CLOSE_HOURS)),
-            deadline_close_bonus=int(data.get("deadline_close_bonus", DEFAULT_DEADLINE_CLOSE_BONUS)),
-            deadline_overdue_bonus=int(data.get("deadline_overdue_bonus", DEFAULT_DEADLINE_OVERDUE_BONUS)),
-            threshold_yellow=int(data.get("threshold_yellow", DEFAULT_THRESHOLD_YELLOW)),
-            threshold_red=int(data.get("threshold_red", DEFAULT_THRESHOLD_RED)),
-        )
+        valid = {
+            k: int(v)
+            for k, v in data.items()
+            if k in cls.__dataclass_fields__
+            and isinstance(v, (int, float, str))
+            and str(v).lstrip("-").isdigit()
+        }
+        return cls(**valid)
 
 
 @dataclass

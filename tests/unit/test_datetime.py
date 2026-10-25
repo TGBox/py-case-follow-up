@@ -3,7 +3,6 @@
 from datetime import date, datetime, timedelta
 import re
 
-import customtkinter as ctk
 import pytest
 
 from enums import Actor, BoardColumn
@@ -74,6 +73,7 @@ def test_parse_iso_and_now():
 ])
 def test_parse_followup_datetime(value, expected):
     dt = parse_followup_datetime(value)
+    assert dt is not None
     assert (dt.year, dt.month, dt.day, dt.hour, dt.minute) == expected
 
 
@@ -144,20 +144,3 @@ def test_case_formatted_properties_and_email_draft_use_german_format():
     case.customer.contact_person = ""
     body = CalendarEmailService().generate_email_draft(case, user_name="Daniel Rösch")["body"]
     assert "Sehr geehrte Damen und Herren (Praxis Wolf)," in body
-
-
-def test_email_calendar_dialog_header_shows_german_deadline(root, tmp_path):
-    from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
-
-    dialog = EmailCalendarDialog(root, _case(), CalendarEmailService(workspace_dir=tmp_path), user_name="Daniel Rösch")
-    dialog.update_idletasks()
-    min_w, min_h = dialog.wm_minsize()
-    assert min_w >= 720 and min_h >= 540
-
-    headers = [sub.cget("text") for widget in dialog.winfo_children()
-               for child in widget.winfo_children() if isinstance(child, ctk.CTkFrame)
-               for sub in child.winfo_children()
-               if isinstance(sub, ctk.CTkLabel) and "Rückruf-Deadline:" in sub.cget("text")]
-    assert headers, "Header label with Rückruf-Deadline was not found."
-    assert all("25.08.2026 10:00 Uhr" in h and not ISO_PATTERN.search(h) for h in headers)
-    dialog.destroy()

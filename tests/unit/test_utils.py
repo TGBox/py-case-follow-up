@@ -16,7 +16,7 @@ from models.case import Case, CaseCustomer
 from models.profile import UISettings
 from services.anonymizer_service import PiiAnonymizer
 from utils.icon_utils import clear_icon_cache, get_icon
-from utils.security import load_env_file, mask_secret, normalize_url, resolve_secret
+from utils.security import load_env_file, normalize_url, resolve_secret
 from utils.ui_utils import enable_textbox_cursor_autoscroll, get_app_monitor_bounds
 
 ICON_KEYS = [ICON_KEY_USER, ICON_KEY_BELL, ICON_KEY_HELP, ICON_KEY_THEME, ICON_KEY_QUIT, ICON_KEY_COPY]
@@ -97,14 +97,6 @@ def test_resolve_secret(monkeypatch):
     assert resolve_secret("ENV_NON_EXISTENT") == ""
 
 
-@pytest.mark.parametrize("raw, expected", [
-    ("", "<EMPTY>"), (None, "<EMPTY>"), ("a", "****"), ("abcd", "****"),
-    ("12345", "12****45"), ("super_secret_token_value_99", "su****99"),
-])
-def test_mask_secret(raw, expected):
-    assert mask_secret(raw) == expected
-
-
 # --- Icons -----------------------------------------------------------------------
 
 @pytest.fixture
@@ -142,7 +134,7 @@ def test_icon_renders_in_dark_mode(root, icon_cache):
         label = ctk.CTkLabel(root, text="", image=get_icon(ICON_KEY_BELL, size=ICON_SIZE_HEADER))
         label.pack()
         root.update()
-        assert label._label.cget("image")
+        assert getattr(label, "_label", label).cget("image")
     finally:
         ctk.set_appearance_mode(previous)
 

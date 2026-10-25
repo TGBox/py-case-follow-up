@@ -76,22 +76,22 @@ def _case(case_id="CASE-UI-100", **wf) -> Case:
 
 # --- Customer management ---
 
-def _customer_dialog(app, storage):
+def _customer_dialog(app, storage, on_updated=None):
     from ui.dialogs.customer_management_dialog import CustomerManagementDialog
 
     service = CustomerService(storage)
     for i in (1, 2):
         service.save_customer(Customer(customer_id=f"K-{i}", practice_name=f"Praxis {i}", city=f"Ort {i}",
                                        contacts=[Contact(name=f"Kontakt {i}")]))
-    updates = []
-    dialog = CustomerManagementDialog(app, customer_service=service, on_customers_updated=lambda: updates.append(1))
+    cb = on_updated if on_updated is not None else (lambda: None)
+    dialog = CustomerManagementDialog(app, customer_service=service, on_customers_updated=cb)
     dialog.update()
-    dialog.updates = updates
     return dialog
 
 
 def test_customer_dialog_edit_create_and_add_contact(app, storage):
-    dialog = _customer_dialog(app, storage)
+    updates = []
+    dialog = _customer_dialog(app, storage, on_updated=lambda: updates.append(1))
     assert len(dialog.customers) == 2
 
     dialog.select_customer("K-1")
@@ -110,7 +110,7 @@ def test_customer_dialog_edit_create_and_add_contact(app, storage):
     dialog.name_entry.insert(0, "Klinik Gamma")
     dialog.save_current_customer()
     assert any(c.customer_id == "K-200" for c in storage.load_customers())
-    assert dialog.updates
+    assert updates
 
     rows = len(dialog.contact_rows)
     dialog.add_contact_row()
@@ -304,12 +304,14 @@ def test_schema_builder_creates_schema_and_adds_field(app, storage, config):
     new_diag.id_entry.insert(0, "schema_test_custom")
     new_diag.desc_entry.insert(0, "Test Formular")
     new_diag.on_save()
+    assert dialog.selected_schema is not None
     assert dialog.selected_schema.schema_id == "schema_test_custom"
 
     dialog.new_id_entry.insert(0, "test_field_1")
     dialog.new_label_entry.insert(0, "Test Frage")
     dialog.new_type_combo.set(FieldType.TEXT.value)
     dialog.on_add_field()
+    assert dialog.selected_schema is not None
     assert dialog.selected_schema.fields[0].field_id == "test_field_1"
 
 
@@ -462,6 +464,7 @@ def test_export_dialog_renders_preview_with_first_template(app, storage, with_sc
     dialog = ExportDialog(app, case=_case("T-EXP-01"), templates=templates, schemas=schemas,
                           export_service=ExportService(storage), on_case_updated=lambda c: None)
     dialog.update_idletasks()
+    assert dialog.active_template is not None
     assert dialog.active_template.template_id == "tpl_dev"
     assert "T-EXP-01: UI Test Case" in dialog.preview_textbox.get("1.0", "end")
 
@@ -537,14 +540,12 @@ def test_calendar_cobra_and_p2p_dialogs_open_with_their_data(app, seeded_storage
     from services.p2p_sync_service import P2PSyncService
     from ui.dialogs.calendar_export_dialog import CalendarExportDialog
     from ui.dialogs.cobra_import_dialog import CobraImportDialog
-    from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
     from ui.dialogs.p2p_diff_dialog import P2PDiffDialog
 
     cal = CalendarEmailService(config)
-    for dlg in (EmailCalendarDialog(app, case=_case(), calendar_email_service=cal, user_name="Agent User"),
-                CalendarExportDialog(app, case=_case(), calendar_email_service=cal)):
-        dlg.update_idletasks()
-        assert dlg.case.case_id == "CASE-UI-100"
+    dlg = CalendarExportDialog(app, case=_case(), calendar_email_service=cal)
+    dlg.update_idletasks()
+    assert dlg.case.case_id == "CASE-UI-100"
 
     cobra = CobraImportDialog(app, existing_customers=[Customer(customer_id="C-1", practice_name="Test")],
                               on_import_completed=lambda custs: None)
@@ -553,6 +554,7 @@ def test_calendar_cobra_and_p2p_dialogs_open_with_their_data(app, seeded_storage
     colleagues = [Colleague(username="col1", name="Max")] + seeded_storage.load_colleagues()   # col1 has no cases path
     p2p = P2PDiffDialog(app, colleagues=colleagues, p2p_service=P2PSyncService(seeded_storage), on_sync_completed=lambda: None)
     p2p.update_idletasks()
+    assert p2p.active_colleague is not None
     assert p2p.active_colleague.username == "col1"
 
 

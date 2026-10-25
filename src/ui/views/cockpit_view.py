@@ -66,7 +66,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         profile: UserProfile | None = None,
         storage_service: StorageService | None = None,
         on_manage_module_tags: Callable[[], None] | None = None,
-        on_open_email_calendar: Callable[[Case], None] | None = None,
         on_open_email: Callable[[Case | None], None] | None = None,
         on_open_calendar: Callable[[Case], None] | None = None,
         on_open_snippet_picker: Callable[[Any], None] | None = None,
@@ -87,7 +86,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.profile = profile
         self.storage_service = storage_service
         self.on_manage_module_tags = on_manage_module_tags if on_manage_module_tags is not None else (lambda: None)
-        self.on_open_email_calendar = on_open_email_calendar
         self.on_open_email = on_open_email
         self.on_open_calendar = on_open_calendar
         self.on_open_snippet_picker = on_open_snippet_picker if on_open_snippet_picker is not None else (lambda x=None: None)
@@ -154,7 +152,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         die Spaltenbreiten darum logisch; umgerechnet wird nur beim Anwenden.
         """
         try:
-            scale = float(self._get_widget_scaling())  # pyright: ignore[reportAttributeAccessIssue]
+            scale = float(getattr(self, "_get_widget_scaling", lambda: 1.0)())
             return scale if scale > 0 else 1.0
         except Exception:
             return 1.0
@@ -166,8 +164,10 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         ("Wiki / Wissensdatenbank" ist deutlich laenger als "Wiki").
         """
         try:
-            seg = self.right_tabview._segmented_button  # pyright: ignore[reportAttributeAccessIssue]
-            return int(seg.winfo_reqwidth()) + round(2 * PAD_SM * self._ui_scale())
+            seg = getattr(self.right_tabview, "_segmented_button", None)
+            if seg is not None:
+                return int(seg.winfo_reqwidth()) + round(2 * PAD_SM * self._ui_scale())
+            return 0
         except Exception:
             return 0
 
@@ -436,8 +436,6 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
     def on_click_email(self):
         if self.on_open_email:
             self.on_open_email(self.current_case)
-        elif self.on_open_email_calendar and self.current_case:
-            self.on_open_email_calendar(self.current_case)
         else:
             from ui.dialogs.email_draft_dialog import EmailDraftDialog
             from services.calendar_email_service import CalendarEmailService
@@ -476,16 +474,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         if self.current_case:
             if self.on_open_calendar:
                 self.on_open_calendar(self.current_case)
-            elif self.on_open_email_calendar:
-                self.on_open_email_calendar(self.current_case)
             else:
                 from ui.dialogs.calendar_export_dialog import CalendarExportDialog
                 from services.calendar_email_service import CalendarEmailService
                 svc = CalendarEmailService(self.app_config)
                 CalendarExportDialog(self, self.current_case, calendar_email_service=svc)
-
-    def on_click_email_calendar(self):
-        self.on_click_email()
 
     def _update_title_label(self):
         if not self.current_case:
@@ -591,7 +584,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         if choice.startswith("📤"):
             self.on_click_export()
         elif choice.startswith("✉"):
-            self.on_click_email_calendar()
+            self.on_click_email()
         elif choice.startswith("📅"):
             self.on_click_calendar()
         elif choice.startswith("📦"):

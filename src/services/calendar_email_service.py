@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 from models.case import Case
+from utils.datetime_utils import parse_followup_datetime
 
 
 def format_utc_ics_timestamp(dt: datetime) -> str:
@@ -57,19 +58,9 @@ class CalendarEmailService:
         # Parse start time from followup_due_at or fallback to now + 1 hour
         start_dt = now + timedelta(hours=1)
         if case.followup_due_at:
-            try:
-                # Try common formats: TT.MM.JJJJ HH:MM or ISO
-                clean_str = case.followup_due_at.replace("Uhr", "").strip()
-                if " " in clean_str:
-                    d_part, t_part = clean_str.split(" ", 1)
-                    if "." in d_part:
-                        day, month, year = map(int, d_part.split("."))
-                        hour, minute = map(int, t_part.split(":")[:2])
-                        start_dt = datetime(year, month, day, hour, minute)
-                    else:
-                        start_dt = datetime.fromisoformat(clean_str)
-            except Exception:
-                pass
+            parsed = parse_followup_datetime(case.followup_due_at)
+            if parsed:
+                start_dt = parsed.replace(tzinfo=None) if parsed.tzinfo else parsed
 
         end_dt = start_dt + timedelta(minutes=30)
 
@@ -132,8 +123,6 @@ class CalendarEmailService:
         ]
 
         return "\r\n".join(ics_lines)
-
-    generate_ics = generate_ics_content
 
     def generate_ics_file(self, case: Case, target_dir: Path | str | None = None, user_name: str = "") -> Path:
         """Saves generated iCalendar content to a .ics file in target_dir or scratch dir."""

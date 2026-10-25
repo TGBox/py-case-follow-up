@@ -218,6 +218,7 @@ def test_case_match_summary():
     assert SearchService.extract_case_search_match_summary(c, ["katrin"]) == "Katrin"
     assert SearchService.extract_case_search_match_summary(c, ["kranken"]) == "Krankentransport"
     both = SearchService.extract_case_search_match_summary(c, ["katrin", "mueller"])
+    assert both is not None
     assert "Katrin" in both and "dr.mueller@med-center.de" in both
 
     many = Case(classification=Classification(tags=["TagEins", "TagZwei", "TagDrei", "TagVier"]),
@@ -258,6 +259,7 @@ def test_customer_match_summary(customer, query, kwargs, expected):
 def test_customer_match_summary_truncates_overlong_first_word():
     cust = Customer(customer_id="1", practice_name="P", contacts=[Contact(name="Supercalifragilisticexpialidocioustron")])
     res = CustomerService.extract_customer_search_match_summary(cust, "tr", max_matches=3, max_chars=25)
+    assert res is not None
     assert res.endswith("...") and len(res) <= 25
 
 
@@ -265,6 +267,7 @@ def test_summarize_matching_words():
     """A summary that just repeats the label explains nothing."""
     summary = CustomerService.summarize_matching_words(
         ["Ulbricht", "Fr.Ulbricht", "https://www.ulbricht.example"], "ulbricht", exclude_text="Ulbricht (00120)")
+    assert summary is not None
     assert not summary.startswith("Ulbricht,") and "Fr.Ulbricht" in summary
     for fields, q in ((["Praxis Welz"], ""), (["Praxis Welz"], "   "), (["Praxis Welz"], "zzz"), ([], "welz")):
         assert CustomerService.summarize_matching_words(fields, q) is None
@@ -284,6 +287,7 @@ def test_new_case_dialog_customer_search_covers_hidden_fields():
     summary = CustomerService.summarize_matching_words(
         NewCaseDialog.customer_search_fields(cust), "rommerskirchen",
         exclude_text=NewCaseDialog.customer_display_name(cust))
+    assert summary is not None
     assert "Rommerskirchen" in summary
 
 
@@ -329,14 +333,17 @@ def test_highlighted_label_is_wired_for_auto_sizing(root):
 
 
 def test_auto_hiding_scrollbar_is_installed_only_once(root):
-    """AutoScrollableFrame must not end up with two competing scrollbar controllers."""
-    from utils.ui_utils import AutoScrollableFrame, enable_auto_hiding_scrollbar
+    """CTkScrollableFrame must not end up with two competing scrollbar controllers."""
+    import customtkinter as ctk
+    from utils.ui_utils import enable_auto_hiding_scrollbar
 
-    frame = AutoScrollableFrame(root, width=200, height=150)
+    frame = ctk.CTkScrollableFrame(root, width=200, height=150)
+    enable_auto_hiding_scrollbar(frame)
     frame.pack()
     root.update()
     assert getattr(frame, "_auto_hide_scrollbar_installed", False) is True
     canvas = getattr(frame, "_parent_canvas", getattr(frame, "_canvas", None))
+    assert canvas is not None
     before = len(canvas.bind("<Configure>").splitlines())
     enable_auto_hiding_scrollbar(frame)
     assert len(canvas.bind("<Configure>").splitlines()) == before
@@ -431,7 +438,8 @@ def test_help_dialog_highlights_navigation(root):
 def test_tag_management_dialog_highlights_and_keeps_delete_button(root, storage, tab, attr, entry, render, scroll, query, expected):
     from ui.dialogs.tag_management_dialog import TagManagementDialog
 
-    profile = UserProfile(**{attr: ["Dringend", "Rezeptdruck", "Terminkalender"]})
+    profile = UserProfile()
+    setattr(profile, attr, ["Dringend", "Rezeptdruck", "Terminkalender"])
     dialog = TagManagementDialog(root, profile=profile, storage_service=storage, initial_tab=tab)
 
     def search(text):
@@ -497,6 +505,7 @@ def test_customer_dialog_shows_match_summary_line(root, storage):
     assert any("Travemünde" in t for t in cards["zeglin"])
 
     dialog.select_customer("00109")
+    assert dialog.selected_customer is not None
     assert dialog.selected_customer.customer_id == "00109"
     dialog.destroy()
 
@@ -584,10 +593,11 @@ def test_card_tooltip_binds_only_on_first_hover(root, case_list):
         return len([ln for ln in (w.bind("<Enter>") or "").splitlines() if ln.strip()])
 
     try:
-        assert enter_bindings(label._label) == 0
+        target_label = getattr(label, "_label", label)
+        assert enter_bindings(target_label) == 0
         card._canvas.event_generate("<Enter>", x=5, y=5)
         root.update()
-        assert enter_bindings(label._label) > 0
+        assert enter_bindings(target_label) > 0
 
         # an open tooltip is closed by dismiss_all (pointer faked inside the widget)
         tip = CTkTooltip(label, "Hinweis", delay_ms=0)

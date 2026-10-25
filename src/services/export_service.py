@@ -98,19 +98,3 @@ class ExportService:
         except Exception as e:
             logger.error(f"Error rendering Jinja2 template '{template.template_id}': {e}")
             return False, missing_fields, f"Rendering Error: {e}"
-
-    @staticmethod
-    def copy_to_clipboard(text: str) -> bool:
-        """Copies text to OS clipboard using tkinter or fallback."""
-        try:
-            import tkinter as tk
-            root = tk.Tk()
-            root.withdraw()
-            root.clipboard_clear()
-            root.clipboard_append(text)
-            root.update()
-            root.destroy()
-            return True
-        except Exception as e:
-            logger.warning(f"Could not copy to clipboard via tkinter: {e}")
-            return False

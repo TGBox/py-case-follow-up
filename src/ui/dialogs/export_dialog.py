@@ -433,7 +433,8 @@ class ExportDialog(BaseDialog):
         self.apply_inplace_values_to_case()
         text = self.preview_textbox.get("1.0", "end-1c")
         if text:
-            self.export_service.copy_to_clipboard(text)
+            self.clipboard_clear()
+            self.clipboard_append(text)
             self.status_label.configure(text=tr("export.copied", "📋 Erfolgreich in Zwischenablage kopiert!"), text_color=COLOR_SUCCESS)
 
     def on_save_file(self):

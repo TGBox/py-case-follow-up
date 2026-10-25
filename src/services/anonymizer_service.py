@@ -13,9 +13,6 @@ class PiiAnonymizer:
 
     # Common German PII Regex Patterns
     EMAIL_REGEX = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b')
-    PHONE_REGEX = re.compile(r'(?:\+?\d{1,3}[-.\s]?)?\(?\d{2,5}\)?[-.\s]?\d{3,9}[-.\s]?\d{0,6}')
-    DATE_REGEX = re.compile(r'\b\d{1,2}\.\d{1,2}\.\d{2,4}\b')
-    CASE_ID_REGEX = re.compile(r'\b[A-Z]{2,4}-\d{3,8}\b')
     # Patient pattern candidates like "Patient Mustermann", "Pat. Max Mustermann", "Hr. Schmidt", "Fr. Dr. Müller"
     PATIENT_TITLE_REGEX = re.compile(
         r'\b(?:Pat\.|Patient(?:in)?|Hr\.|Herr|Fr\.|Frau)\s+(?:Dr\.|Prof\.)?\s*([A-ZÄÖÜ][a-zäöüß]+(?:\s+[A-ZÄÖÜ][a-zäöüß]+)?)',

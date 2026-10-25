@@ -700,7 +700,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 if child is more:
                     continue
                 total += child.winfo_reqwidth() + self._pack_padx_total(child)
-            combo_pad = round(2 * PAD_3 * self.stammdaten_combo._get_widget_scaling())  # pyright: ignore[reportAttributeAccessIssue]
+            combo_pad = round(2 * PAD_3 * float(getattr(self.stammdaten_combo, "_get_widget_scaling", lambda: 1.0)()))
             for combo in (self.stammdaten_combo, self.vorlagen_combo, self.datenaustausch_combo):
                 if combo not in packed:
                     total += combo.winfo_reqwidth() + combo_pad
@@ -817,7 +817,6 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             profile=self.profile,
             storage_service=self.storage_service,
             on_manage_module_tags=self.open_module_tag_management_dialog,
-            on_open_email_calendar=self.open_email_calendar_dialog,
             on_open_email=self.open_email_draft_dialog,
             on_open_calendar=self.open_calendar_export_dialog,
             on_open_snippet_picker=self.open_snippet_picker_dialog,

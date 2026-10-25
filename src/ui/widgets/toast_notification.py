@@ -5,6 +5,7 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 from constants import (
+    APP_ID_NOTIFICATION,
     BORDER_WIDTH_TOAST,
     BTN_HEIGHT_LG,
     BTN_WIDTH_ACTION_SM,
@@ -19,10 +20,10 @@ from constants import (
     FONT_SIZE_CONFIRM,
     FONT_SIZE_SM,
     FONT_WEIGHT_BOLD,
+    NOTIFICATION_DURATION_SHORT,
     PAD_LG,
     PAD_MD,
     PAD_XS,
-    SYSTEM_APP_ID,
     TOAST_DURATION_DEFAULT_MS,
     TOAST_HEIGHT,
     TOAST_OFFSET_X,
@@ -30,7 +31,6 @@ from constants import (
     TOAST_WIDTH_ACTION,
     TOAST_WIDTH_DEFAULT,
     WINDOW_STATE_ICONIC,
-    WINOTIFY_DURATION_SHORT,
 )
 from services.i18n_service import tr
 
@@ -175,10 +175,10 @@ class ToastNotification(ctk.CTkToplevel):
         try:
             from winotify import Notification  # type: ignore
             toast = Notification(
-                app_id=SYSTEM_APP_ID,
+                app_id=APP_ID_NOTIFICATION,
                 title=title,
                 msg=message,
-                duration=WINOTIFY_DURATION_SHORT,
+                duration=NOTIFICATION_DURATION_SHORT,
                 **({"launch": launch_uri} if launch_uri else {}),
             )
             toast.show()

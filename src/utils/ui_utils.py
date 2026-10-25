@@ -34,11 +34,9 @@ from constants import (
 
 def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
     """Enforces system-wide auto-hiding scrollbar behavior and proper full-height layout for CTkScrollableFrame without layout thrashing."""
-    # CTkScrollableFrame.__init__ is patched to call this, and AutoScrollableFrame
-    # calls it again after super().__init__(). Without this guard every
-    # AutoScrollableFrame ends up with two independent controllers, each with its
-    # own _last_visible memo, fighting over the same scrollbar and scheduling a
-    # second set of <Configure> handlers and after() timers.
+    # CTkScrollableFrame.__init__ is patched to call this. Without this guard,
+    # calling enable_auto_hiding_scrollbar repeatedly on the same frame ends up with
+    # duplicate handlers and timers fighting over the same scrollbar.
     if getattr(scroll_frame, ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED, False):
         return
     try:
@@ -558,12 +556,6 @@ def bind_mouse_wheel_to_canvas(container_or_widget: Any, scroll_frame: ctk.CTkSc
 
 
 
-class AutoScrollableFrame(ctk.CTkScrollableFrame):
-    """CTkScrollableFrame that automatically hides its scrollbar when content fits without overflowing."""
-
-    def __init__(self, master, **kwargs):
-        super().__init__(master, **kwargs)
-        enable_auto_hiding_scrollbar(self)
 
 
 def _get_measure_func(font: Any) -> Callable:

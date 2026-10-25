@@ -10,8 +10,6 @@ class ScoringService:
     def __init__(self, matrix: ScoringMatrix | None = None):
         self.matrix = matrix or ScoringMatrix()
 
-    def update_matrix(self, matrix: ScoringMatrix) -> None:
-        self.matrix = matrix
 
     def calculate_score(self, case: Case, now: datetime | None = None) -> float:
         """Calculates urgency score according to SRS formula. Completed or archived cases score 0."""

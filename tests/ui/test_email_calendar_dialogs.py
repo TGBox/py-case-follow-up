@@ -1,8 +1,5 @@
 """Email draft, calendar export and combined email/calendar dialogs, plus German salutation formatting."""
 
-from tkinter import filedialog
-from unittest.mock import MagicMock
-
 import pytest
 
 from enums import Actor, UrgencyLevel
@@ -112,53 +109,3 @@ def test_calendar_export_dialog_describes_followup(root, config):
     desc = dialog.desc_textbox.get("1.0", "end")
     for text in ("T-CAL-01", "Klinik am Park", "Konnektor neu starten"):
         assert text in desc
-
-
-def test_email_calendar_dialog_actions(root, config, tmp_path, monkeypatch):
-    from ui.dialogs.email_calendar_dialog import EmailCalendarDialog
-
-    case = Case(
-        case_id="T-MAIL-99",
-        customer=CaseCustomer(customer_id="K-505", practice_name="Hautarztpraxis Dr. Becker",
-                              email="dr.becker@haut-praxis.de", contact_person="Dr. Becker"),
-        classification=Classification(title="Fehler beim Laborabruf", urgency_level=UrgencyLevel.RED),
-        workflow_status=WorkflowStatus(current_actor=Actor.TECH),
-    )
-    cal_svc = CalendarEmailService(config)
-    dialog = EmailCalendarDialog(root, case=case, calendar_email_service=cal_svc,
-                                 user_name="Max Mustermann", snippet_service=SnippetService(tmp_path))
-    status = lambda: dialog.status_lbl.cget("text")  # noqa: E731
-
-    mailto_calls = []
-    monkeypatch.setattr(cal_svc, "open_mailto_link", lambda to, sub, body: mailto_calls.append(to))
-    dialog.on_open_mailto()
-    assert mailto_calls == ["dr.becker@haut-praxis.de"]
-    assert "Mail-Client wurde mit dem Entwurf aufgerufen" in status()
-
-    dialog.on_copy_text()
-    assert "in die Zwischenablage kopiert" in status()
-
-    ics_opened = []
-    monkeypatch.setattr(cal_svc, "open_ics_file", lambda p: ics_opened.append(p))
-    dialog.on_open_ics()
-    assert len(ics_opened) == 1
-    assert "Kalendereintrag (.ics) geöffnet" in status()
-
-    target = tmp_path / "custom_rueckruf.ics"
-    monkeypatch.setattr(filedialog, "asksaveasfilename", lambda **k: str(target))
-    dialog.on_save_ics()
-    assert "BEGIN:VCALENDAR" in target.read_text(encoding="utf-8")
-    assert "Kalenderdatei gespeichert" in status()
-
-    target.unlink()
-    monkeypatch.setattr(filedialog, "asksaveasfilename", lambda **k: "")
-    dialog.on_save_ics()
-    assert not target.exists()
-
-    dialog.insert_snippet_text("Zusätzlicher Textbaustein Hinweis.")
-    assert "Zusätzlicher Textbaustein Hinweis." in _body(dialog)
-
-    picker = MagicMock()
-    monkeypatch.setattr("ui.dialogs.snippet_picker_dialog.SnippetPickerDialog", picker)
-    dialog.open_snippet_picker()
-    picker.assert_called_once()

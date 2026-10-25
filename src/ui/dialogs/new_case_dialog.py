@@ -484,8 +484,7 @@ class NewCaseDialog(BaseDialog):
         # toggling a tag does not scroll the list back to the top.
         grid_frame = getattr(self, "tags_scroll", None)
         if grid_frame is None or not grid_frame.winfo_exists():
-            from utils.ui_utils import AutoScrollableFrame
-            grid_frame = AutoScrollableFrame(self.tags_frame, fg_color="transparent", height=panel_height)
+            grid_frame = ctk.CTkScrollableFrame(self.tags_frame, fg_color="transparent", height=panel_height)
             grid_frame.pack(fill="x", padx=PAD_XS, pady=PAD_TINY)
             self.tags_scroll = grid_frame
             for col in range(num_cols):

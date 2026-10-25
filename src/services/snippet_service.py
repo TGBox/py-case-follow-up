@@ -68,8 +68,6 @@ def get_default_snippets() -> list[Snippet]:
     ]
 
 
-DEFAULT_SNIPPETS = get_default_snippets()
-
 
 class SnippetService:
     """Service for managing text snippets and templates."""

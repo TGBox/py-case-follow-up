@@ -92,7 +92,3 @@ class SchemaService:
     def reorder_fields(schema: QuestionSchema) -> None:
         for i, f in enumerate(schema.fields, start=1):
             f.order = i
-
-    def save_schema_changes(self, schemas: list[QuestionSchema]) -> None:
-        if self.storage_service:
-            self.storage_service.save_schemas(schemas)

@@ -600,6 +600,8 @@ class SchemaBuilderDialog(BaseDialog):
             self.refresh_fields_list()
 
     def on_save(self):
-        self.schema_service.save_schema_changes(self.schemas)
+        storage = getattr(self.schema_service, "storage_service", None)
+        if storage and hasattr(storage, "save_schemas"):
+            storage.save_schemas(self.schemas)
         self.on_schemas_updated(self.schemas)
         self.destroy()

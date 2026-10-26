@@ -28,6 +28,7 @@ from constants import (
     DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
     DEFAULT_NTFY_NOTIFY_HANDOVERS,
     DEFAULT_NTFY_NOTIFY_PRIO1,
+    DEFAULT_NTFY_ON_CALL,
     DEFAULT_NTFY_SERVER_URL,
     DEFAULT_NTFY_TOPIC,
     DEFAULT_OLLAMA_MODEL,
@@ -232,6 +233,7 @@ class ReminderSettings:
     mobile_ntfy_notify_customer_notes: bool = DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES
     mobile_ntfy_digest_enabled: bool = DEFAULT_NTFY_DIGEST_ENABLED
     mobile_ntfy_digest_minutes: int = DEFAULT_NTFY_DIGEST_MINUTES
+    mobile_ntfy_on_call: bool = DEFAULT_NTFY_ON_CALL
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -252,6 +254,7 @@ class ReminderSettings:
             mobile_ntfy_notify_customer_notes=bool(data.get("mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES)),
             mobile_ntfy_digest_enabled=bool(data.get("mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED)),
             mobile_ntfy_digest_minutes=int(data.get("mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)),
+            mobile_ntfy_on_call=bool(data.get("mobile_ntfy_on_call", DEFAULT_NTFY_ON_CALL)),
         )
 
 

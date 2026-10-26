@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from constants import (
+    NTFY_TAG_ON_CALL,
     NTFY_TOPIC_PREFIX,
 )
 from models.case import Case, Classification, WorkflowStatus
@@ -468,3 +469,96 @@ def test_app_check_mobile_ntfy_reminders_user_not_idle_clears_digest_queue():
         assert not mock_send.called
         assert len(app._ntfy_digest_queue) == 0
         assert app._ntfy_last_digest_sent_at == 0.0
+
+
+def test_app_check_mobile_ntfy_reminders_on_call_bypasses_idle():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="on-call-topic",
+        mobile_ntfy_idle_minutes=15,
+        mobile_ntfy_on_call=True,
+        mobile_ntfy_digest_enabled=False,
+    )
+    app.is_on_call_active.return_value = True
+    app._last_ntfy_notified_ids = set()
+
+    # User is active at workstation (0 seconds idle)
+    IdleDetector.set_mock_state(idle_seconds=0.0, is_locked=False)
+
+    case = Case(
+        case_id="777",
+        classification=Classification(title="Emergency Hotline", urgency_level="Prio 1"),
+        workflow_status=WorkflowStatus(followup_at="2026-01-01 10:00:00"),
+    )
+
+    with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
+        SupportCockpitApp._check_mobile_ntfy_reminders(app, [case])
+        # Notification must be sent despite user being active!
+        assert mock_send.called
+        kwargs = mock_send.call_args[1]
+        assert "777" in kwargs["title"]
+        assert "[Notdienst]" in kwargs["title"]
+        assert NTFY_TAG_ON_CALL in kwargs["tags"]
+        assert "777" in app._last_ntfy_notified_ids
+
+
+def test_app_toggle_on_call_mode():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(mobile_ntfy_on_call=False)
+    app.storage_service = MagicMock()
+    app.on_call_btn = MagicMock()
+    app.on_call_tooltip = MagicMock()
+    app.tray_service = MagicMock()
+
+    # Bind the real toggle_on_call_mode and is_on_call_active methods
+    app.is_on_call_active = lambda: SupportCockpitApp.is_on_call_active(app)
+    app._get_on_call_tooltip_text = lambda active: SupportCockpitApp._get_on_call_tooltip_text(app, active)
+    app._update_on_call_ui_state = lambda active: SupportCockpitApp._update_on_call_ui_state(app, active)
+
+    with patch("ui.app.ToastNotification") as mock_toast:
+        # 1. Toggle from False to True
+        SupportCockpitApp.toggle_on_call_mode(app)
+        assert app.profile.reminder_settings.mobile_ntfy_on_call is True
+        assert app.storage_service.save_profile.called
+        assert app.tray_service.update_menu.called
+        assert mock_toast.called
+
+        # 2. Toggle from True to False
+        mock_toast.reset_mock()
+        SupportCockpitApp.toggle_on_call_mode(app)
+        assert app.profile.reminder_settings.mobile_ntfy_on_call is False
+        assert mock_toast.called
+
+
+def test_ntfy_profile_ui_on_call_checkbox(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_on_call=True,
+    )
+    mock_storage = MagicMock()
+
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=mock_storage)
+
+    assert hasattr(dlg, "ntfy_cb_on_call")
+    assert bool(dlg.ntfy_cb_on_call.get()) is True
+
+    # Deselect on-call and save
+    dlg.ntfy_cb_on_call.deselect()
+    assert dlg.save_ui_settings() is True
+    assert profile.reminder_settings.mobile_ntfy_on_call is False
+
+    # Reload fields
+    profile.reminder_settings.mobile_ntfy_on_call = True
+    dlg.reload_ui_fields()
+    assert bool(dlg.ntfy_cb_on_call.get()) is True
+
+    dlg.destroy()
+

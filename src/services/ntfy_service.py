@@ -19,6 +19,7 @@ from constants import (
     NTFY_TAG_ESCALATION,
     NTFY_TAG_HANDOVER,
     NTFY_TAG_NOTE,
+    NTFY_TAG_ON_CALL,
     NTFY_TAG_WARNING,
     NTFY_TOPIC_PREFIX,
     NTFY_TOPIC_RANDOM_LENGTH,
@@ -39,17 +40,21 @@ class NtfyService:
         return f"{NTFY_TOPIC_PREFIX}{random_suffix}"
 
     @staticmethod
-    def get_event_tags(event_type: str = NTFY_EVENT_FOLLOWUP) -> list[str]:
+    def get_event_tags(event_type: str = NTFY_EVENT_FOLLOWUP, on_call: bool = False) -> list[str]:
         """Returns relevant emoji tag list based on the event type."""
         if event_type == "digest":
-            return [NTFY_TAG_DIGEST]
-        if event_type == NTFY_EVENT_PRIO1:
-            return [NTFY_TAG_WARNING, NTFY_TAG_ESCALATION]
-        if event_type == NTFY_EVENT_HANDOVER:
-            return [NTFY_TAG_HANDOVER]
-        if event_type == NTFY_EVENT_NOTE:
-            return [NTFY_TAG_NOTE]
-        return [NTFY_TAG_BELL]
+            tags = [NTFY_TAG_DIGEST]
+        elif event_type == NTFY_EVENT_PRIO1:
+            tags = [NTFY_TAG_WARNING, NTFY_TAG_ESCALATION]
+        elif event_type == NTFY_EVENT_HANDOVER:
+            tags = [NTFY_TAG_HANDOVER]
+        elif event_type == NTFY_EVENT_NOTE:
+            tags = [NTFY_TAG_NOTE]
+        else:
+            tags = [NTFY_TAG_BELL]
+        if on_call:
+            tags.append(NTFY_TAG_ON_CALL)
+        return tags
 
     @staticmethod
     def format_case_alert(
@@ -58,6 +63,7 @@ class NtfyService:
         is_overdue: bool = False,
         event_type: str = NTFY_EVENT_FOLLOWUP,
         anonymize: bool = True,
+        on_call: bool = False,
     ) -> tuple[str, str]:
         """Creates privacy-friendly, tokenized notification title and message."""
         if event_type == NTFY_EVENT_PRIO1:
@@ -107,6 +113,11 @@ class NtfyService:
                     "ntfy.case_alert_due",
                     "Wiedervorlage fällig am Arbeitsplatz.",
                 )
+
+        if on_call:
+            prefix = tr("ntfy.on_call_prefix", "[Notdienst] ")
+            title = f"{prefix}{title}"
+
         return title, message
 
     @staticmethod

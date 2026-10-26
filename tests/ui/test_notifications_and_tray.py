@@ -186,6 +186,7 @@ class AppStub(ctk.CTk):
     switch_to_cockpit_view_for_case = SupportCockpitApp.switch_to_cockpit_view_for_case
     check_due_followups = SupportCockpitApp.check_due_followups
     _check_mobile_ntfy_reminders = SupportCockpitApp._check_mobile_ntfy_reminders
+    is_on_call_active = SupportCockpitApp.is_on_call_active
     _is_cockpit_active = lambda self: True  # noqa: E731
 
     def __init__(self, cases):
@@ -355,6 +356,38 @@ def test_tray_service_start_is_idempotent_and_stop_cleans_up(monkeypatch):
     assert service._icon is None and service._thread is None
     first_thread.join(1)
     assert not first_thread.is_alive(), "stop() must end the tray loop"
+
+
+def test_tray_service_on_call_menu_and_tooltip():
+    service = TrayService()
+    is_active = [False]
+    toggled = [0]
+
+    def _toggle():
+        toggled[0] += 1
+        is_active[0] = not is_active[0]
+
+    service._is_on_call_active = lambda: is_active[0]
+    service._on_toggle_on_call = _toggle
+
+    # Tooltip without on-call
+    assert "[Notdienst]" not in service._get_tooltip()
+
+    # Tooltip with on-call
+    is_active[0] = True
+    assert "[Notdienst]" in service._get_tooltip()
+
+    # Menu creation includes on_call item
+    menu = service._create_menu()
+    items = list(menu.items)
+    on_call_item = next((item for item in items if getattr(item, "text", "") == "Notdienst / Rufbereitschaft"), None)
+    assert on_call_item is not None
+    assert on_call_item.checked is True
+
+    # Trigger toggle handler
+    service._handle_toggle_on_call()
+    assert toggled[0] == 1
+    assert is_active[0] is False
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="native toasts only on Windows")

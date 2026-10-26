@@ -21,6 +21,7 @@ from constants import (
     BTN_WIDTH_FULLSCREEN,
     BTN_WIDTH_HELP,
     BTN_WIDTH_NEW_CASE,
+    BTN_WIDTH_ON_CALL,
     BTN_WIDTH_QUIT,
     BTN_WIDTH_SM,
     BTN_WIDTH_USER,
@@ -32,6 +33,8 @@ from constants import (
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
     COLOR_MUTED_LABEL,
+    COLOR_ON_CALL_ACTIVE,
+    COLOR_ON_CALL_ACTIVE_HOVER,
     COLOR_QUIT_BTN,
     COLOR_QUIT_BTN_HOVER,
     COLOR_SPLASH_BG,
@@ -100,6 +103,7 @@ from constants import (
     ICON_KEY_BELL,
     ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
+    ICON_KEY_ON_CALL,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
     ICON_KEY_USER,
@@ -255,6 +259,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.tray_service.start(
             on_restore=self._on_restore_from_tray,
             on_quit=self._on_quit_from_tray,
+            on_toggle_on_call=self._on_toggle_on_call_from_tray,
+            is_on_call_active=self.is_on_call_active,
         )
 
         # Register Shortcuts & Lifecycle
@@ -550,6 +556,24 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         )
         self.help_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
+        # On-Call / Bereitschaft Toggle Button
+        is_on_call = self.is_on_call_active()
+        self.on_call_btn = ctk.CTkButton(
+            menu_frame,
+            text="",
+            image=get_icon(ICON_KEY_ON_CALL, size=ICON_SIZE_HEADER),
+            command=self.toggle_on_call_mode,
+            width=BTN_WIDTH_ON_CALL,
+            fg_color=COLOR_ON_CALL_ACTIVE if is_on_call else COLOR_THEME_BTN,
+            hover_color=COLOR_ON_CALL_ACTIVE_HOVER if is_on_call else COLOR_MUTED_GRAY_HOVER,
+        )
+        self.on_call_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
+        self.on_call_tooltip = CTkTooltip(
+            self.on_call_btn,
+            self._get_on_call_tooltip_text(is_on_call),
+            delay_ms=TOOLTIP_SHORT_DELAY_MS,
+        )
+
         self.bell_btn = ctk.CTkButton(
             menu_frame,
             text="0",
@@ -754,6 +778,61 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self._update_header_responsive(width)
         except Exception:
             pass
+
+    def _on_toggle_on_call_from_tray(self) -> None:
+        self.after(0, self.toggle_on_call_mode)
+
+    def is_on_call_active(self) -> bool:
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return False
+        return bool(getattr(self.profile.reminder_settings, "mobile_ntfy_on_call", False))
+
+    def _get_on_call_tooltip_text(self, active: bool) -> str:
+        if active:
+            return tr(
+                "ntfy.on_call_tooltip_active",
+                "Notdienst / Rufbereitschaft aktiv: Push-Benachrichtigungen werden sofort ans Smartphone gesendet (Klicken zum Deaktivieren)",
+            )
+        return tr(
+            "ntfy.on_call_tooltip_inactive",
+            "Notdienst / Rufbereitschaft inaktiv (Klicken zum Aktivieren)",
+        )
+
+    def _update_on_call_ui_state(self, active: bool) -> None:
+        if hasattr(self, "on_call_btn") and self.on_call_btn.winfo_exists():
+            fg = COLOR_ON_CALL_ACTIVE if active else COLOR_THEME_BTN
+            hov = COLOR_ON_CALL_ACTIVE_HOVER if active else COLOR_MUTED_GRAY_HOVER
+            self.on_call_btn.configure(fg_color=fg, hover_color=hov)
+            if hasattr(self, "on_call_tooltip"):
+                self.on_call_tooltip.text = self._get_on_call_tooltip_text(active)
+        if hasattr(self, "tray_service") and self.tray_service:
+            try:
+                self.tray_service.update_menu()
+            except Exception:
+                pass
+
+    def toggle_on_call_mode(self, active: bool | None = None) -> None:
+        current = self.is_on_call_active()
+        new_state = (not current) if active is None else active
+        if hasattr(self, "profile") and hasattr(self.profile, "reminder_settings"):
+            self.profile.reminder_settings.mobile_ntfy_on_call = new_state
+            if hasattr(self, "storage_service") and self.storage_service:
+                self.storage_service.save_profile(self.profile)
+        self._update_on_call_ui_state(new_state)
+
+        toast_title = tr("ntfy.on_call_title", "Notdienst / Rufbereitschaft")
+        toast_msg = (
+            tr(
+                "ntfy.on_call_enabled_msg",
+                "Aktiviert: Benachrichtigungen werden auch bei Anwesenheit ans Smartphone übertragen.",
+            )
+            if new_state
+            else tr(
+                "ntfy.on_call_disabled_msg",
+                "Deaktiviert: Benachrichtigungen erfolgen nur bei Abwesenheit.",
+            )
+        )
+        ToastNotification(self, title=toast_title, message=toast_msg)
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
@@ -1370,11 +1449,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if not topic:
             return
 
+        is_on_call = bool(getattr(reminder_settings, "mobile_ntfy_on_call", False))
+
         from utils.idle_detector import IdleDetector
         idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
         idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
 
-        if not IdleDetector.is_user_idle(idle_threshold_seconds):
+        if not is_on_call and not IdleDetector.is_user_idle(idle_threshold_seconds):
             if getattr(self, "_ntfy_digest_queue", None):
                 self._ntfy_digest_queue = []
             self._ntfy_last_digest_sent_at = 0.0
@@ -1466,8 +1547,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 is_overdue=is_overdue,
                 event_type=event_type,
                 anonymize=True,
+                on_call=is_on_call,
             )
-            tags = NtfyService.get_event_tags(event_type=event_type)
+            tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
 
             NtfyService.send_notification_async(
                 topic=topic,
@@ -1512,7 +1594,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
             if (now - last_sent) >= (digest_mins * SECONDS_PER_MINUTE) and self._ntfy_digest_queue:
                 title, message = NtfyService.format_digest_alert(self._ntfy_digest_queue, anonymize=True)
-                tags = NtfyService.get_event_tags("digest")
+                tags = NtfyService.get_event_tags("digest", on_call=is_on_call)
+                if is_on_call:
+                    prefix = tr("ntfy.on_call_prefix", "[Notdienst] ")
+                    title = f"{prefix}{title}"
                 NtfyService.send_notification_async(
                     topic=topic,
                     message=message,
@@ -1540,8 +1625,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     is_overdue=is_overdue,
                     event_type=event_type,
                     anonymize=True,
+                    on_call=is_on_call,
                 )
-                tags = NtfyService.get_event_tags(event_type=event_type)
+                tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
 
                 NtfyService.send_notification_async(
                     topic=topic,

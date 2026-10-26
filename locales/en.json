@@ -2001,6 +2001,7 @@
     "success_toast": "🗑 Case deleted"
   },
   "ntfy": {
+    "auto_absence_reason": "Automatically away (screen lock / idle)",
     "btn_random_topic": "🎲 Random",
     "btn_test_notification": "🔔 Test Notification",
     "case_alert_due": "Follow-up due at your desk.",
@@ -2018,6 +2019,7 @@
     "digest_note_line": "📝 {count}x New Note",
     "digest_prio1_line": "🚨 {count}x Emergency / Prio 1",
     "enable_toggle": "📱 Enable smartphone push on absence (ntfy.sh)",
+    "filter_auto_presence": "Automatically set away status in team directory on screen lock",
     "filter_followups": "Due follow-ups",
     "filter_handovers": "Case handovers & assignments",
     "filter_header": "Notify on:",

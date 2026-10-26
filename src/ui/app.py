@@ -254,6 +254,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._restore_fullscreen: bool = False
         self.bind("<Configure>", self._on_window_configure, add="+")
 
+        # Team Presence Auto-Coupling (Stufe 5)
+        self._auto_absence_set: bool = False
+        self._saved_absence_reason: str = ""
+
         # System Tray Service
         self.tray_service = TrayService()
         self.tray_service.start(
@@ -1082,6 +1086,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         def _restore():
             try:
+                if hasattr(self, "_update_team_presence_on_idle"):
+                    self._update_team_presence_on_idle(is_idle=False)
                 if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
                     # Showing the window and putting back "maximized" are two
                     # full relayouts of every widget. Keep the window
@@ -1428,6 +1434,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if hasattr(self, "tray_service"):
             self.tray_service.update_badge(due_count)
 
+        # Update auto-presence in team directory on idle / lock (Stufe 5)
+        if hasattr(self, "_update_team_presence_on_idle"):
+            self._update_team_presence_on_idle()
+
         _timer_id = self.__dict__.get("_followup_timer_id")
         if _timer_id:
             try:
@@ -1435,6 +1445,70 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception:
                 pass
         self._followup_timer_id = self.after(FOLLOWUP_CHECK_INTERVAL_MS, self.check_due_followups)
+
+    def _update_team_presence_on_idle(self, is_idle: bool | None = None) -> None:
+        """Automatically marks user as absent in colleagues directory on lock/idle and active on return."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+        reminder_settings = self.profile.reminder_settings
+        if not hasattr(self, "storage_service") or not self.storage_service:
+            return
+
+        enabled = bool(getattr(reminder_settings, "mobile_ntfy_enabled", False))
+        auto_presence = bool(getattr(reminder_settings, "mobile_ntfy_auto_presence", False))
+
+        current_user = ""
+        user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+        if user_obj:
+            current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+        if not current_user:
+            return
+
+        colleagues = self.storage_service.load_colleagues()
+        target = None
+        for col in colleagues:
+            if (col.username and col.username.strip().lower() == current_user.strip().lower()) or \
+               (col.name and col.name.strip().lower() == current_user.strip().lower()):
+                target = col
+                break
+
+        if not target:
+            return
+
+        # If feature was turned off while auto-absence was active, restore active status
+        if not enabled or not auto_presence:
+            if getattr(self, "_auto_absence_set", False):
+                target.is_absent = False
+                target.absence_reason = getattr(self, "_saved_absence_reason", "")
+                self._auto_absence_set = False
+                self._saved_absence_reason = ""
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Restored user '%s' as active (feature disabled).", current_user)
+            return
+
+        if is_idle is None:
+            from utils.idle_detector import IdleDetector
+            idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+            idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
+            is_idle = IdleDetector.is_user_idle(idle_threshold_seconds)
+
+        if is_idle:
+            if not target.is_absent:
+                self._auto_absence_set = True
+                self._saved_absence_reason = target.absence_reason
+                target.is_absent = True
+                from services.i18n_service import tr
+                target.absence_reason = tr("ntfy.auto_absence_reason", "Automatisch abwesend (Bildschirmsperre / Inaktivität)")
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Marked user '%s' as absent (idle/locked).", current_user)
+        else:
+            if getattr(self, "_auto_absence_set", False):
+                target.is_absent = False
+                target.absence_reason = getattr(self, "_saved_absence_reason", "")
+                self._auto_absence_set = False
+                self._saved_absence_reason = ""
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Restored user '%s' as active (returned).", current_user)
 
     def _check_mobile_ntfy_reminders(self, due_cases: list[Any]) -> None:
         """Sends privacy-friendly mobile push notification when user is idle or screen is locked."""
@@ -1454,8 +1528,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         from utils.idle_detector import IdleDetector
         idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
         idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
+        is_idle = IdleDetector.is_user_idle(idle_threshold_seconds)
 
-        if not is_on_call and not IdleDetector.is_user_idle(idle_threshold_seconds):
+        # Update auto-presence with already computed idle state
+        if hasattr(self, "_update_team_presence_on_idle"):
+            self._update_team_presence_on_idle(is_idle=is_idle)
+
+        if not is_on_call and not is_idle:
             if getattr(self, "_ntfy_digest_queue", None):
                 self._ntfy_digest_queue = []
             self._ntfy_last_digest_sent_at = 0.0

@@ -21,6 +21,7 @@ from constants import (
     DEFAULT_NTFY_NOTIFY_HANDOVERS,
     DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_ON_CALL,
+    DEFAULT_NTFY_AUTO_PRESENCE,
     DEFAULT_NTFY_TOPIC,
     ENTRY_WIDTH_NTFY_TOPIC,
     FONT_SIZE_BODY,
@@ -370,6 +371,20 @@ class UiSettingsTabMixin:
             self.ntfy_cb_on_call.deselect()
         self.ntfy_cb_on_call.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
 
+        self.ntfy_cb_auto_presence = self.register_i18n(
+            ctk.CTkCheckBox(
+                filter_frame,
+                text=tr("ntfy.filter_auto_presence", "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen"),
+            ),
+            "ntfy.filter_auto_presence",
+            "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE):
+            self.ntfy_cb_auto_presence.select()
+        else:
+            self.ntfy_cb_auto_presence.deselect()
+        self.ntfy_cb_auto_presence.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
         # Smart Digest (Stufe 3)
         digest_frame = ctk.CTkFrame(filter_frame, fg_color="transparent")
         digest_frame.pack(fill="x", pady=(PAD_XS, PAD_NONE))
@@ -512,6 +527,7 @@ class UiSettingsTabMixin:
             getattr(self, "ntfy_cb_handovers", None),
             getattr(self, "ntfy_cb_notes", None),
             getattr(self, "ntfy_cb_on_call", None),
+            getattr(self, "ntfy_cb_auto_presence", None),
             getattr(self, "ntfy_cb_digest", None),
         ):
             if w is not None:
@@ -614,6 +630,11 @@ class UiSettingsTabMixin:
                 self.ntfy_cb_on_call.select()
             else:
                 self.ntfy_cb_on_call.deselect()
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE):
+                self.ntfy_cb_auto_presence.select()
+            else:
+                self.ntfy_cb_auto_presence.deselect()
         if hasattr(self, "ntfy_cb_digest"):
             if getattr(self.profile.reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED):
                 self.ntfy_cb_digest.select()
@@ -665,6 +686,8 @@ class UiSettingsTabMixin:
             self.profile.reminder_settings.mobile_ntfy_notify_customer_notes = bool(self.ntfy_cb_notes.get())
         if hasattr(self, "ntfy_cb_on_call"):
             self.profile.reminder_settings.mobile_ntfy_on_call = bool(self.ntfy_cb_on_call.get())
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            self.profile.reminder_settings.mobile_ntfy_auto_presence = bool(self.ntfy_cb_auto_presence.get())
         if hasattr(self, "ntfy_cb_digest"):
             self.profile.reminder_settings.mobile_ntfy_digest_enabled = bool(self.ntfy_cb_digest.get())
         if hasattr(self, "ntfy_combo_digest_minutes"):
@@ -730,6 +753,8 @@ class UiSettingsTabMixin:
             self.ntfy_cb_notes.configure(text=tr("ntfy.filter_notes", "Neue Kunden-Notizen"))
         if hasattr(self, "ntfy_cb_on_call"):
             self.ntfy_cb_on_call.configure(text=tr("ntfy.filter_on_call", "Notdienst / Rufbereitschaft (Inaktivitätszwang übergehen)"))
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            self.ntfy_cb_auto_presence.configure(text=tr("ntfy.filter_auto_presence", "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen"))
         if hasattr(self, "ntfy_cb_digest"):
             self.ntfy_cb_digest.configure(text=tr("ntfy.digest_enable", "Sammelbericht für Routine-Ereignisse (Digest)"))
         if hasattr(self, "ntfy_digest_interval_lbl"):

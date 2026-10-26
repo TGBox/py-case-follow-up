@@ -6,7 +6,7 @@ from constants import (
     NTFY_TOPIC_PREFIX,
 )
 from models.case import Case, Classification, WorkflowStatus
-from models.profile import ReminderSettings, UserProfile
+from models.profile import Colleague, ReminderSettings, UserProfile
 from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 from utils.idle_detector import IdleDetector
 
@@ -559,6 +559,118 @@ def test_ntfy_profile_ui_on_call_checkbox(root):
     profile.reminder_settings.mobile_ntfy_on_call = True
     dlg.reload_ui_fields()
     assert bool(dlg.ntfy_cb_on_call.get()) is True
+
+    dlg.destroy()
+
+
+def test_app_update_team_presence_on_idle_activates_and_restores():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.user.name = "Daniel Rösch"
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_auto_presence=True,
+        mobile_ntfy_idle_minutes=5,
+    )
+    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=False, absence_reason="")
+    app.storage_service = MagicMock()
+    app.storage_service.load_colleagues.return_value = [colleague]
+    app._auto_absence_set = False
+    app._saved_absence_reason = ""
+
+    # 1. User becomes idle / locked -> marked absent automatically
+    SupportCockpitApp._update_team_presence_on_idle(app, is_idle=True)
+    assert colleague.is_absent is True
+    assert "Automatisch abwesend" in colleague.absence_reason
+    assert app.storage_service.save_colleagues.called
+    assert app._auto_absence_set is True
+
+    # 2. User returns -> restored to active
+    app.storage_service.save_colleagues.reset_mock()
+    SupportCockpitApp._update_team_presence_on_idle(app, is_idle=False)
+    assert colleague.is_absent is False
+    assert colleague.absence_reason == ""
+    assert app._auto_absence_set is False
+    assert app.storage_service.save_colleagues.called
+
+
+def test_app_update_team_presence_preserves_manual_absence():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.user.name = "Daniel Rösch"
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_auto_presence=True,
+    )
+    # Colleague is ALREADY manually marked absent for vacation
+    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Urlaub bis Freitag")
+    app.storage_service = MagicMock()
+    app.storage_service.load_colleagues.return_value = [colleague]
+    app._auto_absence_set = False
+    app._saved_absence_reason = ""
+
+    # 1. Lock occurs: Must not overwrite existing manual absence
+    SupportCockpitApp._update_team_presence_on_idle(app, is_idle=True)
+    assert colleague.is_absent is True
+    assert colleague.absence_reason == "Urlaub bis Freitag"
+    assert app._auto_absence_set is False
+    assert not app.storage_service.save_colleagues.called
+
+    # 2. User returns: Must not clear vacation absence
+    SupportCockpitApp._update_team_presence_on_idle(app, is_idle=False)
+    assert colleague.is_absent is True
+    assert colleague.absence_reason == "Urlaub bis Freitag"
+
+
+def test_app_update_team_presence_restores_when_feature_disabled():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.user.name = "Daniel Rösch"
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_auto_presence=False,  # Disabled!
+    )
+    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Automatisch abwesend")
+    app.storage_service = MagicMock()
+    app.storage_service.load_colleagues.return_value = [colleague]
+    app._auto_absence_set = True
+    app._saved_absence_reason = ""
+
+    # Feature disabled: Reverts previous auto-absence
+    SupportCockpitApp._update_team_presence_on_idle(app, is_idle=None)
+    assert colleague.is_absent is False
+    assert app._auto_absence_set is False
+    assert app.storage_service.save_colleagues.called
+
+
+def test_ntfy_profile_ui_auto_presence_checkbox(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_auto_presence=True,
+    )
+    mock_storage = MagicMock()
+
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=mock_storage)
+
+    assert hasattr(dlg, "ntfy_cb_auto_presence")
+    assert bool(dlg.ntfy_cb_auto_presence.get()) is True
+
+    # Deselect auto-presence and save
+    dlg.ntfy_cb_auto_presence.deselect()
+    assert dlg.save_ui_settings() is True
+    assert profile.reminder_settings.mobile_ntfy_auto_presence is False
+
+    # Reload fields
+    profile.reminder_settings.mobile_ntfy_auto_presence = True
+    dlg.reload_ui_fields()
+    assert bool(dlg.ntfy_cb_auto_presence.get()) is True
 
     dlg.destroy()
 

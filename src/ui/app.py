@@ -1338,7 +1338,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self._last_notified_due_count = due_count
 
             # --- Mobile Push on Absence (ntfy.sh) ---
-            self._check_mobile_ntfy_reminders(due_cases)
+            if hasattr(self, "_check_mobile_ntfy_reminders"):
+                self._check_mobile_ntfy_reminders(due_cases)
         else:
             self.bell_btn.configure(text="0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0

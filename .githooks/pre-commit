@@ -3,8 +3,15 @@ set -e
 
 # Pre-Commit Hook um die SemVer Änderung abzufragen, und anschließend automatisch die Versionsnummer in der jeweiligen Config Datei anzupassen.
 
-# Eingabe über Terminal (TTY) erzwingen
-exec < /dev/tty
+# Eingabe über Terminal (TTY) falls vorhanden
+if [ -t 0 ]; then
+  : # Bereits ein interaktives Terminal
+elif [ -e /dev/tty ] && exec < /dev/tty 2>/dev/null; then
+  : # TTY erfolgreich geöffnet
+else
+  echo "Kein TTY verfügbar (nicht-interaktiver Modus) - Version unverändert gelassen."
+  exit 0
+fi
 
 # Aktuelle Version vorab ermitteln
 CURRENT_VERSION=""

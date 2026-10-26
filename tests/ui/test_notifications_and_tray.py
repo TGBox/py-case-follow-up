@@ -7,6 +7,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import customtkinter as ctk
@@ -108,9 +109,9 @@ def test_only_the_lock_owner_answers_hand_offs_and_releases(tmp_path):
     first = InstanceService(tmp_path)
     first.acquire()
     second = InstanceService(tmp_path)
-    assert second.acquire() is False and second.owns_lock is False
+    assert second.acquire() is False and not second.owns_lock
     second.handoff_or_claim(None)
-    assert second.owns_lock is False
+    assert not second.owns_lock
     second.release()
     assert first.is_running() is True
 
@@ -180,14 +181,15 @@ class _CaseStub:
 class AppStub(ctk.CTk):
     """The real methods under test, on a root without the full app's services."""
 
-    find_case_by_id = SupportCockpitApp.find_case_by_id
-    request_open_case = SupportCockpitApp.request_open_case
-    _poll_open_case_request = SupportCockpitApp._poll_open_case_request
-    switch_to_cockpit_view_for_case = SupportCockpitApp.switch_to_cockpit_view_for_case
-    check_due_followups = SupportCockpitApp.check_due_followups
-    _check_mobile_ntfy_reminders = SupportCockpitApp._check_mobile_ntfy_reminders
-    is_on_call_active = SupportCockpitApp.is_on_call_active
+    find_case_by_id: Any = SupportCockpitApp.find_case_by_id
+    request_open_case: Any = SupportCockpitApp.request_open_case
+    _poll_open_case_request: Any = SupportCockpitApp._poll_open_case_request
+    switch_to_cockpit_view_for_case: Any = SupportCockpitApp.switch_to_cockpit_view_for_case
+    check_due_followups: Any = SupportCockpitApp.check_due_followups
+    _check_mobile_ntfy_reminders: Any = SupportCockpitApp._check_mobile_ntfy_reminders
+    is_on_call_active: Any = SupportCockpitApp.is_on_call_active
     _is_cockpit_active = lambda self: True  # noqa: E731
+    _open_case_timer_id: str | None = None
 
     def __init__(self, cases):
         super().__init__()
@@ -206,7 +208,8 @@ class AppStub(ctk.CTk):
 
     def poll_once(self):
         self._poll_open_case_request()
-        self.after_cancel(self._open_case_timer_id)
+        if self._open_case_timer_id is not None:
+            self.after_cancel(self._open_case_timer_id)
 
 
 @pytest.fixture
@@ -315,7 +318,7 @@ class DummyIcon:
     """TrayService.notify recognises this class by name (see src) and records instead of showing."""
 
     def __init__(self):
-        self.last_notification = None
+        self.last_notification: dict[str, Any] | None = None
 
     def notify(self, message, title=None):
         self.last_notification = {"title": title, "message": message}
@@ -323,9 +326,10 @@ class DummyIcon:
 
 def test_tray_service_notify_delegates_to_the_icon():
     service = TrayService()
-    service._icon = DummyIcon()
+    dummy = DummyIcon()
+    service._icon = cast(Any, dummy)
     assert service.notify(title="Test Titel", message="Test Inhalt") is True
-    assert service._icon.last_notification == {"title": "Test Titel", "message": "Test Inhalt"}
+    assert dummy.last_notification == {"title": "Test Titel", "message": "Test Inhalt"}
 
 
 class _BlockingIcon:
@@ -349,6 +353,7 @@ def test_tray_service_start_is_idempotent_and_stop_cleans_up(monkeypatch):
     service = TrayService()
     service.start(on_restore=MagicMock(), on_quit=MagicMock())
     first_thread = service._thread
+    assert first_thread is not None
     service.start(on_restore=MagicMock(), on_quit=MagicMock())
     assert service._thread is first_thread
     assert first_thread.is_alive()
@@ -379,7 +384,7 @@ def test_tray_service_on_call_menu_and_tooltip():
 
     # Menu creation includes on_call item
     menu = service._create_menu()
-    items = list(menu.items)
+    items = list(cast(Any, menu).items)
     on_call_item = next((item for item in items if getattr(item, "text", "") == "Notdienst / Rufbereitschaft"), None)
     assert on_call_item is not None
     assert on_call_item.checked is True
@@ -394,13 +399,14 @@ def test_tray_service_on_call_menu_and_tooltip():
 def test_toast_notification_dispatches_native_when_win(root):
     """On Windows the OS shows the toast; the card is not built at all (it used to be built and thrown away)."""
     root.tray_service = TrayService()
-    root.tray_service._icon = DummyIcon()
+    dummy = DummyIcon()
+    root.tray_service._icon = cast(Any, dummy)
     opened = []
     toast = ToastNotification(root, title="🔔 Wiedervorlage fällig", message="Fall T-2026-001 ist bereit.",
                               on_open=lambda: opened.append(True))
 
-    assert root.tray_service._icon.last_notification == {"title": "🔔 Wiedervorlage fällig",
-                                                         "message": "Fall T-2026-001 ist bereit."}
+    assert dummy.last_notification == {"title": "🔔 Wiedervorlage fällig",
+                                       "message": "Fall T-2026-001 ist bereit."}
     assert toast.winfo_children() == []
     callback = root._pending_notification_callback
     callback()
@@ -489,11 +495,11 @@ def test_a_toast_without_action_is_a_plain_card(root):
 class WindowStub:
     """Records window-manager calls; Tk's deiconify drops "zoomed" on Windows, which Linux cannot reproduce."""
 
-    _remember_window_state = SupportCockpitApp._remember_window_state
-    _apply_remembered_window_state = SupportCockpitApp._apply_remembered_window_state
-    bring_to_foreground = SupportCockpitApp.bring_to_foreground
-    _hide_until_drawn = SupportCockpitApp._hide_until_drawn
-    _reveal_after_restore = SupportCockpitApp._reveal_after_restore
+    _remember_window_state: Any = SupportCockpitApp._remember_window_state
+    _apply_remembered_window_state: Any = SupportCockpitApp._apply_remembered_window_state
+    bring_to_foreground: Any = SupportCockpitApp.bring_to_foreground
+    _hide_until_drawn: Any = SupportCockpitApp._hide_until_drawn
+    _reveal_after_restore: Any = SupportCockpitApp._reveal_after_restore
 
     def __init__(self, state="zoomed", geometry="1200x800+40+30", viewable=True):
         self.tk = object()

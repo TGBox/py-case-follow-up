@@ -2001,6 +2001,7 @@
     "success_toast": "🗑 Ärende borttaget"
   },
   "ntfy": {
+    "auto_absence_reason": "Automatiskt frånvarande (skärmlås / inaktivitet)",
     "btn_random_topic": "🎲 Slumpmässig",
     "btn_test_notification": "🔔 Testmeddelande",
     "case_alert_due": "Uppföljning förfallen vid skrivbordet.",
@@ -2018,6 +2019,7 @@
     "digest_note_line": "📝 {count}x Ny anteckning",
     "digest_prio1_line": "🚨 {count}x Nödfall / Prio 1",
     "enable_toggle": "📱 Aktivera mobilavisering vid frånvaro (ntfy.sh)",
+    "filter_auto_presence": "Sätt automatiskt frånvarostatus i teamkatalogen vid skärmlås",
     "filter_followups": "Förfallna uppföljningar",
     "filter_handovers": "Ärendeöverlämningar & tilldelningar",
     "filter_header": "Avisera vid:",

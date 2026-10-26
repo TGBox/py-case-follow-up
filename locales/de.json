@@ -2001,6 +2001,7 @@
     "success_toast": "🗑 Fall gelöscht"
   },
   "ntfy": {
+    "auto_absence_reason": "Automatisch abwesend (Bildschirmsperre / Inaktivität)",
     "btn_random_topic": "🎲 Zufall",
     "btn_test_notification": "🔔 Testnachricht",
     "case_alert_due": "Wiedervorlage fällig am Arbeitsplatz.",
@@ -2018,6 +2019,7 @@
     "digest_note_line": "📝 {count}x Neue Notiz",
     "digest_prio1_line": "🚨 {count}x Notfall / Prio 1",
     "enable_toggle": "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)",
+    "filter_auto_presence": "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen",
     "filter_followups": "Fällige Wiedervorlagen",
     "filter_handovers": "Fall-Übergaben & Zuweisungen",
     "filter_header": "Benachrichtigen bei:",

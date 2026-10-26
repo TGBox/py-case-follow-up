@@ -392,7 +392,7 @@ def test_tray_service_on_call_menu_and_tooltip():
     # Trigger toggle handler
     service._handle_toggle_on_call()
     assert toggled[0] == 1
-    assert is_active[0] is False
+    assert not is_active[0]
 
 
 @pytest.mark.skipif(sys.platform != "win32", reason="native toasts only on Windows")

@@ -9,7 +9,10 @@ from constants import (
     COLOR_MUTED_GRAY_HOVER,
     COLOR_TEXT_WHITE,
     COLOR_TIP_TEXT,
+    COMBO_WIDTH_NTFY_DIGEST,
     DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_ENABLED,
     DEFAULT_NTFY_IDLE_MINUTES,
     DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
@@ -20,6 +23,7 @@ from constants import (
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
+    NTFY_DIGEST_MINUTES_OPTIONS,
     NTFY_IDLE_MINUTES_OPTIONS,
     NTFY_TAG_BELL,
     NTFY_TAG_TEST,
@@ -349,6 +353,62 @@ class UiSettingsTabMixin:
             self.ntfy_cb_notes.deselect()
         self.ntfy_cb_notes.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
 
+        # Smart Digest (Stufe 3)
+        digest_frame = ctk.CTkFrame(filter_frame, fg_color="transparent")
+        digest_frame.pack(fill="x", pady=(PAD_XS, PAD_NONE))
+
+        self.ntfy_cb_digest = self.register_i18n(
+            ctk.CTkCheckBox(
+                digest_frame,
+                text=tr("ntfy.digest_enable", "Sammelbericht für Routine-Ereignisse (Digest)"),
+                command=self.on_toggle_ntfy,
+            ),
+            "ntfy.digest_enable",
+            "Sammelbericht für Routine-Ereignisse (Digest)",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED):
+            self.ntfy_cb_digest.select()
+        else:
+            self.ntfy_cb_digest.deselect()
+        self.ntfy_cb_digest.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        digest_cfg_frame = ctk.CTkFrame(digest_frame, fg_color="transparent")
+        digest_cfg_frame.pack(fill="x", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_digest_interval_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                digest_cfg_frame,
+                text=tr("ntfy.digest_interval_lbl", "Intervall (Minuten):"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+            ),
+            "ntfy.digest_interval_lbl",
+            "Intervall (Minuten):",
+        )
+        self.ntfy_digest_interval_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_combo_digest_minutes = ctk.CTkOptionMenu(
+            digest_cfg_frame,
+            values=[str(m) for m in NTFY_DIGEST_MINUTES_OPTIONS],
+            width=COMBO_WIDTH_NTFY_DIGEST,
+        )
+        current_digest_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)
+        self.ntfy_combo_digest_minutes.set(str(current_digest_mins))
+        self.ntfy_combo_digest_minutes.pack(side="left")
+
+        self.ntfy_digest_hint_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                digest_frame,
+                text=tr("ntfy.digest_hint", "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet."),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
+                justify="left",
+                anchor="w",
+            ),
+            "ntfy.digest_hint",
+            "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet.",
+        )
+        self.ntfy_digest_hint_lbl.pack(anchor="w", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
         self.ntfy_privacy_lbl = self.register_i18n(
             ctk.CTkLabel(
                 right_col,
@@ -434,9 +494,15 @@ class UiSettingsTabMixin:
             getattr(self, "ntfy_cb_prio1", None),
             getattr(self, "ntfy_cb_handovers", None),
             getattr(self, "ntfy_cb_notes", None),
+            getattr(self, "ntfy_cb_digest", None),
         ):
             if w is not None:
                 w.configure(state=state)
+
+        digest_on = is_on and bool(getattr(self, "ntfy_cb_digest", None) and self.ntfy_cb_digest.get())
+        digest_combo = getattr(self, "ntfy_combo_digest_minutes", None)
+        if digest_combo is not None:
+            digest_combo.configure(state="normal" if digest_on else "disabled")
 
     def on_generate_random_ntfy_topic(self) -> None:
         from services.ntfy_service import NtfyService
@@ -525,6 +591,13 @@ class UiSettingsTabMixin:
                 self.ntfy_cb_notes.select()
             else:
                 self.ntfy_cb_notes.deselect()
+        if hasattr(self, "ntfy_cb_digest"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED):
+                self.ntfy_cb_digest.select()
+            else:
+                self.ntfy_cb_digest.deselect()
+        if hasattr(self, "ntfy_combo_digest_minutes"):
+            self.ntfy_combo_digest_minutes.set(str(getattr(self.profile.reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)))
         self.on_toggle_ntfy()
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
@@ -567,6 +640,13 @@ class UiSettingsTabMixin:
             self.profile.reminder_settings.mobile_ntfy_notify_handovers = bool(self.ntfy_cb_handovers.get())
         if hasattr(self, "ntfy_cb_notes"):
             self.profile.reminder_settings.mobile_ntfy_notify_customer_notes = bool(self.ntfy_cb_notes.get())
+        if hasattr(self, "ntfy_cb_digest"):
+            self.profile.reminder_settings.mobile_ntfy_digest_enabled = bool(self.ntfy_cb_digest.get())
+        if hasattr(self, "ntfy_combo_digest_minutes"):
+            try:
+                self.profile.reminder_settings.mobile_ntfy_digest_minutes = int(self.ntfy_combo_digest_minutes.get().strip())
+            except ValueError:
+                self.profile.reminder_settings.mobile_ntfy_digest_minutes = DEFAULT_NTFY_DIGEST_MINUTES
         if hasattr(self, "popup_target_combo"):
             # The menu shows translated labels; matching them against German text
             # picked APP_SCREEN for every non-German UI. The position is what
@@ -623,6 +703,12 @@ class UiSettingsTabMixin:
             self.ntfy_cb_handovers.configure(text=tr("ntfy.filter_handovers", "Fall-Übergaben & Zuweisungen"))
         if hasattr(self, "ntfy_cb_notes"):
             self.ntfy_cb_notes.configure(text=tr("ntfy.filter_notes", "Neue Kunden-Notizen"))
+        if hasattr(self, "ntfy_cb_digest"):
+            self.ntfy_cb_digest.configure(text=tr("ntfy.digest_enable", "Sammelbericht für Routine-Ereignisse (Digest)"))
+        if hasattr(self, "ntfy_digest_interval_lbl"):
+            self.ntfy_digest_interval_lbl.configure(text=tr("ntfy.digest_interval_lbl", "Intervall (Minuten):"))
+        if hasattr(self, "ntfy_digest_hint_lbl"):
+            self.ntfy_digest_hint_lbl.configure(text=tr("ntfy.digest_hint", "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet."))
         if hasattr(self, "ntfy_privacy_lbl"):
             self.ntfy_privacy_lbl.configure(text=tr("ntfy.privacy_tip", "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload."))
         if hasattr(self, "popup_target_lbl"):

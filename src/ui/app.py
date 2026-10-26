@@ -49,6 +49,8 @@ from constants import (
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
     DEFAULT_LANGUAGE,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_IDLE_MINUTES,
     DEFAULT_NTFY_SERVER_URL,
     DEFAULT_SHORTCUT_VIEW_ANALYTICS,
@@ -1372,6 +1374,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
 
         if not IdleDetector.is_user_idle(idle_threshold_seconds):
+            if getattr(self, "_ntfy_digest_queue", None):
+                self._ntfy_digest_queue = []
+            self._ntfy_last_digest_sent_at = 0.0
             return
 
         notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
@@ -1445,32 +1450,111 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Sort so highest priority notifications dispatch first
         candidates.sort(key=lambda item: item[0], reverse=True)
 
-        prio, top_case, event_type, dedup_key, is_overdue = candidates[0]
-        cid = getattr(top_case, "case_id", "")
-        prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
+        immediate = [c for c in candidates if c[2] == NTFY_EVENT_PRIO1]
+        routine = [c for c in candidates if c[2] != NTFY_EVENT_PRIO1]
 
-        title, message = NtfyService.format_case_alert(
-            case_id=cid,
-            priority_label=prio_label,
-            is_overdue=is_overdue,
-            event_type=event_type,
-            anonymize=True,
-        )
-        tags = NtfyService.get_event_tags(event_type=event_type)
+        # 1. Immediate dispatch for Prio 1 emergencies (Sofort-Bypass)
+        if immediate:
+            prio, top_case, event_type, dedup_key, is_overdue = immediate[0]
+            cid = getattr(top_case, "case_id", "")
+            prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
 
-        NtfyService.send_notification_async(
-            topic=topic,
-            message=message,
-            title=title,
-            priority=prio,
-            tags=tags,
-            server_url=server_url,
-        )
+            title, message = NtfyService.format_case_alert(
+                case_id=cid,
+                priority_label=prio_label,
+                is_overdue=is_overdue,
+                event_type=event_type,
+                anonymize=True,
+            )
+            tags = NtfyService.get_event_tags(event_type=event_type)
 
-        notified_ids.add(dedup_key)
-        if cid:
-            notified_ids.add(cid)
-        self._last_ntfy_notified_ids = notified_ids
+            NtfyService.send_notification_async(
+                topic=topic,
+                message=message,
+                title=title,
+                priority=prio,
+                tags=tags,
+                server_url=server_url,
+            )
+
+            notified_ids.add(dedup_key)
+            if cid:
+                notified_ids.add(cid)
+            self._last_ntfy_notified_ids = notified_ids
+
+        # 2. Routine events: Smart Digest or single dispatch
+        if not routine:
+            return
+
+        digest_enabled = bool(getattr(reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED))
+        if digest_enabled:
+            digest_queue: list[dict[str, Any]] = getattr(self, "_ntfy_digest_queue", [])
+            existing_keys = {item.get("dedup_key") for item in digest_queue}
+            for prio, c, event_type, dedup_key, _is_overdue in routine:
+                if dedup_key not in existing_keys and dedup_key not in notified_ids:
+                    cid = getattr(c, "case_id", "")
+                    digest_queue.append({
+                        "case_id": cid,
+                        "event_type": event_type,
+                        "prio": prio,
+                        "dedup_key": dedup_key,
+                    })
+                    existing_keys.add(dedup_key)
+            self._ntfy_digest_queue = digest_queue
+
+            digest_mins = getattr(reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)
+            now = time.monotonic()
+            last_sent = getattr(self, "_ntfy_last_digest_sent_at", 0.0)
+            if last_sent == 0.0:
+                self._ntfy_last_digest_sent_at = now
+                last_sent = now
+
+            if (now - last_sent) >= (digest_mins * SECONDS_PER_MINUTE) and self._ntfy_digest_queue:
+                title, message = NtfyService.format_digest_alert(self._ntfy_digest_queue, anonymize=True)
+                tags = NtfyService.get_event_tags("digest")
+                NtfyService.send_notification_async(
+                    topic=topic,
+                    message=message,
+                    title=title,
+                    priority=NTFY_PRIO_DEFAULT,
+                    tags=tags,
+                    server_url=server_url,
+                )
+                for item in self._ntfy_digest_queue:
+                    notified_ids.add(item["dedup_key"])
+                    if item.get("case_id"):
+                        notified_ids.add(item["case_id"])
+                self._ntfy_digest_queue = []
+                self._ntfy_last_digest_sent_at = now
+                self._last_ntfy_notified_ids = notified_ids
+        else:
+            if not immediate:
+                prio, top_case, event_type, dedup_key, is_overdue = routine[0]
+                cid = getattr(top_case, "case_id", "")
+                prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
+
+                title, message = NtfyService.format_case_alert(
+                    case_id=cid,
+                    priority_label=prio_label,
+                    is_overdue=is_overdue,
+                    event_type=event_type,
+                    anonymize=True,
+                )
+                tags = NtfyService.get_event_tags(event_type=event_type)
+
+                NtfyService.send_notification_async(
+                    topic=topic,
+                    message=message,
+                    title=title,
+                    priority=prio,
+                    tags=tags,
+                    server_url=server_url,
+                )
+
+                notified_ids.add(dedup_key)
+                if cid:
+                    notified_ids.add(cid)
+                self._last_ntfy_notified_ids = notified_ids
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog

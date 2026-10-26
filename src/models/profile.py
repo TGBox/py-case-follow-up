@@ -20,6 +20,8 @@ from constants import (
     DEFAULT_LANGUAGE,
     DEFAULT_MODULE_TAGS,
     DEFAULT_NOTIFICATION_LEVEL,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_ENABLED,
     DEFAULT_NTFY_IDLE_MINUTES,
     DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
@@ -228,6 +230,8 @@ class ReminderSettings:
     mobile_ntfy_notify_prio1: bool = DEFAULT_NTFY_NOTIFY_PRIO1
     mobile_ntfy_notify_handovers: bool = DEFAULT_NTFY_NOTIFY_HANDOVERS
     mobile_ntfy_notify_customer_notes: bool = DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES
+    mobile_ntfy_digest_enabled: bool = DEFAULT_NTFY_DIGEST_ENABLED
+    mobile_ntfy_digest_minutes: int = DEFAULT_NTFY_DIGEST_MINUTES
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -246,6 +250,8 @@ class ReminderSettings:
             mobile_ntfy_notify_prio1=bool(data.get("mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1)),
             mobile_ntfy_notify_handovers=bool(data.get("mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS)),
             mobile_ntfy_notify_customer_notes=bool(data.get("mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES)),
+            mobile_ntfy_digest_enabled=bool(data.get("mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED)),
+            mobile_ntfy_digest_minutes=int(data.get("mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)),
         )
 
 

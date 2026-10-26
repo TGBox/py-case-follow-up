@@ -22,6 +22,10 @@ from constants import (
     DEFAULT_NOTIFICATION_LEVEL,
     DEFAULT_NTFY_ENABLED,
     DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
+    DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
+    DEFAULT_NTFY_NOTIFY_HANDOVERS,
+    DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_SERVER_URL,
     DEFAULT_NTFY_TOPIC,
     DEFAULT_OLLAMA_MODEL,
@@ -220,6 +224,10 @@ class ReminderSettings:
     mobile_ntfy_server_url: str = DEFAULT_NTFY_SERVER_URL
     mobile_ntfy_topic: str = DEFAULT_NTFY_TOPIC
     mobile_ntfy_idle_minutes: int = DEFAULT_NTFY_IDLE_MINUTES
+    mobile_ntfy_notify_followups: bool = DEFAULT_NTFY_NOTIFY_FOLLOWUPS
+    mobile_ntfy_notify_prio1: bool = DEFAULT_NTFY_NOTIFY_PRIO1
+    mobile_ntfy_notify_handovers: bool = DEFAULT_NTFY_NOTIFY_HANDOVERS
+    mobile_ntfy_notify_customer_notes: bool = DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -234,6 +242,10 @@ class ReminderSettings:
             mobile_ntfy_server_url=str(data.get("mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)),
             mobile_ntfy_topic=str(data.get("mobile_ntfy_topic", DEFAULT_NTFY_TOPIC)),
             mobile_ntfy_idle_minutes=int(data.get("mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)),
+            mobile_ntfy_notify_followups=bool(data.get("mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS)),
+            mobile_ntfy_notify_prio1=bool(data.get("mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1)),
+            mobile_ntfy_notify_handovers=bool(data.get("mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS)),
+            mobile_ntfy_notify_customer_notes=bool(data.get("mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES)),
         )
 
 

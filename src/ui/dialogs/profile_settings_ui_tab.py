@@ -12,7 +12,12 @@ from constants import (
     DEFAULT_COLUMN_WIDTHS,
     DEFAULT_NTFY_ENABLED,
     DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
+    DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
+    DEFAULT_NTFY_NOTIFY_HANDOVERS,
+    DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_TOPIC,
+    FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
     NTFY_IDLE_MINUTES_OPTIONS,
@@ -21,6 +26,7 @@ from constants import (
     PAD_MD,
     PAD_NONE,
     PAD_SM,
+    PAD_TINY,
     PAD_XS,
     POPUP_DISPLAY_TARGETS,
     PROFILE_TAB_FIELD_WIDTH,
@@ -201,7 +207,8 @@ class UiSettingsTabMixin:
         self.ntfy_switch = self.register_i18n(
             ctk.CTkSwitch(  # type: ignore[attr-defined]
                 right_col,
-                text=tr("ntfy.enable_toggle", "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)")
+                text=tr("ntfy.enable_toggle", "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)"),
+                command=self.on_toggle_ntfy,
             ),
             "ntfy.enable_toggle",
             "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)",
@@ -284,6 +291,64 @@ class UiSettingsTabMixin:
         self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
         self.ntfy_idle_combo.pack(side="left")
 
+        filter_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        filter_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
+
+        self.ntfy_filter_hdr = self.register_i18n(
+            ctk.CTkLabel(
+                filter_frame,
+                text=tr("ntfy.filter_header", "Benachrichtigen bei:"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
+            ),
+            "ntfy.filter_header",
+            "Benachrichtigen bei:",
+        )
+        self.ntfy_filter_hdr.pack(anchor="w", pady=(PAD_XS, PAD_TINY))
+
+        self.ntfy_cb_followups = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_followups", "Fällige Wiedervorlagen")),
+            "ntfy.filter_followups",
+            "Fällige Wiedervorlagen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS):
+            self.ntfy_cb_followups.select()
+        else:
+            self.ntfy_cb_followups.deselect()
+        self.ntfy_cb_followups.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_prio1 = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_prio1", "Dringlichkeit Notfall / Prio 1")),
+            "ntfy.filter_prio1",
+            "Dringlichkeit Notfall / Prio 1",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1):
+            self.ntfy_cb_prio1.select()
+        else:
+            self.ntfy_cb_prio1.deselect()
+        self.ntfy_cb_prio1.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_handovers = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_handovers", "Fall-Übergaben & Zuweisungen")),
+            "ntfy.filter_handovers",
+            "Fall-Übergaben & Zuweisungen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS):
+            self.ntfy_cb_handovers.select()
+        else:
+            self.ntfy_cb_handovers.deselect()
+        self.ntfy_cb_handovers.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_notes = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_notes", "Neue Kunden-Notizen")),
+            "ntfy.filter_notes",
+            "Neue Kunden-Notizen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES):
+            self.ntfy_cb_notes.select()
+        else:
+            self.ntfy_cb_notes.deselect()
+        self.ntfy_cb_notes.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
         self.ntfy_privacy_lbl = self.register_i18n(
             ctk.CTkLabel(
                 right_col,
@@ -297,6 +362,8 @@ class UiSettingsTabMixin:
             "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload.",
         )
         self.ntfy_privacy_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+
+        self.on_toggle_ntfy()
 
         # Column widths reset section
         self.col_widths_hdr_lbl = self.register_i18n(
@@ -354,6 +421,22 @@ class UiSettingsTabMixin:
         self.status_lbl.configure(text=tr("profile.widths_reset_msg", "Alle Spaltenbreiten aller Ansichten auf Standard zurückgesetzt!"))
         if self.on_profile_updated:
             self.on_profile_updated()
+
+    def on_toggle_ntfy(self) -> None:
+        is_on = bool(self.ntfy_switch.get()) if hasattr(self, "ntfy_switch") else False
+        state = "normal" if is_on else "disabled"
+        for w in (
+            getattr(self, "ntfy_topic_entry", None),
+            getattr(self, "ntfy_random_btn", None),
+            getattr(self, "ntfy_test_btn", None),
+            getattr(self, "ntfy_idle_combo", None),
+            getattr(self, "ntfy_cb_followups", None),
+            getattr(self, "ntfy_cb_prio1", None),
+            getattr(self, "ntfy_cb_handovers", None),
+            getattr(self, "ntfy_cb_notes", None),
+        ):
+            if w is not None:
+                w.configure(state=state)
 
     def on_generate_random_ntfy_topic(self) -> None:
         from services.ntfy_service import NtfyService
@@ -422,6 +505,27 @@ class UiSettingsTabMixin:
         if hasattr(self, "ntfy_idle_combo"):
             curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
             self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
+        if hasattr(self, "ntfy_cb_followups"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS):
+                self.ntfy_cb_followups.select()
+            else:
+                self.ntfy_cb_followups.deselect()
+        if hasattr(self, "ntfy_cb_prio1"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1):
+                self.ntfy_cb_prio1.select()
+            else:
+                self.ntfy_cb_prio1.deselect()
+        if hasattr(self, "ntfy_cb_handovers"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS):
+                self.ntfy_cb_handovers.select()
+            else:
+                self.ntfy_cb_handovers.deselect()
+        if hasattr(self, "ntfy_cb_notes"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES):
+                self.ntfy_cb_notes.select()
+            else:
+                self.ntfy_cb_notes.deselect()
+        self.on_toggle_ntfy()
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
             self.widths_label.configure(text=self._build_widths_str(widths))
@@ -455,6 +559,14 @@ class UiSettingsTabMixin:
             m = re.search(r"\d+", raw_idle)
             if m:
                 self.profile.reminder_settings.mobile_ntfy_idle_minutes = int(m.group(0))
+        if hasattr(self, "ntfy_cb_followups"):
+            self.profile.reminder_settings.mobile_ntfy_notify_followups = bool(self.ntfy_cb_followups.get())
+        if hasattr(self, "ntfy_cb_prio1"):
+            self.profile.reminder_settings.mobile_ntfy_notify_prio1 = bool(self.ntfy_cb_prio1.get())
+        if hasattr(self, "ntfy_cb_handovers"):
+            self.profile.reminder_settings.mobile_ntfy_notify_handovers = bool(self.ntfy_cb_handovers.get())
+        if hasattr(self, "ntfy_cb_notes"):
+            self.profile.reminder_settings.mobile_ntfy_notify_customer_notes = bool(self.ntfy_cb_notes.get())
         if hasattr(self, "popup_target_combo"):
             # The menu shows translated labels; matching them against German text
             # picked APP_SCREEN for every non-German UI. The position is what
@@ -501,6 +613,16 @@ class UiSettingsTabMixin:
             curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
             self.ntfy_idle_combo.configure(values=[tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=m) for m in NTFY_IDLE_MINUTES_OPTIONS])
             self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
+        if hasattr(self, "ntfy_filter_hdr"):
+            self.ntfy_filter_hdr.configure(text=tr("ntfy.filter_header", "Benachrichtigen bei:"))
+        if hasattr(self, "ntfy_cb_followups"):
+            self.ntfy_cb_followups.configure(text=tr("ntfy.filter_followups", "Fällige Wiedervorlagen"))
+        if hasattr(self, "ntfy_cb_prio1"):
+            self.ntfy_cb_prio1.configure(text=tr("ntfy.filter_prio1", "Dringlichkeit Notfall / Prio 1"))
+        if hasattr(self, "ntfy_cb_handovers"):
+            self.ntfy_cb_handovers.configure(text=tr("ntfy.filter_handovers", "Fall-Übergaben & Zuweisungen"))
+        if hasattr(self, "ntfy_cb_notes"):
+            self.ntfy_cb_notes.configure(text=tr("ntfy.filter_notes", "Neue Kunden-Notizen"))
         if hasattr(self, "ntfy_privacy_lbl"):
             self.ntfy_privacy_lbl.configure(text=tr("ntfy.privacy_tip", "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload."))
         if hasattr(self, "popup_target_lbl"):

@@ -15,6 +15,7 @@ from constants import (
     NTFY_HTTP_TIMEOUT_SECONDS,
     NTFY_PRIO_DEFAULT,
     NTFY_TAG_BELL,
+    NTFY_TAG_DIGEST,
     NTFY_TAG_ESCALATION,
     NTFY_TAG_HANDOVER,
     NTFY_TAG_NOTE,
@@ -40,6 +41,8 @@ class NtfyService:
     @staticmethod
     def get_event_tags(event_type: str = NTFY_EVENT_FOLLOWUP) -> list[str]:
         """Returns relevant emoji tag list based on the event type."""
+        if event_type == "digest":
+            return [NTFY_TAG_DIGEST]
         if event_type == NTFY_EVENT_PRIO1:
             return [NTFY_TAG_WARNING, NTFY_TAG_ESCALATION]
         if event_type == NTFY_EVENT_HANDOVER:
@@ -104,6 +107,41 @@ class NtfyService:
                     "ntfy.case_alert_due",
                     "Wiedervorlage fällig am Arbeitsplatz.",
                 )
+        return title, message
+
+    @staticmethod
+    def format_digest_alert(events: list[dict[str, Any]], anonymize: bool = True) -> tuple[str, str]:
+        """Creates a bundled, privacy-friendly summary of multiple routine events."""
+        total = len(events)
+        title = tr(
+            "ntfy.digest_alert_title",
+            "📦 Sammelbericht: {count} neue Ereignisse",
+            count=total,
+        )
+        followup_count = sum(1 for e in events if e.get("event_type") == NTFY_EVENT_FOLLOWUP)
+        handover_count = sum(1 for e in events if e.get("event_type") == NTFY_EVENT_HANDOVER)
+        note_count = sum(1 for e in events if e.get("event_type") == NTFY_EVENT_NOTE)
+        prio1_count = sum(1 for e in events if e.get("event_type") == NTFY_EVENT_PRIO1)
+
+        lines: list[str] = []
+        if prio1_count > 0:
+            lines.append(tr("ntfy.digest_prio1_line", "🚨 {count}x Notfall / Prio 1", count=prio1_count))
+        if followup_count > 0:
+            lines.append(tr("ntfy.digest_followup_line", "🔔 {count}x Fällige Wiedervorlage", count=followup_count))
+        if handover_count > 0:
+            lines.append(tr("ntfy.digest_handover_line", "📋 {count}x Übergabe / Zuweisung", count=handover_count))
+        if note_count > 0:
+            lines.append(tr("ntfy.digest_note_line", "📝 {count}x Neue Notiz", count=note_count))
+
+        case_ids = list(dict.fromkeys(str(e.get("case_id", "")) for e in events if e.get("case_id")))
+        if case_ids:
+            if len(case_ids) <= 5:
+                id_list = ", ".join(f"#{cid}" for cid in case_ids)
+                lines.append(tr("ntfy.digest_cases_line", "Betroffene Fälle: {cases}", cases=id_list))
+            else:
+                lines.append(tr("ntfy.digest_cases_many_line", "{count} Fälle betroffen", count=len(case_ids)))
+
+        message = "\n".join(lines) if lines else tr("ntfy.digest_empty_msg", "Keine neuen Details.")
         return title, message
 
     @classmethod

@@ -308,3 +308,163 @@ def test_app_check_mobile_ntfy_reminders_filter_disabled():
         SupportCockpitApp._check_mobile_ntfy_reminders(app, [case])
         # Nothing should be sent because all filters are False!
         assert not mock_send.called
+
+
+def test_ntfy_ui_digest_controls_and_saving(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="desk-alert-test",
+        mobile_ntfy_digest_enabled=False,
+        mobile_ntfy_digest_minutes=15,
+    )
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=MagicMock())
+    tab = dlg
+
+    assert hasattr(tab, "ntfy_cb_digest")
+    assert hasattr(tab, "ntfy_combo_digest_minutes")
+
+    # Initially False
+    assert tab.ntfy_cb_digest.get() == 0
+
+    # Toggle digest on
+    tab.ntfy_cb_digest.select()
+    tab.on_toggle_ntfy()
+    assert tab.ntfy_combo_digest_minutes.cget("state") == "normal"
+
+    tab.ntfy_combo_digest_minutes.set("30")
+    tab.save_ui_settings()
+
+    assert tab.profile.reminder_settings.mobile_ntfy_digest_enabled is True
+    assert tab.profile.reminder_settings.mobile_ntfy_digest_minutes == 30
+
+    # Retranslate labels
+    tab.refresh_ui_tab_labels()
+    assert "Digest" in tab.ntfy_cb_digest.cget("text") or "Sammelbericht" in tab.ntfy_cb_digest.cget("text")
+    dlg.destroy()
+
+
+def test_app_check_mobile_ntfy_reminders_digest_buffering_and_flush():
+    from ui.app import SupportCockpitApp
+    from constants import NTFY_TAG_DIGEST
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="digest-topic",
+        mobile_ntfy_idle_minutes=5,
+        mobile_ntfy_notify_followups=True,
+        mobile_ntfy_notify_prio1=False,
+        mobile_ntfy_notify_handovers=False,
+        mobile_ntfy_digest_enabled=True,
+        mobile_ntfy_digest_minutes=15,
+    )
+    app._last_ntfy_notified_ids = set()
+    app._ntfy_digest_queue = []
+    app._ntfy_last_digest_sent_at = 0.0
+
+    IdleDetector.set_mock_state(idle_seconds=400.0, is_locked=False)
+
+    case1 = Case(
+        case_id="201",
+        classification=Classification(title="Case 1"),
+        workflow_status=WorkflowStatus(followup_at="2026-01-01 10:00:00"),
+    )
+    case2 = Case(
+        case_id="202",
+        classification=Classification(title="Case 2"),
+        workflow_status=WorkflowStatus(followup_at="2026-01-01 10:00:00"),
+    )
+    app.get_all_active_cases_for_reminder.return_value = [case1, case2]
+
+    # First call: events get queued in _ntfy_digest_queue, not sent immediately
+    with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
+        SupportCockpitApp._check_mobile_ntfy_reminders(app, [case1, case2])
+        assert not mock_send.called
+        assert len(app._ntfy_digest_queue) == 2
+        assert app._ntfy_last_digest_sent_at > 0.0
+
+    # Second call: interval elapsed (simulated by setting _ntfy_last_digest_sent_at far in the past)
+    app._ntfy_last_digest_sent_at = 1.0  # Monotonic time is much larger than 1.0 + 15*60
+    with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
+        SupportCockpitApp._check_mobile_ntfy_reminders(app, [case1, case2])
+        assert mock_send.called
+        kwargs = mock_send.call_args[1]
+        assert NTFY_TAG_DIGEST in kwargs["tags"]
+        assert "2" in kwargs["title"]
+        assert "201" in app._last_ntfy_notified_ids
+        assert "202" in app._last_ntfy_notified_ids
+        assert len(app._ntfy_digest_queue) == 0
+
+
+def test_app_check_mobile_ntfy_reminders_digest_prio1_bypass():
+    from ui.app import SupportCockpitApp
+    from constants import NTFY_PRIO_MAX, NTFY_TAG_ESCALATION
+    from enums import UrgencyLevel
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="bypass-topic",
+        mobile_ntfy_idle_minutes=5,
+        mobile_ntfy_notify_followups=True,
+        mobile_ntfy_notify_prio1=True,
+        mobile_ntfy_digest_enabled=True,
+        mobile_ntfy_digest_minutes=15,
+    )
+    app._last_ntfy_notified_ids = set()
+    app._ntfy_digest_queue = []
+    app._ntfy_last_digest_sent_at = 0.0
+
+    IdleDetector.set_mock_state(idle_seconds=400.0, is_locked=False)
+
+    routine_case = Case(
+        case_id="301",
+        classification=Classification(title="Routine Case"),
+        workflow_status=WorkflowStatus(followup_at="2026-01-01 10:00:00"),
+    )
+    prio1_case = Case(
+        case_id="999",
+        classification=Classification(title="Server Down", urgency_level=UrgencyLevel.RED),
+        workflow_status=WorkflowStatus(followup_at=""),
+    )
+    app.get_all_active_cases_for_reminder.return_value = [routine_case, prio1_case]
+
+    with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
+        SupportCockpitApp._check_mobile_ntfy_reminders(app, [routine_case])
+        # Prio 1 should be dispatched immediately via Sofort-Bypass!
+        assert mock_send.called
+        kwargs = mock_send.call_args[1]
+        assert "999" in kwargs["title"]
+        assert kwargs["priority"] == NTFY_PRIO_MAX
+        assert NTFY_TAG_ESCALATION in kwargs["tags"]
+        assert "999" in app._last_ntfy_notified_ids
+
+        # Routine case should be queued in digest buffer
+        assert any(item["case_id"] == "301" for item in app._ntfy_digest_queue)
+
+
+def test_app_check_mobile_ntfy_reminders_user_not_idle_clears_digest_queue():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="test-topic",
+        mobile_ntfy_idle_minutes=5,
+        mobile_ntfy_digest_enabled=True,
+    )
+    app._ntfy_digest_queue = [{"case_id": "401", "event_type": "followup", "dedup_key": "401:followup"}]
+    app._ntfy_last_digest_sent_at = 100.0
+
+    # User active at desk (idle = 0s)
+    IdleDetector.set_mock_state(idle_seconds=0.0, is_locked=False)
+
+    with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
+        SupportCockpitApp._check_mobile_ntfy_reminders(app, [])
+        assert not mock_send.called
+        assert len(app._ntfy_digest_queue) == 0
+        assert app._ntfy_last_digest_sent_at == 0.0

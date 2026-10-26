@@ -5,8 +5,12 @@ from urllib.error import HTTPError, URLError
 
 from constants import (
     DEFAULT_NTFY_SERVER_URL,
+    NTFY_EVENT_FOLLOWUP,
+    NTFY_EVENT_HANDOVER,
+    NTFY_EVENT_NOTE,
     NTFY_PRIO_HIGH,
     NTFY_TAG_BELL,
+    NTFY_TAG_DIGEST,
     NTFY_TAG_WARNING,
     NTFY_TOPIC_PREFIX,
 )
@@ -132,3 +136,36 @@ def test_send_notification_async(mock_urlopen):
 
     assert len(results) == 1
     assert results[0] is True
+
+
+def test_format_digest_alert():
+    events = [
+        {"case_id": "101", "event_type": NTFY_EVENT_FOLLOWUP},
+        {"case_id": "102", "event_type": NTFY_EVENT_FOLLOWUP},
+        {"case_id": "103", "event_type": NTFY_EVENT_HANDOVER},
+        {"case_id": "104", "event_type": NTFY_EVENT_NOTE},
+    ]
+    title, message = NtfyService.format_digest_alert(events)
+    assert "4" in title
+    assert "2x" in message
+    assert "1x" in message
+    assert "#101" in message
+    assert "#104" in message
+
+
+def test_format_digest_alert_many_cases():
+    events = [{"case_id": str(i), "event_type": NTFY_EVENT_FOLLOWUP} for i in range(1, 10)]
+    title, message = NtfyService.format_digest_alert(events)
+    assert "9" in title
+    assert "9 Fälle" in message or "9 cases" in message or "9 ärenden" in message
+
+
+def test_format_digest_alert_empty():
+    title, message = NtfyService.format_digest_alert([])
+    assert "0" in title
+    assert len(message) > 0
+
+
+def test_get_event_tags_digest():
+    tags = NtfyService.get_event_tags("digest")
+    assert tags == [NTFY_TAG_DIGEST]

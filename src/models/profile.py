@@ -20,6 +20,10 @@ from constants import (
     DEFAULT_LANGUAGE,
     DEFAULT_MODULE_TAGS,
     DEFAULT_NOTIFICATION_LEVEL,
+    DEFAULT_NTFY_ENABLED,
+    DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_SERVER_URL,
+    DEFAULT_NTFY_TOPIC,
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_OLLAMA_URL,
     DEFAULT_POINTS_PER_IDLE_DAY,
@@ -212,6 +216,10 @@ class ReminderSettings:
     notification_level: str = DEFAULT_NOTIFICATION_LEVEL
     audio_enabled: bool = False
     os_popup_enabled: bool = True
+    mobile_ntfy_enabled: bool = DEFAULT_NTFY_ENABLED
+    mobile_ntfy_server_url: str = DEFAULT_NTFY_SERVER_URL
+    mobile_ntfy_topic: str = DEFAULT_NTFY_TOPIC
+    mobile_ntfy_idle_minutes: int = DEFAULT_NTFY_IDLE_MINUTES
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -222,6 +230,10 @@ class ReminderSettings:
             notification_level=data.get("notification_level", DEFAULT_NOTIFICATION_LEVEL),
             audio_enabled=bool(data.get("audio_enabled", False)),
             os_popup_enabled=bool(data.get("os_popup_enabled", True)),
+            mobile_ntfy_enabled=bool(data.get("mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED)),
+            mobile_ntfy_server_url=str(data.get("mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)),
+            mobile_ntfy_topic=str(data.get("mobile_ntfy_topic", DEFAULT_NTFY_TOPIC)),
+            mobile_ntfy_idle_minutes=int(data.get("mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)),
         )
 
 

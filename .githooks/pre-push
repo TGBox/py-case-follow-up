@@ -30,6 +30,94 @@ abbruch() {
     exit 1
 }
 
+remote="$1"
+url="$2"
+
+# Dateimuster, die als code-relevant gelten (Änderungen hieran erfordern Build & Testsuite)
+CODE_PATTERN="^(src/|tests/|locales/|assets/|main\.py|pyproject\.toml|py-case-follow-up\.spec|uv\.lock)"
+
+has_stdin=0
+code_changed=0
+last_local_oid=""
+
+zero=$(git hash-object --stdin </dev/null 2>/dev/null | tr '[0-9a-f]' '0' || echo "0000000000000000000000000000000000000000")
+
+# Prüfe von Git via stdin übergebene Refs (<local_ref> <local_oid> <remote_ref> <remote_oid>)
+if [ ! -t 0 ]; then
+    while read -r local_ref local_oid remote_ref remote_oid; do
+        has_stdin=1
+        local_ref=$(echo "$local_ref" | tr -d '\r')
+        local_oid=$(echo "$local_oid" | tr -d '\r')
+        remote_ref=$(echo "$remote_ref" | tr -d '\r')
+        remote_oid=$(echo "$remote_oid" | tr -d '\r')
+
+        # Branch-Löschung auf dem Remote (local_oid ist 000...): Keine neuen Commits
+        if [ "$local_oid" = "$zero" ] || echo "$local_oid" | grep -qE '^0+$'; then
+            continue
+        fi
+
+        last_local_oid="$local_oid"
+
+        if [ "$remote_oid" = "$zero" ] || echo "$remote_oid" | grep -qE '^0+$'; then
+            # Neuer Branch auf Remote: Finde alle Commits, die noch nicht auf Remote vorhanden sind
+            new_commits=$(git rev-list "$local_oid" --not --remotes="$remote" 2>/dev/null || true)
+            if [ -z "$new_commits" ]; then
+                new_commits=$(git rev-list "$local_oid" --not --remotes 2>/dev/null || true)
+            fi
+            if [ -n "$new_commits" ]; then
+                changed_files=$(git diff-tree --no-commit-id --name-only -r $new_commits 2>/dev/null || true)
+            else
+                changed_files=""
+            fi
+        else
+            # Existierender Branch: Diff zwischen Remote-Stand und lokalem Stand
+            if [ "$local_oid" = "$remote_oid" ]; then
+                changed_files=""
+            else
+                changed_files=$(git diff --name-only "$remote_oid..$local_oid" 2>/dev/null || true)
+            fi
+        fi
+
+        if echo "$changed_files" | grep -qE "$CODE_PATTERN"; then
+            code_changed=1
+        fi
+    done
+fi
+
+# Schneller Push ohne Build/Testsuite via Umgebungsvariable (z.B. SKIP_TESTS=1 git push)
+skip_slow_steps=0
+if [ "$SKIP_TESTS" = "1" ] || [ "$FAST_PUSH" = "1" ] || [ "$SKIP_TESTSUITE" = "1" ]; then
+    skip_slow_steps=1
+fi
+
+# Cache-Prüfung: Wurde dieser Commit bereits erfolgreich verifiziert?
+git_dir=$(git rev-parse --git-dir 2>/dev/null || echo ".git")
+last_success_file="$git_dir/pre_push_last_success"
+
+if [ -n "$last_local_oid" ] && [ -f "$last_success_file" ] && [ "$FORCE_TESTS" != "1" ]; then
+    prev_tested=$(cat "$last_success_file" 2>/dev/null | tr -d '\r\n')
+    if [ "$prev_tested" = "$last_local_oid" ]; then
+        echo ""
+        echo "============================================================"
+        echo " [pre-push] ℹ Commit $last_local_oid wurde bereits erfolgreich getestet."
+        echo " [pre-push] ⏩ Exe-Build und Testsuite werden übersprungen."
+        echo "============================================================"
+        echo ""
+        exit 0
+    fi
+fi
+
+# Wenn Git den Hook aufgerufen hat und keine Änderungen am Code vorliegen:
+if [ "$has_stdin" = "1" ] && [ "$code_changed" = "0" ] && [ "$FORCE_TESTS" != "1" ]; then
+    echo ""
+    echo "============================================================"
+    echo " [pre-push] ℹ Keine Änderungen am Code erkannt (nur Dokumentation/Metadaten)."
+    echo " [pre-push] ⏩ Exe-Build und Testsuite werden übersprungen."
+    echo "============================================================"
+    echo ""
+    exit 0
+fi
+
 schritt "1/4: Linting (uv run ruff check src main.py tests)..."
 if ! uv run ruff check src main.py tests; then
     abbruch "Linting fehlgeschlagen!"
@@ -40,6 +128,17 @@ if ! uvx pyright src; then
     abbruch "Typecheck fehlgeschlagen!"
 fi
 
+if [ "$skip_slow_steps" = "1" ]; then
+    echo ""
+    echo "============================================================"
+    echo " [pre-push] ⏩ SKIP_TESTS / FAST_PUSH aktiv:"
+    echo " [pre-push] Schritt 3/4 (PyInstaller-Build) und Schritt 4/4 (Testsuite) übersprungen."
+    echo " [pre-push] Push wird fortgesetzt."
+    echo "============================================================"
+    echo ""
+    exit 0
+fi
+
 schritt "3/4: Generiere neue .exe-Datei via PyInstaller..."
 if ! uv run pyinstaller --noconfirm py-case-follow-up.spec; then
     abbruch "PyInstaller-Build fehlgeschlagen!"
@@ -48,6 +147,10 @@ fi
 schritt "4/4: Führe Testsuite aus (uv run pytest --no-cov)..."
 if ! uv run pytest --no-cov; then
     abbruch "Testsuite fehlgeschlagen!"
+fi
+
+if [ -n "$last_local_oid" ]; then
+    echo "$last_local_oid" > "$last_success_file" 2>/dev/null || true
 fi
 
 echo ""

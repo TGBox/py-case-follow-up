@@ -10,6 +10,7 @@ from constants import (
     COLOR_TEXT_WHITE,
     COLOR_TIP_TEXT,
     COMBO_WIDTH_NTFY_DIGEST,
+    COMBO_WIDTH_NTFY_IDLE,
     DEFAULT_COLUMN_WIDTHS,
     DEFAULT_NTFY_DIGEST_ENABLED,
     DEFAULT_NTFY_DIGEST_MINUTES,
@@ -20,6 +21,7 @@ from constants import (
     DEFAULT_NTFY_NOTIFY_HANDOVERS,
     DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_TOPIC,
+    ENTRY_WIDTH_NTFY_TOPIC,
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
@@ -237,7 +239,7 @@ class UiSettingsTabMixin:
             ctk.CTkEntry(
                 topic_frame,
                 placeholder_text=tr("ntfy.topic_placeholder", "z. B. desk-alert-8f2a9c"),
-                width=170,
+                width=ENTRY_WIDTH_NTFY_TOPIC,
             ),
             "ntfy.topic_placeholder",
             "z. B. desk-alert-8f2a9c",
@@ -289,7 +291,7 @@ class UiSettingsTabMixin:
         self.ntfy_idle_combo = ctk.CTkOptionMenu(
             idle_frame,
             values=[tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=m) for m in NTFY_IDLE_MINUTES_OPTIONS],
-            width=100,
+            width=COMBO_WIDTH_NTFY_IDLE,
         )
         curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
         self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))

@@ -185,6 +185,7 @@ class AppStub(ctk.CTk):
     _poll_open_case_request = SupportCockpitApp._poll_open_case_request
     switch_to_cockpit_view_for_case = SupportCockpitApp.switch_to_cockpit_view_for_case
     check_due_followups = SupportCockpitApp.check_due_followups
+    _check_mobile_ntfy_reminders = SupportCockpitApp._check_mobile_ntfy_reminders
     _is_cockpit_active = lambda self: True  # noqa: E731
 
     def __init__(self, cases):

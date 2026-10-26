@@ -1998,6 +1998,26 @@
     "success_msg": "Fall \"{case_id}\" wurde gelöscht.",
     "success_toast": "🗑 Fall gelöscht"
   },
+  "ntfy": {
+    "btn_random_topic": "🎲 Zufall",
+    "btn_test_notification": "🔔 Testnachricht",
+    "case_alert_due": "Wiedervorlage fällig am Arbeitsplatz.",
+    "case_alert_overdue": "⚠ Wiedervorlage überfällig am Arbeitsplatz!",
+    "case_alert_title": "🔔 Fall #{case_id} ({priority})",
+    "enable_toggle": "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)",
+    "idle_minutes_format": "{minutes} Min.",
+    "idle_threshold_label": "Aktivieren nach Inaktivität:",
+    "privacy_tip": "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload.",
+    "section_title": "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)",
+    "test_failed_toast_msg": "Konnte Testnachricht nicht senden: {error}",
+    "test_failed_toast_title": "⚠ Testnachricht fehlgeschlagen",
+    "test_message": "Verbindung zu ntfy.sh erfolgreich! Smartphone-Push ist einsatzbereit.",
+    "test_sent_toast_msg": "Testnachricht wurde an Thema '{topic}' gesendet.",
+    "test_sent_toast_title": "📱 Testnachricht gesendet",
+    "test_title": "🔔 Test: Support-Cockpit",
+    "topic_label": "ntfy-Thema (Topic):",
+    "topic_placeholder": "z. B. desk-alert-8f2a9c"
+  },
   "urgency_levels": {
     "RED": "Hoch",
     "YELLOW": "Mittel",

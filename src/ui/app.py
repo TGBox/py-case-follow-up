@@ -49,6 +49,8 @@ from constants import (
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
     DEFAULT_LANGUAGE,
+    DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_SERVER_URL,
     DEFAULT_SHORTCUT_VIEW_ANALYTICS,
     DEFAULT_USER_COLOR,
     FILE_EXT_ZIP,
@@ -62,11 +64,15 @@ from constants import (
     FONT_SIZE_SUBTITLE,
     HOURLY_SCORING_INTERVAL_SECONDS,
     MENU_BAR_HEIGHT,
+    NTFY_PRIO_DEFAULT,
+    NTFY_PRIO_HIGH,
+    NTFY_TAG_BELL,
     OPEN_CASE_POLL_INTERVAL_MS,
     PAD_3,
     PAD_CONTAINER,
     PAD_GAP,
     PAD_LG,
+    SECONDS_PER_MINUTE,
     PAD_MD,
     PAD_SM,
     PAD_SPLASH_TITLE,
@@ -1324,9 +1330,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     except Exception as e:
                         logger.warning(f"Could not display toast notification: {e}")
             self._last_notified_due_count = due_count
+
+            # --- Mobile Push on Absence (ntfy.sh) ---
+            self._check_mobile_ntfy_reminders(due_cases)
         else:
             self.bell_btn.configure(text="0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0
+            self._last_ntfy_notified_ids = set()
 
         # Update tray icon badge (guard: may be called before tray_service is initialized)
         if hasattr(self, "tray_service"):
@@ -1339,6 +1349,61 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception:
                 pass
         self._followup_timer_id = self.after(FOLLOWUP_CHECK_INTERVAL_MS, self.check_due_followups)
+
+    def _check_mobile_ntfy_reminders(self, due_cases: list[Any]) -> None:
+        """Sends privacy-friendly mobile push notification when user is idle or screen is locked."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+
+        reminder_settings = self.profile.reminder_settings
+        if not getattr(reminder_settings, "mobile_ntfy_enabled", False):
+            return
+
+        topic = (getattr(reminder_settings, "mobile_ntfy_topic", "") or "").strip()
+        if not topic:
+            return
+
+        from utils.idle_detector import IdleDetector
+        idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+        idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
+
+        if not IdleDetector.is_user_idle(idle_threshold_seconds):
+            return
+
+        notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
+        unnotified_cases = [c for c in due_cases if getattr(c, "case_id", "") not in notified_ids]
+        if not unnotified_cases:
+            return
+
+        top_case = unnotified_cases[0]
+        from services.ntfy_service import NtfyService
+        prio_label = ""
+        if hasattr(top_case, "classification"):
+            prio_label = str(getattr(top_case.classification, "urgency_level", getattr(top_case.classification, "priority", "")) or "")
+
+        title, message = NtfyService.format_case_alert(
+            case_id=getattr(top_case, "case_id", ""),
+            priority_label=prio_label,
+            is_overdue=True,
+            anonymize=True,
+        )
+
+        server_url = getattr(reminder_settings, "mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)
+        prio = NTFY_PRIO_HIGH if prio_label.lower() in ("high", "hoch", "red", "rot") else NTFY_PRIO_DEFAULT
+        NtfyService.send_notification_async(
+            topic=topic,
+            message=message,
+            title=title,
+            priority=prio,
+            tags=[NTFY_TAG_BELL],
+            server_url=server_url,
+        )
+
+        for c in unnotified_cases:
+            case_id = getattr(c, "case_id", "")
+            if case_id:
+                notified_ids.add(case_id)
+        self._last_ntfy_notified_ids = notified_ids
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog

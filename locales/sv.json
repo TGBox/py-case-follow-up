@@ -1998,6 +1998,26 @@
     "success_msg": "Ärende \"{case_id}\" har tagits bort.",
     "success_toast": "🗑 Ärende borttaget"
   },
+  "ntfy": {
+    "btn_random_topic": "🎲 Slumpmässig",
+    "btn_test_notification": "🔔 Testmeddelande",
+    "case_alert_due": "Uppföljning förfallen vid skrivbordet.",
+    "case_alert_overdue": "⚠ Uppföljning försenad vid skrivbordet!",
+    "case_alert_title": "🔔 Ärende #{case_id} ({priority})",
+    "enable_toggle": "📱 Aktivera mobilavisering vid frånvaro (ntfy.sh)",
+    "idle_minutes_format": "{minutes} min.",
+    "idle_threshold_label": "Aktivera efter inaktivitet:",
+    "privacy_tip": "🔒 Integritetsvänlig: Inga kund- eller patientuppgifter i push-meddelandet.",
+    "section_title": "📱 Mobilaviseringar vid frånvaro (ntfy.sh)",
+    "test_failed_toast_msg": "Kunde inte skicka testmeddelande: {error}",
+    "test_failed_toast_title": "⚠ Testmeddelande misslyckades",
+    "test_message": "Anslutning till ntfy.sh lyckades! Mobilaviseringar är redo.",
+    "test_sent_toast_msg": "Testmeddelandet skickades till ämnet '{topic}'.",
+    "test_sent_toast_title": "📱 Testmeddelande skickat",
+    "test_title": "🔔 Test: Support-Cockpit",
+    "topic_label": "ntfy-ämne (Topic):",
+    "topic_placeholder": "t.ex. desk-alert-8f2a9c"
+  },
   "urgency_levels": {
     "RED": "Hög",
     "YELLOW": "Medel",

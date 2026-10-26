@@ -1998,6 +1998,26 @@
     "success_msg": "Case \"{case_id}\" was deleted.",
     "success_toast": "🗑 Case deleted"
   },
+  "ntfy": {
+    "btn_random_topic": "🎲 Random",
+    "btn_test_notification": "🔔 Test Notification",
+    "case_alert_due": "Follow-up due at your desk.",
+    "case_alert_overdue": "⚠ Follow-up overdue at your desk!",
+    "case_alert_title": "🔔 Case #{case_id} ({priority})",
+    "enable_toggle": "📱 Enable smartphone push on absence (ntfy.sh)",
+    "idle_minutes_format": "{minutes} min.",
+    "idle_threshold_label": "Trigger after inactivity:",
+    "privacy_tip": "🔒 Privacy-friendly: No customer or patient data in push payload.",
+    "section_title": "📱 Smartphone Push on Absence (ntfy.sh)",
+    "test_failed_toast_msg": "Could not send test notification: {error}",
+    "test_failed_toast_title": "⚠ Test Notification Failed",
+    "test_message": "Connection to ntfy.sh successful! Smartphone push is ready.",
+    "test_sent_toast_msg": "Test notification was sent to topic '{topic}'.",
+    "test_sent_toast_title": "📱 Test Notification Sent",
+    "test_title": "🔔 Test: Support Cockpit",
+    "topic_label": "ntfy Topic:",
+    "topic_placeholder": "e.g. desk-alert-8f2a9c"
+  },
   "urgency_levels": {
     "RED": "High",
     "YELLOW": "Medium",

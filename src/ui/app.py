@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 import customtkinter as ctk
 
 from config import AppConfig
-from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
+from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, UrgencyLevel
 from models.case import Case
 from models.customer import Customer
 from models.schema import QuestionSchema
@@ -64,9 +64,13 @@ from constants import (
     FONT_SIZE_SUBTITLE,
     HOURLY_SCORING_INTERVAL_SECONDS,
     MENU_BAR_HEIGHT,
+    NTFY_EVENT_FOLLOWUP,
+    NTFY_EVENT_HANDOVER,
+    NTFY_EVENT_NOTE,
+    NTFY_EVENT_PRIO1,
     NTFY_PRIO_DEFAULT,
     NTFY_PRIO_HIGH,
-    NTFY_TAG_BELL,
+    NTFY_PRIO_MAX,
     OPEN_CASE_POLL_INTERVAL_MS,
     PAD_3,
     PAD_CONTAINER,
@@ -1371,38 +1375,101 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             return
 
         notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
-        unnotified_cases = [c for c in due_cases if getattr(c, "case_id", "") not in notified_ids]
-        if not unnotified_cases:
-            return
-
-        top_case = unnotified_cases[0]
         from services.ntfy_service import NtfyService
-        prio_label = ""
-        if hasattr(top_case, "classification"):
-            prio_label = str(getattr(top_case.classification, "urgency_level", getattr(top_case.classification, "priority", "")) or "")
-
-        title, message = NtfyService.format_case_alert(
-            case_id=getattr(top_case, "case_id", ""),
-            priority_label=prio_label,
-            is_overdue=True,
-            anonymize=True,
-        )
 
         server_url = getattr(reminder_settings, "mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)
-        prio = NTFY_PRIO_HIGH if prio_label.lower() in ("high", "hoch", "red", "rot") else NTFY_PRIO_DEFAULT
+        all_active = self.get_all_active_cases_for_reminder() if hasattr(self, "get_all_active_cases_for_reminder") else due_cases
+
+        notify_followups = getattr(reminder_settings, "mobile_ntfy_notify_followups", True)
+        notify_prio1 = getattr(reminder_settings, "mobile_ntfy_notify_prio1", True)
+        notify_handovers = getattr(reminder_settings, "mobile_ntfy_notify_handovers", True)
+        notify_notes = getattr(reminder_settings, "mobile_ntfy_notify_customer_notes", False)
+
+        current_user = ""
+        current_role = ""
+        user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+        if user_obj:
+            current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+            current_role = getattr(user_obj, "role", "") or getattr(user_obj, "department", "")
+
+        candidates: list[tuple[int, Any, str, str, bool]] = []
+
+        # 1. Prio 1 / Escalations
+        if notify_prio1:
+            for c in all_active:
+                urg = str(getattr(getattr(c, "classification", None), "urgency_level", "")).upper()
+                if urg in (UrgencyLevel.RED.value, "RED", "HOCH", "HIGH"):
+                    cid = getattr(c, "case_id", "")
+                    key = f"{cid}:{NTFY_EVENT_PRIO1}"
+                    if key not in notified_ids and cid not in notified_ids:
+                        candidates.append((NTFY_PRIO_MAX, c, NTFY_EVENT_PRIO1, key, False))
+
+        # 2. Due followups
+        if notify_followups:
+            for c in due_cases:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_FOLLOWUP}"
+                if key not in notified_ids and cid not in notified_ids:
+                    prio_label = str(getattr(getattr(c, "classification", None), "urgency_level", "")).lower()
+                    p = NTFY_PRIO_HIGH if prio_label in ("high", "hoch", "red", "rot") else NTFY_PRIO_DEFAULT
+                    candidates.append((p, c, NTFY_EVENT_FOLLOWUP, key, True))
+
+        # 3. Handovers & assignments
+        if notify_handovers:
+            for c in all_active:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_HANDOVER}"
+                if key not in notified_ids and cid not in notified_ids:
+                    assigned = str(getattr(c, "assigned_to", "") or "").strip().lower()
+                    actor = str(getattr(getattr(c, "workflow_status", None), "current_actor", "") or "").strip().lower()
+                    is_match = (current_user and assigned == current_user.lower()) or (current_role and actor == current_role.lower())
+                    if is_match:
+                        candidates.append((NTFY_PRIO_HIGH, c, NTFY_EVENT_HANDOVER, key, False))
+
+        # 4. Customer / case notes
+        if notify_notes:
+            for c in all_active:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_NOTE}"
+                if key not in notified_ids and cid not in notified_ids:
+                    ws = getattr(c, "workflow_status", None)
+                    note = str(getattr(ws, "followup_note", "") or "").strip()
+                    timeline = getattr(c, "timeline", None)
+                    has_note = bool(note or (timeline and len(timeline) > 0 and getattr(timeline[-1], "note", "")))
+                    if has_note:
+                        candidates.append((NTFY_PRIO_DEFAULT, c, NTFY_EVENT_NOTE, key, False))
+
+        if not candidates:
+            return
+
+        # Sort so highest priority notifications dispatch first
+        candidates.sort(key=lambda item: item[0], reverse=True)
+
+        prio, top_case, event_type, dedup_key, is_overdue = candidates[0]
+        cid = getattr(top_case, "case_id", "")
+        prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
+
+        title, message = NtfyService.format_case_alert(
+            case_id=cid,
+            priority_label=prio_label,
+            is_overdue=is_overdue,
+            event_type=event_type,
+            anonymize=True,
+        )
+        tags = NtfyService.get_event_tags(event_type=event_type)
+
         NtfyService.send_notification_async(
             topic=topic,
             message=message,
             title=title,
             priority=prio,
-            tags=[NTFY_TAG_BELL],
+            tags=tags,
             server_url=server_url,
         )
 
-        for c in unnotified_cases:
-            case_id = getattr(c, "case_id", "")
-            if case_id:
-                notified_ids.add(case_id)
+        notified_ids.add(dedup_key)
+        if cid:
+            notified_ids.add(cid)
         self._last_ntfy_notified_ids = notified_ids
 
     def open_followup_flyout(self):

@@ -8,8 +8,17 @@ from urllib.request import Request, urlopen
 
 from constants import (
     DEFAULT_NTFY_SERVER_URL,
+    NTFY_EVENT_FOLLOWUP,
+    NTFY_EVENT_HANDOVER,
+    NTFY_EVENT_NOTE,
+    NTFY_EVENT_PRIO1,
     NTFY_HTTP_TIMEOUT_SECONDS,
     NTFY_PRIO_DEFAULT,
+    NTFY_TAG_BELL,
+    NTFY_TAG_ESCALATION,
+    NTFY_TAG_HANDOVER,
+    NTFY_TAG_NOTE,
+    NTFY_TAG_WARNING,
     NTFY_TOPIC_PREFIX,
     NTFY_TOPIC_RANDOM_LENGTH,
 )
@@ -29,29 +38,72 @@ class NtfyService:
         return f"{NTFY_TOPIC_PREFIX}{random_suffix}"
 
     @staticmethod
+    def get_event_tags(event_type: str = NTFY_EVENT_FOLLOWUP) -> list[str]:
+        """Returns relevant emoji tag list based on the event type."""
+        if event_type == NTFY_EVENT_PRIO1:
+            return [NTFY_TAG_WARNING, NTFY_TAG_ESCALATION]
+        if event_type == NTFY_EVENT_HANDOVER:
+            return [NTFY_TAG_HANDOVER]
+        if event_type == NTFY_EVENT_NOTE:
+            return [NTFY_TAG_NOTE]
+        return [NTFY_TAG_BELL]
+
+    @staticmethod
     def format_case_alert(
         case_id: str,
-        priority_label: str,
+        priority_label: str = "",
         is_overdue: bool = False,
+        event_type: str = NTFY_EVENT_FOLLOWUP,
         anonymize: bool = True,
     ) -> tuple[str, str]:
         """Creates privacy-friendly, tokenized notification title and message."""
-        title = tr(
-            "ntfy.case_alert_title",
-            "🔔 Fall #{case_id} ({priority})",
-            case_id=case_id,
-            priority=priority_label,
-        )
-        if is_overdue:
+        if event_type == NTFY_EVENT_PRIO1:
+            title = tr(
+                "ntfy.prio1_alert_title",
+                "🚨 Notfall / Prio 1: Fall #{case_id}",
+                case_id=case_id,
+            )
             message = tr(
-                "ntfy.case_alert_overdue",
-                "⚠ Wiedervorlage überfällig am Arbeitsplatz!",
+                "ntfy.prio1_alert_msg",
+                "Kritischer Fall erfordert sofortige Aufmerksamkeit.",
+            )
+        elif event_type == NTFY_EVENT_HANDOVER:
+            title = tr(
+                "ntfy.handover_alert_title",
+                "📋 Übergabe: Fall #{case_id}",
+                case_id=case_id,
+            )
+            message = tr(
+                "ntfy.handover_alert_msg",
+                "Neuer Fall an Sie übergeben oder zugewiesen.",
+            )
+        elif event_type == NTFY_EVENT_NOTE:
+            title = tr(
+                "ntfy.note_alert_title",
+                "📝 Notiz: Fall #{case_id}",
+                case_id=case_id,
+            )
+            message = tr(
+                "ntfy.note_alert_msg",
+                "Neue Kunden- oder Vorgangsnotiz erfasst.",
             )
         else:
-            message = tr(
-                "ntfy.case_alert_due",
-                "Wiedervorlage fällig am Arbeitsplatz.",
+            title = tr(
+                "ntfy.case_alert_title",
+                "🔔 Fall #{case_id} ({priority})",
+                case_id=case_id,
+                priority=priority_label,
             )
+            if is_overdue:
+                message = tr(
+                    "ntfy.case_alert_overdue",
+                    "⚠ Wiedervorlage überfällig am Arbeitsplatz!",
+                )
+            else:
+                message = tr(
+                    "ntfy.case_alert_due",
+                    "Wiedervorlage fällig am Arbeitsplatz.",
+                )
         return title, message
 
     @classmethod

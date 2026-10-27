@@ -1450,6 +1450,11 @@ LOG_MAX_BYTES = 5_000_000
 LOG_BACKUP_COUNT = 3
 JSON_INDENT = 2
 DEBOUNCE_DELAY_STORAGE_SAVE = 0.15
+# Windows refuses os.replace() while another handle has the target open
+# (reader, virus scanner, OneDrive, P2P sync) - retry briefly instead of
+# dropping the save.
+ATOMIC_REPLACE_RETRIES = 20
+ATOMIC_REPLACE_RETRY_DELAY_SECONDS = 0.05
 TIMEOUT_STORAGE_WRITE_COND = 0.5
 #: Hoechstens so lange wartet flush_all (App-Ende) auf laufende Hintergrund-Saves.
 TIMEOUT_STORAGE_FLUSH_ALL = 2.0

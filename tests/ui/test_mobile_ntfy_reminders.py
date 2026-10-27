@@ -1,9 +1,11 @@
+import time
 from unittest.mock import MagicMock, patch
 import pytest
 
 from constants import (
     NTFY_TAG_ON_CALL,
     NTFY_TOPIC_PREFIX,
+    SECONDS_PER_MINUTE,
 )
 from models.case import Case, Classification, WorkflowStatus
 from models.profile import Colleague, ReminderSettings, UserProfile
@@ -386,8 +388,8 @@ def test_app_check_mobile_ntfy_reminders_digest_buffering_and_flush():
         assert len(app._ntfy_digest_queue) == 2
         assert app._ntfy_last_digest_sent_at > 0.0
 
-    # Second call: interval elapsed (simulated by setting _ntfy_last_digest_sent_at far in the past)
-    app._ntfy_last_digest_sent_at = 1.0  # Monotonic time is much larger than 1.0 + 15*60
+    # Second call: interval elapsed (simulated by setting _ntfy_last_digest_sent_at in the past relative to now)
+    app._ntfy_last_digest_sent_at = time.monotonic() - (15 * SECONDS_PER_MINUTE + 5)
     with patch("services.ntfy_service.NtfyService.send_notification_async") as mock_send:
         SupportCockpitApp._check_mobile_ntfy_reminders(app, [case1, case2])
         assert mock_send.called

@@ -1843,6 +1843,7 @@
   },
   "toast": {
     "followup_due_title": "🔔 Wiedervorlage fällig ({count})",
+    "open_link": "🔗 Link öffnen",
     "reminder_title": "Erinnerung"
   },
   "tray": {
@@ -2082,4 +2083,4 @@
     "YELLOW": "Mittel",
     "GREEN": "Niedrig"
   }
-}
+}

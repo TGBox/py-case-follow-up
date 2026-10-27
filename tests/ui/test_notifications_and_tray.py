@@ -522,6 +522,7 @@ def test_native_notification_offers_the_link_as_a_toast_action(app, tray_cls, ex
 def test_the_toast_card_shows_a_link_button_that_opens_the_link(root, monkeypatch):
     opened = []
     monkeypatch.setattr("ui.widgets.toast_notification.webbrowser.open", opened.append)
+    root.profile = _no_os_popups()  # on Windows the OS toast would be shown instead of the card
     toast = ToastNotification(root, title="🖥 Arbeitsplatz entsperrt", message="Wiki: https://wiki.example/a",
                               duration_ms=1000, link_url="https://wiki.example/a")
     root.update()

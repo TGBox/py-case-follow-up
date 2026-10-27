@@ -22,6 +22,8 @@ from constants import (
     DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_ON_CALL,
     DEFAULT_NTFY_AUTO_PRESENCE,
+    DEFAULT_NTFY_REMOTE_CONTROL,
+    DEFAULT_NTFY_RESPONSE_TOPIC,
     DEFAULT_NTFY_TOPIC,
     ENTRY_WIDTH_NTFY_TOPIC,
     FONT_SIZE_BODY,
@@ -441,6 +443,63 @@ class UiSettingsTabMixin:
         )
         self.ntfy_digest_hint_lbl.pack(anchor="w", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
 
+        # Remote Control (Stufe 6)
+        rc_frame = ctk.CTkFrame(filter_frame, fg_color="transparent")
+        rc_frame.pack(fill="x", pady=(PAD_XS, PAD_NONE))
+
+        self.ntfy_cb_remote_control = self.register_i18n(
+            ctk.CTkCheckBox(
+                rc_frame,
+                text=tr("ntfy.remote_control_enable", "Fernsteuerung & Aktions-Buttons aktivieren"),
+                command=self.on_toggle_ntfy,
+            ),
+            "ntfy.remote_control_enable",
+            "Fernsteuerung & Aktions-Buttons aktivieren",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL):
+            self.ntfy_cb_remote_control.select()
+        else:
+            self.ntfy_cb_remote_control.deselect()
+        self.ntfy_cb_remote_control.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        rc_cfg_frame = ctk.CTkFrame(rc_frame, fg_color="transparent")
+        rc_cfg_frame.pack(fill="x", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_response_topic_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                rc_cfg_frame,
+                text=tr("ntfy.response_topic_label", "Befehls-Thema (optional):"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+            ),
+            "ntfy.response_topic_label",
+            "Befehls-Thema (optional):",
+        )
+        self.ntfy_response_topic_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_entry_response_topic = ctk.CTkEntry(
+            rc_cfg_frame,
+            width=ENTRY_WIDTH_NTFY_TOPIC,
+            placeholder_text=tr("ntfy.response_topic_placeholder", "Standard: {topic}-cmd"),
+        )
+        saved_resp_topic = getattr(self.profile.reminder_settings, "mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)
+        if saved_resp_topic:
+            self.ntfy_entry_response_topic.insert(0, saved_resp_topic)
+        self.ntfy_entry_response_topic.pack(side="left")
+
+        self.ntfy_remote_control_hint_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                rc_frame,
+                text=tr("ntfy.remote_control_hint", "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone."),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
+                justify="left",
+                anchor="w",
+            ),
+            "ntfy.remote_control_hint",
+            "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone.",
+        )
+        self.ntfy_remote_control_hint_lbl.pack(anchor="w", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
         self.ntfy_privacy_lbl = self.register_i18n(
             ctk.CTkLabel(
                 right_col,
@@ -529,6 +588,7 @@ class UiSettingsTabMixin:
             getattr(self, "ntfy_cb_on_call", None),
             getattr(self, "ntfy_cb_auto_presence", None),
             getattr(self, "ntfy_cb_digest", None),
+            getattr(self, "ntfy_cb_remote_control", None),
         ):
             if w is not None:
                 w.configure(state=state)
@@ -537,6 +597,11 @@ class UiSettingsTabMixin:
         digest_combo = getattr(self, "ntfy_combo_digest_minutes", None)
         if digest_combo is not None:
             digest_combo.configure(state="normal" if digest_on else "disabled")
+
+        rc_on = is_on and bool(getattr(self, "ntfy_cb_remote_control", None) and self.ntfy_cb_remote_control.get())
+        rc_entry = getattr(self, "ntfy_entry_response_topic", None)
+        if rc_entry is not None:
+            rc_entry.configure(state="normal" if rc_on else "disabled")
 
     def on_generate_random_ntfy_topic(self) -> None:
         from services.ntfy_service import NtfyService
@@ -642,6 +707,16 @@ class UiSettingsTabMixin:
                 self.ntfy_cb_digest.deselect()
         if hasattr(self, "ntfy_combo_digest_minutes"):
             self.ntfy_combo_digest_minutes.set(str(getattr(self.profile.reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)))
+        if hasattr(self, "ntfy_cb_remote_control"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL):
+                self.ntfy_cb_remote_control.select()
+            else:
+                self.ntfy_cb_remote_control.deselect()
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.ntfy_entry_response_topic.delete(0, "end")
+            saved_resp = getattr(self.profile.reminder_settings, "mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)
+            if saved_resp:
+                self.ntfy_entry_response_topic.insert(0, saved_resp)
         self.on_toggle_ntfy()
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
@@ -695,6 +770,10 @@ class UiSettingsTabMixin:
                 self.profile.reminder_settings.mobile_ntfy_digest_minutes = int(self.ntfy_combo_digest_minutes.get().strip())
             except ValueError:
                 self.profile.reminder_settings.mobile_ntfy_digest_minutes = DEFAULT_NTFY_DIGEST_MINUTES
+        if hasattr(self, "ntfy_cb_remote_control"):
+            self.profile.reminder_settings.mobile_ntfy_remote_control = bool(self.ntfy_cb_remote_control.get())
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.profile.reminder_settings.mobile_ntfy_response_topic = self.ntfy_entry_response_topic.get().strip()
         if hasattr(self, "popup_target_combo"):
             # The menu shows translated labels; matching them against German text
             # picked APP_SCREEN for every non-German UI. The position is what
@@ -761,6 +840,14 @@ class UiSettingsTabMixin:
             self.ntfy_digest_interval_lbl.configure(text=tr("ntfy.digest_interval_lbl", "Intervall (Minuten):"))
         if hasattr(self, "ntfy_digest_hint_lbl"):
             self.ntfy_digest_hint_lbl.configure(text=tr("ntfy.digest_hint", "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet."))
+        if hasattr(self, "ntfy_cb_remote_control"):
+            self.ntfy_cb_remote_control.configure(text=tr("ntfy.remote_control_enable", "Fernsteuerung & Aktions-Buttons aktivieren"))
+        if hasattr(self, "ntfy_response_topic_lbl"):
+            self.ntfy_response_topic_lbl.configure(text=tr("ntfy.response_topic_label", "Befehls-Thema (optional):"))
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.ntfy_entry_response_topic.configure(placeholder_text=tr("ntfy.response_topic_placeholder", "Standard: {topic}-cmd"))
+        if hasattr(self, "ntfy_remote_control_hint_lbl"):
+            self.ntfy_remote_control_hint_lbl.configure(text=tr("ntfy.remote_control_hint", "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone."))
         if hasattr(self, "ntfy_privacy_lbl"):
             self.ntfy_privacy_lbl.configure(text=tr("ntfy.privacy_tip", "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload."))
         if hasattr(self, "popup_target_lbl"):

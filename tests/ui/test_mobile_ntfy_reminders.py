@@ -674,3 +674,166 @@ def test_ntfy_profile_ui_auto_presence_checkbox(root):
 
     dlg.destroy()
 
+
+def test_ntfy_profile_ui_remote_control_checkbox(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_remote_control=True,
+        mobile_ntfy_response_topic="my-custom-cmd",
+    )
+    mock_storage = MagicMock()
+
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=mock_storage)
+
+    assert hasattr(dlg, "ntfy_cb_remote_control")
+    assert bool(dlg.ntfy_cb_remote_control.get()) is True
+    assert hasattr(dlg, "ntfy_entry_response_topic")
+    assert dlg.ntfy_entry_response_topic.get() == "my-custom-cmd"
+
+    # Modify and save
+    dlg.ntfy_cb_remote_control.deselect()
+    dlg.ntfy_entry_response_topic.delete(0, "end")
+    dlg.ntfy_entry_response_topic.insert(0, "new-cmd-topic")
+    assert dlg.save_ui_settings() is True
+    assert profile.reminder_settings.mobile_ntfy_remote_control is False
+    assert profile.reminder_settings.mobile_ntfy_response_topic == "new-cmd-topic"
+
+    # Reload fields
+    profile.reminder_settings.mobile_ntfy_remote_control = True
+    profile.reminder_settings.mobile_ntfy_response_topic = "reloaded-topic"
+    dlg.reload_ui_fields()
+    assert bool(dlg.ntfy_cb_remote_control.get()) is True
+    assert dlg.ntfy_entry_response_topic.get() == "reloaded-topic"
+
+    dlg.destroy()
+
+
+def test_app_remote_command_snooze():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    c1 = Case(
+        case_id="1042",
+        classification=Classification(title="Test Case"),
+        workflow_status=WorkflowStatus(followup_at="2026-10-27 10:00"),
+    )
+    app.cases = [c1]
+    app.storage_service = MagicMock()
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        SupportCockpitApp._handle_remote_control_command(app, "snooze:1042:45")
+        assert c1.workflow_status.followup_at != "2026-10-27 10:00"
+        assert app.storage_service.save_cases.called
+        assert app.refresh_views.called
+        assert app.check_due_followups.called
+        assert mock_toast.called
+
+
+def test_app_remote_command_take():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.user.name = "Daniel Rösch"
+    c1 = Case(
+        case_id="1042",
+        classification=Classification(title="Test Case"),
+        assigned_to="Other Person",
+    )
+    app.cases = [c1]
+    app.storage_service = MagicMock()
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        SupportCockpitApp._handle_remote_control_command(app, "take:1042")
+        assert c1.assigned_to == "Daniel Rösch"
+        assert app.storage_service.save_cases.called
+        assert app.refresh_views.called
+        assert mock_toast.called
+
+
+def test_app_remote_command_ack():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app._last_ntfy_notified_ids = set()
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        SupportCockpitApp._handle_remote_control_command(app, "ack:1042")
+        assert "1042" in app._last_ntfy_notified_ids
+        assert mock_toast.called
+
+
+def test_app_remote_command_standby():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.is_on_call_active.return_value = False
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        SupportCockpitApp._handle_remote_control_command(app, "standby:on")
+        app.toggle_on_call_mode.assert_called_with(active=True)
+        assert mock_toast.called
+
+
+def test_app_sync_ntfy_remote_control_listener():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_remote_control=True,
+        mobile_ntfy_topic="my-test-topic",
+    )
+    app.ntfy_listener = None
+
+    with patch("services.ntfy_service.NtfyListener") as mock_listener_cls:
+        mock_instance = MagicMock()
+        mock_instance.is_running = False
+        mock_listener_cls.return_value = mock_instance
+
+        # 1. Start listener
+        SupportCockpitApp._sync_ntfy_remote_control_listener(app)
+        assert mock_instance.start.called
+        assert app.ntfy_listener is mock_instance
+
+        # 2. Disable feature -> stops listener
+        app.profile.reminder_settings.mobile_ntfy_remote_control = False
+        SupportCockpitApp._sync_ntfy_remote_control_listener(app)
+        assert mock_instance.stop.called
+        assert app.ntfy_listener is None
+
+
+@patch("services.ntfy_service.NtfyService.send_notification_async")
+def test_check_mobile_ntfy_reminders_attaches_actions(mock_send_async):
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_remote_control=True,
+        mobile_ntfy_topic="my-test-topic",
+        mobile_ntfy_notify_followups=True,
+        mobile_ntfy_digest_enabled=False,
+        mobile_ntfy_on_call=True,
+    )
+    app.is_on_call_active.return_value = True
+    app._last_ntfy_notified_ids = set()
+
+    c1 = Case(
+        case_id="1042",
+        classification=Classification(title="Due Case", urgency_level="Mittel"),
+    )
+    app.get_all_active_cases_for_reminder.return_value = [c1]
+
+    SupportCockpitApp._check_mobile_ntfy_reminders(app, [c1])
+    assert mock_send_async.called
+    kwargs = mock_send_async.call_args[1]
+    assert kwargs.get("actions") is not None
+    assert len(kwargs["actions"]) == 2
+    assert "snooze:1042:30" in kwargs["actions"][0]["body"]
+    assert "take:1042" in kwargs["actions"][1]["body"]
+
+

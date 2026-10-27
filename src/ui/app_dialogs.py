@@ -441,6 +441,9 @@ class DialogLaunchersMixin:
         update_presence = getattr(self, "_update_team_presence_on_idle", None)
         if callable(update_presence):
             update_presence()
+        sync_listener = getattr(self, "_sync_ntfy_remote_control_listener", None)
+        if callable(sync_listener):
+            sync_listener()
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
             self.cockpit_view.author_name = self.profile.user.name
             if hasattr(self.cockpit_view, "left_frame") and hasattr(self.cockpit_view.left_frame, "set_user_color_settings"):

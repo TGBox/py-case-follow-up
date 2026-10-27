@@ -50,6 +50,42 @@ def test_atomic_save_and_safe_read_json(tmp_path: Path):
     assert len(list(tmp_path.glob("corrupted.corrupted_*.json"))) == 1
 
 
+def test_atomic_save_retries_while_target_is_held_open(tmp_path: Path, monkeypatch):
+    """Windows: os.replace fails while another handle has the target open - the save must not be lost."""
+    target = tmp_path / "profile.json"
+    atomic_save_json(target, {"v": 1})
+    real_replace = Path.replace
+    calls = []
+
+    def flaky_replace(self, dst):
+        calls.append(dst)
+        if len(calls) <= 2:
+            raise PermissionError(5, "Access is denied")
+        return real_replace(self, dst)
+
+    monkeypatch.setattr(Path, "replace", flaky_replace)
+    monkeypatch.setattr(storage_service, "ATOMIC_REPLACE_RETRY_DELAY_SECONDS", 0)
+    atomic_save_json(target, {"v": 2})
+    assert len(calls) == 3
+    assert json.loads(target.read_text(encoding="utf-8")) == {"v": 2}
+    assert not list(tmp_path.glob("*.tmp.json"))
+
+
+def test_atomic_save_gives_up_after_retries_and_cleans_temp(tmp_path: Path, monkeypatch):
+    target = tmp_path / "profile.json"
+    atomic_save_json(target, {"v": 1})
+
+    def always_locked(self, dst):
+        raise PermissionError(5, "Access is denied")
+
+    monkeypatch.setattr(Path, "replace", always_locked)
+    monkeypatch.setattr(storage_service, "ATOMIC_REPLACE_RETRY_DELAY_SECONDS", 0)
+    with pytest.raises(PermissionError):
+        atomic_save_json(target, {"v": 2})
+    assert json.loads(target.read_text(encoding="utf-8")) == {"v": 1}
+    assert not list(tmp_path.glob("*.tmp.json"))
+
+
 # --- Corruption recovery -----------------------------------------------------
 
 

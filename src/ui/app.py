@@ -102,6 +102,13 @@ from constants import (
     WINDOW_STATE_ICONIC,
     WINDOW_STATE_NORMAL,
     WINDOW_STATE_ZOOMED,
+    BTN_WIDTH_UPDATE_BANNER,
+    COLOR_UPDATE_BANNER_BG,
+    COLOR_UPDATE_BANNER_TEXT,
+    UPDATE_CHECK_INITIAL_DELAY_MS,
+    UPDATE_CHECK_INTERVAL_MS,
+    UPDATE_CHECK_POLL_MS,
+    UPDATE_CHECK_REPO_URL,
     WINDOW_RESTORE_REVEAL_MAX_MS,
     WINDOW_RESTORE_REVEAL_MIN_MS,
     get_localized_menu_options_datenaustausch,
@@ -135,6 +142,7 @@ from services.customer_service import CustomerService
 from services.tray_service import TrayService
 from services.instance_service import HEARTBEAT_INTERVAL_SECONDS, InstanceService, build_case_uri
 from services.i18n_service import tr
+from services import update_check_service
 
 from ui.views.cockpit_view import CockpitView
 from ui.views.board_view import BoardView
@@ -309,6 +317,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._unlock_check_timer_id: str | None = None
         self.after(UNLOCK_NOTIFICATION_CHECK_INTERVAL_MS, self._check_workstation_unlock_state)
 
+        # Update check: banner when GitHub master carries a newer version.
+        self.current_version: str | None = update_check_service.get_current_version()
+        self.latest_version: str | None = None
+        self.update_banner: ctk.CTkFrame | None = None
+        self._update_banner_dismissed_for: str | None = None
+        self._update_check_future: Any | None = None
+        self._update_check_timer_id: str | None = self.after(UPDATE_CHECK_INITIAL_DELAY_MS, self._start_update_check)
+
         # Everything is built: close the splash window and show the real one.
         # Nothing of it has been on screen before this point.
         self.update_idletasks()
@@ -445,6 +461,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def on_language_changed(self, lang_code: str):
         self.title(tr("app.window_title", APP_WINDOW_TITLE))
         self.create_menu_bar()
+        self._refresh_update_banner()
         # Only views that were actually built need relabelling - one created
         # later picks up the new language on construction anyway.
         for view in list(getattr(self, "_views", {}).values()):
@@ -1095,6 +1112,89 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 btn.configure(text=tr("menu.demo_off", "🧪 Beispieldaten: AUS"), fg_color=COLOR_COMPLETED_GRAY)
 
         self.check_due_followups()
+
+    # --- Update check -------------------------------------------------------
+
+    def _start_update_check(self) -> None:
+        """Kicks off a background fetch of the latest version on GitHub."""
+        self._update_check_timer_id = None
+        if self.current_version is None:
+            return  # own version unknown: nothing meaningful to compare
+        self._update_check_future = update_check_service.fetch_latest_version_async()
+        self._update_check_timer_id = self.after(UPDATE_CHECK_POLL_MS, self._poll_update_check)
+
+    def _poll_update_check(self) -> None:
+        """Main-thread poll of the worker's Future (the worker never touches Tk)."""
+        self._update_check_timer_id = None
+        future = self._update_check_future
+        if future is not None and not future.done():
+            self._update_check_timer_id = self.after(UPDATE_CHECK_POLL_MS, self._poll_update_check)
+            return
+        self._update_check_future = None
+        latest = future.result() if future is not None else None
+        if latest:
+            self.on_latest_version_known(latest)
+        self._update_check_timer_id = self.after(UPDATE_CHECK_INTERVAL_MS, self._start_update_check)
+
+    def on_latest_version_known(self, latest: str) -> None:
+        """Shows or hides the update banner for the given latest version."""
+        self.latest_version = latest
+        self._refresh_update_banner()
+
+    def is_update_available(self) -> bool:
+        latest = getattr(self, "latest_version", None)
+        return (
+            update_check_service.is_newer(latest, getattr(self, "current_version", None))
+            and latest != getattr(self, "_update_banner_dismissed_for", None)
+        )
+
+    def _refresh_update_banner(self) -> None:
+        """(Re)builds the banner in the current language, or removes it."""
+        old = getattr(self, "update_banner", None)
+        if old is not None and old.winfo_exists():
+            old.destroy()
+        self.update_banner = None
+        if not self.is_update_available():
+            return
+
+        banner = ctk.CTkFrame(self, fg_color=COLOR_UPDATE_BANNER_BG, corner_radius=CORNER_RADIUS_CARD)
+        ctk.CTkLabel(
+            banner,
+            text=tr(
+                "update.banner_text",
+                "⬆ Eine neuere Version ist verfügbar: v{latest} (du nutzt v{current}).",
+            ).format(latest=self.latest_version, current=self.current_version),
+            text_color=COLOR_UPDATE_BANNER_TEXT,
+            anchor="w",
+        ).pack(side="left", padx=PAD_LG, pady=PAD_SM, fill="x", expand=True)
+        ctk.CTkButton(
+            banner, text="✕", width=BTN_WIDTH_XS, fg_color="transparent",
+            text_color=COLOR_UPDATE_BANNER_TEXT, hover_color=COLOR_MUTED_GRAY_HOVER,
+            command=self.dismiss_update_banner,
+        ).pack(side="right", padx=(0, PAD_SM), pady=PAD_SM)
+        ctk.CTkButton(
+            banner, text=tr("update.open_github", "Auf GitHub ansehen"), width=BTN_WIDTH_UPDATE_BANNER,
+            command=self._open_update_page,
+        ).pack(side="right", padx=PAD_SM, pady=PAD_SM)
+
+        container = getattr(self, "container_frame", None)
+        if container is not None and container.winfo_exists():
+            banner.pack(fill="x", side="top", padx=PAD_LG, pady=(0, PAD_MD), before=container)
+        else:
+            banner.pack(fill="x", side="top", padx=PAD_LG, pady=(0, PAD_MD))
+        self.update_banner = banner
+
+    def dismiss_update_banner(self) -> None:
+        """Hides the banner until an even newer version shows up (per session)."""
+        self._update_banner_dismissed_for = self.latest_version
+        self._refresh_update_banner()
+
+    def _open_update_page(self) -> None:
+        import webbrowser
+        try:
+            webbrowser.open(UPDATE_CHECK_REPO_URL)
+        except Exception as err:
+            logger.warning(f"Could not open update page: {err}")
 
     def bring_to_foreground(self):
         """Restore main window from minimized/withdrawn state and bring it to the foreground on OS level."""
@@ -2146,6 +2246,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception as listener_err:
                 logger.warning(f"Could not stop ntfy listener: {listener_err}")
             self.ntfy_listener = None
+        update_timer = self.__dict__.get("_update_check_timer_id")
+        if update_timer is not None:
+            try:
+                self.after_cancel(update_timer)
+            except Exception:
+                pass
+            self._update_check_timer_id = None
         unlock_timer = self.__dict__.get("_unlock_check_timer_id")
         if unlock_timer is not None:
             try:

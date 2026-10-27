@@ -1909,3 +1909,15 @@ COLOR_BOARD_BORDER_TECH = ("#d8b4fe", "#7e22ce")
 COLOR_BOARD_BORDER_FOLLOWUP = ("#fdba74", "#c2410c")
 COLOR_BOARD_BORDER_DONE = ("#86efac", "#15803d")
 
+
+# --- Update Check (neue Version auf GitHub) ---
+PYPROJECT_FILENAME = "pyproject.toml"
+UPDATE_CHECK_REPO_URL = "https://github.com/TGBox/py-case-follow-up"
+UPDATE_CHECK_PYPROJECT_URL = "https://raw.githubusercontent.com/TGBox/py-case-follow-up/master/pyproject.toml"
+UPDATE_CHECK_TIMEOUT_SECONDS = 8.0
+UPDATE_CHECK_INITIAL_DELAY_MS = 15_000
+UPDATE_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000
+UPDATE_CHECK_POLL_MS = 500
+COLOR_UPDATE_BANNER_BG = ("#fef3c7", "#3b2f12")
+COLOR_UPDATE_BANNER_TEXT = ("#78350f", "#fcd34d")
+BTN_WIDTH_UPDATE_BANNER = 150

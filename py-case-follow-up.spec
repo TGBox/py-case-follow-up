@@ -1,7 +1,7 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files
 
-datas = [('data_examples', 'data_examples'), ('locales', 'locales')]
+datas = [('data_examples', 'data_examples'), ('locales', 'locales'), ('pyproject.toml', '.')]
 datas += collect_data_files('customtkinter')
 
 a = Analysis(

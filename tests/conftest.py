@@ -169,6 +169,17 @@ def prevent_external_launch(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
+def block_update_check_network(monkeypatch: pytest.MonkeyPatch):
+    """No test may reach GitHub: the update check always reports 'no information'.
+
+    Tests of the fetch itself import the real function at module level (before
+    this patch applies) and mock urlopen instead.
+    """
+    from services import update_check_service
+    monkeypatch.setattr(update_check_service, "fetch_latest_version", lambda *args, **kwargs: None)
+
+
+@pytest.fixture(autouse=True)
 def reset_default_locale():
     """Ensures each test starts and finishes with the default German locale."""
     from services.i18n_service import get_i18n

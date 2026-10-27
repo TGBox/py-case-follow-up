@@ -38,6 +38,7 @@ from constants import (
 from models.profile import UserProfile
 from services.storage_service import StorageService
 from ui.dialogs.base_dialog import BaseDialog
+from utils.sorting import alpha_sorted
 from utils.ui_utils import (
     bind_mouse_wheel_to_canvas,
     create_highlighted_label,
@@ -192,7 +193,8 @@ class TagManagementDialog(BaseDialog):
 
         raw_query = self.search_tag_entry.get().strip() if hasattr(self, "search_tag_entry") else ""
         query = raw_query.lower()
-        tags = [t for t in self.profile.available_tags if query in t.lower()] if query else self.profile.available_tags
+        all_tags = alpha_sorted(self.profile.available_tags)
+        tags = [t for t in all_tags if query in t.lower()] if query else all_tags
 
         from services.i18n_service import tr
 
@@ -279,7 +281,8 @@ class TagManagementDialog(BaseDialog):
 
         raw_query = self.search_mod_entry.get().strip() if hasattr(self, "search_mod_entry") else ""
         query = raw_query.lower()
-        mods = [m for m in self.profile.available_module_tags if query in m.lower()] if query else self.profile.available_module_tags
+        all_mods = alpha_sorted(self.profile.available_module_tags)
+        mods = [m for m in all_mods if query in m.lower()] if query else all_mods
 
         if not mods:
             self.register_i18n(ctk.CTkLabel(self.modules_scroll, text=tr("tag_mgmt.no_modules", "Keine Programmbereiche gefunden."), text_color=COLOR_MUTED_LABEL), "tag_mgmt.no_modules", "Keine Programmbereiche gefunden.").pack(pady=PAD_2XL)

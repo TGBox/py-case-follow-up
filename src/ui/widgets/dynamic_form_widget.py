@@ -161,7 +161,8 @@ class ModuleTagPickerPopup(ctk.CTkToplevel):
 
     def __init__(self, parent, available_tags: list[str], selected_tags: list[str], on_apply: Callable[[list[str]], None]):
         super().__init__(parent)
-        self.available_tags = available_tags
+        from utils.sorting import alpha_sorted
+        self.available_tags = alpha_sorted(available_tags)
         self.selected_tags = set(selected_tags)
         self.on_apply = on_apply
         from services.i18n_service import tr

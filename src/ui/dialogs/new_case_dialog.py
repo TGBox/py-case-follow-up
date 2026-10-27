@@ -10,6 +10,7 @@ from services.i18n_service import tr
 from models.schema import QuestionSchema
 from enums import BoardColumn, Actor, Channel
 from utils.datetime_utils import now_iso, parse_iso, get_local_now, format_german_datetime
+from utils.sorting import alpha_sorted
 from services.attachment_service import sanitize_filename
 from constants import (
     REL_ATTACHMENTS_DIR,
@@ -213,7 +214,9 @@ class NewCaseDialog(BaseDialog):
         self.created_by = created_by
         self.on_case_created = on_case_created
         self.on_customer_added = on_customer_added
-        self.available_tags = list(available_tags) if available_tags else list(DEFAULT_TAGS)
+        # Sorted once when the dialog opens: a tag added in this dialog stays at
+        # the end (add_new_tag appends) and moves into place the next time.
+        self.available_tags = alpha_sorted(available_tags) if available_tags else alpha_sorted(DEFAULT_TAGS)
         self.on_tag_added = on_tag_added
         self.existing_case_ids = existing_case_ids
         # Set once the case has been handed over - a second Enter/click that

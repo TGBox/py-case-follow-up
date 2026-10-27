@@ -837,3 +837,50 @@ def test_check_mobile_ntfy_reminders_attaches_actions(mock_send_async):
     assert "take:1042" in kwargs["actions"][1]["body"]
 
 
+def test_ntfy_profile_ui_qr_button(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        mobile_ntfy_enabled=True,
+        mobile_ntfy_topic="desk-alert-test1234",
+    )
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=MagicMock())
+
+    assert hasattr(dlg, "ntfy_qr_btn")
+
+    # 1. Topic empty -> shows Toast notification
+    dlg.ntfy_topic_entry.delete(0, "end")
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        dlg.on_show_ntfy_qr()
+        assert mock_toast.called
+
+    # 2. Topic filled -> opens NtfyQrDialog
+    dlg.ntfy_topic_entry.insert(0, "desk-alert-test1234")
+    with patch("ui.dialogs.ntfy_qr_dialog.NtfyQrDialog") as mock_dialog:
+        dlg.on_show_ntfy_qr()
+        assert mock_dialog.called
+        assert mock_dialog.call_args[1]["topic"] == "desk-alert-test1234"
+
+    dlg.destroy()
+
+
+def test_ntfy_qr_dialog_actions(root):
+    from ui.dialogs.ntfy_qr_dialog import NtfyQrDialog
+
+    dialog = NtfyQrDialog(root, topic="desk-alert-test1234")
+    assert dialog.topic == "desk-alert-test1234"
+    assert dialog.target_url == "https://ntfy.sh/desk-alert-test1234"
+
+    # Test copy link action
+    with patch("ui.dialogs.ntfy_qr_dialog.ToastNotification") as mock_toast:
+        dialog._on_copy_link()
+        assert mock_toast.called
+
+    # Test open browser action
+    with patch("webbrowser.open") as mock_open:
+        dialog._on_open_browser()
+        mock_open.assert_called_with("https://ntfy.sh/desk-alert-test1234")
+
+    dialog.destroy()
+
+
+

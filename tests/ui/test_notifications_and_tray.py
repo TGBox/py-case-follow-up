@@ -172,9 +172,10 @@ class _CockpitStub:
 
 
 class _CaseStub:
-    def __init__(self, case_id, followup_at=None, title=""):
+    def __init__(self, case_id, followup_at=None, title="", followup_note=""):
         self.case_id = case_id
-        self.workflow_status = type("W", (), {"followup_at": followup_at, "is_completed": False})()
+        self.workflow_status = type("W", (), {"followup_at": followup_at, "followup_note": followup_note,
+                                              "is_completed": False})()
         self.classification = type("C", (), {"title": title})()
 
 
@@ -186,6 +187,7 @@ class AppStub(ctk.CTk):
     _poll_open_case_request: Any = SupportCockpitApp._poll_open_case_request
     switch_to_cockpit_view_for_case: Any = SupportCockpitApp.switch_to_cockpit_view_for_case
     check_due_followups: Any = SupportCockpitApp.check_due_followups
+    _followup_link: Any = staticmethod(SupportCockpitApp._followup_link)
     _check_mobile_ntfy_reminders: Any = SupportCockpitApp._check_mobile_ntfy_reminders
     is_on_call_active: Any = SupportCockpitApp.is_on_call_active
     _is_cockpit_active = lambda self: True  # noqa: E731
@@ -301,7 +303,8 @@ def test_the_app_attaches_a_launch_uri_to_the_due_reminder(app, monkeypatch):
     """The URI has to name the very case the message is about."""
     recorded = {}
     monkeypatch.setattr("ui.app.ToastNotification", lambda parent, **kwargs: recorded.update(kwargs))
-    app.get_all_active_cases_for_reminder = lambda: [_CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem")]
+    app.get_all_active_cases_for_reminder = lambda: [_CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem",
+                                                               followup_note="Siehe https://wiki.example/drucker")]
     app.bell_btn = type("B", (), {"configure": lambda self, **k: None})()
     app.tray_service = type("T", (), {"update_badge": lambda self, n: None})()
 
@@ -310,6 +313,7 @@ def test_the_app_attaches_a_launch_uri_to_the_due_reminder(app, monkeypatch):
 
     assert recorded.get("launch_uri") == "supportcockpit://case/T-2"
     assert "T-2" in recorded.get("message", "")
+    assert recorded.get("link_url") == "https://wiki.example/drucker"
 
 
 # --- toast: native dispatch -----------------------------------------------------------
@@ -546,6 +550,19 @@ def test_the_unlock_notification_turns_a_link_in_its_text_into_a_button(monkeypa
     fake_app = SimpleNamespace(profile=SimpleNamespace(reminder_settings=settings))
     SupportCockpitApp._trigger_unlock_notification(cast(Any, fake_app))
     assert seen == [{"title": seen[0]["title"], "message": text, "link_url": expected}]
+
+
+@pytest.mark.parametrize("note, title, expected", [
+    ("Wiki prüfen: https://wiki.example/a.", "Drucker", "https://wiki.example/a"),
+    ("", "Ticket www.example.de/402", "https://www.example.de/402"),
+    ("Note https://note.example", "Titel https://title.example", "https://note.example"),
+    ("Beim Dev nachfragen", "Drucker", None),
+])
+def test_a_due_reminder_offers_the_link_from_its_note_or_title(note, title, expected):
+    from types import SimpleNamespace
+    case = SimpleNamespace(workflow_status=SimpleNamespace(followup_note=note),
+                           classification=SimpleNamespace(title=title))
+    assert SupportCockpitApp._followup_link(cast(Any, case)) == expected
 
 
 # --- restoring the window from the tray ----------------------------------------------

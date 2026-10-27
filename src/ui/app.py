@@ -1434,6 +1434,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                             # Without a launch URI Windows shows the toast but a
                             # click on it does nothing at all.
                             launch_uri=build_case_uri(top_case.case_id),
+                            link_url=self._followup_link(top_case),
                         )
                     except Exception as e:
                         logger.warning(f"Could not display toast notification: {e}")
@@ -1475,6 +1476,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception:
                 pass
         self._followup_timer_id = self.after(FOLLOWUP_CHECK_INTERVAL_MS, self.check_due_followups)
+
+    @staticmethod
+    def _followup_link(case: Case) -> str | None:
+        """The web link a due reminder offers as "Open link": the first link in
+        the follow-up note, else in the case title. None when there is none."""
+        from utils.ui_utils import find_links
+        for text in (case.workflow_status.followup_note, case.classification.title):
+            links = find_links(text or "")
+            if links:
+                return links[0][1]
+        return None
 
     def _update_team_presence_on_idle(self, is_idle: bool | None = None) -> None:
         """Automatically marks user as absent in colleagues directory on lock/idle and active on return."""

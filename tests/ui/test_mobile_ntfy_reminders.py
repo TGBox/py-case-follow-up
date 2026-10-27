@@ -577,7 +577,7 @@ def test_app_update_team_presence_on_idle_activates_and_restores():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=False, absence_reason="")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set: bool = False
+    app._auto_absence_set = False
     app._saved_absence_reason = ""
 
     # 1. User becomes idle / locked -> marked absent automatically
@@ -610,7 +610,7 @@ def test_app_update_team_presence_preserves_manual_absence():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Urlaub bis Freitag")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set: bool = False
+    app._auto_absence_set = False
     app._saved_absence_reason = ""
 
     # 1. Lock occurs: Must not overwrite existing manual absence
@@ -639,7 +639,7 @@ def test_app_update_team_presence_restores_when_feature_disabled():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Automatisch abwesend")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set: bool = True
+    app._auto_absence_set = True
     app._saved_absence_reason = ""
 
     # Feature disabled: Reverts previous auto-absence

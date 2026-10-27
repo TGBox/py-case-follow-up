@@ -187,8 +187,11 @@ def test_cobra_import_feeds_new_case_board_redirect_and_search(seeded_storage, t
     storage = _reopen(seeded_storage)
     customer_service = CustomerService(storage)
     assert len(customer_service.get_all_customers()) == 6
-    assert customer_service.get_customer_by_id("K-10482").phone_main == "0731-999"
+    c10482 = customer_service.get_customer_by_id("K-10482")
+    assert c10482 is not None
+    assert c10482.phone_main == "0731-999"
     ortho = customer_service.get_customer_by_id("K-9100")
+    assert ortho is not None
     assert (ortho.is_vip, ortho.contact_person) == (True, "Dr. Bernd Becker")
 
     app = _headless_app(storage)
@@ -198,7 +201,9 @@ def test_cobra_import_feeds_new_case_board_redirect_and_search(seeded_storage, t
     # Quick-add from inside the dialog goes through the same customer master data.
     app.on_quick_customer_added(Customer(customer_id="K-9200", practice_name="Praxis Schnellanlage",
                                          contacts=[Contact(name="Fr. Quick")]))
-    assert app.customer_service.get_customer_by_id("K-9200").contact_person == "Fr. Quick"
+    c9200 = app.customer_service.get_customer_by_id("K-9200")
+    assert c9200 is not None
+    assert c9200.contact_person == "Fr. Quick"
 
     bug_schema = next(s for s in app.schemas if s.schema_id == "schema_bug_report")
     dialog = _new_case_dialog(app.customers, app.schemas, app.on_case_created, app._all_known_case_ids)
@@ -630,6 +635,7 @@ def test_cockpit_sash_widths_survive_restart(storage):
     # The debounced background save reaches disk on its own, without an explicit flush.
     cfg = AppConfig(workspace_dir=storage.config.workspace_dir, username="test_agent")
     deadline = time.monotonic() + 5
+    widths: dict[str, int] = {}
     while time.monotonic() < deadline:
         widths = StorageService(cfg).load_profile().ui_settings.column_widths
         if (widths["cockpit_left"], widths["cockpit_right"]) == (350, 312):

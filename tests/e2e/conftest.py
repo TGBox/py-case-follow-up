@@ -20,7 +20,7 @@ def start_app(monkeypatch: pytest.MonkeyPatch):
     from ui.app import SupportCockpitApp
 
     # OS boundaries only: no real tray icon thread, no BookStack request at startup.
-    monkeypatch.setattr(TrayService, "start", lambda self, on_restore, on_quit: None)
+    monkeypatch.setattr(TrayService, "start", lambda self, *args, **kwargs: None)
     monkeypatch.setattr(WikiSyncService, "sync_from_bookstack_async", lambda self, callback=None, mock_client=None: None)
 
     scaling_before = ctk.ScalingTracker.widget_scaling

@@ -93,27 +93,35 @@ class TrayService:
         self._thread: threading.Thread | None = None
         self._on_restore: Callable[[], None] | None = None
         self._on_quit: Callable[[], None] | None = None
+        self._on_toggle_on_call: Callable[[], None] | None = None
+        self._is_on_call_active: Callable[[], bool] | None = None
         self._badge_count: int = 0
 
-    def start(self, on_restore: Callable[[], None], on_quit: Callable[[], None]) -> None:
+    def start(
+        self,
+        on_restore: Callable[[], None],
+        on_quit: Callable[[], None],
+        on_toggle_on_call: Callable[[], None] | None = None,
+        is_on_call_active: Callable[[], bool] | None = None,
+    ) -> None:
         """Start the system tray icon in a background thread.
 
         Args:
             on_restore: Callback invoked when the user double-clicks the tray icon or clicks 'Öffnen'.
             on_quit: Callback invoked when the user clicks 'Beenden' in the tray context menu.
+            on_toggle_on_call: Optional callback invoked when the user toggles on-call mode.
+            is_on_call_active: Optional callable returning whether on-call mode is currently active.
         """
         self._on_restore = on_restore
         self._on_quit = on_quit
+        self._on_toggle_on_call = on_toggle_on_call
+        self._is_on_call_active = is_on_call_active
 
         if self._thread and self._thread.is_alive():
             logger.debug("System tray icon thread is already running.")
             return
 
-        menu = pystray.Menu(
-            pystray.MenuItem(tr("tray.open", "Öffnen"), self._handle_restore, default=True),
-            pystray.Menu.SEPARATOR,
-            pystray.MenuItem(tr("tray.quit", "Beenden"), self._handle_quit),
-        )
+        menu = self._create_menu()
 
         image = _create_tray_icon_image(self._badge_count)
         self._icon = pystray.Icon(
@@ -126,6 +134,42 @@ class TrayService:
         self._thread = threading.Thread(target=self._icon.run, daemon=True)
         self._thread.start()
         logger.info("System tray icon started.")
+
+    def _create_menu(self) -> pystray.Menu:
+        items = [
+            pystray.MenuItem(tr("tray.open", "Öffnen"), self._handle_restore, default=True),
+        ]
+        if self._on_toggle_on_call and self._is_on_call_active:
+            items.extend([
+                pystray.Menu.SEPARATOR,
+                pystray.MenuItem(
+                    tr("tray.on_call", "Notdienst / Rufbereitschaft"),
+                    self._handle_toggle_on_call,
+                    checked=lambda item: self._is_on_call_active() if self._is_on_call_active else False,
+                ),
+            ])
+        items.extend([
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem(tr("tray.quit", "Beenden"), self._handle_quit),
+        ])
+        return pystray.Menu(*items)
+
+    def update_menu(self) -> None:
+        """Update the tray context menu and tooltip dynamically."""
+        if self._icon:
+            try:
+                self._icon.menu = self._create_menu()
+                self._icon.title = self._get_tooltip()
+                update_fn = getattr(self._icon, "update_menu", None)
+                if callable(update_fn):
+                    update_fn()
+            except Exception:
+                pass
+
+    def _handle_toggle_on_call(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
+        if self._on_toggle_on_call:
+            self._on_toggle_on_call()
+        self.update_menu()
 
     def update_badge(self, count: int) -> None:
         """Update the tray icon badge with the current notification count."""
@@ -203,9 +247,14 @@ class TrayService:
         logger.info("System tray icon stopped.")
 
     def _get_tooltip(self) -> str:
+        on_call_prefix = (
+            f"[{tr('tray.on_call_badge', 'Notdienst')}] "
+            if (self._is_on_call_active and self._is_on_call_active())
+            else ""
+        )
         if self._badge_count > 0:
-            return tr("tray.tooltip_due", "Support-Cockpit — {count} fällige Wiedervorlage(n)", count=self._badge_count)
-        return tr("tray.tooltip_default", "Support-Cockpit")
+            return f"{on_call_prefix}{tr('tray.tooltip_due', 'Support-Cockpit — {count} fällige Wiedervorlage(n)', count=self._badge_count)}"
+        return f"{on_call_prefix}{tr('tray.tooltip_default', 'Support-Cockpit')}"
 
     def _handle_restore(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_restore:

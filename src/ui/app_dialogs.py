@@ -434,6 +434,16 @@ class DialogLaunchersMixin:
         self.load_all_data()
         if hasattr(self, "user_btn") and self.user_btn and self.user_btn.winfo_exists():
             self.user_btn.configure(text=f"{self.profile.user.name}")
+        update_fn = getattr(self, "_update_on_call_ui_state", None)
+        active_fn = getattr(self, "is_on_call_active", None)
+        if callable(update_fn) and callable(active_fn):
+            update_fn(active_fn())
+        update_presence = getattr(self, "_update_team_presence_on_idle", None)
+        if callable(update_presence):
+            update_presence()
+        sync_listener = getattr(self, "_sync_ntfy_remote_control_listener", None)
+        if callable(sync_listener):
+            sync_listener()
         if hasattr(self, "cockpit_view") and hasattr(self.cockpit_view, "author_name"):
             self.cockpit_view.author_name = self.profile.user.name
             if hasattr(self.cockpit_view, "left_frame") and hasattr(self.cockpit_view.left_frame, "set_user_color_settings"):

@@ -21,6 +21,7 @@ from constants import (
     ICON_KEY_COPY,
     ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
+    ICON_KEY_ON_CALL,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
     ICON_KEY_USER,
@@ -43,6 +44,7 @@ MDL2_GLYPHS: dict[str, str] = {
     ICON_KEY_COPY: "\uE8C8",  # Copy clipboard / two pages
     ICON_KEY_FULLSCREEN: "\uE740",  # FullScreen
     ICON_KEY_WINDOWED: "\uE1D9",  # BackToWindow
+    ICON_KEY_ON_CALL: "\uE717",  # Phone / Call
 }
 
 
@@ -145,6 +147,13 @@ def _draw_windowed_procedural(draw: Any, s: int, color: str) -> None:
     draw.rectangle([s * 0.18, s * 0.32, s * 0.68, s * 0.82], fill=(0, 0, 0, 0), outline=color, width=w)
 
 
+def _draw_on_call_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    draw.line([s * 0.35, s * 0.35, s * 0.65, s * 0.65], fill=color, width=w * 2)
+    draw.ellipse([s * 0.22, s * 0.22, s * 0.44, s * 0.44], fill=color)
+    draw.ellipse([s * 0.56, s * 0.56, s * 0.78, s * 0.78], fill=color)
+
+
 _PROCEDURAL_DRAWERS: dict[
     str, Callable[[Any, int, str], None]
 ] = {
@@ -156,6 +165,7 @@ _PROCEDURAL_DRAWERS: dict[
     ICON_KEY_COPY: _draw_copy_procedural,
     ICON_KEY_FULLSCREEN: _draw_fullscreen_procedural,
     ICON_KEY_WINDOWED: _draw_windowed_procedural,
+    ICON_KEY_ON_CALL: _draw_on_call_procedural,
 }
 
 

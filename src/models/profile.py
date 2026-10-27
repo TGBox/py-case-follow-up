@@ -20,6 +20,20 @@ from constants import (
     DEFAULT_LANGUAGE,
     DEFAULT_MODULE_TAGS,
     DEFAULT_NOTIFICATION_LEVEL,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
+    DEFAULT_NTFY_ENABLED,
+    DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
+    DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
+    DEFAULT_NTFY_NOTIFY_HANDOVERS,
+    DEFAULT_NTFY_NOTIFY_PRIO1,
+    DEFAULT_NTFY_ON_CALL,
+    DEFAULT_NTFY_AUTO_PRESENCE,
+    DEFAULT_NTFY_REMOTE_CONTROL,
+    DEFAULT_NTFY_RESPONSE_TOPIC,
+    DEFAULT_NTFY_SERVER_URL,
+    DEFAULT_NTFY_TOPIC,
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_OLLAMA_URL,
     DEFAULT_POINTS_PER_IDLE_DAY,
@@ -212,6 +226,20 @@ class ReminderSettings:
     notification_level: str = DEFAULT_NOTIFICATION_LEVEL
     audio_enabled: bool = False
     os_popup_enabled: bool = True
+    mobile_ntfy_enabled: bool = DEFAULT_NTFY_ENABLED
+    mobile_ntfy_server_url: str = DEFAULT_NTFY_SERVER_URL
+    mobile_ntfy_topic: str = DEFAULT_NTFY_TOPIC
+    mobile_ntfy_idle_minutes: int = DEFAULT_NTFY_IDLE_MINUTES
+    mobile_ntfy_notify_followups: bool = DEFAULT_NTFY_NOTIFY_FOLLOWUPS
+    mobile_ntfy_notify_prio1: bool = DEFAULT_NTFY_NOTIFY_PRIO1
+    mobile_ntfy_notify_handovers: bool = DEFAULT_NTFY_NOTIFY_HANDOVERS
+    mobile_ntfy_notify_customer_notes: bool = DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES
+    mobile_ntfy_digest_enabled: bool = DEFAULT_NTFY_DIGEST_ENABLED
+    mobile_ntfy_digest_minutes: int = DEFAULT_NTFY_DIGEST_MINUTES
+    mobile_ntfy_on_call: bool = DEFAULT_NTFY_ON_CALL
+    mobile_ntfy_auto_presence: bool = DEFAULT_NTFY_AUTO_PRESENCE
+    mobile_ntfy_remote_control: bool = DEFAULT_NTFY_REMOTE_CONTROL
+    mobile_ntfy_response_topic: str = DEFAULT_NTFY_RESPONSE_TOPIC
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -222,6 +250,20 @@ class ReminderSettings:
             notification_level=data.get("notification_level", DEFAULT_NOTIFICATION_LEVEL),
             audio_enabled=bool(data.get("audio_enabled", False)),
             os_popup_enabled=bool(data.get("os_popup_enabled", True)),
+            mobile_ntfy_enabled=bool(data.get("mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED)),
+            mobile_ntfy_server_url=str(data.get("mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)),
+            mobile_ntfy_topic=str(data.get("mobile_ntfy_topic", DEFAULT_NTFY_TOPIC)),
+            mobile_ntfy_idle_minutes=int(data.get("mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)),
+            mobile_ntfy_notify_followups=bool(data.get("mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS)),
+            mobile_ntfy_notify_prio1=bool(data.get("mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1)),
+            mobile_ntfy_notify_handovers=bool(data.get("mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS)),
+            mobile_ntfy_notify_customer_notes=bool(data.get("mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES)),
+            mobile_ntfy_digest_enabled=bool(data.get("mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED)),
+            mobile_ntfy_digest_minutes=int(data.get("mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)),
+            mobile_ntfy_on_call=bool(data.get("mobile_ntfy_on_call", DEFAULT_NTFY_ON_CALL)),
+            mobile_ntfy_auto_presence=bool(data.get("mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE)),
+            mobile_ntfy_remote_control=bool(data.get("mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL)),
+            mobile_ntfy_response_topic=str(data.get("mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)),
         )
 
 

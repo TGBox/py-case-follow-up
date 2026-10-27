@@ -3,16 +3,40 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 from constants import (
+    BTN_WIDTH_NTFY_RANDOM,
+    BTN_WIDTH_NTFY_TEST,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
     COLOR_TEXT_WHITE,
     COLOR_TIP_TEXT,
+    COMBO_WIDTH_NTFY_DIGEST,
+    COMBO_WIDTH_NTFY_IDLE,
     DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
+    DEFAULT_NTFY_ENABLED,
+    DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
+    DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
+    DEFAULT_NTFY_NOTIFY_HANDOVERS,
+    DEFAULT_NTFY_NOTIFY_PRIO1,
+    DEFAULT_NTFY_ON_CALL,
+    DEFAULT_NTFY_AUTO_PRESENCE,
+    DEFAULT_NTFY_REMOTE_CONTROL,
+    DEFAULT_NTFY_RESPONSE_TOPIC,
+    DEFAULT_NTFY_TOPIC,
+    ENTRY_WIDTH_NTFY_TOPIC,
+    FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
+    NTFY_DIGEST_MINUTES_OPTIONS,
+    NTFY_IDLE_MINUTES_OPTIONS,
+    NTFY_TAG_BELL,
+    NTFY_TAG_TEST,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
+    PAD_TINY,
     PAD_XS,
     POPUP_DISPLAY_TARGETS,
     PROFILE_TAB_FIELD_WIDTH,
@@ -69,6 +93,7 @@ class UiSettingsTabMixin:
         register_i18n: Callable[..., Any]
         retranslate_choices: Callable[..., Any]
         selected_choice_index: Callable[..., int]
+        winfo_toplevel: Callable[[], Any]
         _initial_font_scale: float
         _saved: bool
 
@@ -177,6 +202,320 @@ class UiSettingsTabMixin:
             self.os_popup_switch.deselect()
         self.os_popup_switch.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
+        # Smartphone Push (ntfy.sh) Section
+        self.ntfy_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                right_col,
+                text=tr("ntfy.section_title", "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)"),
+                font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")
+            ),
+            "ntfy.section_title",
+            "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)",
+        )
+        self.ntfy_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_XS))
+
+        self.ntfy_switch = self.register_i18n(
+            ctk.CTkSwitch(  # type: ignore[attr-defined]
+                right_col,
+                text=tr("ntfy.enable_toggle", "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)"),
+                command=self.on_toggle_ntfy,
+            ),
+            "ntfy.enable_toggle",
+            "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED):
+            self.ntfy_switch.select()
+        else:
+            self.ntfy_switch.deselect()
+        self.ntfy_switch.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        self.ntfy_topic_lbl = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("ntfy.topic_label", "ntfy-Thema (Topic):")),
+            "ntfy.topic_label",
+            "ntfy-Thema (Topic):",
+        )
+        self.ntfy_topic_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+
+        topic_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        topic_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
+
+        self.ntfy_topic_entry = self.register_i18n(
+            ctk.CTkEntry(
+                topic_frame,
+                placeholder_text=tr("ntfy.topic_placeholder", "z. B. desk-alert-8f2a9c"),
+                width=ENTRY_WIDTH_NTFY_TOPIC,
+            ),
+            "ntfy.topic_placeholder",
+            "z. B. desk-alert-8f2a9c",
+            attr="placeholder_text",
+        )
+        curr_topic = getattr(self.profile.reminder_settings, "mobile_ntfy_topic", DEFAULT_NTFY_TOPIC)
+        if curr_topic:
+            self.ntfy_topic_entry.insert(0, curr_topic)
+        self.ntfy_topic_entry.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_random_btn = self.register_i18n(
+            ctk.CTkButton(
+                topic_frame,
+                text=tr("ntfy.btn_random_topic", "🎲 Zufall"),
+                command=self.on_generate_random_ntfy_topic,
+                width=BTN_WIDTH_NTFY_RANDOM,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+            ),
+            "ntfy.btn_random_topic",
+            "🎲 Zufall",
+        )
+        self.ntfy_random_btn.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_test_btn = self.register_i18n(
+            ctk.CTkButton(
+                topic_frame,
+                text=tr("ntfy.btn_test_notification", "🔔 Testnachricht"),
+                command=self.on_send_ntfy_test,
+                width=BTN_WIDTH_NTFY_TEST,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+            ),
+            "ntfy.btn_test_notification",
+            "🔔 Testnachricht",
+        )
+        self.ntfy_test_btn.pack(side="left")
+
+        idle_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        idle_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
+
+        self.ntfy_idle_lbl = self.register_i18n(
+            ctk.CTkLabel(idle_frame, text=tr("ntfy.idle_threshold_label", "Aktivieren nach Inaktivität:")),
+            "ntfy.idle_threshold_label",
+            "Aktivieren nach Inaktivität:",
+        )
+        self.ntfy_idle_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_idle_combo = ctk.CTkOptionMenu(
+            idle_frame,
+            values=[tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=m) for m in NTFY_IDLE_MINUTES_OPTIONS],
+            width=COMBO_WIDTH_NTFY_IDLE,
+        )
+        curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+        self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
+        self.ntfy_idle_combo.pack(side="left")
+
+        filter_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        filter_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
+
+        self.ntfy_filter_hdr = self.register_i18n(
+            ctk.CTkLabel(
+                filter_frame,
+                text=tr("ntfy.filter_header", "Benachrichtigen bei:"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
+            ),
+            "ntfy.filter_header",
+            "Benachrichtigen bei:",
+        )
+        self.ntfy_filter_hdr.pack(anchor="w", pady=(PAD_XS, PAD_TINY))
+
+        self.ntfy_cb_followups = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_followups", "Fällige Wiedervorlagen")),
+            "ntfy.filter_followups",
+            "Fällige Wiedervorlagen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS):
+            self.ntfy_cb_followups.select()
+        else:
+            self.ntfy_cb_followups.deselect()
+        self.ntfy_cb_followups.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_prio1 = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_prio1", "Dringlichkeit Notfall / Prio 1")),
+            "ntfy.filter_prio1",
+            "Dringlichkeit Notfall / Prio 1",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1):
+            self.ntfy_cb_prio1.select()
+        else:
+            self.ntfy_cb_prio1.deselect()
+        self.ntfy_cb_prio1.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_handovers = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_handovers", "Fall-Übergaben & Zuweisungen")),
+            "ntfy.filter_handovers",
+            "Fall-Übergaben & Zuweisungen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS):
+            self.ntfy_cb_handovers.select()
+        else:
+            self.ntfy_cb_handovers.deselect()
+        self.ntfy_cb_handovers.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_notes = self.register_i18n(
+            ctk.CTkCheckBox(filter_frame, text=tr("ntfy.filter_notes", "Neue Kunden-Notizen")),
+            "ntfy.filter_notes",
+            "Neue Kunden-Notizen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES):
+            self.ntfy_cb_notes.select()
+        else:
+            self.ntfy_cb_notes.deselect()
+        self.ntfy_cb_notes.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_on_call = self.register_i18n(
+            ctk.CTkCheckBox(
+                filter_frame,
+                text=tr("ntfy.filter_on_call", "Notdienst / Rufbereitschaft (Inaktivitätszwang übergehen)"),
+            ),
+            "ntfy.filter_on_call",
+            "Notdienst / Rufbereitschaft (Inaktivitätszwang übergehen)",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_on_call", DEFAULT_NTFY_ON_CALL):
+            self.ntfy_cb_on_call.select()
+        else:
+            self.ntfy_cb_on_call.deselect()
+        self.ntfy_cb_on_call.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_cb_auto_presence = self.register_i18n(
+            ctk.CTkCheckBox(
+                filter_frame,
+                text=tr("ntfy.filter_auto_presence", "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen"),
+            ),
+            "ntfy.filter_auto_presence",
+            "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE):
+            self.ntfy_cb_auto_presence.select()
+        else:
+            self.ntfy_cb_auto_presence.deselect()
+        self.ntfy_cb_auto_presence.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        # Smart Digest (Stufe 3)
+        digest_frame = ctk.CTkFrame(filter_frame, fg_color="transparent")
+        digest_frame.pack(fill="x", pady=(PAD_XS, PAD_NONE))
+
+        self.ntfy_cb_digest = self.register_i18n(
+            ctk.CTkCheckBox(
+                digest_frame,
+                text=tr("ntfy.digest_enable", "Sammelbericht für Routine-Ereignisse (Digest)"),
+                command=self.on_toggle_ntfy,
+            ),
+            "ntfy.digest_enable",
+            "Sammelbericht für Routine-Ereignisse (Digest)",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED):
+            self.ntfy_cb_digest.select()
+        else:
+            self.ntfy_cb_digest.deselect()
+        self.ntfy_cb_digest.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        digest_cfg_frame = ctk.CTkFrame(digest_frame, fg_color="transparent")
+        digest_cfg_frame.pack(fill="x", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_digest_interval_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                digest_cfg_frame,
+                text=tr("ntfy.digest_interval_lbl", "Intervall (Minuten):"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+            ),
+            "ntfy.digest_interval_lbl",
+            "Intervall (Minuten):",
+        )
+        self.ntfy_digest_interval_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_combo_digest_minutes = ctk.CTkOptionMenu(
+            digest_cfg_frame,
+            values=[str(m) for m in NTFY_DIGEST_MINUTES_OPTIONS],
+            width=COMBO_WIDTH_NTFY_DIGEST,
+        )
+        current_digest_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)
+        self.ntfy_combo_digest_minutes.set(str(current_digest_mins))
+        self.ntfy_combo_digest_minutes.pack(side="left")
+
+        self.ntfy_digest_hint_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                digest_frame,
+                text=tr("ntfy.digest_hint", "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet."),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
+                justify="left",
+                anchor="w",
+            ),
+            "ntfy.digest_hint",
+            "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet.",
+        )
+        self.ntfy_digest_hint_lbl.pack(anchor="w", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        # Remote Control (Stufe 6)
+        rc_frame = ctk.CTkFrame(filter_frame, fg_color="transparent")
+        rc_frame.pack(fill="x", pady=(PAD_XS, PAD_NONE))
+
+        self.ntfy_cb_remote_control = self.register_i18n(
+            ctk.CTkCheckBox(
+                rc_frame,
+                text=tr("ntfy.remote_control_enable", "Fernsteuerung & Aktions-Buttons aktivieren"),
+                command=self.on_toggle_ntfy,
+            ),
+            "ntfy.remote_control_enable",
+            "Fernsteuerung & Aktions-Buttons aktivieren",
+        )
+        if getattr(self.profile.reminder_settings, "mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL):
+            self.ntfy_cb_remote_control.select()
+        else:
+            self.ntfy_cb_remote_control.deselect()
+        self.ntfy_cb_remote_control.pack(anchor="w", pady=(PAD_NONE, PAD_TINY))
+
+        rc_cfg_frame = ctk.CTkFrame(rc_frame, fg_color="transparent")
+        rc_cfg_frame.pack(fill="x", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_response_topic_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                rc_cfg_frame,
+                text=tr("ntfy.response_topic_label", "Befehls-Thema (optional):"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+            ),
+            "ntfy.response_topic_label",
+            "Befehls-Thema (optional):",
+        )
+        self.ntfy_response_topic_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_entry_response_topic = ctk.CTkEntry(
+            rc_cfg_frame,
+            width=ENTRY_WIDTH_NTFY_TOPIC,
+            placeholder_text=tr("ntfy.response_topic_placeholder", "Standard: {topic}-cmd"),
+        )
+        saved_resp_topic = getattr(self.profile.reminder_settings, "mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)
+        if saved_resp_topic:
+            self.ntfy_entry_response_topic.insert(0, saved_resp_topic)
+        self.ntfy_entry_response_topic.pack(side="left")
+
+        self.ntfy_remote_control_hint_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                rc_frame,
+                text=tr("ntfy.remote_control_hint", "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone."),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
+                justify="left",
+                anchor="w",
+            ),
+            "ntfy.remote_control_hint",
+            "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone.",
+        )
+        self.ntfy_remote_control_hint_lbl.pack(anchor="w", padx=(PAD_MD, PAD_NONE), pady=(PAD_NONE, PAD_TINY))
+
+        self.ntfy_privacy_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                right_col,
+                text=tr("ntfy.privacy_tip", "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload."),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_TIP_TEXT,
+                justify="left",
+                anchor="w",
+            ),
+            "ntfy.privacy_tip",
+            "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload.",
+        )
+        self.ntfy_privacy_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+
+        self.on_toggle_ntfy()
+
         # Column widths reset section
         self.col_widths_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
@@ -234,6 +573,69 @@ class UiSettingsTabMixin:
         if self.on_profile_updated:
             self.on_profile_updated()
 
+    def on_toggle_ntfy(self) -> None:
+        is_on = bool(self.ntfy_switch.get()) if hasattr(self, "ntfy_switch") else False
+        state = "normal" if is_on else "disabled"
+        for w in (
+            getattr(self, "ntfy_topic_entry", None),
+            getattr(self, "ntfy_random_btn", None),
+            getattr(self, "ntfy_test_btn", None),
+            getattr(self, "ntfy_idle_combo", None),
+            getattr(self, "ntfy_cb_followups", None),
+            getattr(self, "ntfy_cb_prio1", None),
+            getattr(self, "ntfy_cb_handovers", None),
+            getattr(self, "ntfy_cb_notes", None),
+            getattr(self, "ntfy_cb_on_call", None),
+            getattr(self, "ntfy_cb_auto_presence", None),
+            getattr(self, "ntfy_cb_digest", None),
+            getattr(self, "ntfy_cb_remote_control", None),
+        ):
+            if w is not None:
+                w.configure(state=state)
+
+        digest_on = is_on and bool(getattr(self, "ntfy_cb_digest", None) and self.ntfy_cb_digest.get())
+        digest_combo = getattr(self, "ntfy_combo_digest_minutes", None)
+        if digest_combo is not None:
+            digest_combo.configure(state="normal" if digest_on else "disabled")
+
+        rc_on = is_on and bool(getattr(self, "ntfy_cb_remote_control", None) and self.ntfy_cb_remote_control.get())
+        rc_entry = getattr(self, "ntfy_entry_response_topic", None)
+        if rc_entry is not None:
+            rc_entry.configure(state="normal" if rc_on else "disabled")
+
+    def on_generate_random_ntfy_topic(self) -> None:
+        from services.ntfy_service import NtfyService
+        rnd_topic = NtfyService.generate_random_topic()
+        self.ntfy_topic_entry.delete(0, "end")
+        self.ntfy_topic_entry.insert(0, rnd_topic)
+
+    def on_send_ntfy_test(self) -> None:
+        topic = self.ntfy_topic_entry.get().strip()
+        if not topic:
+            return
+        from services.ntfy_service import NtfyService
+        from ui.widgets.toast_notification import ToastNotification
+        test_title = tr("ntfy.test_title", "🔔 Test: Support-Cockpit")
+        test_msg = tr("ntfy.test_message", "Verbindung zu ntfy.sh erfolgreich! Smartphone-Push ist einsatzbereit.")
+        success = NtfyService.send_notification(
+            topic=topic,
+            message=test_msg,
+            title=test_title,
+            tags=[NTFY_TAG_TEST, NTFY_TAG_BELL],
+        )
+        if success:
+            ToastNotification(
+                self.winfo_toplevel(),
+                title=tr("ntfy.test_sent_toast_title", "📱 Testnachricht gesendet"),
+                message=tr("ntfy.test_sent_toast_msg", "Testnachricht wurde an Thema '{topic}' gesendet.", topic=topic),
+            )
+        else:
+            ToastNotification(
+                self.winfo_toplevel(),
+                title=tr("ntfy.test_failed_toast_title", "⚠ Testnachricht fehlgeschlagen"),
+                message=tr("ntfy.test_failed_toast_msg", "Konnte Testnachricht nicht senden: {error}", error="Network error"),
+            )
+
     def reload_ui_fields(self) -> None:
         if hasattr(self, "language_combo"):
             curr_lang = getattr(self.profile.ui_settings, "language", "de")
@@ -257,11 +659,71 @@ class UiSettingsTabMixin:
                 self.os_popup_switch.select()
             else:
                 self.os_popup_switch.deselect()
+        if hasattr(self, "ntfy_switch"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED):
+                self.ntfy_switch.select()
+            else:
+                self.ntfy_switch.deselect()
+        if hasattr(self, "ntfy_topic_entry"):
+            self.ntfy_topic_entry.delete(0, "end")
+            self.ntfy_topic_entry.insert(0, getattr(self.profile.reminder_settings, "mobile_ntfy_topic", DEFAULT_NTFY_TOPIC))
+        if hasattr(self, "ntfy_idle_combo"):
+            curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+            self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
+        if hasattr(self, "ntfy_cb_followups"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_followups", DEFAULT_NTFY_NOTIFY_FOLLOWUPS):
+                self.ntfy_cb_followups.select()
+            else:
+                self.ntfy_cb_followups.deselect()
+        if hasattr(self, "ntfy_cb_prio1"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_prio1", DEFAULT_NTFY_NOTIFY_PRIO1):
+                self.ntfy_cb_prio1.select()
+            else:
+                self.ntfy_cb_prio1.deselect()
+        if hasattr(self, "ntfy_cb_handovers"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_handovers", DEFAULT_NTFY_NOTIFY_HANDOVERS):
+                self.ntfy_cb_handovers.select()
+            else:
+                self.ntfy_cb_handovers.deselect()
+        if hasattr(self, "ntfy_cb_notes"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_notify_customer_notes", DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES):
+                self.ntfy_cb_notes.select()
+            else:
+                self.ntfy_cb_notes.deselect()
+        if hasattr(self, "ntfy_cb_on_call"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_on_call", DEFAULT_NTFY_ON_CALL):
+                self.ntfy_cb_on_call.select()
+            else:
+                self.ntfy_cb_on_call.deselect()
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE):
+                self.ntfy_cb_auto_presence.select()
+            else:
+                self.ntfy_cb_auto_presence.deselect()
+        if hasattr(self, "ntfy_cb_digest"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED):
+                self.ntfy_cb_digest.select()
+            else:
+                self.ntfy_cb_digest.deselect()
+        if hasattr(self, "ntfy_combo_digest_minutes"):
+            self.ntfy_combo_digest_minutes.set(str(getattr(self.profile.reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)))
+        if hasattr(self, "ntfy_cb_remote_control"):
+            if getattr(self.profile.reminder_settings, "mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL):
+                self.ntfy_cb_remote_control.select()
+            else:
+                self.ntfy_cb_remote_control.deselect()
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.ntfy_entry_response_topic.delete(0, "end")
+            saved_resp = getattr(self.profile.reminder_settings, "mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)
+            if saved_resp:
+                self.ntfy_entry_response_topic.insert(0, saved_resp)
+        self.on_toggle_ntfy()
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
             self.widths_label.configure(text=self._build_widths_str(widths))
 
     def save_ui_settings(self) -> bool:
+        import re
         if hasattr(self, "language_combo"):
             lang_display = self.language_combo.get()
             lang_code = LANGUAGE_DISPLAY_TO_CODE.get(lang_display, "de")
@@ -280,6 +742,38 @@ class UiSettingsTabMixin:
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
         if hasattr(self, "os_popup_switch"):
             self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
+        if hasattr(self, "ntfy_switch"):
+            self.profile.reminder_settings.mobile_ntfy_enabled = bool(self.ntfy_switch.get())
+        if hasattr(self, "ntfy_topic_entry"):
+            self.profile.reminder_settings.mobile_ntfy_topic = self.ntfy_topic_entry.get().strip()
+        if hasattr(self, "ntfy_idle_combo"):
+            raw_idle = self.ntfy_idle_combo.get()
+            m = re.search(r"\d+", raw_idle)
+            if m:
+                self.profile.reminder_settings.mobile_ntfy_idle_minutes = int(m.group(0))
+        if hasattr(self, "ntfy_cb_followups"):
+            self.profile.reminder_settings.mobile_ntfy_notify_followups = bool(self.ntfy_cb_followups.get())
+        if hasattr(self, "ntfy_cb_prio1"):
+            self.profile.reminder_settings.mobile_ntfy_notify_prio1 = bool(self.ntfy_cb_prio1.get())
+        if hasattr(self, "ntfy_cb_handovers"):
+            self.profile.reminder_settings.mobile_ntfy_notify_handovers = bool(self.ntfy_cb_handovers.get())
+        if hasattr(self, "ntfy_cb_notes"):
+            self.profile.reminder_settings.mobile_ntfy_notify_customer_notes = bool(self.ntfy_cb_notes.get())
+        if hasattr(self, "ntfy_cb_on_call"):
+            self.profile.reminder_settings.mobile_ntfy_on_call = bool(self.ntfy_cb_on_call.get())
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            self.profile.reminder_settings.mobile_ntfy_auto_presence = bool(self.ntfy_cb_auto_presence.get())
+        if hasattr(self, "ntfy_cb_digest"):
+            self.profile.reminder_settings.mobile_ntfy_digest_enabled = bool(self.ntfy_cb_digest.get())
+        if hasattr(self, "ntfy_combo_digest_minutes"):
+            try:
+                self.profile.reminder_settings.mobile_ntfy_digest_minutes = int(self.ntfy_combo_digest_minutes.get().strip())
+            except ValueError:
+                self.profile.reminder_settings.mobile_ntfy_digest_minutes = DEFAULT_NTFY_DIGEST_MINUTES
+        if hasattr(self, "ntfy_cb_remote_control"):
+            self.profile.reminder_settings.mobile_ntfy_remote_control = bool(self.ntfy_cb_remote_control.get())
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.profile.reminder_settings.mobile_ntfy_response_topic = self.ntfy_entry_response_topic.get().strip()
         if hasattr(self, "popup_target_combo"):
             # The menu shows translated labels; matching them against German text
             # picked APP_SCREEN for every non-German UI. The position is what
@@ -310,12 +804,55 @@ class UiSettingsTabMixin:
             self.demo_switch.configure(text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"))
         if hasattr(self, "os_popup_switch"):
             self.os_popup_switch.configure(text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"))
+        if hasattr(self, "ntfy_hdr_lbl"):
+            self.ntfy_hdr_lbl.configure(text=tr("ntfy.section_title", "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)"))
+        if hasattr(self, "ntfy_switch"):
+            self.ntfy_switch.configure(text=tr("ntfy.enable_toggle", "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)"))
+        if hasattr(self, "ntfy_topic_lbl"):
+            self.ntfy_topic_lbl.configure(text=tr("ntfy.topic_label", "ntfy-Thema (Topic):"))
+        if hasattr(self, "ntfy_random_btn"):
+            self.ntfy_random_btn.configure(text=tr("ntfy.btn_random_topic", "🎲 Zufall"))
+        if hasattr(self, "ntfy_test_btn"):
+            self.ntfy_test_btn.configure(text=tr("ntfy.btn_test_notification", "🔔 Testnachricht"))
+        if hasattr(self, "ntfy_idle_lbl"):
+            self.ntfy_idle_lbl.configure(text=tr("ntfy.idle_threshold_label", "Aktivieren nach Inaktivität:"))
+        if hasattr(self, "ntfy_idle_combo"):
+            curr_mins = getattr(self.profile.reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+            self.ntfy_idle_combo.configure(values=[tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=m) for m in NTFY_IDLE_MINUTES_OPTIONS])
+            self.ntfy_idle_combo.set(tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=curr_mins))
+        if hasattr(self, "ntfy_filter_hdr"):
+            self.ntfy_filter_hdr.configure(text=tr("ntfy.filter_header", "Benachrichtigen bei:"))
+        if hasattr(self, "ntfy_cb_followups"):
+            self.ntfy_cb_followups.configure(text=tr("ntfy.filter_followups", "Fällige Wiedervorlagen"))
+        if hasattr(self, "ntfy_cb_prio1"):
+            self.ntfy_cb_prio1.configure(text=tr("ntfy.filter_prio1", "Dringlichkeit Notfall / Prio 1"))
+        if hasattr(self, "ntfy_cb_handovers"):
+            self.ntfy_cb_handovers.configure(text=tr("ntfy.filter_handovers", "Fall-Übergaben & Zuweisungen"))
+        if hasattr(self, "ntfy_cb_notes"):
+            self.ntfy_cb_notes.configure(text=tr("ntfy.filter_notes", "Neue Kunden-Notizen"))
+        if hasattr(self, "ntfy_cb_on_call"):
+            self.ntfy_cb_on_call.configure(text=tr("ntfy.filter_on_call", "Notdienst / Rufbereitschaft (Inaktivitätszwang übergehen)"))
+        if hasattr(self, "ntfy_cb_auto_presence"):
+            self.ntfy_cb_auto_presence.configure(text=tr("ntfy.filter_auto_presence", "Abwesenheitsstatus im Team bei Bildschirmsperre automatisch setzen"))
+        if hasattr(self, "ntfy_cb_digest"):
+            self.ntfy_cb_digest.configure(text=tr("ntfy.digest_enable", "Sammelbericht für Routine-Ereignisse (Digest)"))
+        if hasattr(self, "ntfy_digest_interval_lbl"):
+            self.ntfy_digest_interval_lbl.configure(text=tr("ntfy.digest_interval_lbl", "Intervall (Minuten):"))
+        if hasattr(self, "ntfy_digest_hint_lbl"):
+            self.ntfy_digest_hint_lbl.configure(text=tr("ntfy.digest_hint", "⚡ Prio-1 Notfälle umgehen den Sammelbericht und werden sofort gesendet."))
+        if hasattr(self, "ntfy_cb_remote_control"):
+            self.ntfy_cb_remote_control.configure(text=tr("ntfy.remote_control_enable", "Fernsteuerung & Aktions-Buttons aktivieren"))
+        if hasattr(self, "ntfy_response_topic_lbl"):
+            self.ntfy_response_topic_lbl.configure(text=tr("ntfy.response_topic_label", "Befehls-Thema (optional):"))
+        if hasattr(self, "ntfy_entry_response_topic"):
+            self.ntfy_entry_response_topic.configure(placeholder_text=tr("ntfy.response_topic_placeholder", "Standard: {topic}-cmd"))
+        if hasattr(self, "ntfy_remote_control_hint_lbl"):
+            self.ntfy_remote_control_hint_lbl.configure(text=tr("ntfy.remote_control_hint", "⚡ Ermöglicht Aktionen (Schlummern, Übernehmen) per Knopfdruck am Smartphone."))
+        if hasattr(self, "ntfy_privacy_lbl"):
+            self.ntfy_privacy_lbl.configure(text=tr("ntfy.privacy_tip", "🔒 Datensparsam: Keine Kunden- oder Patientendaten im Push-Payload."))
         if hasattr(self, "popup_target_lbl"):
             self.popup_target_lbl.configure(text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
         if hasattr(self, "popup_target_combo"):
-            # Carries the selection over by position instead of re-reading the
-            # profile: a choice the user made but has not saved yet used to be
-            # silently reverted by a language change.
             self.retranslate_choices(self.popup_target_combo, POPUP_TARGET_CHOICES)
         if hasattr(self, "col_widths_hdr_lbl"):
             self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))

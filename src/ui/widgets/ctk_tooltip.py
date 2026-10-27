@@ -147,6 +147,10 @@ class CTkTooltip:
     def text(self, value: str | Callable[[], str]):
         self.text_or_func = value
 
+    def set_text(self, value: str | Callable[[], str]) -> None:
+        """Helper to update tooltip text (same as assigning to .text)."""
+        self.text_or_func = value
+
     def _bind_events(self, w):
         try:
             w.bind(EVENT_ENTER, self.on_enter, add="+")

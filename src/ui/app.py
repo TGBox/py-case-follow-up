@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, cast
 import customtkinter as ctk
 
 from config import AppConfig
-from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY
+from enums import LayoutMode, get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, UrgencyLevel
 from models.case import Case
 from models.customer import Customer
 from models.schema import QuestionSchema
@@ -21,6 +21,7 @@ from constants import (
     BTN_WIDTH_FULLSCREEN,
     BTN_WIDTH_HELP,
     BTN_WIDTH_NEW_CASE,
+    BTN_WIDTH_ON_CALL,
     BTN_WIDTH_QUIT,
     BTN_WIDTH_SM,
     BTN_WIDTH_USER,
@@ -32,6 +33,8 @@ from constants import (
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_GRAY_HOVER,
     COLOR_MUTED_LABEL,
+    COLOR_ON_CALL_ACTIVE,
+    COLOR_ON_CALL_ACTIVE_HOVER,
     COLOR_QUIT_BTN,
     COLOR_QUIT_BTN_HOVER,
     COLOR_SPLASH_BG,
@@ -49,8 +52,19 @@ from constants import (
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
     DEFAULT_LANGUAGE,
+    DEFAULT_NTFY_DIGEST_ENABLED,
+    DEFAULT_NTFY_DIGEST_MINUTES,
+    DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX,
+    DEFAULT_NTFY_SERVER_URL,
     DEFAULT_SHORTCUT_VIEW_ANALYTICS,
     DEFAULT_USER_COLOR,
+    NTFY_ACTION_SNOOZE_MINUTES,
+    NTFY_CMD_PREFIX_ACK,
+    NTFY_CMD_PREFIX_SNOOZE,
+    NTFY_CMD_PREFIX_STANDBY,
+    NTFY_CMD_PREFIX_TAKE,
+    NTFY_CMD_SEPARATOR,
     FILE_EXT_ZIP,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
     FOLLOWUP_CHECK_INTERVAL_MS,
@@ -62,11 +76,19 @@ from constants import (
     FONT_SIZE_SUBTITLE,
     HOURLY_SCORING_INTERVAL_SECONDS,
     MENU_BAR_HEIGHT,
+    NTFY_EVENT_FOLLOWUP,
+    NTFY_EVENT_HANDOVER,
+    NTFY_EVENT_NOTE,
+    NTFY_EVENT_PRIO1,
+    NTFY_PRIO_DEFAULT,
+    NTFY_PRIO_HIGH,
+    NTFY_PRIO_MAX,
     OPEN_CASE_POLL_INTERVAL_MS,
     PAD_3,
     PAD_CONTAINER,
     PAD_GAP,
     PAD_LG,
+    SECONDS_PER_MINUTE,
     PAD_MD,
     PAD_SM,
     PAD_SPLASH_TITLE,
@@ -88,6 +110,7 @@ from constants import (
     ICON_KEY_BELL,
     ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
+    ICON_KEY_ON_CALL,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
     ICON_KEY_USER,
@@ -238,11 +261,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._restore_fullscreen: bool = False
         self.bind("<Configure>", self._on_window_configure, add="+")
 
+        # Team Presence Auto-Coupling (Stufe 5)
+        self._auto_absence_set: bool = False
+        self._saved_absence_reason: str = ""
+
         # System Tray Service
         self.tray_service = TrayService()
         self.tray_service.start(
             on_restore=self._on_restore_from_tray,
             on_quit=self._on_quit_from_tray,
+            on_toggle_on_call=self._on_toggle_on_call_from_tray,
+            is_on_call_active=self.is_on_call_active,
         )
 
         # Register Shortcuts & Lifecycle
@@ -269,6 +298,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # over here; without one the app simply never receives a hand-off.
         self.instance_service: InstanceService | None = getattr(self, "instance_service", None)
         self._poll_open_case_request()
+
+        # Mobile Remote Control & Action Buttons (Stufe 6)
+        self.ntfy_listener: Any | None = None
+        self._sync_ntfy_remote_control_listener()
 
         # Everything is built: close the splash window and show the real one.
         # Nothing of it has been on screen before this point.
@@ -538,6 +571,24 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         )
         self.help_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
+        # On-Call / Bereitschaft Toggle Button
+        is_on_call = self.is_on_call_active()
+        self.on_call_btn = ctk.CTkButton(
+            menu_frame,
+            text="",
+            image=get_icon(ICON_KEY_ON_CALL, size=ICON_SIZE_HEADER),
+            command=self.toggle_on_call_mode,
+            width=BTN_WIDTH_ON_CALL,
+            fg_color=COLOR_ON_CALL_ACTIVE if is_on_call else COLOR_THEME_BTN,
+            hover_color=COLOR_ON_CALL_ACTIVE_HOVER if is_on_call else COLOR_MUTED_GRAY_HOVER,
+        )
+        self.on_call_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
+        self.on_call_tooltip = CTkTooltip(
+            self.on_call_btn,
+            self._get_on_call_tooltip_text(is_on_call),
+            delay_ms=TOOLTIP_SHORT_DELAY_MS,
+        )
+
         self.bell_btn = ctk.CTkButton(
             menu_frame,
             text="0",
@@ -742,6 +793,61 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self._update_header_responsive(width)
         except Exception:
             pass
+
+    def _on_toggle_on_call_from_tray(self) -> None:
+        self.after(0, self.toggle_on_call_mode)
+
+    def is_on_call_active(self) -> bool:
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return False
+        return bool(getattr(self.profile.reminder_settings, "mobile_ntfy_on_call", False))
+
+    def _get_on_call_tooltip_text(self, active: bool) -> str:
+        if active:
+            return tr(
+                "ntfy.on_call_tooltip_active",
+                "Notdienst / Rufbereitschaft aktiv: Push-Benachrichtigungen werden sofort ans Smartphone gesendet (Klicken zum Deaktivieren)",
+            )
+        return tr(
+            "ntfy.on_call_tooltip_inactive",
+            "Notdienst / Rufbereitschaft inaktiv (Klicken zum Aktivieren)",
+        )
+
+    def _update_on_call_ui_state(self, active: bool) -> None:
+        if hasattr(self, "on_call_btn") and self.on_call_btn.winfo_exists():
+            fg = COLOR_ON_CALL_ACTIVE if active else COLOR_THEME_BTN
+            hov = COLOR_ON_CALL_ACTIVE_HOVER if active else COLOR_MUTED_GRAY_HOVER
+            self.on_call_btn.configure(fg_color=fg, hover_color=hov)
+            if hasattr(self, "on_call_tooltip"):
+                self.on_call_tooltip.text = self._get_on_call_tooltip_text(active)
+        if hasattr(self, "tray_service") and self.tray_service:
+            try:
+                self.tray_service.update_menu()
+            except Exception:
+                pass
+
+    def toggle_on_call_mode(self, active: bool | None = None) -> None:
+        current = self.is_on_call_active()
+        new_state = (not current) if active is None else active
+        if hasattr(self, "profile") and hasattr(self.profile, "reminder_settings"):
+            self.profile.reminder_settings.mobile_ntfy_on_call = new_state
+            if hasattr(self, "storage_service") and self.storage_service:
+                self.storage_service.save_profile(self.profile)
+        self._update_on_call_ui_state(new_state)
+
+        toast_title = tr("ntfy.on_call_title", "Notdienst / Rufbereitschaft")
+        toast_msg = (
+            tr(
+                "ntfy.on_call_enabled_msg",
+                "Aktiviert: Benachrichtigungen werden auch bei Anwesenheit ans Smartphone übertragen.",
+            )
+            if new_state
+            else tr(
+                "ntfy.on_call_disabled_msg",
+                "Deaktiviert: Benachrichtigungen erfolgen nur bei Abwesenheit.",
+            )
+        )
+        ToastNotification(self, title=toast_title, message=toast_msg)
 
     def get_filtered_cases(self) -> list[Case]:
         user_cases = [c for c in self.cases if not getattr(c, "is_demo_data", False)]
@@ -991,6 +1097,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         def _restore():
             try:
+                if hasattr(self, "_update_team_presence_on_idle"):
+                    self._update_team_presence_on_idle(is_idle=False)
                 if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
                     # Showing the window and putting back "maximized" are two
                     # full relayouts of every widget. Keep the window
@@ -1324,13 +1432,22 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     except Exception as e:
                         logger.warning(f"Could not display toast notification: {e}")
             self._last_notified_due_count = due_count
+
+            # --- Mobile Push on Absence (ntfy.sh) ---
+            if hasattr(self, "_check_mobile_ntfy_reminders"):
+                self._check_mobile_ntfy_reminders(due_cases)
         else:
             self.bell_btn.configure(text="0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0
+            self._last_ntfy_notified_ids = set()
 
         # Update tray icon badge (guard: may be called before tray_service is initialized)
         if hasattr(self, "tray_service"):
             self.tray_service.update_badge(due_count)
+
+        # Update auto-presence in team directory on idle / lock (Stufe 5)
+        if hasattr(self, "_update_team_presence_on_idle"):
+            self._update_team_presence_on_idle()
 
         _timer_id = self.__dict__.get("_followup_timer_id")
         if _timer_id:
@@ -1339,6 +1456,470 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception:
                 pass
         self._followup_timer_id = self.after(FOLLOWUP_CHECK_INTERVAL_MS, self.check_due_followups)
+
+    def _update_team_presence_on_idle(self, is_idle: bool | None = None) -> None:
+        """Automatically marks user as absent in colleagues directory on lock/idle and active on return."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+        reminder_settings = self.profile.reminder_settings
+        if not hasattr(self, "storage_service") or not self.storage_service:
+            return
+
+        enabled = bool(getattr(reminder_settings, "mobile_ntfy_enabled", False))
+        auto_presence = bool(getattr(reminder_settings, "mobile_ntfy_auto_presence", False))
+
+        current_user = ""
+        user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+        if user_obj:
+            current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+        if not current_user:
+            return
+
+        colleagues = self.storage_service.load_colleagues()
+        target = None
+        for col in colleagues:
+            if (col.username and col.username.strip().lower() == current_user.strip().lower()) or \
+               (col.name and col.name.strip().lower() == current_user.strip().lower()):
+                target = col
+                break
+
+        if not target:
+            return
+
+        # If feature was turned off while auto-absence was active, restore active status
+        if not enabled or not auto_presence:
+            if getattr(self, "_auto_absence_set", False):
+                target.is_absent = False
+                target.absence_reason = getattr(self, "_saved_absence_reason", "")
+                self._auto_absence_set = False
+                self._saved_absence_reason = ""
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Restored user '%s' as active (feature disabled).", current_user)
+            return
+
+        if is_idle is None:
+            from utils.idle_detector import IdleDetector
+            idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+            idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
+            is_idle = IdleDetector.is_user_idle(idle_threshold_seconds)
+
+        if is_idle:
+            if not target.is_absent:
+                self._auto_absence_set = True
+                self._saved_absence_reason = target.absence_reason
+                target.is_absent = True
+                from services.i18n_service import tr
+                target.absence_reason = tr("ntfy.auto_absence_reason", "Automatisch abwesend (Bildschirmsperre / Inaktivität)")
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Marked user '%s' as absent (idle/locked).", current_user)
+        else:
+            if getattr(self, "_auto_absence_set", False):
+                target.is_absent = False
+                target.absence_reason = getattr(self, "_saved_absence_reason", "")
+                self._auto_absence_set = False
+                self._saved_absence_reason = ""
+                self.storage_service.save_colleagues(colleagues, sync=True)
+                logger.info("Auto-presence: Restored user '%s' as active (returned).", current_user)
+
+    def _sync_ntfy_remote_control_listener(self) -> None:
+        """Starts or stops the background ntfy streaming listener for remote control commands."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+        reminder_settings = self.profile.reminder_settings
+        enabled = bool(getattr(reminder_settings, "mobile_ntfy_enabled", False))
+        remote_enabled = bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False))
+        topic = (getattr(reminder_settings, "mobile_ntfy_topic", "") or "").strip()
+        server_url = getattr(reminder_settings, "mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)
+
+        target_topic = ""
+        if enabled and remote_enabled and topic:
+            custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+            target_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+
+        current_listener = getattr(self, "ntfy_listener", None)
+
+        if not target_topic:
+            if current_listener:
+                current_listener.stop()
+                self.ntfy_listener = None
+            return
+
+        if current_listener:
+            if current_listener.is_running and current_listener.topic == target_topic and current_listener.server_url == server_url:
+                return
+            current_listener.stop()
+            self.ntfy_listener = None
+
+        from services.ntfy_service import NtfyListener
+
+        listener = NtfyListener(
+            topic=target_topic,
+            server_url=server_url,
+            on_command=self._on_remote_command_received,
+        )
+        self.ntfy_listener = listener
+        listener.start()
+
+    def _on_remote_command_received(self, raw_cmd: str) -> None:
+        """Thread-safe callback from NtfyListener; dispatches command to Tkinter main thread."""
+        try:
+            self.after(0, lambda: self._handle_remote_control_command(raw_cmd))
+        except Exception as e:
+            logger.warning("Failed to dispatch remote control command to main thread: %s", e)
+
+    def _handle_remote_control_command(self, raw_cmd: str) -> None:
+        """Executes inbound remote control command from mobile notification action button."""
+        cmd_str = (raw_cmd or "").strip()
+        if not cmd_str:
+            return
+        logger.info("Executing remote control command: '%s'", cmd_str)
+        parts = cmd_str.split(NTFY_CMD_SEPARATOR)
+        action = parts[0].lower()
+
+        from services.i18n_service import tr
+        from ui.widgets.toast_notification import ToastNotification
+
+        # 1. SNOOZE / POSTPONE: snooze:<case_id>:<minutes>
+        if action == NTFY_CMD_PREFIX_SNOOZE and len(parts) >= 2:
+            case_id = parts[1].strip()
+            mins = NTFY_ACTION_SNOOZE_MINUTES
+            if len(parts) >= 3:
+                try:
+                    mins = max(1, int(parts[2]))
+                except ValueError:
+                    mins = NTFY_ACTION_SNOOZE_MINUTES
+
+            target_case = None
+            for c in getattr(self, "cases", []):
+                if str(getattr(c, "case_id", "")).strip() == case_id:
+                    target_case = c
+                    break
+
+            if target_case:
+                from utils.datetime_utils import format_german_datetime, get_local_now
+                from datetime import timedelta
+                new_dt = get_local_now() + timedelta(minutes=mins)
+                target_case.workflow_status.followup_at = format_german_datetime(new_dt)
+                if hasattr(self, "storage_service") and self.storage_service:
+                    self.storage_service.save_cases(self.cases)
+                if hasattr(self, "refresh_views"):
+                    self.refresh_views()
+                if hasattr(self, "check_due_followups"):
+                    self.check_due_followups()
+                ToastNotification(
+                    self,
+                    title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                    message=tr(
+                        "ntfy.remote_cmd_snooze_toast",
+                        "Fernsteuerung: Fall #{case_id} um {minutes} Min. verschoben.",
+                        case_id=case_id,
+                        minutes=mins,
+                    ),
+                )
+            return
+
+        # 2. TAKE / ASSIGN: take:<case_id>
+        if action == NTFY_CMD_PREFIX_TAKE and len(parts) >= 2:
+            case_id = parts[1].strip()
+            target_case = None
+            for c in getattr(self, "cases", []):
+                if str(getattr(c, "case_id", "")).strip() == case_id:
+                    target_case = c
+                    break
+
+            if target_case:
+                current_user = ""
+                user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+                if user_obj:
+                    current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+                target_case.assigned_to = current_user
+                if hasattr(self, "storage_service") and self.storage_service:
+                    self.storage_service.save_cases(self.cases)
+                if hasattr(self, "refresh_views"):
+                    self.refresh_views()
+                ToastNotification(
+                    self,
+                    title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                    message=tr(
+                        "ntfy.remote_cmd_take_toast",
+                        "Fernsteuerung: Fall #{case_id} an Sie übernommen.",
+                        case_id=case_id,
+                    ),
+                )
+            return
+
+        # 3. ACKNOWLEDGE / DISMISS REMINDER: ack:<case_id>
+        if action == NTFY_CMD_PREFIX_ACK and len(parts) >= 2:
+            case_id = parts[1].strip()
+            notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
+            notified_ids.add(case_id)
+            self._last_ntfy_notified_ids = notified_ids
+            ToastNotification(
+                self,
+                title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                message=tr(
+                    "ntfy.remote_cmd_ack_toast",
+                    "Fernsteuerung: Benachrichtigung für Fall #{case_id} quittiert.",
+                    case_id=case_id,
+                ),
+            )
+            return
+
+        # 4. STANDBY TOGGLE / ON / OFF: standby:toggle | standby:on | standby:off
+        if action == NTFY_CMD_PREFIX_STANDBY:
+            mode = parts[1].lower() if len(parts) >= 2 else "toggle"
+            if mode == "on":
+                new_state = True
+            elif mode == "off":
+                new_state = False
+            else:
+                new_state = not self.is_on_call_active()
+            self.toggle_on_call_mode(active=new_state)
+            status_text = "aktiv" if new_state else "inaktiv"
+            ToastNotification(
+                self,
+                title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                message=tr(
+                    "ntfy.remote_cmd_standby_toast",
+                    "Fernsteuerung: Notdienst umgeschaltet ({status}).",
+                    status=status_text,
+                ),
+            )
+            return
+
+    def _check_mobile_ntfy_reminders(self, due_cases: list[Any]) -> None:
+        """Sends privacy-friendly mobile push notification when user is idle or screen is locked."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+
+        reminder_settings = self.profile.reminder_settings
+        if not getattr(reminder_settings, "mobile_ntfy_enabled", False):
+            return
+
+        topic = (getattr(reminder_settings, "mobile_ntfy_topic", "") or "").strip()
+        if not topic:
+            return
+
+        is_on_call = bool(getattr(reminder_settings, "mobile_ntfy_on_call", False))
+
+        from utils.idle_detector import IdleDetector
+        idle_minutes = getattr(reminder_settings, "mobile_ntfy_idle_minutes", DEFAULT_NTFY_IDLE_MINUTES)
+        idle_threshold_seconds = float(idle_minutes * SECONDS_PER_MINUTE)
+        is_idle = IdleDetector.is_user_idle(idle_threshold_seconds)
+
+        # Update auto-presence with already computed idle state
+        if hasattr(self, "_update_team_presence_on_idle"):
+            self._update_team_presence_on_idle(is_idle=is_idle)
+
+        if not is_on_call and not is_idle:
+            if getattr(self, "_ntfy_digest_queue", None):
+                self._ntfy_digest_queue = []
+            self._ntfy_last_digest_sent_at = 0.0
+            return
+
+        notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
+        from services.ntfy_service import NtfyService
+
+        server_url = getattr(reminder_settings, "mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)
+        all_active = self.get_all_active_cases_for_reminder() if hasattr(self, "get_all_active_cases_for_reminder") else due_cases
+
+        notify_followups = getattr(reminder_settings, "mobile_ntfy_notify_followups", True)
+        notify_prio1 = getattr(reminder_settings, "mobile_ntfy_notify_prio1", True)
+        notify_handovers = getattr(reminder_settings, "mobile_ntfy_notify_handovers", True)
+        notify_notes = getattr(reminder_settings, "mobile_ntfy_notify_customer_notes", False)
+
+        current_user = ""
+        current_role = ""
+        user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+        if user_obj:
+            current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+            current_role = getattr(user_obj, "role", "") or getattr(user_obj, "department", "")
+
+        candidates: list[tuple[int, Any, str, str, bool]] = []
+
+        # 1. Prio 1 / Escalations
+        if notify_prio1:
+            for c in all_active:
+                urg = str(getattr(getattr(c, "classification", None), "urgency_level", "")).upper()
+                if urg in (UrgencyLevel.RED.value, "RED", "HOCH", "HIGH"):
+                    cid = getattr(c, "case_id", "")
+                    key = f"{cid}:{NTFY_EVENT_PRIO1}"
+                    if key not in notified_ids and cid not in notified_ids:
+                        candidates.append((NTFY_PRIO_MAX, c, NTFY_EVENT_PRIO1, key, False))
+
+        # 2. Due followups
+        if notify_followups:
+            for c in due_cases:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_FOLLOWUP}"
+                if key not in notified_ids and cid not in notified_ids:
+                    prio_label = str(getattr(getattr(c, "classification", None), "urgency_level", "")).lower()
+                    p = NTFY_PRIO_HIGH if prio_label in ("high", "hoch", "red", "rot") else NTFY_PRIO_DEFAULT
+                    candidates.append((p, c, NTFY_EVENT_FOLLOWUP, key, True))
+
+        # 3. Handovers & assignments
+        if notify_handovers:
+            for c in all_active:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_HANDOVER}"
+                if key not in notified_ids and cid not in notified_ids:
+                    assigned = str(getattr(c, "assigned_to", "") or "").strip().lower()
+                    actor = str(getattr(getattr(c, "workflow_status", None), "current_actor", "") or "").strip().lower()
+                    is_match = (current_user and assigned == current_user.lower()) or (current_role and actor == current_role.lower())
+                    if is_match:
+                        candidates.append((NTFY_PRIO_HIGH, c, NTFY_EVENT_HANDOVER, key, False))
+
+        # 4. Customer / case notes
+        if notify_notes:
+            for c in all_active:
+                cid = getattr(c, "case_id", "")
+                key = f"{cid}:{NTFY_EVENT_NOTE}"
+                if key not in notified_ids and cid not in notified_ids:
+                    ws = getattr(c, "workflow_status", None)
+                    note = str(getattr(ws, "followup_note", "") or "").strip()
+                    timeline = getattr(c, "timeline", None)
+                    has_note = bool(note or (timeline and len(timeline) > 0 and getattr(timeline[-1], "note", "")))
+                    if has_note:
+                        candidates.append((NTFY_PRIO_DEFAULT, c, NTFY_EVENT_NOTE, key, False))
+
+        if not candidates:
+            return
+
+        # Sort so highest priority notifications dispatch first
+        candidates.sort(key=lambda item: item[0], reverse=True)
+
+        immediate = [c for c in candidates if c[2] == NTFY_EVENT_PRIO1]
+        routine = [c for c in candidates if c[2] != NTFY_EVENT_PRIO1]
+
+        # 1. Immediate dispatch for Prio 1 emergencies (Sofort-Bypass)
+        if immediate:
+            prio, top_case, event_type, dedup_key, is_overdue = immediate[0]
+            cid = getattr(top_case, "case_id", "")
+            prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
+
+            title, message = NtfyService.format_case_alert(
+                case_id=cid,
+                priority_label=prio_label,
+                is_overdue=is_overdue,
+                event_type=event_type,
+                anonymize=True,
+                on_call=is_on_call,
+            )
+            tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
+
+            actions = None
+            if bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False)) and cid:
+                custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+                resp_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+                actions = NtfyService.format_case_actions(
+                    case_id=cid,
+                    response_topic=resp_topic,
+                    server_url=server_url,
+                )
+
+            NtfyService.send_notification_async(
+                topic=topic,
+                message=message,
+                title=title,
+                priority=prio,
+                tags=tags,
+                actions=actions,
+                server_url=server_url,
+            )
+
+            notified_ids.add(dedup_key)
+            if cid:
+                notified_ids.add(cid)
+            self._last_ntfy_notified_ids = notified_ids
+
+        # 2. Routine events: Smart Digest or single dispatch
+        if not routine:
+            return
+
+        digest_enabled = bool(getattr(reminder_settings, "mobile_ntfy_digest_enabled", DEFAULT_NTFY_DIGEST_ENABLED))
+        if digest_enabled:
+            digest_queue: list[dict[str, Any]] = getattr(self, "_ntfy_digest_queue", [])
+            existing_keys = {item.get("dedup_key") for item in digest_queue}
+            for prio, c, event_type, dedup_key, _is_overdue in routine:
+                if dedup_key not in existing_keys and dedup_key not in notified_ids:
+                    cid = getattr(c, "case_id", "")
+                    digest_queue.append({
+                        "case_id": cid,
+                        "event_type": event_type,
+                        "prio": prio,
+                        "dedup_key": dedup_key,
+                    })
+                    existing_keys.add(dedup_key)
+            self._ntfy_digest_queue = digest_queue
+
+            digest_mins = getattr(reminder_settings, "mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)
+            now = time.monotonic()
+            last_sent = getattr(self, "_ntfy_last_digest_sent_at", 0.0)
+            if last_sent == 0.0:
+                self._ntfy_last_digest_sent_at = now
+                last_sent = now
+
+            if (now - last_sent) >= (digest_mins * SECONDS_PER_MINUTE) and self._ntfy_digest_queue:
+                title, message = NtfyService.format_digest_alert(self._ntfy_digest_queue, anonymize=True)
+                tags = NtfyService.get_event_tags("digest", on_call=is_on_call)
+                if is_on_call:
+                    prefix = tr("ntfy.on_call_prefix", "[Notdienst] ")
+                    title = f"{prefix}{title}"
+                NtfyService.send_notification_async(
+                    topic=topic,
+                    message=message,
+                    title=title,
+                    priority=NTFY_PRIO_DEFAULT,
+                    tags=tags,
+                    server_url=server_url,
+                )
+                for item in self._ntfy_digest_queue:
+                    notified_ids.add(item["dedup_key"])
+                    if item.get("case_id"):
+                        notified_ids.add(item["case_id"])
+                self._ntfy_digest_queue = []
+                self._ntfy_last_digest_sent_at = now
+                self._last_ntfy_notified_ids = notified_ids
+        else:
+            if not immediate:
+                prio, top_case, event_type, dedup_key, is_overdue = routine[0]
+                cid = getattr(top_case, "case_id", "")
+                prio_label = str(getattr(getattr(top_case, "classification", None), "urgency_level", getattr(getattr(top_case, "classification", None), "priority", "")) or "")
+
+                title, message = NtfyService.format_case_alert(
+                    case_id=cid,
+                    priority_label=prio_label,
+                    is_overdue=is_overdue,
+                    event_type=event_type,
+                    anonymize=True,
+                    on_call=is_on_call,
+                )
+                tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
+
+                actions = None
+                if bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False)) and cid:
+                    custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+                    resp_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+                    actions = NtfyService.format_case_actions(
+                        case_id=cid,
+                        response_topic=resp_topic,
+                        server_url=server_url,
+                    )
+
+                NtfyService.send_notification_async(
+                    topic=topic,
+                    message=message,
+                    title=title,
+                    priority=prio,
+                    tags=tags,
+                    actions=actions,
+                    server_url=server_url,
+                )
+
+                notified_ids.add(dedup_key)
+                if cid:
+                    notified_ids.add(cid)
+                self._last_ntfy_notified_ids = notified_ids
 
     def open_followup_flyout(self):
         from ui.dialogs.followup_flyout_dialog import FollowupFlyoutDialog
@@ -1468,6 +2049,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception as timer_err:
                 logger.warning(f"Could not cancel scoring timer: {timer_err}")
             self._scoring_timer = None
+        listener = getattr(self, "ntfy_listener", None)
+        if listener is not None:
+            try:
+                listener.stop()
+            except Exception as listener_err:
+                logger.warning(f"Could not stop ntfy listener: {listener_err}")
+            self.ntfy_listener = None
         try:
             get_i18n().unregister_listener(self.on_language_changed)
         except Exception:

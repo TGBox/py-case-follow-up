@@ -2070,7 +2070,12 @@
     "test_sent_toast_title": "📱 Testnachricht gesendet",
     "test_title": "🔔 Test: Support-Cockpit",
     "topic_label": "ntfy-Thema (Topic):",
-    "topic_placeholder": "z. B. desk-alert-8f2a9c"
+    "topic_placeholder": "z. B. desk-alert-8f2a9c",
+    "unlock_notification_default_text": "Willkommen zurück! Bitte offene Wiedervorlagen prüfen.",
+    "unlock_notification_placeholder": "z. B. Willkommen zurück! Bitte offene Wiedervorlagen prüfen.",
+    "unlock_notification_text_label": "Eigener Benachrichtigungstext:",
+    "unlock_notification_toggle": "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen",
+    "unlock_toast_title": "🖥 Arbeitsplatz entsperrt"
   },
   "urgency_levels": {
     "RED": "Hoch",

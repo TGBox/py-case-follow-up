@@ -120,6 +120,8 @@ def _headless_app(storage: StorageService):
     app.active_case = None
     app.bell_btn = _Field()
     app._last_notified_due_count = None  # Tk's __getattr__ recurses on unset attributes without a window
+    app._was_workstation_locked = False
+    app._unlock_check_timer_id = None
     app.after = lambda delay, func: "timer"
     app.after_cancel = lambda timer_id: None
     app.cockpit_view, app.board_view, app.table_view, app.analytics_view = _View(), _View(), _View(), _View()

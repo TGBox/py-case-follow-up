@@ -97,6 +97,7 @@ from constants import (
     THEME_LIGHT,
     TOAST_SNIPPET_MACRO_TITLE,
     TOAST_SNIPPET_NO_FOCUS,
+    UNLOCK_NOTIFICATION_CHECK_INTERVAL_MS,
     WIKI_STARTUP_SYNC_DELAY_MS,
     WINDOW_STATE_ICONIC,
     WINDOW_STATE_NORMAL,
@@ -302,6 +303,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Mobile Remote Control & Action Buttons (Stufe 6)
         self.ntfy_listener: Any | None = None
         self._sync_ntfy_remote_control_listener()
+
+        # Workstation Unlock Notification
+        self._was_workstation_locked: bool = False
+        self._unlock_check_timer_id: str | None = None
+        self.after(UNLOCK_NOTIFICATION_CHECK_INTERVAL_MS, self._check_workstation_unlock_state)
 
         # Everything is built: close the splash window and show the real one.
         # Nothing of it has been on screen before this point.
@@ -1449,6 +1455,19 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if hasattr(self, "_update_team_presence_on_idle"):
             self._update_team_presence_on_idle()
 
+        # Check workstation unlock transition
+        if hasattr(self, "_trigger_unlock_notification"):
+            from utils.idle_detector import IdleDetector
+            try:
+                is_locked = IdleDetector.is_workstation_locked()
+            except Exception:
+                is_locked = False
+            if is_locked:
+                self._was_workstation_locked = True
+            elif self.__dict__.get("_was_workstation_locked", False):
+                self._was_workstation_locked = False
+                self._trigger_unlock_notification()
+
         _timer_id = self.__dict__.get("_followup_timer_id")
         if _timer_id:
             try:
@@ -1520,6 +1539,59 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self._saved_absence_reason = ""
                 self.storage_service.save_colleagues(colleagues, sync=True)
                 logger.info("Auto-presence: Restored user '%s' as active (returned).", current_user)
+
+    def _check_workstation_unlock_state(self) -> None:
+        """Checks for workstation lock/unlock transitions and triggers unlock notification if enabled."""
+        from utils.idle_detector import IdleDetector
+        try:
+            is_locked = IdleDetector.is_workstation_locked()
+        except Exception as e:
+            logger.debug(f"Failed to check workstation lock state: {e}")
+            is_locked = False
+
+        if is_locked:
+            self._was_workstation_locked = True
+        else:
+            if self.__dict__.get("_was_workstation_locked", False):
+                self._was_workstation_locked = False
+                self._trigger_unlock_notification()
+
+        _timer_id = self.__dict__.get("_unlock_check_timer_id")
+        if _timer_id:
+            try:
+                self.after_cancel(_timer_id)
+            except Exception:
+                pass
+        self._unlock_check_timer_id = self.after(UNLOCK_NOTIFICATION_CHECK_INTERVAL_MS, self._check_workstation_unlock_state)
+
+    def _trigger_unlock_notification(self) -> None:
+        """Displays a toast notification upon unlocking the workstation if enabled in profile settings."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+        reminder_settings = self.profile.reminder_settings
+        if not getattr(reminder_settings, "unlock_notification_enabled", False):
+            return
+
+        from services.i18n_service import tr
+        from ui.widgets.toast_notification import ToastNotification
+
+        custom_text = (getattr(reminder_settings, "unlock_notification_text", "") or "").strip()
+        if not custom_text:
+            custom_text = tr(
+                "ntfy.unlock_notification_default_text",
+                "Willkommen zurück! Bitte offene Wiedervorlagen prüfen.",
+            )
+
+        title = tr("ntfy.unlock_toast_title", "🖥 Arbeitsplatz entsperrt")
+
+        try:
+            ToastNotification(
+                self,
+                title=title,
+                message=custom_text,
+            )
+        except Exception as e:
+            logger.warning(f"Could not display workstation unlock notification: {e}")
 
     def _sync_ntfy_remote_control_listener(self) -> None:
         """Starts or stops the background ntfy streaming listener for remote control commands."""
@@ -2056,6 +2128,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception as listener_err:
                 logger.warning(f"Could not stop ntfy listener: {listener_err}")
             self.ntfy_listener = None
+        unlock_timer = self.__dict__.get("_unlock_check_timer_id")
+        if unlock_timer is not None:
+            try:
+                self.after_cancel(unlock_timer)
+            except Exception:
+                pass
+            self._unlock_check_timer_id = None
         try:
             get_i18n().unregister_listener(self.on_language_changed)
         except Exception:

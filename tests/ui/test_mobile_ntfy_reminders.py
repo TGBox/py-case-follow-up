@@ -883,4 +883,144 @@ def test_ntfy_qr_dialog_actions(root):
     dialog.destroy()
 
 
+def test_unlock_notification_profile_ui_and_persistence(root):
+    profile = UserProfile()
+    profile.reminder_settings = ReminderSettings(
+        unlock_notification_enabled=False,
+        unlock_notification_text="",
+    )
+    dlg = ProfileSettingsDialog(root, profile=profile, storage_service=MagicMock())
+
+    assert hasattr(dlg, "unlock_notify_cb")
+    assert hasattr(dlg, "unlock_notify_entry")
+    assert not bool(dlg.unlock_notify_cb.get())
+    assert dlg.unlock_notify_entry.cget("state") == "disabled"
+
+    # Enable checkbox and enter custom text
+    dlg.unlock_notify_cb.select()
+    dlg.on_toggle_unlock_notify()
+    assert dlg.unlock_notify_entry.cget("state") == "normal"
+
+    dlg.unlock_notify_entry.delete(0, "end")
+    dlg.unlock_notify_entry.insert(0, "Zurück am Platz: Bitte Kasse prüfen!")
+
+    # Save
+    assert dlg.save_ui_settings()
+    assert profile.reminder_settings.unlock_notification_enabled
+    assert profile.reminder_settings.unlock_notification_text == "Zurück am Platz: Bitte Kasse prüfen!"
+
+    # Reload UI fields
+    dlg.reload_ui_fields()
+    assert bool(dlg.unlock_notify_cb.get())
+    assert dlg.unlock_notify_entry.get() == "Zurück am Platz: Bitte Kasse prüfen!"
+
+    # Retranslate labels
+    dlg.refresh_ui_tab_labels()
+
+    dlg.destroy()
+
+
+def test_app_unlock_notification_triggers_on_transition():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        unlock_notification_enabled=True,
+        unlock_notification_text="Hallo DaniBani",
+    )
+    app._was_workstation_locked = False
+    app._unlock_check_timer_id = None
+    app.after = MagicMock(return_value="timer-123")
+    app.after_cancel = MagicMock()
+    app._trigger_unlock_notification = lambda: SupportCockpitApp._trigger_unlock_notification(app)
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        # 1. Screen gets locked
+        IdleDetector.set_mock_state(is_locked=True)
+        SupportCockpitApp._check_workstation_unlock_state(app)
+        assert app._was_workstation_locked
+        assert mock_toast.call_count == 0
+
+        # 2. Screen is still locked
+        SupportCockpitApp._check_workstation_unlock_state(app)
+        assert app._was_workstation_locked
+        assert mock_toast.call_count == 0
+
+        # 3. Screen gets unlocked -> triggers toast
+        IdleDetector.set_mock_state(is_locked=False)
+        SupportCockpitApp._check_workstation_unlock_state(app)
+        assert not app._was_workstation_locked
+        assert mock_toast.call_count == 1
+        assert mock_toast.call_args[1]["message"] == "Hallo DaniBani"
+
+        # 4. Next check while staying unlocked does not trigger again
+        SupportCockpitApp._check_workstation_unlock_state(app)
+        assert not app._was_workstation_locked
+        assert mock_toast.call_count == 1
+
+
+def test_app_unlock_notification_uses_default_when_empty():
+    from ui.app import SupportCockpitApp
+    from services.i18n_service import tr
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        unlock_notification_enabled=True,
+        unlock_notification_text="   ",
+    )
+    app._was_workstation_locked = True
+    app._unlock_check_timer_id = None
+    app.after = MagicMock(return_value="timer-123")
+    app.after_cancel = MagicMock()
+    app._trigger_unlock_notification = lambda: SupportCockpitApp._trigger_unlock_notification(app)
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        IdleDetector.set_mock_state(is_locked=False)
+        SupportCockpitApp._check_workstation_unlock_state(app)
+
+        assert not app._was_workstation_locked
+        assert mock_toast.call_count == 1
+        expected = tr("ntfy.unlock_notification_default_text", "Willkommen zurück! Bitte offene Wiedervorlagen prüfen.")
+        assert mock_toast.call_args[1]["message"] == expected
+
+
+def test_app_unlock_notification_disabled_does_not_trigger():
+    from ui.app import SupportCockpitApp
+
+    app = MagicMock(spec=SupportCockpitApp)
+    app.profile = UserProfile()
+    app.profile.reminder_settings = ReminderSettings(
+        unlock_notification_enabled=False,
+        unlock_notification_text="Not shown",
+    )
+    app._was_workstation_locked = True
+    app._unlock_check_timer_id = None
+    app.after = MagicMock(return_value="timer-123")
+    app.after_cancel = MagicMock()
+    app._trigger_unlock_notification = lambda: SupportCockpitApp._trigger_unlock_notification(app)
+
+    with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
+        IdleDetector.set_mock_state(is_locked=False)
+        SupportCockpitApp._check_workstation_unlock_state(app)
+
+        assert not app._was_workstation_locked
+        assert mock_toast.call_count == 0
+
+
+def test_reminder_settings_unlock_serialization():
+    settings = ReminderSettings(
+        unlock_notification_enabled=True,
+        unlock_notification_text="Eigener Text",
+    )
+    data = settings.to_dict()
+    assert data["unlock_notification_enabled"]
+    assert data["unlock_notification_text"] == "Eigener Text"
+
+    loaded = ReminderSettings.from_dict(data)
+    assert loaded.unlock_notification_enabled
+    assert loaded.unlock_notification_text == "Eigener Text"
+
+
 

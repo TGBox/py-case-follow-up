@@ -46,6 +46,8 @@ from constants import (
     DEFAULT_THRESHOLD_RED,
     DEFAULT_THRESHOLD_YELLOW,
     DEFAULT_UI_THEME,
+    DEFAULT_UNLOCK_NOTIFICATION_ENABLED,
+    DEFAULT_UNLOCK_NOTIFICATION_TEXT,
     DEFAULT_USER_COLOR,
     DEFAULT_USER_NAME,
     DEFAULT_VIP_BONUS_POINTS,
@@ -240,6 +242,8 @@ class ReminderSettings:
     mobile_ntfy_auto_presence: bool = DEFAULT_NTFY_AUTO_PRESENCE
     mobile_ntfy_remote_control: bool = DEFAULT_NTFY_REMOTE_CONTROL
     mobile_ntfy_response_topic: str = DEFAULT_NTFY_RESPONSE_TOPIC
+    unlock_notification_enabled: bool = DEFAULT_UNLOCK_NOTIFICATION_ENABLED
+    unlock_notification_text: str = DEFAULT_UNLOCK_NOTIFICATION_TEXT
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -264,6 +268,8 @@ class ReminderSettings:
             mobile_ntfy_auto_presence=bool(data.get("mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE)),
             mobile_ntfy_remote_control=bool(data.get("mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL)),
             mobile_ntfy_response_topic=str(data.get("mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)),
+            unlock_notification_enabled=bool(data.get("unlock_notification_enabled", DEFAULT_UNLOCK_NOTIFICATION_ENABLED)),
+            unlock_notification_text=str(data.get("unlock_notification_text", DEFAULT_UNLOCK_NOTIFICATION_TEXT)),
         )
 
 

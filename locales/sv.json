@@ -2082,5 +2082,9 @@
     "RED": "Hög",
     "YELLOW": "Medel",
     "GREEN": "Låg"
+  },
+  "update": {
+    "banner_text": "⬆ En nyare version finns tillgänglig: v{latest} (du använder v{current}).",
+    "open_github": "Visa på GitHub"
   }
 }

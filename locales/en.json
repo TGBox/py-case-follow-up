@@ -2082,5 +2082,9 @@
     "RED": "High",
     "YELLOW": "Medium",
     "GREEN": "Low"
+  },
+  "update": {
+    "banner_text": "⬆ A newer version is available: v{latest} (you are using v{current}).",
+    "open_github": "View on GitHub"
   }
 }

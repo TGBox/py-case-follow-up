@@ -435,6 +435,14 @@ SECONDS_PER_MINUTE = 60
 NTFY_IDLE_MINUTES_OPTIONS = (1, 2, 5, 10, 15, 30, 60)
 BTN_WIDTH_NTFY_RANDOM = 80
 BTN_WIDTH_NTFY_TEST = 130
+BTN_WIDTH_NTFY_QR = 100
+NTFY_QR_SIZE = 220
+NTFY_QR_BOX_SIZE = 10
+NTFY_QR_BORDER = 2
+NTFY_QR_WRAPLENGTH = 380
+NTFY_QR_URL_ENTRY_WIDTH = 360
+COLOR_QR_BACKGROUND = "#ffffff"
+COLOR_QR_ERROR_TEXT = "#dc2626"
 ENTRY_WIDTH_NTFY_TOPIC = 170
 COMBO_WIDTH_NTFY_IDLE = 100
 DEFAULT_NTFY_ON_CALL = False
@@ -615,6 +623,7 @@ DIALOG_DIMENSIONS = {
     "customer_mgmt": (1024, 720),
     "colleague_mgmt": (1024, 720),
     "tag_mgmt": (620, 520),
+    "ntfy_qr": (460, 580),
     "profile_settings": (1050, 880),
     "template_mgmt": (980, 720),
     "edit_template": (880, 740),

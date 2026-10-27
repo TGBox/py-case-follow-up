@@ -3,6 +3,7 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 from constants import (
+    BTN_WIDTH_NTFY_QR,
     BTN_WIDTH_NTFY_RANDOM,
     BTN_WIDTH_NTFY_TEST,
     COLOR_MUTED_GRAY_FG,
@@ -280,7 +281,21 @@ class UiSettingsTabMixin:
             "ntfy.btn_test_notification",
             "🔔 Testnachricht",
         )
-        self.ntfy_test_btn.pack(side="left")
+        self.ntfy_test_btn.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_qr_btn = self.register_i18n(
+            ctk.CTkButton(
+                topic_frame,
+                text=tr("ntfy.btn_qr_code", "📲 QR-Code"),
+                command=self.on_show_ntfy_qr,
+                width=BTN_WIDTH_NTFY_QR,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+            ),
+            "ntfy.btn_qr_code",
+            "📲 QR-Code",
+        )
+        self.ntfy_qr_btn.pack(side="left")
 
         idle_frame = ctk.CTkFrame(right_col, fg_color="transparent")
         idle_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
@@ -580,6 +595,7 @@ class UiSettingsTabMixin:
             getattr(self, "ntfy_topic_entry", None),
             getattr(self, "ntfy_random_btn", None),
             getattr(self, "ntfy_test_btn", None),
+            getattr(self, "ntfy_qr_btn", None),
             getattr(self, "ntfy_idle_combo", None),
             getattr(self, "ntfy_cb_followups", None),
             getattr(self, "ntfy_cb_prio1", None),
@@ -608,6 +624,21 @@ class UiSettingsTabMixin:
         rnd_topic = NtfyService.generate_random_topic()
         self.ntfy_topic_entry.delete(0, "end")
         self.ntfy_topic_entry.insert(0, rnd_topic)
+
+    def on_show_ntfy_qr(self) -> None:
+        topic = self.ntfy_topic_entry.get().strip()
+        if not topic:
+            from ui.widgets.toast_notification import ToastNotification
+
+            ToastNotification(
+                self.winfo_toplevel(),
+                title=tr("ntfy.qr_dialog_title", "Smartphone koppeln (ntfy)"),
+                message=tr("ntfy.qr_no_topic_toast", "Bitte trage zuerst ein Thema ein oder klicke auf 'Zufall'."),
+            )
+            return
+        from ui.dialogs.ntfy_qr_dialog import NtfyQrDialog
+
+        NtfyQrDialog(self.winfo_toplevel(), topic=topic)
 
     def on_send_ntfy_test(self) -> None:
         topic = self.ntfy_topic_entry.get().strip()

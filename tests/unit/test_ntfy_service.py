@@ -235,3 +235,19 @@ def test_ntfy_listener_stream_receives_command(mock_urlopen):
     assert not listener.is_running
     assert "snooze:1042:30" in received
 
+
+def test_get_topic_url():
+    assert NtfyService.get_topic_url("desk-123") == "https://ntfy.sh/desk-123"
+    assert NtfyService.get_topic_url("desk-123", "https://ntfy.example.com/") == "https://ntfy.example.com/desk-123"
+    assert NtfyService.get_topic_url("") == "https://ntfy.sh"
+
+
+def test_generate_qr_image():
+    from PIL import Image
+
+    img = NtfyService.generate_qr_image("https://ntfy.sh/test-topic")
+    assert isinstance(img, Image.Image)
+    assert img.size[0] > 0
+    assert img.size[1] > 0
+
+

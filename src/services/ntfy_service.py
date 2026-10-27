@@ -19,6 +19,8 @@ from constants import (
     NTFY_EVENT_PRIO1,
     NTFY_HTTP_TIMEOUT_SECONDS,
     NTFY_PRIO_DEFAULT,
+    NTFY_QR_BORDER,
+    NTFY_QR_BOX_SIZE,
     NTFY_STREAM_RECONNECT_DELAY_SECONDS,
     NTFY_STREAM_TIMEOUT_SECONDS,
     NTFY_TAG_BELL,
@@ -38,6 +40,31 @@ logger = logging.getLogger("SupportCockpit")
 
 class NtfyService:
     """Dispatches outbound push notifications to ntfy.sh or self-hosted ntfy servers."""
+
+    @staticmethod
+    def get_topic_url(topic: str, server_url: str = DEFAULT_NTFY_SERVER_URL) -> str:
+        """Returns the full web URL for a topic."""
+        clean_server = (server_url or DEFAULT_NTFY_SERVER_URL).strip().rstrip("/")
+        clean_topic = (topic or "").strip()
+        return f"{clean_server}/{clean_topic}" if clean_topic else clean_server
+
+    @staticmethod
+    def generate_qr_image(url_or_data: str):
+        """Generates a PIL Image containing a QR code for the given URL/topic."""
+        import qrcode
+        import qrcode.constants as qr_constants
+        from qrcode.image.pil import PilImage
+
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qr_constants.ERROR_CORRECT_M,
+            box_size=NTFY_QR_BOX_SIZE,
+            border=NTFY_QR_BORDER,
+        )
+        qr.add_data(url_or_data)
+        qr.make(fit=True)
+        img = qr.make_image(image_factory=PilImage)
+        return img.get_image().convert("RGB")
 
     @staticmethod
     def generate_random_topic() -> str:

@@ -13,6 +13,8 @@ from datetime import datetime, date
 
 from config import AppConfig
 from constants import (
+    ATOMIC_REPLACE_RETRIES,
+    ATOMIC_REPLACE_RETRY_DELAY_SECONDS,
     ATTACHMENTS_DIRNAME,
     DAYS_PER_MONTH,
     DAYS_PER_WEEK,
@@ -65,6 +67,24 @@ def setup_logging(log_path: Path) -> None:
         logger.addHandler(handler)
 
 
+def _replace_with_retry(source: Path, target: Path) -> None:
+    """Path.replace that survives a target briefly held open by another handle.
+
+    On Windows os.replace() raises PermissionError while any other handle has
+    the target file open without FILE_SHARE_DELETE - which is how Python (and
+    most readers) open files. A concurrent read of the same JSON, a virus
+    scanner or a sync client is enough, and without a retry the save was lost.
+    """
+    for attempt in range(ATOMIC_REPLACE_RETRIES):
+        try:
+            source.replace(target)
+            return
+        except PermissionError:
+            if attempt == ATOMIC_REPLACE_RETRIES - 1:
+                raise
+            time.sleep(ATOMIC_REPLACE_RETRY_DELAY_SECONDS)
+
+
 def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
     """Atomic JSON save using temporary file and atomic replace.
 
@@ -78,7 +98,7 @@ def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=JSON_INDENT, ensure_ascii=False)
-        temp_path.replace(target_path)
+        _replace_with_retry(temp_path, target_path)
     except Exception as e:
         logger.error(f"Failed atomic save to {target_path}: {e}")
         if temp_path.exists():

@@ -2070,7 +2070,12 @@
     "test_sent_toast_title": "📱 Testmeddelande skickat",
     "test_title": "🔔 Test: Support-Cockpit",
     "topic_label": "ntfy-ämne (Topic):",
-    "topic_placeholder": "t.ex. desk-alert-8f2a9c"
+    "topic_placeholder": "t.ex. desk-alert-8f2a9c",
+    "unlock_notification_default_text": "Välkommen tillbaka! Kontrollera öppna ärenden och förfallna uppföljningar.",
+    "unlock_notification_placeholder": "t.ex. Välkommen tillbaka! Kontrollera öppna ärenden och förfallna uppföljningar.",
+    "unlock_notification_text_label": "Anpassad aviseringstext:",
+    "unlock_notification_toggle": "🖥 Visa avisering efter att skärmen låsts upp",
+    "unlock_toast_title": "🖥 Arbetsstation upplåst"
   },
   "urgency_levels": {
     "RED": "Hög",

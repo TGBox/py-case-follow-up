@@ -2070,7 +2070,12 @@
     "test_sent_toast_title": "📱 Test Notification Sent",
     "test_title": "🔔 Test: Support Cockpit",
     "topic_label": "ntfy Topic:",
-    "topic_placeholder": "e.g. desk-alert-8f2a9c"
+    "topic_placeholder": "e.g. desk-alert-8f2a9c",
+    "unlock_notification_default_text": "Welcome back! Please check open cases and due follow-ups.",
+    "unlock_notification_placeholder": "e.g. Welcome back! Please check open cases and due follow-ups.",
+    "unlock_notification_text_label": "Custom notification text:",
+    "unlock_notification_toggle": "🖥 Show notification after unlocking screen",
+    "unlock_toast_title": "🖥 Workstation unlocked"
   },
   "urgency_levels": {
     "RED": "High",

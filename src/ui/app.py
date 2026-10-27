@@ -55,9 +55,16 @@ from constants import (
     DEFAULT_NTFY_DIGEST_ENABLED,
     DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_IDLE_MINUTES,
+    DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX,
     DEFAULT_NTFY_SERVER_URL,
     DEFAULT_SHORTCUT_VIEW_ANALYTICS,
     DEFAULT_USER_COLOR,
+    NTFY_ACTION_SNOOZE_MINUTES,
+    NTFY_CMD_PREFIX_ACK,
+    NTFY_CMD_PREFIX_SNOOZE,
+    NTFY_CMD_PREFIX_STANDBY,
+    NTFY_CMD_PREFIX_TAKE,
+    NTFY_CMD_SEPARATOR,
     FILE_EXT_ZIP,
     FOLLOWUP_CHECK_INITIAL_DELAY_MS,
     FOLLOWUP_CHECK_INTERVAL_MS,
@@ -291,6 +298,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # over here; without one the app simply never receives a hand-off.
         self.instance_service: InstanceService | None = getattr(self, "instance_service", None)
         self._poll_open_case_request()
+
+        # Mobile Remote Control & Action Buttons (Stufe 6)
+        self.ntfy_listener: Any | None = None
+        self._sync_ntfy_remote_control_listener()
 
         # Everything is built: close the splash window and show the real one.
         # Nothing of it has been on screen before this point.
@@ -1510,6 +1521,172 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 self.storage_service.save_colleagues(colleagues, sync=True)
                 logger.info("Auto-presence: Restored user '%s' as active (returned).", current_user)
 
+    def _sync_ntfy_remote_control_listener(self) -> None:
+        """Starts or stops the background ntfy streaming listener for remote control commands."""
+        if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
+            return
+        reminder_settings = self.profile.reminder_settings
+        enabled = bool(getattr(reminder_settings, "mobile_ntfy_enabled", False))
+        remote_enabled = bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False))
+        topic = (getattr(reminder_settings, "mobile_ntfy_topic", "") or "").strip()
+        server_url = getattr(reminder_settings, "mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)
+
+        target_topic = ""
+        if enabled and remote_enabled and topic:
+            custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+            target_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+
+        current_listener = getattr(self, "ntfy_listener", None)
+
+        if not target_topic:
+            if current_listener:
+                current_listener.stop()
+                self.ntfy_listener = None
+            return
+
+        if current_listener:
+            if current_listener.is_running and current_listener.topic == target_topic and current_listener.server_url == server_url:
+                return
+            current_listener.stop()
+            self.ntfy_listener = None
+
+        from services.ntfy_service import NtfyListener
+
+        listener = NtfyListener(
+            topic=target_topic,
+            server_url=server_url,
+            on_command=self._on_remote_command_received,
+        )
+        self.ntfy_listener = listener
+        listener.start()
+
+    def _on_remote_command_received(self, raw_cmd: str) -> None:
+        """Thread-safe callback from NtfyListener; dispatches command to Tkinter main thread."""
+        try:
+            self.after(0, lambda: self._handle_remote_control_command(raw_cmd))
+        except Exception as e:
+            logger.warning("Failed to dispatch remote control command to main thread: %s", e)
+
+    def _handle_remote_control_command(self, raw_cmd: str) -> None:
+        """Executes inbound remote control command from mobile notification action button."""
+        cmd_str = (raw_cmd or "").strip()
+        if not cmd_str:
+            return
+        logger.info("Executing remote control command: '%s'", cmd_str)
+        parts = cmd_str.split(NTFY_CMD_SEPARATOR)
+        action = parts[0].lower()
+
+        from services.i18n_service import tr
+        from ui.widgets.toast_notification import ToastNotification
+
+        # 1. SNOOZE / POSTPONE: snooze:<case_id>:<minutes>
+        if action == NTFY_CMD_PREFIX_SNOOZE and len(parts) >= 2:
+            case_id = parts[1].strip()
+            mins = NTFY_ACTION_SNOOZE_MINUTES
+            if len(parts) >= 3:
+                try:
+                    mins = max(1, int(parts[2]))
+                except ValueError:
+                    mins = NTFY_ACTION_SNOOZE_MINUTES
+
+            target_case = None
+            for c in getattr(self, "cases", []):
+                if str(getattr(c, "case_id", "")).strip() == case_id:
+                    target_case = c
+                    break
+
+            if target_case:
+                from utils.datetime_utils import format_german_datetime, get_local_now
+                from datetime import timedelta
+                new_dt = get_local_now() + timedelta(minutes=mins)
+                target_case.workflow_status.followup_at = format_german_datetime(new_dt)
+                if hasattr(self, "storage_service") and self.storage_service:
+                    self.storage_service.save_cases(self.cases)
+                if hasattr(self, "refresh_views"):
+                    self.refresh_views()
+                if hasattr(self, "check_due_followups"):
+                    self.check_due_followups()
+                ToastNotification(
+                    self,
+                    title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                    message=tr(
+                        "ntfy.remote_cmd_snooze_toast",
+                        "Fernsteuerung: Fall #{case_id} um {minutes} Min. verschoben.",
+                        case_id=case_id,
+                        minutes=mins,
+                    ),
+                )
+            return
+
+        # 2. TAKE / ASSIGN: take:<case_id>
+        if action == NTFY_CMD_PREFIX_TAKE and len(parts) >= 2:
+            case_id = parts[1].strip()
+            target_case = None
+            for c in getattr(self, "cases", []):
+                if str(getattr(c, "case_id", "")).strip() == case_id:
+                    target_case = c
+                    break
+
+            if target_case:
+                current_user = ""
+                user_obj = getattr(self.profile, "user", None) or getattr(self.profile, "user_info", None)
+                if user_obj:
+                    current_user = getattr(user_obj, "name", "") or getattr(user_obj, "username", "")
+                target_case.assigned_to = current_user
+                if hasattr(self, "storage_service") and self.storage_service:
+                    self.storage_service.save_cases(self.cases)
+                if hasattr(self, "refresh_views"):
+                    self.refresh_views()
+                ToastNotification(
+                    self,
+                    title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                    message=tr(
+                        "ntfy.remote_cmd_take_toast",
+                        "Fernsteuerung: Fall #{case_id} an Sie übernommen.",
+                        case_id=case_id,
+                    ),
+                )
+            return
+
+        # 3. ACKNOWLEDGE / DISMISS REMINDER: ack:<case_id>
+        if action == NTFY_CMD_PREFIX_ACK and len(parts) >= 2:
+            case_id = parts[1].strip()
+            notified_ids = getattr(self, "_last_ntfy_notified_ids", set())
+            notified_ids.add(case_id)
+            self._last_ntfy_notified_ids = notified_ids
+            ToastNotification(
+                self,
+                title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                message=tr(
+                    "ntfy.remote_cmd_ack_toast",
+                    "Fernsteuerung: Benachrichtigung für Fall #{case_id} quittiert.",
+                    case_id=case_id,
+                ),
+            )
+            return
+
+        # 4. STANDBY TOGGLE / ON / OFF: standby:toggle | standby:on | standby:off
+        if action == NTFY_CMD_PREFIX_STANDBY:
+            mode = parts[1].lower() if len(parts) >= 2 else "toggle"
+            if mode == "on":
+                new_state = True
+            elif mode == "off":
+                new_state = False
+            else:
+                new_state = not self.is_on_call_active()
+            self.toggle_on_call_mode(active=new_state)
+            status_text = "aktiv" if new_state else "inaktiv"
+            ToastNotification(
+                self,
+                title=tr("ntfy.remote_cmd_toast_title", "📱 Mobile Fernsteuerung"),
+                message=tr(
+                    "ntfy.remote_cmd_standby_toast",
+                    "Fernsteuerung: Notdienst umgeschaltet ({status}).",
+                    status=status_text,
+                ),
+            )
+            return
+
     def _check_mobile_ntfy_reminders(self, due_cases: list[Any]) -> None:
         """Sends privacy-friendly mobile push notification when user is idle or screen is locked."""
         if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):
@@ -1630,12 +1807,23 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             )
             tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
 
+            actions = None
+            if bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False)) and cid:
+                custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+                resp_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+                actions = NtfyService.format_case_actions(
+                    case_id=cid,
+                    response_topic=resp_topic,
+                    server_url=server_url,
+                )
+
             NtfyService.send_notification_async(
                 topic=topic,
                 message=message,
                 title=title,
                 priority=prio,
                 tags=tags,
+                actions=actions,
                 server_url=server_url,
             )
 
@@ -1708,12 +1896,23 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 )
                 tags = NtfyService.get_event_tags(event_type=event_type, on_call=is_on_call)
 
+                actions = None
+                if bool(getattr(reminder_settings, "mobile_ntfy_remote_control", False)) and cid:
+                    custom_resp = (getattr(reminder_settings, "mobile_ntfy_response_topic", "") or "").strip()
+                    resp_topic = custom_resp if custom_resp else f"{topic}{DEFAULT_NTFY_RESPONSE_TOPIC_SUFFIX}"
+                    actions = NtfyService.format_case_actions(
+                        case_id=cid,
+                        response_topic=resp_topic,
+                        server_url=server_url,
+                    )
+
                 NtfyService.send_notification_async(
                     topic=topic,
                     message=message,
                     title=title,
                     priority=prio,
                     tags=tags,
+                    actions=actions,
                     server_url=server_url,
                 )
 
@@ -1850,6 +2049,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             except Exception as timer_err:
                 logger.warning(f"Could not cancel scoring timer: {timer_err}")
             self._scoring_timer = None
+        listener = getattr(self, "ntfy_listener", None)
+        if listener is not None:
+            try:
+                listener.stop()
+            except Exception as listener_err:
+                logger.warning(f"Could not stop ntfy listener: {listener_err}")
+            self.ntfy_listener = None
         try:
             get_i18n().unregister_listener(self.on_language_changed)
         except Exception:

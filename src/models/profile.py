@@ -30,6 +30,8 @@ from constants import (
     DEFAULT_NTFY_NOTIFY_PRIO1,
     DEFAULT_NTFY_ON_CALL,
     DEFAULT_NTFY_AUTO_PRESENCE,
+    DEFAULT_NTFY_REMOTE_CONTROL,
+    DEFAULT_NTFY_RESPONSE_TOPIC,
     DEFAULT_NTFY_SERVER_URL,
     DEFAULT_NTFY_TOPIC,
     DEFAULT_OLLAMA_MODEL,
@@ -236,6 +238,8 @@ class ReminderSettings:
     mobile_ntfy_digest_minutes: int = DEFAULT_NTFY_DIGEST_MINUTES
     mobile_ntfy_on_call: bool = DEFAULT_NTFY_ON_CALL
     mobile_ntfy_auto_presence: bool = DEFAULT_NTFY_AUTO_PRESENCE
+    mobile_ntfy_remote_control: bool = DEFAULT_NTFY_REMOTE_CONTROL
+    mobile_ntfy_response_topic: str = DEFAULT_NTFY_RESPONSE_TOPIC
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -258,6 +262,8 @@ class ReminderSettings:
             mobile_ntfy_digest_minutes=int(data.get("mobile_ntfy_digest_minutes", DEFAULT_NTFY_DIGEST_MINUTES)),
             mobile_ntfy_on_call=bool(data.get("mobile_ntfy_on_call", DEFAULT_NTFY_ON_CALL)),
             mobile_ntfy_auto_presence=bool(data.get("mobile_ntfy_auto_presence", DEFAULT_NTFY_AUTO_PRESENCE)),
+            mobile_ntfy_remote_control=bool(data.get("mobile_ntfy_remote_control", DEFAULT_NTFY_REMOTE_CONTROL)),
+            mobile_ntfy_response_topic=str(data.get("mobile_ntfy_response_topic", DEFAULT_NTFY_RESPONSE_TOPIC)),
         )
 
 

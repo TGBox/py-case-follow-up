@@ -14,7 +14,7 @@ from constants import (
     NTFY_TAG_WARNING,
     NTFY_TOPIC_PREFIX,
 )
-from services.ntfy_service import NtfyService
+from services.ntfy_service import NtfyListener, NtfyService
 
 
 def test_generate_random_topic():
@@ -169,3 +169,69 @@ def test_format_digest_alert_empty():
 def test_get_event_tags_digest():
     tags = NtfyService.get_event_tags("digest")
     assert tags == [NTFY_TAG_DIGEST]
+
+
+def test_format_case_actions():
+    actions = NtfyService.format_case_actions("1042", "desk-alert-cmd")
+    assert len(actions) == 2
+    assert actions[0]["action"] == "http"
+    assert "desk-alert-cmd" in actions[0]["url"]
+    assert actions[0]["body"] == "snooze:1042:30"
+    assert actions[1]["action"] == "http"
+    assert actions[1]["body"] == "take:1042"
+
+    assert NtfyService.format_case_actions("", "desk-alert-cmd") == []
+    assert NtfyService.format_case_actions("1042", "") == []
+
+
+@patch("services.ntfy_service.urlopen")
+def test_send_notification_with_actions(mock_urlopen):
+    mock_resp = MagicMock()
+    mock_resp.status = 200
+    mock_resp.__enter__.return_value = mock_resp
+    mock_urlopen.return_value = mock_resp
+
+    actions = [{"action": "http", "label": "Test", "url": "https://ntfy.sh/cmd", "body": "test"}]
+    success = NtfyService.send_notification(
+        topic="test-topic",
+        message="Alert with actions",
+        actions=actions,
+    )
+    assert success is True
+    req = mock_urlopen.call_args[0][0]
+    payload = json.loads(req.data.decode("utf-8"))
+    assert payload["actions"] == actions
+
+
+def test_ntfy_listener_empty_topic():
+    listener = NtfyListener(topic="")
+    listener.start()
+    assert not listener.is_running
+    listener.stop()
+
+
+@patch("services.ntfy_service.urlopen")
+def test_ntfy_listener_stream_receives_command(mock_urlopen):
+    import time
+    mock_resp = MagicMock()
+    mock_resp.__enter__.return_value = mock_resp
+    lines = [
+        json.dumps({"event": "keepalive"}).encode("utf-8") + b"\n",
+        json.dumps({"event": "message", "message": "snooze:1042:30"}).encode("utf-8") + b"\n",
+        b"",
+    ]
+    mock_resp.readline.side_effect = lines
+    mock_urlopen.return_value = mock_resp
+
+    received = []
+    listener = NtfyListener(
+        topic="test-cmd-topic",
+        on_command=lambda cmd: received.append(cmd),
+    )
+    listener.start()
+    assert listener.is_running
+    time.sleep(0.1)
+    listener.stop()
+    assert not listener.is_running
+    assert "snooze:1042:30" in received
+

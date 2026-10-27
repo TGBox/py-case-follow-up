@@ -525,7 +525,7 @@ def test_app_toggle_on_call_mode():
     with patch("ui.app.ToastNotification") as mock_toast:
         # 1. Toggle from False to True
         SupportCockpitApp.toggle_on_call_mode(app)
-        assert app.profile.reminder_settings.mobile_ntfy_on_call is True
+        assert app.profile.reminder_settings.mobile_ntfy_on_call
         assert app.storage_service.save_profile.called
         assert app.tray_service.update_menu.called
         assert mock_toast.called
@@ -533,7 +533,7 @@ def test_app_toggle_on_call_mode():
         # 2. Toggle from True to False
         mock_toast.reset_mock()
         SupportCockpitApp.toggle_on_call_mode(app)
-        assert app.profile.reminder_settings.mobile_ntfy_on_call is False
+        assert not app.profile.reminder_settings.mobile_ntfy_on_call
         assert mock_toast.called
 
 
@@ -577,22 +577,22 @@ def test_app_update_team_presence_on_idle_activates_and_restores():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=False, absence_reason="")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set = False
+    app._auto_absence_set: bool = False
     app._saved_absence_reason = ""
 
     # 1. User becomes idle / locked -> marked absent automatically
     SupportCockpitApp._update_team_presence_on_idle(app, is_idle=True)
-    assert colleague.is_absent is True
+    assert colleague.is_absent
     assert "Automatisch abwesend" in colleague.absence_reason
     assert app.storage_service.save_colleagues.called
-    assert app._auto_absence_set is True
+    assert app._auto_absence_set
 
     # 2. User returns -> restored to active
     app.storage_service.save_colleagues.reset_mock()
     SupportCockpitApp._update_team_presence_on_idle(app, is_idle=False)
-    assert colleague.is_absent is False
+    assert not colleague.is_absent
     assert colleague.absence_reason == ""
-    assert app._auto_absence_set is False
+    assert not app._auto_absence_set
     assert app.storage_service.save_colleagues.called
 
 
@@ -610,19 +610,19 @@ def test_app_update_team_presence_preserves_manual_absence():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Urlaub bis Freitag")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set = False
+    app._auto_absence_set: bool = False
     app._saved_absence_reason = ""
 
     # 1. Lock occurs: Must not overwrite existing manual absence
     SupportCockpitApp._update_team_presence_on_idle(app, is_idle=True)
-    assert colleague.is_absent is True
+    assert colleague.is_absent
     assert colleague.absence_reason == "Urlaub bis Freitag"
-    assert app._auto_absence_set is False
+    assert not app._auto_absence_set
     assert not app.storage_service.save_colleagues.called
 
     # 2. User returns: Must not clear vacation absence
     SupportCockpitApp._update_team_presence_on_idle(app, is_idle=False)
-    assert colleague.is_absent is True
+    assert colleague.is_absent
     assert colleague.absence_reason == "Urlaub bis Freitag"
 
 
@@ -639,13 +639,13 @@ def test_app_update_team_presence_restores_when_feature_disabled():
     colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Automatisch abwesend")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
-    app._auto_absence_set = True
+    app._auto_absence_set: bool = True
     app._saved_absence_reason = ""
 
     # Feature disabled: Reverts previous auto-absence
     SupportCockpitApp._update_team_presence_on_idle(app, is_idle=None)
-    assert colleague.is_absent is False
-    assert app._auto_absence_set is False
+    assert not colleague.is_absent
+    assert not app._auto_absence_set
     assert app.storage_service.save_colleagues.called
 
 

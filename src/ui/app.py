@@ -1584,11 +1584,17 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
         title = tr("ntfy.unlock_toast_title", "🖥 Arbeitsplatz entsperrt")
 
+        # A link typed into the text (https://..., www....) becomes an
+        # "Open link" button on the toast; the text itself stays as written.
+        from utils.ui_utils import find_links
+        links = find_links(custom_text)
+
         try:
             ToastNotification(
                 self,
                 title=title,
                 message=custom_text,
+                link_url=links[0][1] if links else None,
             )
         except Exception as e:
             logger.warning(f"Could not display workstation unlock notification: {e}")

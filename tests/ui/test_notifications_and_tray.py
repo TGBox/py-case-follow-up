@@ -490,6 +490,64 @@ def test_a_toast_without_action_is_a_plain_card(root):
     toast.safe_destroy()
 
 
+# --- toast: web link ("Link öffnen") ------------------------------------------------
+
+class _ActionTrayStub:
+    def __init__(self):
+        self.calls = []
+
+    def notify(self, title, message, launch=None, actions=None):
+        self.calls.append((title, message, launch, actions))
+        return True
+
+
+@pytest.mark.parametrize("tray_cls, expected_call", [
+    (_ActionTrayStub, ("T", "Wiki: https://wiki.example/a", None, [("🔗 Link öffnen", "https://wiki.example/a")])),
+    # A tray service without `actions` still gets the toast, just without the button.
+    (_TrayStub, ("T", "Wiki: https://wiki.example/a", None)),
+])
+def test_native_notification_offers_the_link_as_a_toast_action(app, tray_cls, expected_call):
+    toast = ToastNotification(app, title="T", message="Wiki: https://wiki.example/a", duration_ms=1000,
+                              link_url="https://wiki.example/a")
+    app.tray_service = tray_cls()
+    assert toast._send_native(app, "T", "Wiki: https://wiki.example/a") is True
+    assert app.tray_service.calls == [expected_call]
+    toast.destroy()
+
+
+def test_the_toast_card_shows_a_link_button_that_opens_the_link(root, monkeypatch):
+    opened = []
+    monkeypatch.setattr("ui.widgets.toast_notification.webbrowser.open", opened.append)
+    toast = ToastNotification(root, title="🖥 Arbeitsplatz entsperrt", message="Wiki: https://wiki.example/a",
+                              duration_ms=1000, link_url="https://wiki.example/a")
+    root.update()
+
+    widgets = list(_all_widgets(toast))
+    buttons = [w for w in widgets if isinstance(w, ctk.CTkButton)]
+    assert [b.cget("text") for b in buttons] == ["🔗 Link öffnen"]
+    assert "Wiki: https://wiki.example/a" in [w.cget("text") for w in widgets if isinstance(w, ctk.CTkLabel)]
+
+    toast.handle_link()
+    toast.handle_link()  # second click on a closing card must not open it twice
+    assert opened == ["https://wiki.example/a"]
+
+
+@pytest.mark.parametrize("text, expected", [
+    ("Willkommen zurück! Wiki: https://wiki.example/a.", "https://wiki.example/a"),
+    ("Siehe www.example.de", "https://www.example.de"),
+    ("Willkommen zurück!", None),
+])
+def test_the_unlock_notification_turns_a_link_in_its_text_into_a_button(monkeypatch, text, expected):
+    from types import SimpleNamespace
+    seen = []
+    monkeypatch.setattr("ui.widgets.toast_notification.ToastNotification",
+                        lambda parent, **kw: seen.append(kw))
+    settings = SimpleNamespace(unlock_notification_enabled=True, unlock_notification_text=text)
+    fake_app = SimpleNamespace(profile=SimpleNamespace(reminder_settings=settings))
+    SupportCockpitApp._trigger_unlock_notification(cast(Any, fake_app))
+    assert seen == [{"title": seen[0]["title"], "message": text, "link_url": expected}]
+
+
 # --- restoring the window from the tray ----------------------------------------------
 
 class WindowStub:

@@ -1843,6 +1843,7 @@
   },
   "toast": {
     "followup_due_title": "🔔 Uppföljning förfallen ({count})",
+    "open_link": "🔗 Öppna länk",
     "reminder_title": "Påminnelse"
   },
   "tray": {
@@ -2082,4 +2083,4 @@
     "YELLOW": "Medel",
     "GREEN": "Låg"
   }
-}
+}

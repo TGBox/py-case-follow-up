@@ -1,6 +1,7 @@
 import inspect
 import logging
 import sys
+import webbrowser
 from collections.abc import Callable
 import customtkinter as ctk
 
@@ -37,22 +38,30 @@ from services.i18n_service import tr
 logger = logging.getLogger("SupportCockpit")
 
 
-def _accepts_launch(notify: Callable[..., object]) -> bool:
-    """Whether a tray service's notify() takes the launch URI."""
+def _accepts(notify: Callable[..., object], name: str) -> bool:
+    """Whether a tray service's notify() takes the keyword ``name`` (launch, actions)."""
     try:
-        return "launch" in inspect.signature(notify).parameters
+        return name in inspect.signature(notify).parameters
     except (TypeError, ValueError):
         return False
+
+
+def _accepts_launch(notify: Callable[..., object]) -> bool:
+    """Whether a tray service's notify() takes the launch URI."""
+    return _accepts(notify, "launch")
 
 
 class ToastNotification(ctk.CTkToplevel):
     """Non-intrusive toast notification: uses native Windows OS notifications when available, with CTk overlay fallback."""
 
-    def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None, launch_uri: str | None = None):
+    def __init__(self, parent, title: str, message: str, duration_ms: int = TOAST_DURATION_DEFAULT_MS, on_open: Callable[[], None] | None = None, launch_uri: str | None = None, link_url: str | None = None):
         super().__init__(parent)
         self.title(tr("toast.reminder_title", "Erinnerung"))
         self.on_open = on_open
         self.launch_uri = launch_uri
+        # A web link offered as its own "Open link" button - on the OS toast as
+        # a toast action, on the in-app card as a second button.
+        self.link_url = link_url
 
         # The native decision comes first: building the card and then throwing
         # it away meant every toast constructed its widgets twice - two frames,
@@ -82,7 +91,9 @@ class ToastNotification(ctk.CTkToplevel):
 
         self.overrideredirect(True)
 
-        width = TOAST_WIDTH_ACTION if on_open else TOAST_WIDTH_DEFAULT
+        width = TOAST_WIDTH_ACTION if (on_open or link_url) else TOAST_WIDTH_DEFAULT
+        if on_open and link_url:
+            width += BTN_WIDTH_ACTION_SM
         height = TOAST_HEIGHT
 
         target_setting = DEFAULT_POPUP_DISPLAY_TARGET
@@ -118,6 +129,20 @@ class ToastNotification(ctk.CTkToplevel):
             )
             btn_open.pack(side="right", padx=(PAD_MD - PAD_XS, PAD_LG), pady=PAD_LG)
 
+        btn_link = None
+        if link_url:
+            btn_link = ctk.CTkButton(
+                frame,
+                text=tr("toast.open_link", "🔗 Link öffnen"),
+                width=BTN_WIDTH_ACTION_SM,
+                height=BTN_HEIGHT_LG,
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                fg_color=COLOR_TOAST_BORDER,
+                hover_color=COLOR_TOAST_BTN_HOVER,
+                command=self.handle_link,
+            )
+            btn_link.pack(side="right", padx=(PAD_MD - PAD_XS, PAD_XS if on_open else PAD_LG), pady=PAD_LG)
+
         content_frame = ctk.CTkFrame(frame, fg_color="transparent")
         content_frame.pack(side="left", fill="both", expand=True, padx=(PAD_LG, PAD_MD - PAD_XS), pady=PAD_MD)
 
@@ -148,6 +173,10 @@ class ToastNotification(ctk.CTkToplevel):
             return self.handle_open() if on_open else self.safe_destroy()
 
         self._bind_click_recursive(frame, click_handler)
+        if btn_link is not None:
+            # Re-bound after the card-wide handler, which would otherwise close
+            # the card on press before the button could open the link.
+            self._bind_click_recursive(btn_link, lambda e: self.handle_link())
 
     def _send_native(self, top_app, title: str, message: str) -> bool:
         """Shows the OS notification. Returns False so the card is used instead.
@@ -158,6 +187,7 @@ class ToastNotification(ctk.CTkToplevel):
         (see services/instance_service.py).
         """
         launch_uri = self.launch_uri or getattr(top_app, "pending_launch_uri", None)
+        actions = [(tr("toast.open_link", "🔗 Link öffnen"), self.link_url)] if self.link_url else []
 
         tray_svc = getattr(top_app, "tray_service", None)
         if tray_svc is not None:
@@ -165,7 +195,9 @@ class ToastNotification(ctk.CTkToplevel):
             # signature, not from catching TypeError: a TypeError raised *inside*
             # notify() would otherwise be mistaken for an old signature, and the
             # retry would then escape this method uncaught.
-            kwargs = {"launch": launch_uri} if _accepts_launch(tray_svc.notify) else {}
+            kwargs: dict[str, object] = {"launch": launch_uri} if _accepts_launch(tray_svc.notify) else {}
+            if actions and _accepts(tray_svc.notify, "actions"):
+                kwargs["actions"] = actions
             try:
                 return bool(tray_svc.notify(title, message, **kwargs))
             except Exception as err:
@@ -181,6 +213,8 @@ class ToastNotification(ctk.CTkToplevel):
                 duration=NOTIFICATION_DURATION_SHORT,
                 **({"launch": launch_uri} if launch_uri else {}),
             )
+            for label, uri in actions:
+                toast.add_actions(label=label, launch=uri)
             toast.show()
             return True
         except Exception as err:
@@ -228,6 +262,16 @@ class ToastNotification(ctk.CTkToplevel):
         self.safe_destroy()
         if cb:
             cb()
+
+    def handle_link(self, event=None):
+        """Opens the toast's web link in the default browser and closes the card."""
+        url, self.link_url = self.link_url, None
+        if url:
+            try:
+                webbrowser.open(url)
+            except Exception as err:
+                logger.warning(f"Could not open toast link: {err}")
+        self.safe_destroy()
 
     def safe_destroy(self):
         try:

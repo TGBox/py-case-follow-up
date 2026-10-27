@@ -2,6 +2,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 from enums import LayoutMode, SyncMode
 from utils.security import normalize_url
+from utils.sorting import alpha_sorted
 from constants import (
     DEFAULT_AI_PROVIDER,
     DEFAULT_BACKUP_DAILY_DAYS,
@@ -457,9 +458,9 @@ class UserProfile:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> UserProfile:
         tags_raw = data.get("available_tags", DEFAULT_TAGS)
-        tags = list(tags_raw) if isinstance(tags_raw, list) else list(DEFAULT_TAGS)
+        tags = alpha_sorted(tags_raw) if isinstance(tags_raw, list) else alpha_sorted(DEFAULT_TAGS)
         mod_tags_raw = data.get("available_module_tags", DEFAULT_MODULE_TAGS)
-        mod_tags = list(mod_tags_raw) if isinstance(mod_tags_raw, list) else list(DEFAULT_MODULE_TAGS)
+        mod_tags = alpha_sorted(mod_tags_raw) if isinstance(mod_tags_raw, list) else alpha_sorted(DEFAULT_MODULE_TAGS)
         return cls(
             user=UserInfo.from_dict(data.get("user", {})),
             ui_settings=UISettings.from_dict(data.get("ui_settings", {})),

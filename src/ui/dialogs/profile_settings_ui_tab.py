@@ -3,6 +3,7 @@ from collections.abc import Callable
 import customtkinter as ctk
 
 from constants import (
+    BTN_WIDTH_NTFY_QR,
     BTN_WIDTH_NTFY_RANDOM,
     BTN_WIDTH_NTFY_TEST,
     COLOR_MUTED_GRAY_FG,
@@ -25,7 +26,10 @@ from constants import (
     DEFAULT_NTFY_REMOTE_CONTROL,
     DEFAULT_NTFY_RESPONSE_TOPIC,
     DEFAULT_NTFY_TOPIC,
+    DEFAULT_UNLOCK_NOTIFICATION_ENABLED,
+    DEFAULT_UNLOCK_NOTIFICATION_TEXT,
     ENTRY_WIDTH_NTFY_TOPIC,
+    ENTRY_WIDTH_UNLOCK_NOTIFICATION,
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
@@ -202,6 +206,51 @@ class UiSettingsTabMixin:
             self.os_popup_switch.deselect()
         self.os_popup_switch.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
+        # Workstation Unlock Notification
+        self.unlock_notify_cb = self.register_i18n(
+            ctk.CTkCheckBox(
+                right_col,
+                text=tr("ntfy.unlock_notification_toggle", "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen"),
+                command=self.on_toggle_unlock_notify,
+            ),
+            "ntfy.unlock_notification_toggle",
+            "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen",
+        )
+        if getattr(self.profile.reminder_settings, "unlock_notification_enabled", DEFAULT_UNLOCK_NOTIFICATION_ENABLED):
+            self.unlock_notify_cb.select()
+        else:
+            self.unlock_notify_cb.deselect()
+        self.unlock_notify_cb.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+
+        self.unlock_notify_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        self.unlock_notify_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_MD))
+
+        self.unlock_notify_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                self.unlock_notify_frame,
+                text=tr("ntfy.unlock_notification_text_label", "Eigener Benachrichtigungstext:"),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+            ),
+            "ntfy.unlock_notification_text_label",
+            "Eigener Benachrichtigungstext:",
+        )
+        self.unlock_notify_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+
+        self.unlock_notify_entry = ctk.CTkEntry(
+            self.unlock_notify_frame,
+            width=ENTRY_WIDTH_UNLOCK_NOTIFICATION,
+            placeholder_text=tr(
+                "ntfy.unlock_notification_placeholder",
+                "z. B. Willkommen zurück! Bitte offene Wiedervorlagen prüfen.",
+            ),
+        )
+        saved_unlock_text = getattr(self.profile.reminder_settings, "unlock_notification_text", DEFAULT_UNLOCK_NOTIFICATION_TEXT)
+        if saved_unlock_text:
+            self.unlock_notify_entry.insert(0, saved_unlock_text)
+        self.unlock_notify_entry.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+        if not getattr(self.profile.reminder_settings, "unlock_notification_enabled", DEFAULT_UNLOCK_NOTIFICATION_ENABLED):
+            self.unlock_notify_entry.configure(state="disabled")
+
         # Smartphone Push (ntfy.sh) Section
         self.ntfy_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(
@@ -280,7 +329,21 @@ class UiSettingsTabMixin:
             "ntfy.btn_test_notification",
             "🔔 Testnachricht",
         )
-        self.ntfy_test_btn.pack(side="left")
+        self.ntfy_test_btn.pack(side="left", padx=(PAD_NONE, PAD_SM))
+
+        self.ntfy_qr_btn = self.register_i18n(
+            ctk.CTkButton(
+                topic_frame,
+                text=tr("ntfy.btn_qr_code", "📲 QR-Code"),
+                command=self.on_show_ntfy_qr,
+                width=BTN_WIDTH_NTFY_QR,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+            ),
+            "ntfy.btn_qr_code",
+            "📲 QR-Code",
+        )
+        self.ntfy_qr_btn.pack(side="left")
 
         idle_frame = ctk.CTkFrame(right_col, fg_color="transparent")
         idle_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_SM))
@@ -580,6 +643,7 @@ class UiSettingsTabMixin:
             getattr(self, "ntfy_topic_entry", None),
             getattr(self, "ntfy_random_btn", None),
             getattr(self, "ntfy_test_btn", None),
+            getattr(self, "ntfy_qr_btn", None),
             getattr(self, "ntfy_idle_combo", None),
             getattr(self, "ntfy_cb_followups", None),
             getattr(self, "ntfy_cb_prio1", None),
@@ -603,11 +667,32 @@ class UiSettingsTabMixin:
         if rc_entry is not None:
             rc_entry.configure(state="normal" if rc_on else "disabled")
 
+    def on_toggle_unlock_notify(self) -> None:
+        """Enables or disables the custom unlock notification text entry."""
+        if hasattr(self, "unlock_notify_cb") and hasattr(self, "unlock_notify_entry"):
+            is_enabled = bool(self.unlock_notify_cb.get())
+            self.unlock_notify_entry.configure(state="normal" if is_enabled else "disabled")
+
     def on_generate_random_ntfy_topic(self) -> None:
         from services.ntfy_service import NtfyService
         rnd_topic = NtfyService.generate_random_topic()
         self.ntfy_topic_entry.delete(0, "end")
         self.ntfy_topic_entry.insert(0, rnd_topic)
+
+    def on_show_ntfy_qr(self) -> None:
+        topic = self.ntfy_topic_entry.get().strip()
+        if not topic:
+            from ui.widgets.toast_notification import ToastNotification
+
+            ToastNotification(
+                self.winfo_toplevel(),
+                title=tr("ntfy.qr_dialog_title", "Smartphone koppeln (ntfy)"),
+                message=tr("ntfy.qr_no_topic_toast", "Bitte trage zuerst ein Thema ein oder klicke auf 'Zufall'."),
+            )
+            return
+        from ui.dialogs.ntfy_qr_dialog import NtfyQrDialog
+
+        NtfyQrDialog(self.winfo_toplevel(), topic=topic)
 
     def on_send_ntfy_test(self) -> None:
         topic = self.ntfy_topic_entry.get().strip()
@@ -659,6 +744,18 @@ class UiSettingsTabMixin:
                 self.os_popup_switch.select()
             else:
                 self.os_popup_switch.deselect()
+        if hasattr(self, "unlock_notify_cb"):
+            if getattr(self.profile.reminder_settings, "unlock_notification_enabled", DEFAULT_UNLOCK_NOTIFICATION_ENABLED):
+                self.unlock_notify_cb.select()
+            else:
+                self.unlock_notify_cb.deselect()
+        if hasattr(self, "unlock_notify_entry"):
+            self.unlock_notify_entry.configure(state="normal")
+            self.unlock_notify_entry.delete(0, "end")
+            saved_unlock_text = getattr(self.profile.reminder_settings, "unlock_notification_text", DEFAULT_UNLOCK_NOTIFICATION_TEXT)
+            if saved_unlock_text:
+                self.unlock_notify_entry.insert(0, saved_unlock_text)
+            self.on_toggle_unlock_notify()
         if hasattr(self, "ntfy_switch"):
             if getattr(self.profile.reminder_settings, "mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED):
                 self.ntfy_switch.select()
@@ -742,6 +839,10 @@ class UiSettingsTabMixin:
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
         if hasattr(self, "os_popup_switch"):
             self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
+        if hasattr(self, "unlock_notify_cb"):
+            self.profile.reminder_settings.unlock_notification_enabled = bool(self.unlock_notify_cb.get())
+        if hasattr(self, "unlock_notify_entry"):
+            self.profile.reminder_settings.unlock_notification_text = self.unlock_notify_entry.get().strip()
         if hasattr(self, "ntfy_switch"):
             self.profile.reminder_settings.mobile_ntfy_enabled = bool(self.ntfy_switch.get())
         if hasattr(self, "ntfy_topic_entry"):
@@ -804,6 +905,12 @@ class UiSettingsTabMixin:
             self.demo_switch.configure(text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"))
         if hasattr(self, "os_popup_switch"):
             self.os_popup_switch.configure(text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"))
+        if hasattr(self, "unlock_notify_cb"):
+            self.unlock_notify_cb.configure(text=tr("ntfy.unlock_notification_toggle", "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen"))
+        if hasattr(self, "unlock_notify_lbl"):
+            self.unlock_notify_lbl.configure(text=tr("ntfy.unlock_notification_text_label", "Eigener Benachrichtigungstext:"))
+        if hasattr(self, "unlock_notify_entry"):
+            self.unlock_notify_entry.configure(placeholder_text=tr("ntfy.unlock_notification_placeholder", "z. B. Willkommen zurück! Bitte offene Wiedervorlagen prüfen."))
         if hasattr(self, "ntfy_hdr_lbl"):
             self.ntfy_hdr_lbl.configure(text=tr("ntfy.section_title", "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)"))
         if hasattr(self, "ntfy_switch"):

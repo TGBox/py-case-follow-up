@@ -16,6 +16,7 @@ a = Analysis(
         'PIL._tkinter_finder',
         'jinja2',
         'darkdetect',
+        'qrcode',
     ],
     hookspath=[],
     hooksconfig={},

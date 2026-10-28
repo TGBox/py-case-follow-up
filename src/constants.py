@@ -1939,3 +1939,14 @@ UPDATE_CHECK_POLL_MS = 500
 COLOR_UPDATE_BANNER_BG = ("#fef3c7", "#3b2f12")
 COLOR_UPDATE_BANNER_TEXT = ("#78350f", "#fcd34d")
 BTN_WIDTH_UPDATE_BANNER = 150
+
+# Emoticons typed into note fields become emojis (utils.emoticons). Order
+# matters only for readability; matching is on the exact token.
+EMOTICON_REPLACEMENTS = {
+    ":D": "😄",
+    ":-D": "😄",
+    ":)": "🙂",
+    ":-)": "🙂",
+    ":(": "🙁",
+    ":-(": "🙁",
+}

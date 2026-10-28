@@ -472,6 +472,8 @@ class NewCaseDialog(BaseDialog):
 
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
+        from utils.emoticons import enable_emoticon_autoreplace
+        enable_emoticon_autoreplace(self.note_textbox)
 
     def render_tags_checkboxes(self):
         num_cols = TAG_PILL_COLS

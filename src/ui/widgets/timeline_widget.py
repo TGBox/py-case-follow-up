@@ -182,6 +182,8 @@ class TimelineWidget(ctk.CTkFrame):
 
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
+        from utils.emoticons import enable_emoticon_autoreplace
+        enable_emoticon_autoreplace(self.note_textbox)
 
         self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=BTN_WIDTH_ACTION)
         self.add_btn.pack(side="right", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))

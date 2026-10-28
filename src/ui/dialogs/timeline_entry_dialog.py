@@ -116,6 +116,8 @@ class TimelineEntryDialog(BaseDialog):
         ), "timeline.edit_note_lbl", "📝 Notiz:").pack(fill="x", padx=PAD_LG, pady=(PAD_SM, PAD_XS))
         self.note_textbox = ctk.CTkTextbox(main_frame, height=TEXTBOX_HEIGHT_TIMELINE_EDIT)
         self.note_textbox.insert("1.0", self.entry.note or "")
+        from utils.emoticons import enable_emoticon_autoreplace
+        enable_emoticon_autoreplace(self.note_textbox)
         self.note_textbox.pack(fill="both", expand=True, padx=PAD_LG, pady=(PAD_NONE, PAD_SM))
 
         self.error_label = ctk.CTkLabel(main_frame, text="", text_color=COLOR_DARKRED, anchor=ANCHOR_WEST)

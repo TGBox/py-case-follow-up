@@ -359,6 +359,8 @@ class FieldRendererMixin:
         if val:
             textbox.insert("1.0", str(val))
         textbox.pack(anchor="w", pady=(0, PAD_XS))
+        from utils.emoticons import enable_emoticon_autoreplace
+        enable_emoticon_autoreplace(textbox)
 
         handle = TextboxResizeHandle(
             row_frame,

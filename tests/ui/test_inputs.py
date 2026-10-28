@@ -463,3 +463,75 @@ def test_picking_a_recipient_does_not_reopen_the_suggestion_list(root, config, t
             dialog.destroy()
         except Exception:
             pass
+
+
+# --- Emoticons become emojis in note fields ---
+
+def _typer(root):
+    from types import SimpleNamespace
+
+    from utils.emoticons import enable_emoticon_autoreplace
+
+    box = ctk.CTkTextbox(root)
+    handler = enable_emoticon_autoreplace(box)
+    text = box._textbox
+
+    def type_(keys) -> str:
+        """Feeds keys like a user would: our binding first, then Tk's own insert."""
+        for key in keys:
+            keysym = "BackSpace" if key == "\b" else key
+            event = SimpleNamespace(keysym=keysym, char="" if key == "\b" else key)
+            if handler.on_key(event) != "break":
+                if key == "\b":
+                    text.delete("insert -1c")
+                else:
+                    text.insert("insert", key)
+            root.update()
+        return text.get("1.0", "end-1c")
+
+    return type_
+
+
+@pytest.mark.parametrize("typed, expected", [
+    ("super :D", "super 😄"),
+    ("super :-D", "super 😄"),
+    (":)", "🙂"),
+    ("danke :-) bis bald", "danke 🙂 bis bald"),
+    ("schade :(", "schade 🙁"),
+    ("zeile\n:-(", "zeile\n🙁"),
+    ("Termin:)", "Termin:)"),          # glued to a word: left alone
+    ("https://x.de/:D", "https://x.de/:D"),
+    (":Dx", "😄x"),
+])
+def test_typed_emoticons_become_emojis(root, typed, expected):
+    assert _typer(root)(typed) == expected
+
+
+def test_backspace_right_after_a_replacement_restores_the_emoticon(root):
+    type_ = _typer(root)
+    assert type_("ok :)") == "ok 🙂"
+    assert type_("\b") == "ok :)"
+    # The restored ":)" stays, even though its last char was just "typed" again.
+    assert type_(" ") == "ok :) "
+    # Later, a backspace is an ordinary backspace again.
+    assert type_(":D a\b\b\b") == "ok :) "
+
+
+def test_pasted_emoticons_stay_as_text(root):
+    from utils.emoticons import enable_emoticon_autoreplace
+
+    box = ctk.CTkTextbox(root)
+    enable_emoticon_autoreplace(box)
+    box.insert("1.0", "eingefügt :D")
+    root.update()
+    assert box.get("1.0", "end-1c") == "eingefügt :D"
+
+
+def test_every_note_field_replaces_emoticons():
+    for rel in (
+        "ui/widgets/timeline_widget.py",
+        "ui/dialogs/timeline_entry_dialog.py",
+        "ui/dialogs/new_case_dialog.py",
+        "ui/widgets/dynamic_form_field_renderers.py",
+    ):
+        assert "enable_emoticon_autoreplace(" in (SRC / rel).read_text(encoding="utf-8"), rel

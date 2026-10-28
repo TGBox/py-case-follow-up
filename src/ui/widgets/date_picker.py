@@ -601,7 +601,7 @@ class DatePickerWidget(ctk.CTkFrame):
 
         self.time_entry: ctk.CTkComboBox | None = None
         if include_time:
-            self.time_entry = ctk.CTkComboBox(
+            time_entry = ctk.CTkComboBox(
                 self,
                 values=TIME_FIELD_SLOTS,
                 width=DATE_PICKER_TIME_FIELD_WIDTH,
@@ -609,10 +609,11 @@ class DatePickerWidget(ctk.CTkFrame):
             )
             # CTkComboBox preselects its first value; an empty field must stay
             # empty ("leer = jetzt" in the timeline).
-            self.time_entry.set("")
-            self.time_entry.pack(side="left", padx=(PAD_NONE, PAD_CONTAINER))
-            self.time_entry.bind("<KeyRelease>", self._on_key_release)
-            self.time_entry.bind("<FocusOut>", self._on_focus_out)
+            time_entry.set("")
+            time_entry.pack(side="left", padx=(PAD_NONE, PAD_CONTAINER))
+            time_entry.bind("<KeyRelease>", self._on_key_release)
+            time_entry.bind("<FocusOut>", self._on_focus_out)
+            self.time_entry = time_entry
 
         if initial_value:
             if "." in initial_value:

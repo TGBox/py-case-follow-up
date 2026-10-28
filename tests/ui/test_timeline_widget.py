@@ -524,3 +524,34 @@ def test_resize_works_without_profile(root):
     w = _widget(root)
     _drag(w.note_resize_handle, 40)
     assert _height(w) == TEXTBOX_HEIGHT_SM + 40
+
+
+def test_note_text_follows_theme_switch(root):
+    """tk.Text is not managed by CTk: after Dark -> Light the note must not keep
+    its dark background / light text (dark grey box on a light card)."""
+    from constants import COLOR_TEXT_BODY, COLOR_TIMELINE_LINK
+    from utils.ui_utils import create_highlighted_label
+
+    def rgb(color):
+        return root.winfo_rgb(color)
+
+    previous = ctk.get_appearance_mode()
+    try:
+        ctk.set_appearance_mode("Dark")
+        txt = create_highlighted_label(
+            root, text="Notiz mit https://x.de", query="", font=("Arial", 12),
+            text_color=COLOR_TEXT_BODY, bg_color=COLOR_CARD_BG,
+        )
+        linkify_text_widget(txt, COLOR_TIMELINE_LINK, opener=lambda _u: None)
+        assert rgb(txt.cget("bg")) == rgb(COLOR_CARD_BG[1])
+
+        ctk.set_appearance_mode("Light")
+        assert rgb(txt.cget("bg")) == rgb(COLOR_CARD_BG[0])
+        assert rgb(txt.tag_cget("normal", "foreground")) == rgb(COLOR_TEXT_BODY[0])
+        assert rgb(txt.tag_cget("link", "foreground")) == rgb(COLOR_TIMELINE_LINK[0])
+
+        # A destroyed note must drop out of the tracker instead of erroring.
+        txt.destroy()
+        ctk.set_appearance_mode("Dark")
+    finally:
+        ctk.set_appearance_mode(previous)

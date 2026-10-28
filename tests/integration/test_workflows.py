@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from config import AppConfig
+from constants import COLOR_BELL_BTN
 from enums import Actor, Channel, FieldType, LayoutMode, UrgencyLevel, get_layout_display
 from models.case import Case, CaseCustomer, Classification, TimelineEntry, WorkflowStatus
 from models.customer import Contact, Customer
@@ -587,7 +588,7 @@ def test_followup_reminder_bell_flyout_toast_and_handover(seeded_storage):
     for c in [c for c in app.cases if c.workflow_status.followup_at]:
         c.workflow_status.is_completed = True
         app.on_case_updated(c)
-    assert (app.bell_btn.val, app.bell_btn.fg_color) == ("0", "gray30")
+    assert (app.bell_btn.val, app.bell_btn.fg_color) == ("0", COLOR_BELL_BTN)
     assert app.tray_service._badge_count == 0
 
     persisted = {c.case_id: c for c in _reopen(storage).load_cases()}

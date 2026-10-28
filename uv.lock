@@ -253,7 +253,7 @@ wheels = [
 
 [[package]]
 name = "py-case-follow-up"
-version = "3.11.7"
+version = "3.11.8"
 source = { editable = "." }
 dependencies = [
     { name = "customtkinter" },

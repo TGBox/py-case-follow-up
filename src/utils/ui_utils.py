@@ -629,6 +629,35 @@ def cancel_debounce(widget, key: str) -> None:
     setattr(widget, attr, None)
 
 
+def track_appearance_mode(widget: Any, apply: Callable[[str], Any]) -> None:
+    """Calls ``apply("Light" | "Dark")`` on every appearance-mode change while
+    ``widget`` exists.
+
+    For plain Tk widgets (tk.Text, tk.Canvas ...) whose colours CustomTkinter
+    does not manage. The callback is unregistered when the widget is destroyed
+    so the tracker does not keep dead widgets alive.
+    """
+    from customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker import (
+        AppearanceModeTracker,
+    )
+
+    def _callback(mode_string: str) -> None:
+        try:
+            if not widget.winfo_exists():
+                return
+            apply(mode_string)
+        except tk.TclError:
+            pass
+
+    AppearanceModeTracker.add(_callback, widget)
+
+    def _on_destroy(event: Any) -> None:
+        if event.widget is widget:
+            AppearanceModeTracker.remove(_callback)
+
+    widget.bind("<Destroy>", _on_destroy, add="+")
+
+
 def create_highlighted_label(
     parent: Any,
     text: str,
@@ -649,34 +678,35 @@ def create_highlighted_label(
     Supports single search string or list of search terms, tagging matching substrings
     with a prominent gold/yellow highlight color while preserving smooth scrolling and click handling.
     """
-    mode = ctk.get_appearance_mode().lower()
+    def _colors(mode: str) -> tuple[str, str, str]:
+        """(background, text, highlight) for the given appearance mode."""
+        def _resolve(c: str | tuple[str, str]) -> str:
+            if isinstance(c, (tuple, list)):
+                return c[1] if mode == "dark" else c[0]
+            return c
 
-    def _resolve(c: str | tuple[str, str]) -> str:
-        if isinstance(c, (tuple, list)):
-            return c[1] if mode == "dark" else c[0]
-        return c
+        bg = _resolve(bg_color)
+        if bg == "transparent":
+            # Walk up the widget chain: a transparent row inside a transparent frame
+            # still has to inherit the colour of the first opaque ancestor, otherwise
+            # the label renders a visibly mismatched rectangle (light mode especially).
+            node = parent
+            for _ in range(8):
+                if node is None or not hasattr(node, "cget"):
+                    break
+                try:
+                    p_fg = node.cget("fg_color")
+                except Exception:
+                    p_fg = None
+                if p_fg and p_fg != "transparent":
+                    bg = _resolve(p_fg)
+                    break
+                node = getattr(node, "master", None)
+            if bg == "transparent":
+                bg = COLOR_FALLBACK_TEXT_BG[1] if mode == "dark" else COLOR_FALLBACK_TEXT_BG[0]
+        return bg, _resolve(text_color), _resolve(highlight_color)
 
-    res_bg = _resolve(bg_color)
-    if res_bg == "transparent":
-        # Walk up the widget chain: a transparent row inside a transparent frame
-        # still has to inherit the colour of the first opaque ancestor, otherwise
-        # the label renders a visibly mismatched rectangle (light mode especially).
-        node = parent
-        for _ in range(8):
-            if node is None or not hasattr(node, "cget"):
-                break
-            try:
-                p_fg = node.cget("fg_color")
-            except Exception:
-                p_fg = None
-            if p_fg and p_fg != "transparent":
-                res_bg = _resolve(p_fg)
-                break
-            node = getattr(node, "master", None)
-        if res_bg == "transparent":
-            res_bg = COLOR_FALLBACK_TEXT_BG[1] if mode == "dark" else COLOR_FALLBACK_TEXT_BG[0]
-    res_text = _resolve(text_color)
-    res_hl = _resolve(highlight_color)
+    res_bg, res_text, res_hl = _colors(ctk.get_appearance_mode().lower())
 
     # Height/width are recomputed from real font metrics below; these are only
     # the initial values so the widget does not flash at the wrong size.
@@ -769,6 +799,17 @@ def create_highlighted_label(
             pos = best_idx + best_len
 
     txt.configure(state="disabled")
+
+    # tk.Text is not a CTk widget: its colours are plain strings and would keep
+    # the mode they were created in (dark grey note on a light card after
+    # switching the theme). Re-resolve them whenever the mode changes.
+    def _apply_mode(mode_string: str) -> None:
+        bg, fg, hl = _colors(mode_string.lower())
+        txt.configure(bg=bg)
+        txt.tag_configure("normal", foreground=fg)
+        txt.tag_configure("match", foreground=hl)
+
+    track_appearance_mode(txt, _apply_mode)
 
     if wrap != "none":
         # A fixed height of 2 lines silently swallows everything past line 2
@@ -968,8 +1009,14 @@ def linkify_text_widget(
     if not links:
         return []
 
-    if isinstance(link_color, (tuple, list)):
-        link_color = link_color[1] if ctk.get_appearance_mode().lower() == "dark" else link_color[0]
+    color_spec = link_color
+
+    def _link_color(mode: str) -> str:
+        if isinstance(color_spec, (tuple, list)):
+            return color_spec[1] if mode == "dark" else color_spec[0]
+        return color_spec
+
+    link_color = _link_color(ctk.get_appearance_mode().lower())
     handler = LinkClickHandler(txt, opener or webbrowser.open)
     # Kept on the widget so the handler lives as long as the bindings do (and
     # tests can drive it without a mapped window).
@@ -978,6 +1025,10 @@ def linkify_text_widget(
 
     txt.tag_configure("link", foreground=link_color, underline=True)
     txt.tag_raise("link")
+    if isinstance(color_spec, (tuple, list)):
+        track_appearance_mode(
+            txt, lambda m: txt.tag_configure("link", foreground=_link_color(m.lower()))
+        )
 
     search_from = "1.0"
     for idx, (raw, target) in enumerate(links):

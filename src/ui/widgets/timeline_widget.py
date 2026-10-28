@@ -12,6 +12,7 @@ from constants import (
     COLOR_CARD_BORDER,
     COLOR_MUTED_GRAY_FG,
     COLOR_MUTED_LABEL,
+    COLOR_ON_MUTED_TEXT,
     COLOR_PURPLE_DARK,
     COLOR_SUBTITLE_MUTED,
     COLOR_TEXT_BODY,
@@ -126,15 +127,30 @@ class TimelineWidget(ctk.CTkFrame):
         )
         self.snip_btn.pack(side="right")
 
-        self.channel_combo = ctk.CTkOptionMenu(input_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=COMBO_WIDTH_SM)
+        channel_row = ctk.CTkFrame(input_frame, fg_color="transparent")
+        channel_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+
+        self.channel_combo = ctk.CTkOptionMenu(channel_row, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=COMBO_WIDTH_SM)
         self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
-        self.channel_combo.pack(anchor="w", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+        self.channel_combo.pack(side="left")
+
+        # Rarely needed, so the time row stays folded away behind this toggle.
+        self._time_expanded = False
+        self.time_toggle_btn = ctk.CTkButton(
+            channel_row,
+            text=self._time_toggle_text(),
+            width=0,
+            fg_color="transparent",
+            hover_color=COLOR_TIMELINE_EDIT_HOVER,
+            text_color=COLOR_ON_MUTED_TEXT,
+            command=self.toggle_time_row,
+        )
+        self.time_toggle_btn.pack(side="right")
 
         # Optional back-dating: empty means "now". The picker refuses the future,
         # a timeline documents what already happened.
         from ui.widgets.date_picker import DatePickerWidget
-        time_row = ctk.CTkFrame(input_frame, fg_color="transparent")
-        time_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+        self.time_row = time_row = ctk.CTkFrame(input_frame, fg_color="transparent")
         self.time_lbl = ctk.CTkLabel(time_row, text=tr("timeline.time_lbl", "🕒 Zeitpunkt:"), font=ctk.CTkFont(size=FONT_SIZE_SM, weight="bold"))
         self.time_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
         self.time_picker = DatePickerWidget(
@@ -170,6 +186,29 @@ class TimelineWidget(ctk.CTkFrame):
         self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=BTN_WIDTH_ACTION)
         self.add_btn.pack(side="right", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
+    def _time_toggle_text(self) -> str:
+        from services.i18n_service import tr
+        arrow = "▾" if self._time_expanded else "▸"
+        return f"{tr('timeline.time_toggle', '🕒 Zeitpunkt')} {arrow}"
+
+    def toggle_time_row(self, expanded: bool | None = None) -> None:
+        """Shows or hides the back-dating row.
+
+        Folding it away also clears the picker: a time nobody can see any more
+        must not silently end up on the next note.
+        """
+        self._time_expanded = (not self._time_expanded) if expanded is None else expanded
+        if self._time_expanded:
+            self.time_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM), before=self.note_textbox)
+            try:
+                self.time_picker.entry.focus_set()
+            except Exception:
+                pass
+        else:
+            self.time_row.pack_forget()
+            self.time_picker.set_date("")
+        self.time_toggle_btn.configure(text=self._time_toggle_text())
+
     def _stored_note_height(self) -> int:
         ui = getattr(self.profile, "ui_settings", None)
         heights = getattr(ui, "custom_textbox_heights", None)
@@ -198,6 +237,8 @@ class TimelineWidget(ctk.CTkFrame):
             self.snip_btn.configure(text=tr("cockpit.snippets_btn", "📝 Textbaustein"))
         if hasattr(self, "add_btn"):
             self.add_btn.configure(text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"))
+        if hasattr(self, "time_toggle_btn"):
+            self.time_toggle_btn.configure(text=self._time_toggle_text())
         if hasattr(self, "time_lbl"):
             self.time_lbl.configure(text=tr("timeline.time_lbl", "🕒 Zeitpunkt:"))
         if hasattr(self, "time_picker"):
@@ -537,8 +578,8 @@ class TimelineWidget(ctk.CTkFrame):
         self.timeline_entries.append(new_entry)
         self.timeline_entries = self._sorted(self.timeline_entries)
         self.note_textbox.delete("1.0", "end")
-        if hasattr(self, "time_picker"):
-            self.time_picker.set_date("")
+        if hasattr(self, "time_row"):
+            self.toggle_time_row(expanded=False)
         self._commit_changes()
 
     @staticmethod

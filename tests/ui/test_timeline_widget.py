@@ -555,3 +555,33 @@ def test_note_text_follows_theme_switch(root):
         ctk.set_appearance_mode("Dark")
     finally:
         ctk.set_appearance_mode(previous)
+
+
+# --- folded time row ---------------------------------------------------------
+
+def test_time_row_is_folded_away_until_toggled(root):
+    w = _widget(root)
+    assert not w.time_row.winfo_manager()
+    assert w.time_toggle_btn.cget("text").endswith("▸")
+
+    w.toggle_time_row()
+    assert w.time_row.winfo_manager() == "pack"
+    assert w.time_toggle_btn.cget("text").endswith("▾")
+
+    w.time_picker.set_date("05.09.2026 11:30")
+    w.toggle_time_row()
+    assert not w.time_row.winfo_manager()
+    assert w.time_picker.get() == ""
+
+
+def test_adding_a_back_dated_note_folds_the_time_row_again(root):
+    received = []
+    w = _widget(root, received)
+    w.load_timeline([])
+    w.toggle_time_row(expanded=True)
+    w.note_textbox.insert("1.0", "nachgetragen")
+    w.time_picker.set_date("05.09.2026 11:30")
+    w.on_add_note()
+
+    assert received[-1][-1].timestamp == "2026-09-05T11:30:00"
+    assert not w.time_row.winfo_manager()

@@ -1827,6 +1827,7 @@
     "status_prefix": "Status: {status}",
     "time_lbl": "🕒 Tidpunkt:",
     "time_placeholder": "tomt = nu",
+    "time_toggle": "🕒 Tidpunkt",
     "edit_btn": "✏",
     "edit_tooltip": "Redigera post",
     "edited_hint": "✏ redigerad {date} av {author}",

@@ -1827,6 +1827,7 @@
     "status_prefix": "Status: {status}",
     "time_lbl": "🕒 Zeitpunkt:",
     "time_placeholder": "leer = jetzt",
+    "time_toggle": "🕒 Zeitpunkt",
     "edit_btn": "✏",
     "edit_tooltip": "Eintrag bearbeiten",
     "edited_hint": "✏ bearbeitet {date} von {author}",

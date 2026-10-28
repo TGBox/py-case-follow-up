@@ -25,7 +25,6 @@ from ui.widgets.date_picker import DatePickerWidget
 from ui.widgets.timeline_widget import TimelineWidget
 from utils.datetime_utils import (
     clamp_datetime_to_now,
-    format_german_datetime,
     get_local_now,
     parse_followup_datetime,
     parse_iso,
@@ -209,7 +208,8 @@ def test_edit_dialog_save_delete_and_empty_note(root, monkeypatch):
     saved, deleted = [], []
     dlg = TimelineEntryDialog(root, entry, on_save=lambda dt, ch, note: saved.append((dt, ch, note)), on_delete=lambda: deleted.append(True))
     dlg.update_idletasks()
-    assert dlg.date_picker.get() == format_german_datetime("2026-09-01T10:00:00")
+    assert (dlg.date_picker.entry.get(), dlg.date_picker.time_entry.get()) == ("01.09.2026", "10:00")
+    assert dlg.date_picker.get_iso() == "2026-09-01T10:00:00"
     dlg.note_textbox.delete("1.0", "end")
     dlg.note_textbox.insert("1.0", "neu")
     dlg.on_click_save()

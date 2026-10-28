@@ -1,4 +1,5 @@
 import calendar
+import re
 from datetime import datetime, timedelta
 from collections.abc import Callable
 import customtkinter as ctk
@@ -52,6 +53,11 @@ from constants import (
     DATE_PICKER_TIME_MENU_CORNER_RADIUS,
     DATE_PICKER_TIME_MENU_HEIGHT,
     DATE_PICKER_TIME_MENU_WIDTH,
+    DATE_PICKER_DATE_FIELD_MIN_WIDTH,
+    DATE_PICKER_TIME_FIELD_WIDTH,
+    DATE_PICKER_TIME_SLOT_FIRST_HOUR,
+    DATE_PICKER_TIME_SLOT_LAST_HOUR,
+    DATE_PICKER_TIME_SLOT_STEP_MIN,
     DATE_PICKER_WIDTH_DEFAULT,
     FOLLOWUP_DELAY_DESTROY_MS,
     FONT_SIZE_2XS,
@@ -521,8 +527,42 @@ class CalendarDialog(ctk.CTkToplevel):
         self.safe_destroy()
 
 
+# Choices offered by the time dropdown next to the date field. Typing any other
+# HH:MM stays possible - the list only saves the common clicks.
+TIME_FIELD_SLOTS = [
+    f"{h:02d}:{m:02d}"
+    for h in range(DATE_PICKER_TIME_SLOT_FIRST_HOUR, DATE_PICKER_TIME_SLOT_LAST_HOUR + 1)
+    for m in range(0, 60, DATE_PICKER_TIME_SLOT_STEP_MIN)
+    if h < DATE_PICKER_TIME_SLOT_LAST_HOUR or m == 0
+]
+
+# A trailing "HH:MM" in a combined value ("28.10.2026 09:30"), optionally
+# followed by the localized o'clock word that format_german_datetime appends
+# ("Uhr", "kl.").
+_TRAILING_TIME_RE = re.compile(r"^(?P<date>.*?\S)\s+(?P<time>\d{1,2}:\d{2}(?::\d{2})?)(?:\s+\D*)?$")
+
+
+def split_date_time(value: str) -> tuple[str, str]:
+    """Splits "TT.MM.JJJJ HH:MM" into ("TT.MM.JJJJ", "HH:MM").
+
+    A value without a recognizable time part is returned as date only.
+    """
+    value = (value or "").strip()
+    match = _TRAILING_TIME_RE.match(value)
+    if match:
+        return match.group("date"), match.group("time")
+    return value, ""
+
+
 class DatePickerWidget(ctk.CTkFrame):
-    """Reusable CustomTkinter input field with calendar picker button."""
+    """Reusable date input with calendar button.
+
+    With include_time=True the date and the time sit in two separate fields: a
+    date entry and an editable time dropdown. To the outside the widget still
+    behaves like a single "TT.MM.JJJJ HH:MM" field - get(), set_date(),
+    get_iso() and get_datetime() combine and split the two parts, so presets
+    and callers do not need to know about the split.
+    """
 
     def __init__(
         self,
@@ -548,17 +588,39 @@ class DatePickerWidget(ctk.CTkFrame):
             tr("date_picker.placeholder_datetime", "DD.MM.YYYY HH:MM") if include_time else tr("date_picker.placeholder_date", "DD.MM.YYYY")
         )
 
-        self.entry = ctk.CTkEntry(self, placeholder_text=ph, width=width)
+        # The date field gives up the room the time field takes, so callers'
+        # widths keep describing the footprint of the whole input.
+        date_width = width
+        if include_time:
+            date_width = max(DATE_PICKER_DATE_FIELD_MIN_WIDTH, width - DATE_PICKER_TIME_FIELD_WIDTH - PAD_CONTAINER)
+
+        self.entry = ctk.CTkEntry(self, placeholder_text=self._date_placeholder(ph), width=date_width)
         self.entry.pack(side="left", fill="x", expand=True, padx=(PAD_NONE, PAD_CONTAINER))
         self.entry.bind("<KeyRelease>", self._on_key_release, add="+")
         self.entry.bind("<FocusOut>", self._on_focus_out, add="+")
 
+        self.time_entry: ctk.CTkComboBox | None = None
+        if include_time:
+            time_entry = ctk.CTkComboBox(
+                self,
+                values=TIME_FIELD_SLOTS,
+                width=DATE_PICKER_TIME_FIELD_WIDTH,
+                command=self._on_time_selected,
+            )
+            # CTkComboBox preselects its first value; an empty field must stay
+            # empty ("leer = jetzt" in the timeline).
+            time_entry.set("")
+            time_entry.pack(side="left", padx=(PAD_NONE, PAD_CONTAINER))
+            time_entry.bind("<KeyRelease>", self._on_key_release)
+            time_entry.bind("<FocusOut>", self._on_focus_out)
+            self.time_entry = time_entry
+
         if initial_value:
             if "." in initial_value:
-                self.entry.insert(0, initial_value)
+                self._write(initial_value)
             else:
                 formatted = format_german_datetime(initial_value) if include_time else format_german_date(initial_value)
-                self.entry.insert(0, formatted)
+                self._write(formatted)
             self.apply_time_bound()
 
         self.cal_btn = ctk.CTkButton(
@@ -566,12 +628,54 @@ class DatePickerWidget(ctk.CTkFrame):
         )
         self.cal_btn.pack(side="right")
 
+    def _date_placeholder(self, text: str) -> str:
+        # Callers pass combined examples like "TT.MM.JJJJ 09:00"; with a separate
+        # time field only the date part belongs in the date entry.
+        # Also covers format hints such as "DD.MM.YYYY HH:MM".
+        if not self.include_time:
+            return text
+        return re.sub(r"\s+\S+:\S+(?:\s+\D*)?$", "", (text or "").strip())
+
+    def configure(self, require_redraw=False, **kwargs):
+        # register_i18n(..., attr="placeholder_text") re-applies the placeholder
+        # on a language switch - route it to the date entry.
+        if "placeholder_text" in kwargs:
+            self.entry.configure(placeholder_text=self._date_placeholder(kwargs.pop("placeholder_text")))
+        if kwargs or require_redraw:
+            super().configure(require_redraw=require_redraw, **kwargs)
+
+    def _write(self, value: str):
+        """Puts a combined "TT.MM.JJJJ HH:MM" value into the field(s)."""
+        value = (value or "").strip()
+        if self.time_entry is not None:
+            date_part, time_part = split_date_time(value)
+            self.time_entry.set(time_part)
+        else:
+            date_part = value
+        self.entry.delete(0, "end")
+        if date_part:
+            self.entry.insert(0, date_part)
+
     def _on_key_release(self, event=None):
         if self.on_change:
             self.on_change(self.get())
 
+    def _on_time_selected(self, _value: str):
+        self.apply_time_bound()
+        if self.on_change:
+            self.on_change(self.get())
+
     def _on_focus_out(self, event=None):
-        if self.apply_time_bound() and self.on_change:
+        # A full "TT.MM.JJJJ HH:MM" typed or pasted into the date field is
+        # spread over both fields once the user leaves it.
+        changed = False
+        if self.time_entry is not None:
+            date_text = self.entry.get().strip()
+            date_part, time_part = split_date_time(date_text)
+            if time_part:
+                self._write(date_text)
+                changed = True
+        if (self.apply_time_bound() or changed) and self.on_change:
             self.on_change(self.get())
 
     def apply_time_bound(self) -> bool:
@@ -592,8 +696,7 @@ class DatePickerWidget(ctk.CTkFrame):
         if clamped == dt:
             return False
         new_text = format_german_datetime(clamped) if self.include_time else format_german_date(clamped)
-        self.entry.delete(0, "end")
-        self.entry.insert(0, new_text)
+        self._write(new_text)
         return True
 
     def get_datetime(self):
@@ -612,14 +715,27 @@ class DatePickerWidget(ctk.CTkFrame):
         )
 
     def set_date(self, date_str: str):
-        self.entry.delete(0, "end")
-        self.entry.insert(0, date_str)
+        self._write(date_str)
         self.apply_time_bound()
         if self.on_change:
             self.on_change(self.get())
 
     def get(self) -> str:
-        return self.entry.get().strip()
+        """The combined value "TT.MM.JJJJ HH:MM" (or the parts that are filled)."""
+        date_text = self.entry.get().strip()
+        if self.time_entry is None:
+            return date_text
+        # A combined value still sitting in the date field wins over the
+        # time field until focus-out has split it.
+        if split_date_time(date_text)[1]:
+            return date_text
+        time_text = self.time_entry.get().strip()
+        if not time_text:
+            return date_text
+        if not date_text:
+            # Only a time picked: that time today.
+            date_text = format_german_date(get_local_now())
+        return f"{date_text} {time_text}"
 
     def get_iso(self) -> str:
         self.apply_time_bound()
@@ -632,4 +748,4 @@ class DatePickerWidget(ctk.CTkFrame):
             self.cal_btn.configure(text=tr("cockpit.calendar", "📅 Kalender"))
         if hasattr(self, "entry") and not self.get():
             ph = tr("date_picker.placeholder_datetime", "DD.MM.YYYY HH:MM") if self.include_time else tr("date_picker.placeholder_date", "DD.MM.YYYY")
-            self.entry.configure(placeholder_text=ph)
+            self.entry.configure(placeholder_text=self._date_placeholder(ph))

@@ -71,7 +71,8 @@ def test_dialog_prefill_and_remove_button(root):
     clear_text = tr("ui_buttons.clear", "❌ Entfernen")
 
     existing = _dialog(root, _case(followup_at=future_iso, followup_note="Beim Entwickler nachfragen"))
-    assert existing.date_picker.get() == format_german_datetime(future_iso)
+    assert _shown(existing.date_picker) == parse_followup_datetime(future_iso)
+    assert existing.date_picker.time_entry.get() == "14:00"
     assert existing.note_entry.get() == "Beim Entwickler nachfragen"
     assert len(_buttons_with_text(existing, clear_text)) == 1
 
@@ -95,6 +96,79 @@ def test_dialog_moves_past_followup_to_now(root):
     dialog.date_picker.entry.insert(0, "01.01.2020 08:00")
     dialog.on_save()
     assert parse_followup_datetime(received[0]) >= before
+
+
+def test_date_and_time_sit_in_separate_fields(root):
+    """With a time, the picker shows the date and the time in two fields but reads/writes them combined."""
+    picker = _picker(root)
+    picker.set_date("24.12.2031 14:45")
+    assert picker.entry.get() == "24.12.2031"
+    assert picker.time_entry.get() == "14:45"
+    assert picker.get() == "24.12.2031 14:45"
+    assert picker.get_iso() == "2031-12-24T14:45:00"
+
+    picker.time_entry.set("08:15")
+    assert picker.get() == "24.12.2031 08:15"
+
+    picker.set_date("")
+    assert picker.entry.get() == "" and picker.time_entry.get() == ""
+    assert picker.get() == ""
+
+
+def test_time_only_means_today_and_date_only_has_no_time(root):
+    from utils.datetime_utils import format_german_date
+
+    picker = _picker(root)
+    picker.time_entry.set("23:59")
+    assert picker.get() == f"{format_german_date(get_local_now())} 23:59"
+
+    picker.set_date("")
+    picker.entry.insert(0, "24.12.2031")
+    assert picker.get() == "24.12.2031"
+
+
+def test_combined_value_typed_into_date_field_is_split_on_focus_out(root):
+    """Pasting "TT.MM.JJJJ HH:MM" into the date field still works and ends up in both fields."""
+    picker = _picker(root)
+    picker.time_entry.set("09:00")
+    picker.entry.insert(0, "24.12.2031 16:30")
+    assert picker.get() == "24.12.2031 16:30"
+
+    picker._on_focus_out()
+    assert picker.entry.get() == "24.12.2031"
+    assert picker.time_entry.get() == "16:30"
+
+
+def test_time_dropdown_choice_respects_time_bound(root):
+    """Picking a time from the dropdown applies the bound like typing does."""
+    from ui.widgets.date_picker import DatePickerWidget
+
+    changes = []
+    picker = DatePickerWidget(root, include_time=True, time_bound="future", on_change=changes.append)
+    picker.entry.insert(0, "01.01.2020")
+    picker.time_entry.set("08:00")
+    picker._on_time_selected("08:00")
+    assert _shown(picker) >= get_local_now().replace(second=0, microsecond=0)
+    assert changes and changes[-1] == picker.get()
+
+
+def test_placeholder_drops_time_part_for_date_field(root):
+    from ui.widgets.date_picker import DatePickerWidget, split_date_time
+
+    picker = DatePickerWidget(root, include_time=True, placeholder_text="TT.MM.JJJJ 09:00")
+    assert picker.entry.cget("placeholder_text") == "TT.MM.JJJJ"
+    picker.configure(placeholder_text="z. B. 25.08.2026 09:30")
+    assert picker.entry.cget("placeholder_text") == "z. B. 25.08.2026"
+    picker.configure(placeholder_text="DD.MM.YYYY HH:MM")
+    assert picker.entry.cget("placeholder_text") == "DD.MM.YYYY"
+    picker.configure(placeholder_text="leer = jetzt")
+    assert picker.entry.cget("placeholder_text") == "leer = jetzt"
+    assert split_date_time("leer = jetzt") == ("leer = jetzt", "")
+    assert split_date_time("24.12.2031 14:45 Uhr") == ("24.12.2031", "14:45")
+    assert split_date_time("24.12.2031 14:45 kl.") == ("24.12.2031", "14:45")
+
+    date_only = DatePickerWidget(root, include_time=False)
+    assert date_only.time_entry is None
 
 
 def test_dialog_save_and_clear_callbacks(root):

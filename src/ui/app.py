@@ -41,6 +41,7 @@ from constants import (
     COLOR_SPLASH_BORDER,
     COLOR_SUCCESS,
     COLOR_THEME_BTN,
+    COLOR_ON_MUTED_TEXT,
     COLOR_USER_BTN_HOVER,
     COLOR_USER_BTN_TEXT,
     COMBO_WIDTH_DATENAUSTAUSCH,
@@ -559,6 +560,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             command=self.toggle_theme,
             width=BTN_WIDTH_SM,
             fg_color=COLOR_THEME_BTN,
+            text_color=COLOR_ON_MUTED_TEXT,
         )
         theme_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 
@@ -591,6 +593,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             width=BTN_WIDTH_HELP,
             fg_color=COLOR_MUTED_GRAY_FG,
             hover_color=COLOR_MUTED_GRAY_HOVER,
+            text_color=COLOR_ON_MUTED_TEXT,
         )
         self.help_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
 

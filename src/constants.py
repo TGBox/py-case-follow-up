@@ -43,7 +43,8 @@ COLOR_QUIT_BTN = "#8B0000"
 COLOR_QUIT_BTN_HOVER = "#B22222"
 COLOR_THEME_BTN = ("gray70", "gray30")
 BTN_WIDTH_HELP = 85
-COLOR_BELL_BTN = "gray30"
+# Light: dunkel genug fuer das weisse Glocken-Icon und die weisse Zahl.
+COLOR_BELL_BTN = ("gray45", "gray30")
 COLOR_BELL_BTN_HOVER = "darkred"
 BTN_WIDTH_USER = 130
 COLOR_USER_BTN_HOVER = ("gray80", "gray25")
@@ -772,6 +773,11 @@ COLOR_BADGE_BLUE = "dodgerblue"
 COLOR_BADGE_GRAY = "gray"
 COLOR_CANCEL = ("gray70", "gray40")
 COLOR_MUTED_GRAY = ("gray75", "gray30")
+# Schrift auf den grauen Buttons oben: im Light Mode dunkel (weiss auf gray75
+# ist kaum lesbar), im Dark Mode wie der CTk-Standard.
+COLOR_ON_MUTED_TEXT = ("gray10", "#DCE4EE")
+# CTk-Standardschrift auf farbigen Buttons (aktiver Filter, Tiefensuche an).
+COLOR_ON_ACTIVE_TEXT = "#DCE4EE"
 COLOR_MUTED_HOVER = ("gray65", "gray40")
 COLOR_SASH_DARK = "#2b2b2b"
 COLOR_SASH_LIGHT = "#ebebeb"
@@ -788,8 +794,9 @@ COLOR_CARD_DESELECTED_BG = ("gray92", "gray15")
 COLOR_CARD_SELECTED_BORDER = ("dodgerblue", "dodgerblue")
 COLOR_DEEP_SEARCH_ACTIVE = "darkmagenta"
 COLOR_DEEP_SEARCH_ACTIVE_HOVER = "purple"
-COLOR_DEEP_SEARCH_INACTIVE = "gray30"
-COLOR_DEEP_SEARCH_INACTIVE_HOVER = "gray40"
+# Inaktiv wie die anderen Schnellfilter (Dringend/Wiedervorlage).
+COLOR_DEEP_SEARCH_INACTIVE = ("gray75", "gray30")
+COLOR_DEEP_SEARCH_INACTIVE_HOVER = ("gray65", "gray40")
 COLOR_DEEP_ATTACHMENT = "plum"
 COLOR_DEEP_WIKI = "orchid"
 COLOR_TAG_BLUE = ("dodgerblue", "cyan")

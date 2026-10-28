@@ -29,6 +29,8 @@ from constants import (
     COLOR_DEEP_SEARCH_INACTIVE_HOVER,
     COLOR_DEEP_WIKI,
     COLOR_MUTED_GRAY,
+    COLOR_ON_ACTIVE_TEXT,
+    COLOR_ON_MUTED_TEXT,
     COLOR_MUTED_HOVER,
     COLOR_MUTED_LABEL,
     COLOR_SUBTITLE_MUTED,
@@ -144,6 +146,7 @@ class CaseListWidget(ctk.CTkFrame):
             row1_frame,
             text=tr("cockpit.filter_urgent", "🔥 Dringend"),
             fg_color=COLOR_MUTED_GRAY,
+            text_color=COLOR_ON_MUTED_TEXT,
             hover_color=COLOR_MUTED_HOVER,
             command=lambda: self.apply_quick_filter("vip:true"),
             height=BTN_HEIGHT_SM,
@@ -154,6 +157,7 @@ class CaseListWidget(ctk.CTkFrame):
             row1_frame,
             text=tr("cockpit.filter_followup", "🔔 Wiedervorlage"),
             fg_color=COLOR_MUTED_GRAY,
+            text_color=COLOR_ON_MUTED_TEXT,
             hover_color=COLOR_MUTED_HOVER,
             command=lambda: self.apply_quick_filter("reminder:due"),
             height=BTN_HEIGHT_SM,
@@ -164,6 +168,7 @@ class CaseListWidget(ctk.CTkFrame):
             qfilter_frame,
             text=tr("cockpit.filter_deep", "🔍 Tiefensuche"),
             fg_color=COLOR_DEEP_SEARCH_INACTIVE,
+            text_color=COLOR_ON_MUTED_TEXT,
             hover_color=COLOR_DEEP_SEARCH_ACTIVE,
             command=self.toggle_deep_search,
             height=BTN_HEIGHT_SM,
@@ -238,9 +243,9 @@ class CaseListWidget(ctk.CTkFrame):
     def toggle_deep_search(self):
         self.is_deep_search_active = not self.is_deep_search_active
         if self.is_deep_search_active:
-            self.deep_btn.configure(fg_color=COLOR_DEEP_SEARCH_ACTIVE, hover_color=COLOR_DEEP_SEARCH_ACTIVE_HOVER)
+            self.deep_btn.configure(fg_color=COLOR_DEEP_SEARCH_ACTIVE, hover_color=COLOR_DEEP_SEARCH_ACTIVE_HOVER, text_color=COLOR_ON_ACTIVE_TEXT)
         else:
-            self.deep_btn.configure(fg_color=COLOR_DEEP_SEARCH_INACTIVE, hover_color=COLOR_DEEP_SEARCH_INACTIVE_HOVER)
+            self.deep_btn.configure(fg_color=COLOR_DEEP_SEARCH_INACTIVE, hover_color=COLOR_DEEP_SEARCH_INACTIVE_HOVER, text_color=COLOR_ON_MUTED_TEXT)
 
         if self.on_toggle_deep_search:
             self.on_toggle_deep_search(self.is_deep_search_active)
@@ -259,18 +264,21 @@ class CaseListWidget(ctk.CTkFrame):
             self.qfilter_all_btn.configure(
                 fg_color=COLOR_PRIMARY if is_all else COLOR_MUTED_GRAY,
                 hover_color=COLOR_PRIMARY_HOVER if is_all else COLOR_MUTED_HOVER,
+                text_color=COLOR_ON_ACTIVE_TEXT if is_all else COLOR_ON_MUTED_TEXT,
             )
         if hasattr(self, "qfilter_urgent_btn") and self.qfilter_urgent_btn.winfo_exists():
             is_urgent = (active_token == "vip:true")
             self.qfilter_urgent_btn.configure(
                 fg_color=COLOR_PRIMARY if is_urgent else COLOR_MUTED_GRAY,
                 hover_color=COLOR_PRIMARY_HOVER if is_urgent else COLOR_MUTED_HOVER,
+                text_color=COLOR_ON_ACTIVE_TEXT if is_urgent else COLOR_ON_MUTED_TEXT,
             )
         if hasattr(self, "qfilter_followup_btn") and self.qfilter_followup_btn.winfo_exists():
             is_followup = (active_token == "reminder:due")
             self.qfilter_followup_btn.configure(
                 fg_color=COLOR_PRIMARY if is_followup else COLOR_MUTED_GRAY,
                 hover_color=COLOR_PRIMARY_HOVER if is_followup else COLOR_MUTED_HOVER,
+                text_color=COLOR_ON_ACTIVE_TEXT if is_followup else COLOR_ON_MUTED_TEXT,
             )
 
     def set_cases(self, cases: list[Case], deep_results: dict[str, dict] | None = None):

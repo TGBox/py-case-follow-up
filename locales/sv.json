@@ -1858,6 +1858,7 @@
     "on_call": "Beredskapstjänst / Jour",
     "on_call_badge": "Beredskap",
     "open": "Öppna",
+    "quick_capture": "Snabbanteckning",
     "quit": "Avsluta",
     "tooltip_default": "Support-Cockpit",
     "tooltip_due": "Support-Cockpit — {count} förfallen uppföljning(ar)"

@@ -94,6 +94,7 @@ class TrayService:
         self._on_restore: Callable[[], None] | None = None
         self._on_quit: Callable[[], None] | None = None
         self._on_toggle_on_call: Callable[[], None] | None = None
+        self._on_quick_capture: Callable[[], None] | None = None
         self._is_on_call_active: Callable[[], bool] | None = None
         self._badge_count: int = 0
 
@@ -103,6 +104,7 @@ class TrayService:
         on_quit: Callable[[], None],
         on_toggle_on_call: Callable[[], None] | None = None,
         is_on_call_active: Callable[[], bool] | None = None,
+        on_quick_capture: Callable[[], None] | None = None,
     ) -> None:
         """Start the system tray icon in a background thread.
 
@@ -111,11 +113,13 @@ class TrayService:
             on_quit: Callback invoked when the user clicks 'Beenden' in the tray context menu.
             on_toggle_on_call: Optional callback invoked when the user toggles on-call mode.
             is_on_call_active: Optional callable returning whether on-call mode is currently active.
+            on_quick_capture: Optional callback for the 'Schnellerfassung' tray entry.
         """
         self._on_restore = on_restore
         self._on_quit = on_quit
         self._on_toggle_on_call = on_toggle_on_call
         self._is_on_call_active = is_on_call_active
+        self._on_quick_capture = on_quick_capture
 
         if self._thread and self._thread.is_alive():
             logger.debug("System tray icon thread is already running.")
@@ -139,6 +143,8 @@ class TrayService:
         items = [
             pystray.MenuItem(tr("tray.open", "Öffnen"), self._handle_restore, default=True),
         ]
+        if self._on_quick_capture:
+            items.append(pystray.MenuItem(tr("tray.quick_capture", "Schnellerfassung"), self._handle_quick_capture))
         if self._on_toggle_on_call and self._is_on_call_active:
             items.extend([
                 pystray.Menu.SEPARATOR,
@@ -269,6 +275,10 @@ class TrayService:
     def _handle_restore(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_restore:
             self._on_restore()
+
+    def _handle_quick_capture(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
+        if self._on_quick_capture:
+            self._on_quick_capture()
 
     def _handle_quit(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_quit:

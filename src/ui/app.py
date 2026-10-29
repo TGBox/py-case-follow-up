@@ -297,6 +297,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             on_quit=self._on_quit_from_tray,
             on_toggle_on_call=self._on_toggle_on_call_from_tray,
             is_on_call_active=self.is_on_call_active,
+            on_quick_capture=self._on_quick_capture_from_tray,
         )
 
         # Register Shortcuts & Lifecycle
@@ -842,6 +843,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def _on_toggle_on_call_from_tray(self) -> None:
         self.after(0, self.toggle_on_call_mode)
+
+    def _on_quick_capture_from_tray(self) -> None:
+        # pystray calls from its own thread; Tk widgets must be built on the Tk thread.
+        self.after(0, self.open_quick_capture_dialog)
 
     def is_on_call_active(self) -> bool:
         if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):

@@ -437,6 +437,18 @@ def test_tray_service_start_is_idempotent_and_stop_cleans_up(monkeypatch):
     assert not first_thread.is_alive(), "stop() must end the tray loop"
 
 
+def test_tray_menu_offers_quick_capture_only_when_wired():
+    service = TrayService()
+    texts = lambda: [getattr(i, "text", "") for i in cast(Any, service._create_menu()).items]  # noqa: E731
+    assert "Schnellerfassung" not in texts()
+
+    calls = []
+    service._on_quick_capture = lambda: calls.append(1)
+    assert "Schnellerfassung" in texts()
+    service._handle_quick_capture()
+    assert calls == [1]
+
+
 def test_tray_service_on_call_menu_and_tooltip():
     service = TrayService()
     is_active = [False]

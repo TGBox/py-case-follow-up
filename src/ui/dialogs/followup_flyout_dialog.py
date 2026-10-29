@@ -58,6 +58,7 @@ from constants import (
 )
 from models.case import Case
 from services.i18n_service import tr
+from services.reminder_policy import group_due_cases
 from ui.dialogs.base_dialog import BaseDialog
 from ui.widgets.date_picker import DatePickerWidget
 from utils.datetime_utils import (
@@ -111,7 +112,25 @@ class FollowupFlyoutDialog(BaseDialog):
         if not self.due_cases:
             self.register_i18n(ctk.CTkLabel(scroll, text=tr("followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden."), font=ctk.CTkFont(size=FONT_SIZE_CONFIRM)), "followup.no_due_cases", "Keine fälligen Wiedervorlagen aktuell vorhanden.").pack(pady=PAD_2XL)
         else:
-            for case in self.due_cases:
+            # Grouped by person / practice, longest-waiting first; headers only
+            # help when there is more than one group.
+            groups = group_due_cases(self.due_cases)
+            group_sizes = {name: len(cases) for name, cases in groups}
+            ordered = [(name, case) for name, cases in groups for case in cases]
+            previous_group: str | None = None
+            for group_name, case in ordered:
+                if len(groups) > 1 and group_name != previous_group:
+                    self.register_i18n(
+                        ctk.CTkLabel(
+                            scroll,
+                            text=tr("followup.group_header", "{name} ({count})", name=group_name or tr("followup.group_unassigned", "Ohne Zuordnung"), count=group_sizes[group_name]),
+                            font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD),
+                            anchor=ANCHOR_WEST,
+                        ),
+                        "followup.group_header", "{name} ({count})",
+                        name=lambda n=group_name: n or tr("followup.group_unassigned", "Ohne Zuordnung"), count=group_sizes[group_name],
+                    ).pack(fill="x", padx=PAD_XS, pady=(PAD_10, PAD_NONE))
+                previous_group = group_name
                 card = ctk.CTkFrame(scroll, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_MD, border_width=BORDER_WIDTH_PANEL, border_color=COLOR_CARD_BORDER)
                 card.pack(fill="x", pady=PAD_CONTAINER, padx=PAD_XS)
 
@@ -126,7 +145,13 @@ class FollowupFlyoutDialog(BaseDialog):
                 lbl_title = ctk.CTkLabel(top_row, text=disp_title, font=ctk.CTkFont(size=FONT_SIZE_CONFIRM, weight=FONT_WEIGHT_BOLD), anchor=ANCHOR_WEST, justify=JUSTIFY_LEFT, wraplength=FLYOUT_TITLE_WRAPLENGTH)
                 lbl_title.pack(side="left", fill="x", expand=True)
 
-                info_str = tr("followup.due_card_info", "Kunde: {customer} | Fällig seit: {time}", customer=case.customer.practice_name, time=format_german_datetime(case.workflow_status.followup_at))
+                due_time = format_german_datetime(case.workflow_status.followup_at)
+                if not case.is_internal:
+                    info_str = tr("followup.due_card_info", "Kunde: {customer} | Fällig seit: {time}", customer=case.customer.practice_name, time=due_time)
+                elif case.customer.contact_person:
+                    info_str = tr("followup.due_card_info_person", "Mit: {person} | Fällig seit: {time}", person=case.customer.contact_person, time=due_time)
+                else:
+                    info_str = tr("followup.due_card_info_internal", "Interne Aufgabe | Fällig seit: {time}", time=due_time)
                 ctk.CTkLabel(card, text=info_str, font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_WARNING_TEXT, anchor=ANCHOR_WEST).pack(fill="x", padx=PAD_10, pady=(PAD_NONE, PAD_SM))
 
                 if case.workflow_status.followup_note:

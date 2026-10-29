@@ -180,7 +180,7 @@ class FollowupFlyoutDialog(BaseDialog):
                 )
                 btn_apply.pack(side="right")
 
-                def make_on_change(btn=btn_apply):
+                def make_on_change(btn: ctk.CTkButton):
                     def _on_change(val: str):
                         btn.configure(state="normal" if val.strip() else "disabled")
                     return _on_change

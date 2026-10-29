@@ -55,7 +55,7 @@ class QuickCaptureDialog(BaseDialog):
         parent,
         colleagues: list[str],
         initial_text: str,
-        on_save: Callable[[str, str, str], None],
+        on_save: Callable[[str, str, str], object],
     ):
         super().__init__(parent)
         self.colleagues = colleagues

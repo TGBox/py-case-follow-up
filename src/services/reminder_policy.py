@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from models.case import Case
 from utils.datetime_utils import parse_followup_datetime
@@ -27,7 +27,7 @@ def should_notify_due(
     return now - last_notified_at >= timedelta(minutes=repeat_minutes)
 
 
-_LATEST = datetime.max.replace(tzinfo=timezone.utc)
+_LATEST = datetime.max.replace(tzinfo=UTC)
 
 
 def due_group_name(case: Case) -> str:

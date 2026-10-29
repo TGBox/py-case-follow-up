@@ -2005,6 +2005,19 @@
     "success_msg": "Ärende \"{case_id}\" har tagits bort.",
     "success_toast": "🗑 Ärende borttaget"
   },
+  "quick_capture": {
+    "title": "⚡ Snabbnotering",
+    "text_label": "Vad ska göras?",
+    "person_label": "Från / med vem (valfritt):",
+    "reminder_label": "Påminnelse:",
+    "preset_1h": "Om 1 timme",
+    "preset_2h": "Om 2 timmar",
+    "preset_today_1630": "Idag 16:30",
+    "preset_tomorrow_0800": "Imorgon 08:00",
+    "preset_none": "Ingen påminnelse",
+    "error_empty": "Ange en text.",
+    "hint": "Ctrl+Retur sparar"
+  },
   "ntfy": {
     "action_ack": "Kvittera",
     "action_snooze": "Skjut upp (30m)",

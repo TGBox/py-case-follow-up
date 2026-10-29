@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import threading
 import time
@@ -62,6 +63,8 @@ from constants import (
     DEFAULT_SHORTCUT_VIEW_ANALYTICS,
     DEFAULT_USER_COLOR,
     NTFY_ACTION_SNOOZE_MINUTES,
+    QUICK_CAPTURE_HOTKEY,
+    QUICK_CAPTURE_POLL_MS,
     NTFY_CMD_PREFIX_ACK,
     NTFY_CMD_PREFIX_SNOOZE,
     NTFY_CMD_PREFIX_STANDBY,
@@ -142,6 +145,7 @@ from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
 from services.customer_service import CustomerService
 from services.tray_service import TrayService
+from services.global_hotkey_service import GlobalHotkeyService
 from services.reminder_policy import should_notify_due
 from services.instance_service import HEARTBEAT_INTERVAL_SECONDS, InstanceService, build_case_uri
 from services.i18n_service import tr
@@ -323,6 +327,11 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         # Mobile Remote Control & Action Buttons (Stufe 6)
         self.ntfy_listener: Any | None = None
         self._sync_ntfy_remote_control_listener()
+
+        # Global quick-capture hotkey (Windows): works while the window sits in the tray.
+        self._global_hotkey: GlobalHotkeyService | None = None
+        self._hotkey_poll_id: str | None = None
+        self._start_quick_capture_hotkey()
 
         # Workstation Unlock Notification
         self._was_workstation_locked: bool = False
@@ -2251,8 +2260,41 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.tray_service.stop()
         self.destroy()
 
+    def _start_quick_capture_hotkey(self) -> None:
+        # Tests start the whole app; they must not grab a hotkey of the real desktop.
+        if "PYTEST_CURRENT_TEST" in os.environ:
+            return
+        service = GlobalHotkeyService(QUICK_CAPTURE_HOTKEY)
+        if not service.start():
+            logger.warning("Quick-capture hotkey %s is not available.", QUICK_CAPTURE_HOTKEY)
+            return
+        self._global_hotkey = service
+        self._poll_quick_capture_hotkey()
+
+    def _poll_quick_capture_hotkey(self) -> None:
+        service = self.__dict__.get("_global_hotkey")
+        if service is None:
+            return
+        if service.consume():
+            self.open_quick_capture_dialog()
+        self._hotkey_poll_id = self.after(QUICK_CAPTURE_POLL_MS, self._poll_quick_capture_hotkey)
+
+    def _stop_quick_capture_hotkey(self) -> None:
+        poll_id = self.__dict__.get("_hotkey_poll_id")
+        if poll_id is not None:
+            try:
+                self.after_cancel(poll_id)
+            except Exception:
+                pass
+            self._hotkey_poll_id = None
+        service = self.__dict__.get("_global_hotkey")
+        if service is not None:
+            service.stop()
+            self._global_hotkey = None
+
     def destroy(self):
         from services.i18n_service import get_i18n
+        self._stop_quick_capture_hotkey()
         # Stop the hourly scoring timer first: if it fires during shutdown it
         # calls self.after() on an already destroyed root and raises TclError.
         timer = getattr(self, "_scoring_timer", None)

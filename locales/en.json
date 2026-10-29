@@ -99,6 +99,7 @@
   },
   "app": {
     "followup_due_toast_title": "🔔 Follow-up due ({count})",
+    "followup_due_more": "+{count} more",
     "timeline_case_completed": "Case marked as completed.",
     "timeline_case_reopened": "Case reopened.",
     "timeline_followup_set": "Follow-up set to: {date}. {note}",
@@ -1360,6 +1361,8 @@
     "mobile": "Mobile Number:",
     "name_placeholder": "Your Name",
     "os_popup_toggle": "🔔 Enable Windows system notifications (OS Native Toast)",
+    "followup_repeat_label": "Remind again while due:",
+    "followup_repeat_off": "Off",
     "paths_title": "Storage Locations & File Paths (EXE / External Data)",
     "ph_data_dir": "Path to data directory...",
     "ph_dept": "e.g. Support, Development, Tech",

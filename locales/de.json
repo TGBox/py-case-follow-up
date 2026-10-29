@@ -99,6 +99,7 @@
   },
   "app": {
     "followup_due_toast_title": "🔔 Wiedervorlage fällig ({count})",
+    "followup_due_more": "+{count} weitere",
     "timeline_case_completed": "Fall auf erledigt gesetzt.",
     "timeline_case_reopened": "Fall wieder geöffnet.",
     "timeline_followup_set": "Wiedervorlage gesetzt auf: {date}. {note}",
@@ -1360,6 +1361,8 @@
     "mobile": "Mobilnummer:",
     "name_placeholder": "Ihr Name",
     "os_popup_toggle": "🔔 Windows Systembenachrichtigungen (OS Native Toast) aktivieren",
+    "followup_repeat_label": "Erneut erinnern, solange fällig:",
+    "followup_repeat_off": "Aus",
     "paths_title": "Speicherort & Dateipfade (EXE / Externe Daten)",
     "ph_data_dir": "Pfad zum Datenordner...",
     "ph_dept": "z. B. Support, Entwicklung, Technik",

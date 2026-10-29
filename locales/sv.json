@@ -99,6 +99,7 @@
   },
   "app": {
     "followup_due_toast_title": "🔔 Uppföljning förfallen ({count})",
+    "followup_due_more": "+{count} till",
     "timeline_case_completed": "Ärendet markerat som klart.",
     "timeline_case_reopened": "Ärendet återöppnat.",
     "timeline_followup_set": "Uppföljning satt till: {date}. {note}",
@@ -1360,6 +1361,8 @@
     "mobile": "Mobilnummer:",
     "name_placeholder": "Ditt namn",
     "os_popup_toggle": "🔔 Aktivera Windows-systemmeddelanden (OS Native Toast)",
+    "followup_repeat_label": "Påminn igen medan förfallen:",
+    "followup_repeat_off": "Av",
     "paths_title": "Lagringsplatser & filsökvägar (EXE / extern data)",
     "ph_data_dir": "Sökväg till datamapp...",
     "ph_dept": "t.ex. Support, Utveckling, Teknik",

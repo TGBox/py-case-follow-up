@@ -55,6 +55,10 @@ FONT_SCALE_MIN = 0.8
 FONT_SCALE_MAX = 1.5
 HOURLY_SCORING_INTERVAL_SECONDS = 3600
 FOLLOWUP_CHECK_INTERVAL_MS = 60000
+# Re-remind while follow-ups stay due: a toast that is missed while coding
+# would otherwise never come back (0 = remind only when the due count rises).
+DEFAULT_FOLLOWUP_REPEAT_MINUTES = 30
+FOLLOWUP_REPEAT_MINUTES_OPTIONS = (0, 15, 30, 60, 120)
 FILE_EXT_ZIP = ".zip"
 
 

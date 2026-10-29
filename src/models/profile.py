@@ -24,6 +24,7 @@ from constants import (
     DEFAULT_NTFY_DIGEST_ENABLED,
     DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_ENABLED,
+    DEFAULT_FOLLOWUP_REPEAT_MINUTES,
     DEFAULT_NTFY_IDLE_MINUTES,
     DEFAULT_NTFY_NOTIFY_CUSTOMER_NOTES,
     DEFAULT_NTFY_NOTIFY_FOLLOWUPS,
@@ -224,11 +225,19 @@ class ShortcutSettings:
         return cls(**valid)
 
 
+def _non_negative_int(value: Any, default: int) -> int:
+    """An int >= 0 from stored JSON, else the default (bool and junk are rejected)."""
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return default
+    return value
+
+
 @dataclass
 class ReminderSettings:
     notification_level: str = DEFAULT_NOTIFICATION_LEVEL
     audio_enabled: bool = False
     os_popup_enabled: bool = True
+    followup_repeat_minutes: int = DEFAULT_FOLLOWUP_REPEAT_MINUTES
     mobile_ntfy_enabled: bool = DEFAULT_NTFY_ENABLED
     mobile_ntfy_server_url: str = DEFAULT_NTFY_SERVER_URL
     mobile_ntfy_topic: str = DEFAULT_NTFY_TOPIC
@@ -255,6 +264,7 @@ class ReminderSettings:
             notification_level=data.get("notification_level", DEFAULT_NOTIFICATION_LEVEL),
             audio_enabled=bool(data.get("audio_enabled", False)),
             os_popup_enabled=bool(data.get("os_popup_enabled", True)),
+            followup_repeat_minutes=_non_negative_int(data.get("followup_repeat_minutes"), DEFAULT_FOLLOWUP_REPEAT_MINUTES),
             mobile_ntfy_enabled=bool(data.get("mobile_ntfy_enabled", DEFAULT_NTFY_ENABLED)),
             mobile_ntfy_server_url=str(data.get("mobile_ntfy_server_url", DEFAULT_NTFY_SERVER_URL)),
             mobile_ntfy_topic=str(data.get("mobile_ntfy_topic", DEFAULT_NTFY_TOPIC)),

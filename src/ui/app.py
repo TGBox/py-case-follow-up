@@ -53,6 +53,7 @@ from constants import (
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
     DEFAULT_LANGUAGE,
+    DEFAULT_FOLLOWUP_REPEAT_MINUTES,
     DEFAULT_NTFY_DIGEST_ENABLED,
     DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_IDLE_MINUTES,
@@ -141,6 +142,7 @@ from services.p2p_sync_service import P2PSyncService
 from services.search_service import SearchService
 from services.customer_service import CustomerService
 from services.tray_service import TrayService
+from services.reminder_policy import should_notify_due
 from services.instance_service import HEARTBEAT_INTERVAL_SECONDS, InstanceService, build_case_uri
 from services.i18n_service import tr
 from services import update_check_service
@@ -163,6 +165,15 @@ LAYOUT_VALUES = (
     LayoutMode.TABLE.value,
     LayoutMode.ANALYTICS.value,
 )
+
+
+def _followup_repeat_minutes(app: Any) -> int:
+    """Minutes between repeated reminders for still-due follow-ups (0 = off)."""
+    settings = getattr(getattr(app, "profile", None), "reminder_settings", None)
+    value = getattr(settings, "followup_repeat_minutes", DEFAULT_FOLLOWUP_REPEAT_MINUTES)
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        return DEFAULT_FOLLOWUP_REPEAT_MINUTES
+    return value
 
 
 class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
@@ -1525,14 +1536,22 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         if due_count > 0:
             self.bell_btn.configure(text=f"{due_count}", fg_color=COLOR_BELL_BTN_HOVER)
             last_count = getattr(self, "_last_notified_due_count", None)
-            if last_count is None or due_count > last_count:
+            if should_notify_due(
+                due_count,
+                last_count,
+                self.__dict__.get("_last_due_notified_at"),
+                now,
+                _followup_repeat_minutes(self),
+            ):
+                self._last_due_notified_at = now
                 top_case = due_cases[0]
                 if self.__dict__.get("tk") is not None:
                     try:
+                        more = tr("app.followup_due_more", "+{count} weitere", count=due_count - 1) if due_count > 1 else ""
                         ToastNotification(
                             self,
                             title=tr("app.followup_due_toast_title", "🔔 Wiedervorlage fällig ({count})", count=due_count),
-                            message=f"[{top_case.case_id}] {top_case.classification.title}",
+                            message=f"[{top_case.case_id}] {top_case.classification.title} {more}".rstrip(),
                             on_open=lambda c=top_case: self.switch_to_cockpit_view_for_case(c),
                             # Without a launch URI Windows shows the toast but a
                             # click on it does nothing at all.
@@ -1549,6 +1568,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         else:
             self.bell_btn.configure(text="0", fg_color=COLOR_BELL_BTN)
             self._last_notified_due_count = 0
+            self._last_due_notified_at = None
             self._last_ntfy_notified_ids = set()
 
         # Update tray icon badge (guard: may be called before tray_service is initialized)

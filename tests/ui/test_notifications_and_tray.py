@@ -316,6 +316,76 @@ def test_the_app_attaches_a_launch_uri_to_the_due_reminder(app, monkeypatch):
     assert recorded.get("link_url") == "https://wiki.example/drucker"
 
 
+def _prepare_due_app(app, monkeypatch, cases):
+    """A stub app whose due reminders are recorded instead of shown."""
+    shown: list[dict[str, Any]] = []
+    monkeypatch.setattr("ui.app.ToastNotification", lambda parent, **kwargs: shown.append(kwargs))
+    app.get_all_active_cases_for_reminder = lambda: cases
+    app.bell_btn = type("B", (), {"configure": lambda self, **k: None})()
+    app.tray_service = type("T", (), {"update_badge": lambda self, n: None})()
+    return shown
+
+
+def _run_due_check(app):
+    app.check_due_followups()
+    app.after_cancel(app._followup_timer_id)
+
+
+def test_a_missed_due_reminder_comes_back_after_the_repeat_interval(app, monkeypatch):
+    """Otherwise a toast overlooked while coding is never shown again, only the bell count stays."""
+    from datetime import timedelta
+
+    shown = _prepare_due_app(app, monkeypatch, [_CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem")])
+
+    _run_due_check(app)
+    assert len(shown) == 1
+
+    _run_due_check(app)
+    assert len(shown) == 1, "repeated on the very next check"
+
+    app._last_due_notified_at -= timedelta(minutes=31)
+    _run_due_check(app)
+    assert len(shown) == 2, "not repeated after the interval"
+
+
+def test_the_repeat_can_be_switched_off(app, monkeypatch):
+    from datetime import timedelta
+
+    shown = _prepare_due_app(app, monkeypatch, [_CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem")])
+    app.profile.reminder_settings.followup_repeat_minutes = 0
+
+    _run_due_check(app)
+    app._last_due_notified_at -= timedelta(days=1)
+    _run_due_check(app)
+    assert len(shown) == 1
+
+
+def test_the_repeat_starts_over_once_nothing_is_due_any_more(app, monkeypatch):
+    cases = [_CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem")]
+    shown = _prepare_due_app(app, monkeypatch, cases)
+
+    _run_due_check(app)
+    cases.clear()
+    _run_due_check(app)
+    assert app._last_due_notified_at is None
+
+    cases.append(_CaseStub("T-3", followup_at="2020-01-01 09:00", title="Scanner"))
+    _run_due_check(app)
+    assert len(shown) == 2
+
+
+def test_the_reminder_mentions_that_more_follow_ups_are_due(app, monkeypatch):
+    shown = _prepare_due_app(app, monkeypatch, [
+        _CaseStub("T-2", followup_at="2020-01-01 08:00", title="Druckerproblem"),
+        _CaseStub("T-3", followup_at="2020-01-01 09:00", title="Scanner"),
+    ])
+
+    _run_due_check(app)
+
+    assert "T-2" in shown[0]["message"]
+    assert "+1" in shown[0]["message"]
+
+
 # --- toast: native dispatch -----------------------------------------------------------
 
 class DummyIcon:

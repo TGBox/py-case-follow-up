@@ -2005,6 +2005,19 @@
     "success_msg": "Fall \"{case_id}\" wurde gelöscht.",
     "success_toast": "🗑 Fall gelöscht"
   },
+  "quick_capture": {
+    "title": "⚡ Schnellerfassung",
+    "text_label": "Was ist zu tun?",
+    "person_label": "Von / mit wem (optional):",
+    "reminder_label": "Erinnerung:",
+    "preset_1h": "In 1 Stunde",
+    "preset_2h": "In 2 Stunden",
+    "preset_today_1630": "Heute 16:30",
+    "preset_tomorrow_0800": "Morgen 08:00",
+    "preset_none": "Keine Erinnerung",
+    "error_empty": "Bitte einen Text eingeben.",
+    "hint": "Strg+Enter speichert"
+  },
   "ntfy": {
     "action_ack": "Quittieren",
     "action_snooze": "Schlummern (30m)",

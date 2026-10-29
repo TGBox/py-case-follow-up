@@ -2005,6 +2005,19 @@
     "success_msg": "Case \"{case_id}\" was deleted.",
     "success_toast": "🗑 Case deleted"
   },
+  "quick_capture": {
+    "title": "⚡ Quick capture",
+    "text_label": "What needs to be done?",
+    "person_label": "From / with whom (optional):",
+    "reminder_label": "Reminder:",
+    "preset_1h": "In 1 hour",
+    "preset_2h": "In 2 hours",
+    "preset_today_1630": "Today 16:30",
+    "preset_tomorrow_0800": "Tomorrow 08:00",
+    "preset_none": "No reminder",
+    "error_empty": "Please enter some text.",
+    "hint": "Ctrl+Enter saves"
+  },
   "ntfy": {
     "action_ack": "Acknowledge",
     "action_snooze": "Snooze (30m)",

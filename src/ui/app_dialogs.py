@@ -31,6 +31,7 @@ from services.schema_service import SchemaService
 from services.scoring_service import ScoringService
 
 from ui.dialogs.new_case_dialog import NewCaseDialog
+from ui.dialogs.quick_capture_dialog import QuickCaptureDialog
 from ui.dialogs.export_dialog import ExportDialog
 from ui.dialogs.schema_builder_dialog import SchemaBuilderDialog
 from ui.dialogs.template_manager_dialog import TemplateManagerDialog
@@ -518,6 +519,53 @@ class DialogLaunchersMixin:
             on_tag_added=self.on_tag_added,
             existing_case_ids=self._all_known_case_ids,
         )
+
+    def open_quick_capture_dialog(self, event=None) -> None:
+        """Opens the compact quick-capture window, pre-filled with the clipboard text.
+
+        Copy a message, press the hotkey, name the person and a reminder - done.
+        A window that is already open is brought forward instead of opening a second one.
+        """
+        from constants import QUICK_CAPTURE_TEXT_MAX_CHARS
+
+        existing = self.__dict__.get("_quick_capture_dialog")
+        try:
+            if existing is not None and existing.winfo_exists():
+                existing.bring_forward()
+                return
+        except Exception:
+            pass
+        try:
+            clipboard = self.clipboard_get()
+        except Exception:
+            clipboard = ""  # empty, or not text (an image, say)
+        names = sorted({c.name for c in self.colleagues if c.name}, key=str.casefold)
+        self._quick_capture_dialog = QuickCaptureDialog(
+            self,
+            colleagues=names,
+            initial_text=clipboard.strip()[:QUICK_CAPTURE_TEXT_MAX_CHARS],
+            on_save=self.on_quick_capture_saved,
+        )
+
+    def on_quick_capture_saved(self, text: str, person: str, preset: str) -> Case:
+        """Stores a quick-capture task without switching the cockpit to it."""
+        from services.quick_capture import build_quick_case, resolve_reminder
+        from utils.datetime_utils import get_local_now
+
+        now = get_local_now()
+        case = build_quick_case(
+            text=text,
+            person=person,
+            reminder=resolve_reminder(preset, now),
+            created_by=self.profile.user.name,
+            taken_ids=self._all_known_case_ids(),
+            now=now,
+        )
+        self.scoring_service.update_case_scoring(case)
+        self.cases.append(case)
+        self.storage_service.save_cases(self.cases)
+        self.refresh_views()
+        return case
 
     def _all_known_case_ids(self) -> set[str]:
         """Every case id in use - active and archived - for unique new ids."""

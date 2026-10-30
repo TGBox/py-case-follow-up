@@ -546,3 +546,56 @@ def test_language_selection_applies_only_on_save(root, storage, picks, expected)
     dialog.save_settings()
     assert get_i18n().current_language == expected
     assert profile.ui_settings.language == expected
+
+
+# --- grouped flyout ("Heute" list) ---------------------------------------------------------------
+
+def _label_texts(widget) -> list[str]:
+    texts = []
+    for child in widget.winfo_children():
+        if isinstance(child, ctk.CTkLabel):
+            texts.append(child.cget("text"))
+        texts.extend(_label_texts(child))
+    return texts
+
+
+def _named_case(case_id, followup_at, practice):
+    case = _case(followup_at)
+    case.case_id = case_id
+    case.customer = CaseCustomer(customer_id="K-" + case_id, practice_name=practice)
+    return case
+
+
+def _internal_case(case_id, followup_at, person):
+    case = _case(followup_at)
+    case.case_id = case_id
+    case.customer = CaseCustomer(customer_id="INTERNAL", practice_name="Intern / Keine Praxis", contact_person=person)
+    return case
+
+
+def test_the_flyout_groups_by_person_and_practice_with_the_oldest_first(root):
+    flyout = _flyout(root, [
+        _named_case("T-3", "2026-10-29T10:00:00", "Praxis A"),
+        _internal_case("T-2", "2026-10-27T09:00:00", "Anna Beispiel"),
+        _named_case("T-1", "2026-10-28T09:00:00", "Praxis A"),
+    ])
+    texts = _label_texts(flyout.scroll)
+    headers = [t for t in texts if t in ("Anna Beispiel (1)", "Praxis A (2)")]
+    assert headers == ["Anna Beispiel (1)", "Praxis A (2)"]
+    titles = [t for t in texts if t.startswith("[T-")]
+    assert [t.split("]")[0] for t in titles] == ["[T-2", "[T-1", "[T-3"]
+    flyout.destroy()
+
+
+def test_the_flyout_shows_the_person_instead_of_the_internal_placeholder(root):
+    flyout = _flyout(root, [_internal_case("T-2", "2026-10-27T09:00:00", "Anna Beispiel")])
+    texts = _label_texts(flyout.scroll)
+    assert any(t.startswith("Mit: Anna Beispiel") for t in texts)
+    assert not any("Intern / Keine Praxis" in t for t in texts)
+    flyout.destroy()
+
+
+def test_a_single_group_needs_no_header(root):
+    flyout = _flyout(root, [_named_case("T-1", "2026-10-28T09:00:00", "Praxis A"), _named_case("T-3", "2026-10-29T10:00:00", "Praxis A")])
+    assert not any(t == "Praxis A (2)" for t in _label_texts(flyout.scroll))
+    flyout.destroy()

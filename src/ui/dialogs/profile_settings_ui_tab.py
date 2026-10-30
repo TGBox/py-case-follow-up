@@ -13,6 +13,7 @@ from constants import (
     COMBO_WIDTH_NTFY_DIGEST,
     COMBO_WIDTH_NTFY_IDLE,
     DEFAULT_COLUMN_WIDTHS,
+    DEFAULT_FOLLOWUP_REPEAT_MINUTES,
     DEFAULT_NTFY_DIGEST_ENABLED,
     DEFAULT_NTFY_DIGEST_MINUTES,
     DEFAULT_NTFY_ENABLED,
@@ -33,6 +34,7 @@ from constants import (
     FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
+    FOLLOWUP_REPEAT_MINUTES_OPTIONS,
     NTFY_DIGEST_MINUTES_OPTIONS,
     NTFY_IDLE_MINUTES_OPTIONS,
     NTFY_TAG_BELL,
@@ -55,6 +57,20 @@ FONT_SCALE_OPTIONS: list[tuple[float, str, str]] = [
     (1.2, "profile.font_scale_120", "120% (Groß)"),
     (1.3, "profile.font_scale_130", "130% (Sehr groß)"),
 ]
+
+
+def get_followup_repeat_display(minutes: int) -> str:
+    if minutes <= 0:
+        return tr("profile.followup_repeat_off", "Aus")
+    return tr("ntfy.idle_minutes_format", "{minutes} Min.", minutes=minutes)
+
+
+def get_followup_repeat_minutes_from_display(display_text: str) -> int | None:
+    """Minutes for a repeat-menu entry, or None when the text is not an option."""
+    for minutes in FOLLOWUP_REPEAT_MINUTES_OPTIONS:
+        if display_text == get_followup_repeat_display(minutes):
+            return minutes
+    return None
 
 
 def get_font_scale_display(scale: float) -> str:
@@ -204,7 +220,25 @@ class UiSettingsTabMixin:
             self.os_popup_switch.select()
         else:
             self.os_popup_switch.deselect()
-        self.os_popup_switch.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+        self.os_popup_switch.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        repeat_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        repeat_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_MD))
+        self.followup_repeat_lbl = self.register_i18n(
+            ctk.CTkLabel(repeat_frame, text=tr("profile.followup_repeat_label", "Erneut erinnern, solange fällig:")),
+            "profile.followup_repeat_label",
+            "Erneut erinnern, solange fällig:",
+        )
+        self.followup_repeat_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+        self.followup_repeat_combo = ctk.CTkOptionMenu(
+            repeat_frame,
+            values=[get_followup_repeat_display(m) for m in FOLLOWUP_REPEAT_MINUTES_OPTIONS],
+            width=COMBO_WIDTH_NTFY_IDLE,
+        )
+        self.followup_repeat_combo.set(
+            get_followup_repeat_display(getattr(self.profile.reminder_settings, "followup_repeat_minutes", DEFAULT_FOLLOWUP_REPEAT_MINUTES))
+        )
+        self.followup_repeat_combo.pack(side="left")
 
         # Workstation Unlock Notification
         self.unlock_notify_cb = self.register_i18n(
@@ -744,6 +778,10 @@ class UiSettingsTabMixin:
                 self.os_popup_switch.select()
             else:
                 self.os_popup_switch.deselect()
+        if hasattr(self, "followup_repeat_combo"):
+            self.followup_repeat_combo.set(
+                get_followup_repeat_display(getattr(self.profile.reminder_settings, "followup_repeat_minutes", DEFAULT_FOLLOWUP_REPEAT_MINUTES))
+            )
         if hasattr(self, "unlock_notify_cb"):
             if getattr(self.profile.reminder_settings, "unlock_notification_enabled", DEFAULT_UNLOCK_NOTIFICATION_ENABLED):
                 self.unlock_notify_cb.select()
@@ -839,6 +877,10 @@ class UiSettingsTabMixin:
             self.profile.ui_settings.show_demo_data = bool(self.demo_switch.get())
         if hasattr(self, "os_popup_switch"):
             self.profile.reminder_settings.os_popup_enabled = bool(self.os_popup_switch.get())
+        if hasattr(self, "followup_repeat_combo"):
+            chosen_repeat = get_followup_repeat_minutes_from_display(self.followup_repeat_combo.get())
+            if chosen_repeat is not None:
+                self.profile.reminder_settings.followup_repeat_minutes = chosen_repeat
         if hasattr(self, "unlock_notify_cb"):
             self.profile.reminder_settings.unlock_notification_enabled = bool(self.unlock_notify_cb.get())
         if hasattr(self, "unlock_notify_entry"):
@@ -905,6 +947,13 @@ class UiSettingsTabMixin:
             self.demo_switch.configure(text=tr("profile.demo_data_toggle", "🧪 Beispieldaten (Demofälle & Demokunden) in allen Ansichten einblenden"))
         if hasattr(self, "os_popup_switch"):
             self.os_popup_switch.configure(text=tr("profile.os_popup_toggle", "🔔 Windows-Systembenachrichtigungen (OS Native Toast) aktivieren"))
+        if hasattr(self, "followup_repeat_lbl"):
+            self.followup_repeat_lbl.configure(text=tr("profile.followup_repeat_label", "Erneut erinnern, solange fällig:"))
+        if hasattr(self, "followup_repeat_combo"):
+            self.followup_repeat_combo.configure(values=[get_followup_repeat_display(m) for m in FOLLOWUP_REPEAT_MINUTES_OPTIONS])
+            self.followup_repeat_combo.set(
+                get_followup_repeat_display(getattr(self.profile.reminder_settings, "followup_repeat_minutes", DEFAULT_FOLLOWUP_REPEAT_MINUTES))
+            )
         if hasattr(self, "unlock_notify_cb"):
             self.unlock_notify_cb.configure(text=tr("ntfy.unlock_notification_toggle", "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen"))
         if hasattr(self, "unlock_notify_lbl"):

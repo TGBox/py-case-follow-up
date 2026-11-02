@@ -24,6 +24,9 @@ from constants import (
     ICON_KEY_ON_CALL,
     ICON_KEY_QUIT,
     ICON_KEY_THEME,
+    ICON_KEY_CHECKOUT,
+    ICON_KEY_DOCK,
+    ICON_KEY_UNDOCK,
     ICON_KEY_USER,
     ICON_KEY_WINDOWED,
     ICON_SIZE_HEADER,
@@ -45,6 +48,9 @@ MDL2_GLYPHS: dict[str, str] = {
     ICON_KEY_FULLSCREEN: "\uE740",  # FullScreen
     ICON_KEY_WINDOWED: "\uE1D9",  # BackToWindow
     ICON_KEY_ON_CALL: "\uE717",  # Phone / Call
+    ICON_KEY_CHECKOUT: "\uE823",  # Clock / Departure / Stop watch
+    ICON_KEY_UNDOCK: "\uE8A7",  # Open in new window / Pop-out
+    ICON_KEY_DOCK: "\uE7C5",  # Pin / Dock back
 }
 
 
@@ -154,6 +160,37 @@ def _draw_on_call_procedural(draw: Any, s: int, color: str) -> None:
     draw.ellipse([s * 0.56, s * 0.56, s * 0.78, s * 0.78], fill=color)
 
 
+
+
+def _draw_checkout_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    box = [s * 0.15, s * 0.15, s * 0.85, s * 0.85]
+    draw.ellipse(box, outline=color, width=w)
+    # Clock hands (center to 12 and center to 3)
+    center = s * 0.5
+    draw.line([(center, center), (center, s * 0.28)], fill=color, width=w)
+    draw.line([(center, center), (s * 0.70, center)], fill=color, width=w)
+
+
+def _draw_undock_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    # Box
+    draw.rectangle([s * 0.18, s * 0.32, s * 0.68, s * 0.82], outline=color, width=w)
+    # Arrow top-right
+    draw.line([(s * 0.50, s * 0.18), (s * 0.82, s * 0.18)], fill=color, width=w)
+    draw.line([(s * 0.82, s * 0.18), (s * 0.82, s * 0.50)], fill=color, width=w)
+    draw.line([(s * 0.44, s * 0.56), (s * 0.82, s * 0.18)], fill=color, width=w)
+
+
+def _draw_dock_procedural(draw: Any, s: int, color: str) -> None:
+    w = max(2, int(s * 0.08))
+    # Box
+    draw.rectangle([s * 0.25, s * 0.25, s * 0.82, s * 0.82], outline=color, width=w)
+    # Arrow into box
+    draw.line([(s * 0.18, s * 0.18), (s * 0.48, s * 0.48)], fill=color, width=w)
+    draw.line([(s * 0.28, s * 0.48), (s * 0.48, s * 0.48)], fill=color, width=w)
+    draw.line([(s * 0.48, s * 0.28), (s * 0.48, s * 0.48)], fill=color, width=w)
+
 _PROCEDURAL_DRAWERS: dict[
     str, Callable[[Any, int, str], None]
 ] = {
@@ -166,6 +203,9 @@ _PROCEDURAL_DRAWERS: dict[
     ICON_KEY_FULLSCREEN: _draw_fullscreen_procedural,
     ICON_KEY_WINDOWED: _draw_windowed_procedural,
     ICON_KEY_ON_CALL: _draw_on_call_procedural,
+    ICON_KEY_CHECKOUT: _draw_checkout_procedural,
+    ICON_KEY_UNDOCK: _draw_undock_procedural,
+    ICON_KEY_DOCK: _draw_dock_procedural,
 }
 
 

@@ -199,6 +199,18 @@ class DingTransitService:
         seconds_until_leave = (leave_dt - now).total_seconds()
         minutes_until_leave = int(seconds_until_leave // 60)
 
+        pack_lead = max(0, walk_min + logout_min + pack_min + buffer_min)
+        logout_lead = max(0, walk_min + logout_min + buffer_min)
+        walk_lead = max(0, walk_min + buffer_min)
+
+        pack_dt = dep_dt - timedelta(minutes=pack_lead)
+        logout_dt = dep_dt - timedelta(minutes=logout_lead)
+        walk_dt = dep_dt - timedelta(minutes=walk_lead)
+
+        minutes_until_pack = int((pack_dt - now).total_seconds() // 60)
+        minutes_until_logout = int((logout_dt - now).total_seconds() // 60)
+        minutes_until_walk = int((walk_dt - now).total_seconds() // 60)
+
         seconds_until_dep = (dep_dt - now).total_seconds()
         minutes_until_dep = int(seconds_until_dep // 60)
 
@@ -223,5 +235,12 @@ class DingTransitService:
             "minutes_until_dep": minutes_until_dep,
             "status": status,
             "is_alarm_due": is_due,
+            "pack_time_str": pack_dt.strftime("%H:%M"),
+            "logout_time_str": logout_dt.strftime("%H:%M"),
+            "walk_time_str": walk_dt.strftime("%H:%M"),
+            "dep_time_str": dep_dt.strftime("%H:%M"),
+            "minutes_until_pack": minutes_until_pack,
+            "minutes_until_logout": minutes_until_logout,
+            "minutes_until_walk": minutes_until_walk,
         }
 

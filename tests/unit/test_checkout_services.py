@@ -75,6 +75,13 @@ def test_ding_transit_calculate_leave_info():
     assert info["total_lead_minutes"] == 14
     assert info["leave_time_str"] == "17:06"
     assert info["minutes_until_leave"] == 6
+    assert info["pack_time_str"] == "17:06"
+    assert info["logout_time_str"] == "17:10"
+    assert info["walk_time_str"] == "17:13"
+    assert info["dep_time_str"] == "17:20"
+    assert info["minutes_until_pack"] == 6
+    assert info["minutes_until_logout"] == 10
+    assert info["minutes_until_walk"] == 13
     assert info["status"] == "warn"  # 6 <= 10 min threshold -> warn
     assert not info["is_alarm_due"]
 

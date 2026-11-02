@@ -2171,7 +2171,22 @@
     "weather_condition": "Condition",
     "weather_rain": "Rain Risk",
     "weather_umbrella_yes": "🌧 Umbrella recommended!",
-    "weather_umbrella_no": "No rain expected."
+    "weather_umbrella_no": "No rain expected.",
+    "transit_selected_title": "Selected Departure & Reminders",
+    "transit_selected_desc": "Line {line} to {dest} at {time}",
+    "transit_unselect_btn": "Deselect",
+    "transit_double_click_hint": "💡 Double-click a departure to select it and activate reminders.",
+    "transit_row_tooltip": "Double-click to select this departure for reminders",
+    "transit_stage_pack": "1. Coat & Packing",
+    "transit_stage_logout": "2. Log out & shut down PC",
+    "transit_stage_walk": "3. Leave office & walk",
+    "transit_toast_pack_title": "🎒 Time to pack!",
+    "transit_toast_pack_msg": "Line {line} to {dest} departs in {minutes} min. Time to get ready.",
+    "transit_toast_logout_title": "💻 Time to log out!",
+    "transit_toast_logout_msg": "Line {line} to {dest} departs in {minutes} min. Please log out and shut down.",
+    "transit_toast_walk_title": "🚶 Time to leave!",
+    "transit_toast_walk_msg": "Leave now! Line {line} to {dest} departs at {dep_time}.",
+    "transit_selected_badge": "🎯 Selected"
   },
   "settings_checkout": {
     "section_title": "Departure & Checkout Companion",

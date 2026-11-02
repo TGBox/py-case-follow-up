@@ -9,7 +9,7 @@ SRC_DIR = PROJECT_ROOT / "src"
 
 def analyze_all_files_deep():
     results = {}
-    
+
     for root, dirs, files in os.walk(SRC_DIR):
         for f in files:
             if not f.endswith(".py"):
@@ -22,7 +22,7 @@ def analyze_all_files_deep():
             # Find all string literals that look like German or user-facing text
             # e.g., german words, sentences with punctuation, labels, titles, messages, placeholders
             user_facing_candidates = []
-            
+
             # Use AST to inspect string constants and where they appear
             try:
                 tree = ast.parse(content, filename=str(path))
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     res = analyze_all_files_deep()
     out_p = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up\.agents\explorer_survey_src\deep_scan.json")
     out_p.write_text(json.dumps(res, indent=2, ensure_ascii=False), encoding="utf-8")
-    
+
     total_candidates = sum(v.get("candidates_count", 0) for v in res.values())
     print(f"Deep scan completed across {len(res)} files. Total candidates: {total_candidates}")
     for k, v in sorted(res.items(), key=lambda x: x[1].get("candidates_count", 0), reverse=True):

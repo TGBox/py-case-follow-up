@@ -1,8 +1,6 @@
-import os
 import sys
 import json
 import ast
-import re
 from pathlib import Path
 
 project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
@@ -48,7 +46,7 @@ class LiteralInspector(ast.NodeVisitor):
             is_exempt = scanner.is_exempt_string(val)
             line_idx = getattr(node, "lineno", 1) - 1
             line_content = self.source_lines[line_idx].strip() if 0 <= line_idx < len(self.source_lines) else ""
-            
+
             # Check if line is logging
             if any(l in line_content for l in ("logger.", "logging.", "print(", ".debug(", ".info(", ".warning(", ".error(")):
                 is_logging = True
@@ -82,13 +80,13 @@ file_stats = {}
 
 for fpath in files_to_scan:
     rel = fpath.relative_to(project_root).as_posix()
-    with open(fpath, "r", encoding="utf-8", errors="replace") as f:
+    with open(fpath, encoding="utf-8", errors="replace") as f:
         src = f.read()
     lines = src.splitlines()
     tree = ast.parse(src, filename=rel)
     inspector = LiteralInspector(rel, lines)
     inspector.visit(tree)
-    
+
     # Filter for non-exempt, non-logging, non-tr strings
     candidate_untranslated = [
         lit for lit in inspector.literals

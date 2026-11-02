@@ -4,15 +4,13 @@
 - CheckoutTaskService (midnight reset, tasks CRUD, toggle, date filtering)
 """
 
-from datetime import datetime, timedelta
-from unittest.mock import patch
+from datetime import datetime
 
-import pytest
 
 from models.profile import CheckoutSettings
 from services.checkout_task_service import CheckoutTaskService
 from services.ding_transit_service import DingTransitService, TransitDeparture
-from services.weather_service import WeatherInfo, WeatherService
+from services.weather_service import WeatherService
 
 
 def test_ding_transit_parse_response():

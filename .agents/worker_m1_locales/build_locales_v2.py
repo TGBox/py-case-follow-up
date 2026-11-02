@@ -1,19 +1,16 @@
-# -*- coding: utf-8 -*-
 """
 Build complete locales/de.json, locales/en.json, locales/sv.json with full parity.
 """
 
 import json
-import os
-import re
 
 def generate():
     # Load base files
-    with open('locales/de.json', 'r', encoding='utf-8') as f:
+    with open('locales/de.json', encoding='utf-8') as f:
         de = json.load(f)
-    with open('locales/en.json', 'r', encoding='utf-8') as f:
+    with open('locales/en.json', encoding='utf-8') as f:
         en = json.load(f)
-    with open('locales/sv.json', 'r', encoding='utf-8') as f:
+    with open('locales/sv.json', encoding='utf-8') as f:
         sv = json.load(f)
 
     # All 25 Help Content Articles in Swedish with complete fidelity to German/English:

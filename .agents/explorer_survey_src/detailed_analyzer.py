@@ -1,7 +1,6 @@
 import ast
 import json
 import os
-import re
 from pathlib import Path
 
 PROJECT_ROOT = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")

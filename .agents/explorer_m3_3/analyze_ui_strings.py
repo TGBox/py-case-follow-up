@@ -1,8 +1,5 @@
-import os
-import sys
 import json
 import ast
-import re
 from pathlib import Path
 
 project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
@@ -12,7 +9,7 @@ locales = {}
 for lang in ("de", "en", "sv"):
     p = project_root / "locales" / f"{lang}.json"
     if p.exists():
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, encoding="utf-8") as f:
             locales[lang] = json.load(f)
     else:
         locales[lang] = {}
@@ -67,7 +64,7 @@ files_to_scan = [
 all_tr_calls = []
 for fpath in files_to_scan:
     rel = fpath.relative_to(project_root).as_posix()
-    with open(fpath, "r", encoding="utf-8", errors="replace") as f:
+    with open(fpath, encoding="utf-8", errors="replace") as f:
         code = f.read()
     tree = ast.parse(code, filename=rel)
     extractor = TrCallExtractor(rel)
@@ -87,7 +84,7 @@ for item in all_tr_calls:
     de_val = get_nested_val(locales.get("de", {}), k)
     en_val = get_nested_val(locales.get("en", {}), k)
     sv_val = get_nested_val(locales.get("sv", {}), k)
-    
+
     st = {
         **item,
         "de": de_val,

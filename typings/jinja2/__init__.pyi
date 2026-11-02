@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 
 class Template:
     def __init__(self, source: str, **kwargs: Any) -> None: ...

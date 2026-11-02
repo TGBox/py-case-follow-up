@@ -1,15 +1,13 @@
-import os
 import sys
 import json
 import ast
-import re
 from pathlib import Path
 
 # Add project root and tests to path
 sys.path.insert(0, r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
 sys.path.insert(0, r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up\tests")
 
-from test_ast_i18n_scanner import I18nASTScanner, scan_python_file, ASTViolation
+from test_ast_i18n_scanner import I18nASTScanner
 
 project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
 
@@ -18,7 +16,7 @@ locales = {}
 for lang in ("de", "en", "sv"):
     p = project_root / "locales" / f"{lang}.json"
     if p.exists():
-        with open(p, "r", encoding="utf-8") as f:
+        with open(p, encoding="utf-8") as f:
             locales[lang] = json.load(f)
     else:
         locales[lang] = {}
@@ -239,7 +237,7 @@ file_summary = {}
 
 for fpath in files_to_scan:
     rel = fpath.relative_to(project_root).as_posix()
-    with open(fpath, "r", encoding="utf-8", errors="replace") as f:
+    with open(fpath, encoding="utf-8", errors="replace") as f:
         code = f.read()
     try:
         tree = ast.parse(code, filename=rel)

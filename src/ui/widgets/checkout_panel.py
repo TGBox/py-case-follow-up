@@ -638,8 +638,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
         # CTkTabview internal segmented button rename
         try:
-            if hasattr(self.tabview, "_segmented_button"):
-                btns = getattr(self.tabview._segmented_button, "_buttons_dict", {})
+            seg = getattr(self.tabview, "_segmented_button", None)
+            if seg is not None:
+                btns = getattr(seg, "_buttons_dict", {})
                 for key, btn in btns.items():
                     if key == self.tab_name_note or "Tagesnotiz" in key:
                         btn.configure(text=title)

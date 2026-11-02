@@ -5,12 +5,12 @@ dialog_dir = Path("src/ui/dialogs")
 dialog_report = []
 
 for py_file in sorted(dialog_dir.glob("*.py")):
-    with open(py_file, "r", encoding="utf-8") as f:
+    with open(py_file, encoding="utf-8") as f:
         content = f.read()
 
     try:
         tree = ast.parse(content, filename=str(py_file))
-    except Exception as e:
+    except Exception:
         continue
 
     classes = [n.name for n in ast.walk(tree) if isinstance(n, ast.ClassDef)]

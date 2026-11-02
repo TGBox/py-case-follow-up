@@ -3,11 +3,11 @@ from pathlib import Path
 
 project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
 
-with open(project_root / "locales" / "de.json", "r", encoding="utf-8") as f:
+with open(project_root / "locales" / "de.json", encoding="utf-8") as f:
     de = json.load(f)
-with open(project_root / "locales" / "en.json", "r", encoding="utf-8") as f:
+with open(project_root / "locales" / "en.json", encoding="utf-8") as f:
     en = json.load(f)
-with open(project_root / "locales" / "sv.json", "r", encoding="utf-8") as f:
+with open(project_root / "locales" / "sv.json", encoding="utf-8") as f:
     sv = json.load(f)
 
 def get_nested(d, key):

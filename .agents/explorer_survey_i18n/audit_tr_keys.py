@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 # Load de.json keys
-with open("locales/de.json", "r", encoding="utf-8") as f:
+with open("locales/de.json", encoding="utf-8") as f:
     de_data = json.load(f)
 
 def flatten(d, prefix=""):
@@ -24,7 +24,7 @@ tr_calls = []
 
 for py_file in sorted(src_dir.rglob("*.py")):
     rel_path = py_file.relative_to(src_dir.parent).as_posix()
-    with open(py_file, "r", encoding="utf-8") as f:
+    with open(py_file, encoding="utf-8") as f:
         content = f.read()
     try:
         tree = ast.parse(content, filename=str(py_file))

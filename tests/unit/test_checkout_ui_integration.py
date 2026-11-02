@@ -6,10 +6,8 @@
 
 from unittest.mock import patch
 
-import pytest
 
-from models.profile import CheckoutSettings, UserProfile
-from services.checkout_task_service import CheckoutTaskService
+from models.profile import UserProfile
 from ui.widgets.checkout_panel import CheckoutFloatingWindow, CheckoutPanelWidget
 
 

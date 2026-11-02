@@ -1,7 +1,6 @@
 import json
-from pathlib import Path
 
-with open(".agents/explorer_survey_i18n/scan_results.json", "r", encoding="utf-8") as f:
+with open(".agents/explorer_survey_i18n/scan_results.json", encoding="utf-8") as f:
     data = json.load(f)
 
 lines = []

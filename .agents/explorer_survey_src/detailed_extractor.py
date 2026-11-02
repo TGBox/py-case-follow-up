@@ -9,13 +9,13 @@ def analyze_file_detailed(rel_path: str):
     file_path = SRC_DIR / rel_path
     if not file_path.exists():
         return None
-    
+
     content = file_path.read_text(encoding="utf-8")
     lines = content.splitlines()
     tree = ast.parse(content, filename=str(file_path))
-    
+
     items = []
-    
+
     class Visitor(ast.NodeVisitor):
         def visit_Call(self, node):
             func_name = ""
@@ -25,7 +25,7 @@ def analyze_file_detailed(rel_path: str):
                 func_name = node.func.attr
 
             # 1. CTk widgets with text/placeholder/values
-            if func_name in ("CTkButton", "CTkLabel", "CTkCheckBox", "CTkEntry", "CTkOptionMenu", 
+            if func_name in ("CTkButton", "CTkLabel", "CTkCheckBox", "CTkEntry", "CTkOptionMenu",
                              "CTkSegmentedButton", "CTkRadioButton", "CTkTabview", "CTkSwitch",
                              "CTkProgressBar", "CTkTextbox", "CTkInputDialog", "SearchableCombobox", "DatePicker"):
                 for kw in node.keywords:
@@ -52,7 +52,7 @@ def analyze_file_detailed(rel_path: str):
                                         "text": elt.value,
                                         "code_snippet": lines[elt.lineno - 1].strip() if elt.lineno <= len(lines) else ""
                                     })
-                                    
+
             # 2. CTkToolTip / ToolTip
             elif func_name in ("CTkToolTip", "ToolTip", "CTkTooltip"):
                 if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
@@ -110,7 +110,7 @@ def analyze_file_detailed(rel_path: str):
                             "text": arg.value,
                             "code_snippet": lines[arg.lineno - 1].strip()
                         })
-                        
+
             # 5. self.title(...)
             elif func_name == "title":
                 if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):

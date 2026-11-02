@@ -1,17 +1,16 @@
 import ast
 import os
 import json
-import re
 
 def analyze():
     tr_calls = []
     dynamic_keys = []
-    
+
     for root, dirs, files in os.walk('src'):
         for f in files:
             if f.endswith('.py'):
                 p = os.path.join(root, f)
-                with open(p, 'r', encoding='utf-8') as fh:
+                with open(p, encoding='utf-8') as fh:
                     try:
                         tree = ast.parse(fh.read(), filename=p)
                     except Exception as e:
@@ -46,7 +45,7 @@ def analyze():
                                         key = kw.value.value
                                     elif kw.arg == 'default' and isinstance(kw.value, ast.Constant):
                                         default = kw.value.value
-                                
+
                                 tr_calls.append({
                                     'file': p.replace('\\', '/'),
                                     'line': node.lineno,

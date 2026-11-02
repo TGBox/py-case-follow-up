@@ -285,7 +285,7 @@ sv_add = {
 
 for lang, additions in (("de", de_add), ("en", en_add), ("sv", sv_add)):
     p = Path(f"locales/{lang}.json")
-    with open(p, "r", encoding="utf-8") as f:
+    with open(p, encoding="utf-8") as f:
         data = json.load(f)
     data.update(additions)
     with open(p, "w", encoding="utf-8") as f:

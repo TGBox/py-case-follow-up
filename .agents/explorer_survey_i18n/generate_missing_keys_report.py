@@ -1,6 +1,6 @@
 import json
 
-with open(".agents/explorer_survey_i18n/tr_calls_audit.json", "r", encoding="utf-8") as f:
+with open(".agents/explorer_survey_i18n/tr_calls_audit.json", encoding="utf-8") as f:
     data = json.load(f)
 
 missing = data["missing_keys"]

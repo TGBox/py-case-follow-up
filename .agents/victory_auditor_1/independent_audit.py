@@ -7,9 +7,7 @@ Conducts full programmatic verification of:
 5. Integrity / Mock Bypasses
 """
 
-import ast
 import json
-import os
 import re
 import sys
 from pathlib import Path
@@ -65,11 +63,11 @@ sv_path = locales_dir / "sv.json"
 
 assert de_path.exists() and en_path.exists() and sv_path.exists(), "Locale files missing!"
 
-with open(de_path, "r", encoding="utf-8") as f:
+with open(de_path, encoding="utf-8") as f:
     de_data = json.load(f)
-with open(en_path, "r", encoding="utf-8") as f:
+with open(en_path, encoding="utf-8") as f:
     en_data = json.load(f)
-with open(sv_path, "r", encoding="utf-8") as f:
+with open(sv_path, encoding="utf-8") as f:
     sv_data = json.load(f)
 
 de_leafs = extract_leaf_keys(de_data)

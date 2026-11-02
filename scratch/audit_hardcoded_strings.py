@@ -15,7 +15,7 @@ for root, _, files in os.walk(src_dir):
         if not file.endswith(".py"):
             continue
         filepath = Path(root) / file
-        with open(filepath, "r", encoding="utf-8") as f:
+        with open(filepath, encoding="utf-8") as f:
             try:
                 tree = ast.parse(f.read(), filename=str(filepath))
             except Exception:

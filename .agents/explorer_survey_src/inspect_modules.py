@@ -1,5 +1,4 @@
 import sys
-import json
 from pathlib import Path
 
 sys.stdout.reconfigure(encoding='utf-8')
@@ -10,7 +9,7 @@ def inspect_constants():
     spec = importlib.util.spec_from_file_location("constants", PROJECT_ROOT / "src" / "constants.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    
+
     print("=== CONSTANTS INSPECTION ===")
     attrs = dir(mod)
     for a in sorted(attrs):
@@ -28,7 +27,7 @@ def inspect_enums():
     spec = importlib.util.spec_from_file_location("enums", PROJECT_ROOT / "src" / "enums.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    
+
     print("\n=== ENUMS INSPECTION ===")
     for a in dir(mod):
         if a.startswith("__"):

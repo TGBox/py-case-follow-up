@@ -6,7 +6,7 @@ project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-ca
 locales = {}
 for lang in ("de", "en", "sv"):
     p = project_root / "locales" / f"{lang}.json"
-    with open(p, "r", encoding="utf-8") as f:
+    with open(p, encoding="utf-8") as f:
         locales[lang] = json.load(f)
 
 def get_nested(d, key):

@@ -1,6 +1,6 @@
 import json
 
-with open(".agents/explorer_survey_i18n/scan_results.json", "r", encoding="utf-8") as f:
+with open(".agents/explorer_survey_i18n/scan_results.json", encoding="utf-8") as f:
     data = json.load(f)
 
 print(f"Total files: {data['total_files_with_hardcoded']}")

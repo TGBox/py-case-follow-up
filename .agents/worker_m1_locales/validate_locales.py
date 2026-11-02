@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Validation script for Milestone 1:
 1. 100% Key parity across de.json, en.json, sv.json.
@@ -14,11 +13,11 @@ import ast
 
 def validate():
     # 1. Load files
-    with open('locales/de.json', 'r', encoding='utf-8') as f:
+    with open('locales/de.json', encoding='utf-8') as f:
         de = json.load(f)
-    with open('locales/en.json', 'r', encoding='utf-8') as f:
+    with open('locales/en.json', encoding='utf-8') as f:
         en = json.load(f)
-    with open('locales/sv.json', 'r', encoding='utf-8') as f:
+    with open('locales/sv.json', encoding='utf-8') as f:
         sv = json.load(f)
 
     def get_all_leaf_keys(d, prefix=''):
@@ -72,7 +71,7 @@ def validate():
         for f in files:
             if f.endswith('.py'):
                 p = os.path.join(root, f)
-                with open(p, 'r', encoding='utf-8') as fh:
+                with open(p, encoding='utf-8') as fh:
                     tree = ast.parse(fh.read(), filename=p)
                     for node in ast.walk(tree):
                         if isinstance(node, ast.Call):

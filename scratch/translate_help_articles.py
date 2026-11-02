@@ -402,7 +402,7 @@ Hämta e-post via IMAP och utlös REST-webhooks för Jira/GitLab."""
 
 # Update de.json
 de_file = Path("locales/de.json")
-with open(de_file, "r", encoding="utf-8") as f:
+with open(de_file, encoding="utf-8") as f:
     de_data = json.load(f)
 
 de_help_content = {}
@@ -420,7 +420,7 @@ with open(de_file, "w", encoding="utf-8") as f:
 
 # Update en.json
 en_file = Path("locales/en.json")
-with open(en_file, "r", encoding="utf-8") as f:
+with open(en_file, encoding="utf-8") as f:
     en_data = json.load(f)
 
 en_help_content = {}
@@ -441,7 +441,7 @@ with open(en_file, "w", encoding="utf-8") as f:
 
 # Update sv.json
 sv_file = Path("locales/sv.json")
-with open(sv_file, "r", encoding="utf-8") as f:
+with open(sv_file, encoding="utf-8") as f:
     sv_data = json.load(f)
 
 sv_help_content = {}

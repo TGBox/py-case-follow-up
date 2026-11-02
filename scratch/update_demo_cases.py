@@ -27,7 +27,7 @@ cases_sv = {
 
 for path, data in [("locales/de.json", cases_de), ("locales/en.json", cases_en), ("locales/sv.json", cases_sv)]:
     p = Path(path)
-    with open(p, "r", encoding="utf-8") as f:
+    with open(p, encoding="utf-8") as f:
         d = json.load(f)
     d["demo_cases"] = data
     with open(p, "w", encoding="utf-8") as f:

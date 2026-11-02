@@ -1,13 +1,11 @@
-import os
 import sys
-import json
 from pathlib import Path
 
 # Add project root and tests to path
 sys.path.insert(0, r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
 sys.path.insert(0, r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up\tests")
 
-from test_ast_i18n_scanner import scan_python_file, ASTViolation
+from test_ast_i18n_scanner import scan_python_file
 
 project_root = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up")
 

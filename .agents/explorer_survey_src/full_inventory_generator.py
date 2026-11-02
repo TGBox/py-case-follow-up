@@ -1,6 +1,5 @@
 import ast
 import json
-import re
 import sys
 from pathlib import Path
 
@@ -10,22 +9,22 @@ SRC_DIR = PROJECT_ROOT / "src"
 
 def generate_inventory():
     all_files = sorted(list(SRC_DIR.glob("**/*.py")))
-    
+
     file_catalogs = {}
-    
+
     for f in all_files:
         rel = f.relative_to(SRC_DIR).as_posix()
         content = f.read_text(encoding="utf-8")
         lines = content.splitlines()
-        
+
         try:
             tree = ast.parse(content, filename=str(f))
         except Exception as e:
             file_catalogs[rel] = {"error": str(e), "entries": []}
             continue
-            
+
         entries = []
-        
+
         class InvVisitor(ast.NodeVisitor):
             def visit_Call(self, node):
                 func_name = ""
@@ -33,9 +32,9 @@ def generate_inventory():
                     func_name = node.func.id
                 elif isinstance(node.func, ast.Attribute):
                     func_name = node.func.attr
-                    
+
                 # 1. UI Widgets
-                if func_name in ("CTkButton", "CTkLabel", "CTkCheckBox", "CTkEntry", "CTkOptionMenu", 
+                if func_name in ("CTkButton", "CTkLabel", "CTkCheckBox", "CTkEntry", "CTkOptionMenu",
                                  "CTkSegmentedButton", "CTkRadioButton", "CTkTabview", "CTkSwitch",
                                  "CTkProgressBar", "CTkTextbox", "CTkInputDialog", "SearchableCombobox", "DatePicker"):
                     for kw in node.keywords:
@@ -62,7 +61,7 @@ def generate_inventory():
                                                 "value": elt.value,
                                                 "snippet": lines[elt.lineno - 1].strip() if elt.lineno <= len(lines) else ""
                                             })
-                                            
+
                 # 2. Tooltips
                 elif func_name in ("CTkToolTip", "ToolTip", "CTkTooltip"):
                     if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
@@ -82,7 +81,7 @@ def generate_inventory():
                                 "value": kw.value.value,
                                 "snippet": lines[kw.value.lineno - 1].strip()
                             })
-                            
+
                 # 3. Toasts & Popups
                 elif func_name in ("ToastNotification", "show_toast"):
                     for kw in node.keywords:
@@ -94,7 +93,7 @@ def generate_inventory():
                                 "value": kw.value.value,
                                 "snippet": lines[kw.value.lineno - 1].strip()
                             })
-                            
+
                 # 4. Dialogs / File Dialogs
                 elif func_name in ("showinfo", "showwarning", "showerror", "askyesno", "askokcancel", "askretrycancel", "askquestion", "askopenfilename", "asksaveasfilename", "askdirectory"):
                     for kw in node.keywords:
@@ -115,7 +114,7 @@ def generate_inventory():
                                 "value": arg.value,
                                 "snippet": lines[arg.lineno - 1].strip()
                             })
-                            
+
                 # 5. Window Titles
                 elif func_name == "title":
                     if node.args and isinstance(node.args[0], ast.Constant) and isinstance(node.args[0].value, str):
@@ -135,14 +134,14 @@ def generate_inventory():
             "entries_count": len(entries),
             "entries": entries
         }
-        
+
     return file_catalogs
 
 if __name__ == "__main__":
     cat = generate_inventory()
     out_p = Path(r"c:\Users\DaniBani\Documents\VisualStudioCodeProjects\py-case-follow-up\.agents\explorer_survey_src\full_inventory.json")
     out_p.write_text(json.dumps(cat, indent=2, ensure_ascii=False), encoding="utf-8")
-    
+
     total = sum(v["entries_count"] for v in cat.values())
     print(f"Inventory completed. Total files: {len(cat)}, Total hardcoded UI/Dialog items: {total}")
     for k, v in sorted(cat.items(), key=lambda x: x[1]["entries_count"], reverse=True):

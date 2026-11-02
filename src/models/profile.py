@@ -58,6 +58,18 @@ from constants import (
     POPUP_DISPLAY_TARGETS,
     SUPPORTED_LANGUAGES,
     VALIDATION_MESSAGES,
+    CHECKOUT_DEFAULT_BREAK_MINUTES,
+    CHECKOUT_DEFAULT_BUFFER_MINUTES,
+    CHECKOUT_DEFAULT_LOGOUT_MINUTES,
+    CHECKOUT_DEFAULT_PACK_MINUTES,
+    CHECKOUT_DEFAULT_UNIFORM_TIME,
+    CHECKOUT_DEFAULT_WALK_MINUTES,
+    CHECKOUT_DEFAULT_WIDTH,
+    CHECKOUT_DEFAULT_WORK_START,
+    CHECKOUT_DEFAULT_WORK_TARGET_HOURS,
+    CHECKOUT_MODE_UNIFORM,
+    TRANSIT_DEFAULT_STOP_NAME,
+    TRANSIT_DEFAULT_STOP_PLACE,
 )
 
 
@@ -436,6 +448,150 @@ class PathSettings:
         )
 
 
+
+@dataclass
+class CheckoutSettings:
+    enabled: bool = False
+    auto_open: bool = False
+    auto_open_mode: str = CHECKOUT_MODE_UNIFORM
+    auto_open_uniform_time: str = CHECKOUT_DEFAULT_UNIFORM_TIME
+    auto_open_weekday_times: dict[str, str] = field(
+        default_factory=lambda: {
+            "monday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "tuesday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "wednesday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "thursday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "friday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+        }
+    )
+    is_docked: bool = True
+    floating_geometry: str = ""
+    panel_width: int = CHECKOUT_DEFAULT_WIDTH
+    stops: list[dict[str, str]] = field(
+        default_factory=lambda: [
+            {"name": TRANSIT_DEFAULT_STOP_NAME, "place": TRANSIT_DEFAULT_STOP_PLACE}
+        ]
+    )
+    walk_time_minutes: int = CHECKOUT_DEFAULT_WALK_MINUTES
+    logout_time_minutes: int = CHECKOUT_DEFAULT_LOGOUT_MINUTES
+    pack_time_minutes: int = CHECKOUT_DEFAULT_PACK_MINUTES
+    buffer_time_minutes: int = CHECKOUT_DEFAULT_BUFFER_MINUTES
+    alarm_enabled: bool = True
+    daily_note_keep_overnight: bool = False
+    daily_note_text: str = ""
+    daily_note_date: str = ""
+    work_start_time: str = CHECKOUT_DEFAULT_WORK_START
+    work_target_hours: float = CHECKOUT_DEFAULT_WORK_TARGET_HOURS
+    work_break_minutes: int = CHECKOUT_DEFAULT_BREAK_MINUTES
+    weather_city: str = TRANSIT_DEFAULT_STOP_PLACE
+    recurring_tasks: list[dict[str, Any]] = field(
+        default_factory=lambda: [
+            {"id": "rec_time", "text": "Zeiterfassung prüfen / buchen", "done": False},
+            {"id": "rec_cases", "text": "Offene Fälle aktualisieren", "done": False},
+            {"id": "rec_pc", "text": "PC & Arbeitsplatz sperren", "done": False},
+        ]
+    )
+    dated_tasks: list[dict[str, Any]] = field(default_factory=list)
+    last_tasks_date: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "enabled": self.enabled,
+            "auto_open": self.auto_open,
+            "auto_open_mode": self.auto_open_mode,
+            "auto_open_uniform_time": self.auto_open_uniform_time,
+            "auto_open_weekday_times": dict(self.auto_open_weekday_times),
+            "is_docked": self.is_docked,
+            "floating_geometry": self.floating_geometry,
+            "panel_width": self.panel_width,
+            "stops": [dict(s) for s in self.stops],
+            "walk_time_minutes": self.walk_time_minutes,
+            "logout_time_minutes": self.logout_time_minutes,
+            "pack_time_minutes": self.pack_time_minutes,
+            "buffer_time_minutes": self.buffer_time_minutes,
+            "alarm_enabled": self.alarm_enabled,
+            "daily_note_keep_overnight": self.daily_note_keep_overnight,
+            "daily_note_text": self.daily_note_text,
+            "daily_note_date": self.daily_note_date,
+            "work_start_time": self.work_start_time,
+            "work_target_hours": self.work_target_hours,
+            "work_break_minutes": self.work_break_minutes,
+            "weather_city": self.weather_city,
+            "recurring_tasks": [dict(t) for t in self.recurring_tasks],
+            "dated_tasks": [dict(t) for t in self.dated_tasks],
+            "last_tasks_date": self.last_tasks_date,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> CheckoutSettings:
+        if not isinstance(data, dict):
+            return cls()
+        default_weekdays = {
+            "monday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "tuesday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "wednesday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "thursday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+            "friday": CHECKOUT_DEFAULT_UNIFORM_TIME,
+        }
+        if isinstance(data.get("auto_open_weekday_times"), dict):
+            default_weekdays.update({
+                str(k): str(v) for k, v in data["auto_open_weekday_times"].items()
+            })
+
+        stops_raw = data.get("stops")
+        if isinstance(stops_raw, list) and stops_raw:
+            stops = [
+                {"name": str(s.get("name", "")), "place": str(s.get("place", ""))}
+                for s in stops_raw
+                if isinstance(s, dict)
+            ]
+        else:
+            stops = [{"name": TRANSIT_DEFAULT_STOP_NAME, "place": TRANSIT_DEFAULT_STOP_PLACE}]
+
+        rec_tasks_raw = data.get("recurring_tasks")
+        if isinstance(rec_tasks_raw, list):
+            rec_tasks = [dict(t) for t in rec_tasks_raw if isinstance(t, dict)]
+        else:
+            rec_tasks = [
+                {"id": "rec_time", "text": "Zeiterfassung prüfen / buchen", "done": False},
+                {"id": "rec_cases", "text": "Offene Fälle aktualisieren", "done": False},
+                {"id": "rec_pc", "text": "PC & Arbeitsplatz sperren", "done": False},
+            ]
+
+        dated_tasks_raw = data.get("dated_tasks")
+        if isinstance(dated_tasks_raw, list):
+            dated_tasks = [dict(t) for t in dated_tasks_raw if isinstance(t, dict)]
+        else:
+            dated_tasks = []
+
+        return cls(
+            enabled=bool(data.get("enabled", False)),
+            auto_open=bool(data.get("auto_open", False)),
+            auto_open_mode=str(data.get("auto_open_mode", CHECKOUT_MODE_UNIFORM)),
+            auto_open_uniform_time=str(data.get("auto_open_uniform_time", CHECKOUT_DEFAULT_UNIFORM_TIME)),
+            auto_open_weekday_times=default_weekdays,
+            is_docked=bool(data.get("is_docked", True)),
+            floating_geometry=str(data.get("floating_geometry", "")),
+            panel_width=int(data.get("panel_width", CHECKOUT_DEFAULT_WIDTH)),
+            stops=stops,
+            walk_time_minutes=int(data.get("walk_time_minutes", CHECKOUT_DEFAULT_WALK_MINUTES)),
+            logout_time_minutes=int(data.get("logout_time_minutes", CHECKOUT_DEFAULT_LOGOUT_MINUTES)),
+            pack_time_minutes=int(data.get("pack_time_minutes", CHECKOUT_DEFAULT_PACK_MINUTES)),
+            buffer_time_minutes=int(data.get("buffer_time_minutes", CHECKOUT_DEFAULT_BUFFER_MINUTES)),
+            alarm_enabled=bool(data.get("alarm_enabled", True)),
+            daily_note_keep_overnight=bool(data.get("daily_note_keep_overnight", False)),
+            daily_note_text=str(data.get("daily_note_text", "")),
+            daily_note_date=str(data.get("daily_note_date", "")),
+            work_start_time=str(data.get("work_start_time", CHECKOUT_DEFAULT_WORK_START)),
+            work_target_hours=float(data.get("work_target_hours", CHECKOUT_DEFAULT_WORK_TARGET_HOURS)),
+            work_break_minutes=int(data.get("work_break_minutes", CHECKOUT_DEFAULT_BREAK_MINUTES)),
+            weather_city=str(data.get("weather_city", TRANSIT_DEFAULT_STOP_PLACE)),
+            recurring_tasks=rec_tasks,
+            dated_tasks=dated_tasks,
+            last_tasks_date=str(data.get("last_tasks_date", "")),
+        )
+
+
 @dataclass
 class UserProfile:
     user: UserInfo = field(default_factory=UserInfo)
@@ -447,6 +603,7 @@ class UserProfile:
     ai_settings: AiSettings = field(default_factory=AiSettings)
     backup_settings: BackupSettings = field(default_factory=BackupSettings)
     path_settings: PathSettings = field(default_factory=PathSettings)
+    checkout_settings: CheckoutSettings = field(default_factory=CheckoutSettings)
     available_tags: list[str] = field(default_factory=lambda: list(DEFAULT_TAGS))
     available_module_tags: list[str] = field(default_factory=lambda: list(DEFAULT_MODULE_TAGS))
 
@@ -461,6 +618,7 @@ class UserProfile:
             "ai_settings": self.ai_settings.to_dict(),
             "backup_settings": self.backup_settings.to_dict(),
             "path_settings": self.path_settings.to_dict(),
+            "checkout_settings": self.checkout_settings.to_dict(),
             "available_tags": self.available_tags,
             "available_module_tags": self.available_module_tags,
         }
@@ -481,6 +639,7 @@ class UserProfile:
             ai_settings=AiSettings.from_dict(data.get("ai_settings", {})),
             backup_settings=BackupSettings.from_dict(data.get("backup_settings", {})),
             path_settings=PathSettings.from_dict(data.get("path_settings", {})),
+            checkout_settings=CheckoutSettings.from_dict(data.get("checkout_settings", {})),
             available_tags=tags,
             available_module_tags=mod_tags,
         )

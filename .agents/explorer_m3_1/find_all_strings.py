@@ -34,7 +34,7 @@ class StringVisitor(ast.NodeVisitor):
 
 for rel_path in files:
     fpath = root / rel_path
-    with open(fpath, "r", encoding="utf-8", errors="replace") as f:
+    with open(fpath, encoding="utf-8", errors="replace") as f:
         tree = ast.parse(f.read(), filename=rel_path)
     visitor = StringVisitor(rel_path)
     visitor.visit(tree)

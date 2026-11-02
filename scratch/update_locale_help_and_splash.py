@@ -6,7 +6,7 @@ PROJECT_ROOT = os.path.dirname(SCRATCH_DIR)
 LOCALES_DIR = os.path.join(PROJECT_ROOT, "locales")
 
 def load_json(filepath):
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         return json.load(f)
 
 def save_json(filepath, data):

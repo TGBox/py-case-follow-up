@@ -1,5 +1,3 @@
-import os
-import sys
 import json
 import ast
 from pathlib import Path
@@ -28,7 +26,7 @@ files = [
 
 def analyze_file(rel_path):
     fpath = project_root / rel_path
-    with open(fpath, "r", encoding="utf-8", errors="replace") as f:
+    with open(fpath, encoding="utf-8", errors="replace") as f:
         content = f.read()
     lines = content.splitlines()
     tree = ast.parse(content, filename=rel_path)

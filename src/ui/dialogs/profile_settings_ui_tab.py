@@ -46,6 +46,13 @@ from constants import (
     PAD_XS,
     POPUP_DISPLAY_TARGETS,
     PROFILE_TAB_FIELD_WIDTH,
+    CHECKOUT_AUTO_OPEN_MODE_CHOICES,
+    CHECKOUT_AUTO_OPEN_MODE_KEYS,
+    CHECKOUT_MODE_WEEKDAYS,
+    ENTRY_WIDTH_CHECKOUT_NUMERIC,
+    ENTRY_WIDTH_CHECKOUT_TIME,
+    ENTRY_WIDTH_CHECKOUT_WEEKDAY_TIME,
+    LABEL_WIDTH_CHECKOUT_PARAM,
 )
 from enums import get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
 from services.i18n_service import tr, SUPPORTED_LANGUAGES, LANGUAGE_CODE_TO_DISPLAY, LANGUAGE_DISPLAY_TO_CODE, get_i18n
@@ -640,6 +647,227 @@ class UiSettingsTabMixin:
             "↻ Alle Spaltenbreiten auf Standard zurücksetzen",
         )
         self.btn_reset_widths.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+        self.setup_checkout_section(right_col)
+
+
+    def setup_checkout_section(self, right_col: ctk.CTkFrame) -> None:
+        self.checkout_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                right_col,
+                text=tr("settings_checkout.section_title", "Feierabend- & Checkout-Begleiter"),
+                font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
+            ),
+            "settings_checkout.section_title",
+            "Feierabend- & Checkout-Begleiter",
+        )
+        self.checkout_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_XS))
+
+        cs = getattr(self.profile, "checkout_settings", None)
+        if cs is None:
+            from models.profile import CheckoutSettings
+            cs = CheckoutSettings()
+            self.profile.checkout_settings = cs
+
+        # Enable panel
+        self.checkout_enable_var = ctk.BooleanVar(value=cs.enabled)
+        self.checkout_enable_cb = self.register_i18n(
+            ctk.CTkCheckBox(
+                right_col,
+                text=tr("settings_checkout.enable_panel", "Feierabend-Panel aktivieren"),
+                variable=self.checkout_enable_var,
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+            ),
+            "settings_checkout.enable_panel",
+            "Feierabend-Panel aktivieren",
+        )
+        self.checkout_enable_cb.pack(anchor="w", pady=(PAD_XS, PAD_XS))
+
+        # Auto open checkbox
+        self.checkout_auto_open_var = ctk.BooleanVar(value=cs.auto_open)
+        self.checkout_auto_open_cb = self.register_i18n(
+            ctk.CTkCheckBox(
+                right_col,
+                text=tr("settings_checkout.auto_open", "Automatisch zur Feierabendzeit einblenden"),
+                variable=self.checkout_auto_open_var,
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+            ),
+            "settings_checkout.auto_open",
+            "Automatisch zur Feierabendzeit einblenden",
+        )
+        self.checkout_auto_open_cb.pack(anchor="w", pady=(PAD_XS, PAD_SM))
+
+        # Schedule mode
+        self.checkout_mode_lbl = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("settings_checkout.schedule_mode", "Zeitplan-Modus:")),
+            "settings_checkout.schedule_mode",
+            "Zeitplan-Modus:",
+        )
+        self.checkout_mode_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+
+        mode_choices = [tr(k, d) for k, d in CHECKOUT_AUTO_OPEN_MODE_CHOICES]
+        self.checkout_mode_combo = ctk.CTkOptionMenu(
+            right_col,
+            values=mode_choices,
+            width=PROFILE_TAB_FIELD_WIDTH,
+            command=self._on_checkout_mode_changed,
+        )
+        init_mode = (
+            mode_choices[1]
+            if cs.auto_open_mode == CHECKOUT_MODE_WEEKDAYS
+            else mode_choices[0]
+        )
+        self.checkout_mode_combo.set(init_mode)
+        self.checkout_mode_combo.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        # Uniform time container
+        self.checkout_uniform_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        self.checkout_uniform_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_XS))
+
+        self.checkout_uniform_lbl = self.register_i18n(
+            ctk.CTkLabel(self.checkout_uniform_frame, text=tr("settings_checkout.uniform_time", "Uhrzeit:")),
+            "settings_checkout.uniform_time",
+            "Uhrzeit:",
+        )
+        self.checkout_uniform_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+        self.checkout_uniform_entry = ctk.CTkEntry(
+            self.checkout_uniform_frame,
+            width=ENTRY_WIDTH_CHECKOUT_TIME,
+            placeholder_text="16:30",
+        )
+        self.checkout_uniform_entry.insert(0, cs.auto_open_uniform_time)
+        self.checkout_uniform_entry.pack(side="left")
+
+        # Weekdays container
+        self.checkout_weekdays_frame = ctk.CTkFrame(right_col, fg_color="transparent")
+        self.checkout_weekday_entries = {}
+        day_keys = [
+            ("monday", "settings_checkout.day_monday", "Montag"),
+            ("tuesday", "settings_checkout.day_tuesday", "Dienstag"),
+            ("wednesday", "settings_checkout.day_wednesday", "Mittwoch"),
+            ("thursday", "settings_checkout.day_thursday", "Donnerstag"),
+            ("friday", "settings_checkout.day_friday", "Freitag"),
+        ]
+        for day_id, tr_key, default_lbl in day_keys:
+            row = ctk.CTkFrame(self.checkout_weekdays_frame, fg_color="transparent")
+            row.pack(fill="x", pady=1)
+            lbl = self.register_i18n(
+                ctk.CTkLabel(row, text=tr(tr_key, default_lbl), width=LABEL_WIDTH_CHECKOUT_PARAM, anchor="w"),
+                tr_key,
+                default_lbl,
+            )
+            lbl.pack(side="left")
+            entry = ctk.CTkEntry(row, width=ENTRY_WIDTH_CHECKOUT_NUMERIC)
+            entry.insert(0, cs.auto_open_weekday_times.get(day_id, cs.auto_open_uniform_time))
+            entry.pack(side="left")
+            self.checkout_weekday_entries[day_id] = entry
+
+        # Transit heading & fields
+        self.checkout_transit_hdr = self.register_i18n(
+            ctk.CTkLabel(
+                right_col,
+                text=tr("settings_checkout.transit_heading", "ÖPNV & Geh-Wecker"),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold"),
+            ),
+            "settings_checkout.transit_heading",
+            "ÖPNV & Geh-Wecker",
+        )
+        self.checkout_transit_hdr.pack(anchor="w", pady=(PAD_MD, PAD_XS))
+
+        stop_name = cs.stops[0].get("name", "Ulm Ehinger Tor") if cs.stops else "Ulm Ehinger Tor"
+        stop_place = cs.stops[0].get("place", "Ulm") if cs.stops else "Ulm"
+
+        self.checkout_stop_name_lbl = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("settings_checkout.transit_stop_name", "Haltestellen-Name:")),
+            "settings_checkout.transit_stop_name",
+            "Haltestellen-Name:",
+        )
+        self.checkout_stop_name_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+        self.checkout_stop_name_entry = ctk.CTkEntry(right_col, width=PROFILE_TAB_FIELD_WIDTH)
+        self.checkout_stop_name_entry.insert(0, stop_name)
+        self.checkout_stop_name_entry.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        self.checkout_stop_place_lbl = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("settings_checkout.transit_stop_place", "Ort / Gemeinde:")),
+            "settings_checkout.transit_stop_place",
+            "Ort / Gemeinde:",
+        )
+        self.checkout_stop_place_lbl.pack(anchor="w", pady=(PAD_XS, PAD_NONE))
+        self.checkout_stop_place_entry = ctk.CTkEntry(right_col, width=PROFILE_TAB_FIELD_WIDTH)
+        self.checkout_stop_place_entry.insert(0, stop_place)
+        self.checkout_stop_place_entry.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        # Commute buffer inputs: walk, logout, pack, buffer in a grid
+        lead_grid = ctk.CTkFrame(right_col, fg_color="transparent")
+        lead_grid.pack(fill="x", pady=PAD_XS)
+
+        self.checkout_walk_lbl = self.register_i18n(
+            ctk.CTkLabel(lead_grid, text=tr("settings_checkout.walk_minutes", "Fußweg (Min.):")),
+            "settings_checkout.walk_minutes",
+            "Fußweg (Min.):",
+        )
+        self.checkout_walk_lbl.grid(row=0, column=0, sticky="w", padx=(0, PAD_SM), pady=PAD_XS)
+        self.checkout_walk_entry = ctk.CTkEntry(lead_grid, width=ENTRY_WIDTH_CHECKOUT_WEEKDAY_TIME)
+        self.checkout_walk_entry.insert(0, str(cs.walk_time_minutes))
+        self.checkout_walk_entry.grid(row=0, column=1, sticky="w", pady=PAD_XS)
+
+        self.checkout_logout_lbl = self.register_i18n(
+            ctk.CTkLabel(lead_grid, text=tr("settings_checkout.logout_minutes", "Logout / PC herunterfahren (Min.):")),
+            "settings_checkout.logout_minutes",
+            "Logout / PC herunterfahren (Min.):",
+        )
+        self.checkout_logout_lbl.grid(row=1, column=0, sticky="w", padx=(0, PAD_SM), pady=PAD_XS)
+        self.checkout_logout_entry = ctk.CTkEntry(lead_grid, width=ENTRY_WIDTH_CHECKOUT_WEEKDAY_TIME)
+        self.checkout_logout_entry.insert(0, str(cs.logout_time_minutes))
+        self.checkout_logout_entry.grid(row=1, column=1, sticky="w", pady=PAD_XS)
+
+        self.checkout_pack_lbl = self.register_i18n(
+            ctk.CTkLabel(lead_grid, text=tr("settings_checkout.pack_minutes", "Anziehen / Packen (Min.):")),
+            "settings_checkout.pack_minutes",
+            "Anziehen / Packen (Min.):",
+        )
+        self.checkout_pack_lbl.grid(row=2, column=0, sticky="w", padx=(0, PAD_SM), pady=PAD_XS)
+        self.checkout_pack_entry = ctk.CTkEntry(lead_grid, width=ENTRY_WIDTH_CHECKOUT_WEEKDAY_TIME)
+        self.checkout_pack_entry.insert(0, str(cs.pack_time_minutes))
+        self.checkout_pack_entry.grid(row=2, column=1, sticky="w", pady=PAD_XS)
+
+        self.checkout_buffer_lbl = self.register_i18n(
+            ctk.CTkLabel(lead_grid, text=tr("settings_checkout.buffer_minutes", "Sicherheitspuffer (Min.):")),
+            "settings_checkout.buffer_minutes",
+            "Sicherheitspuffer (Min.):",
+        )
+        self.checkout_buffer_lbl.grid(row=3, column=0, sticky="w", padx=(0, PAD_SM), pady=PAD_XS)
+        self.checkout_buffer_entry = ctk.CTkEntry(lead_grid, width=ENTRY_WIDTH_CHECKOUT_WEEKDAY_TIME)
+        self.checkout_buffer_entry.insert(0, str(cs.buffer_time_minutes))
+        self.checkout_buffer_entry.grid(row=3, column=1, sticky="w", pady=PAD_XS)
+
+        self.checkout_alarm_var = ctk.BooleanVar(value=cs.alarm_enabled)
+        self.checkout_alarm_cb = self.register_i18n(
+            ctk.CTkCheckBox(
+                right_col,
+                text=tr("settings_checkout.alarm_enable", "Akustischen / visuellen Geh-Wecker aktivieren"),
+                variable=self.checkout_alarm_var,
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+            ),
+            "settings_checkout.alarm_enable",
+            "Akustischen / visuellen Geh-Wecker aktivieren",
+        )
+        self.checkout_alarm_cb.pack(anchor="w", pady=(PAD_SM, PAD_MD))
+
+        self._update_checkout_mode_visibility()
+
+    def _on_checkout_mode_changed(self, choice: str) -> None:
+        self._update_checkout_mode_visibility()
+
+    def _update_checkout_mode_visibility(self) -> None:
+        if not hasattr(self, "checkout_mode_combo"):
+            return
+        idx = self.selected_choice_index(self.checkout_mode_combo)
+        if idx == 1:
+            self.checkout_uniform_frame.pack_forget()
+            self.checkout_weekdays_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_XS))
+        else:
+            self.checkout_weekdays_frame.pack_forget()
+            self.checkout_uniform_frame.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_XS))
 
     def _build_widths_str(self, w_dict: dict) -> str:
         return tr(
@@ -926,6 +1154,42 @@ class UiSettingsTabMixin:
             self.profile.ui_settings.popup_display_target = POPUP_DISPLAY_TARGETS[
                 min(index, len(POPUP_DISPLAY_TARGETS) - 1)
             ]
+
+        if hasattr(self, "checkout_enable_cb"):
+            cs = self.profile.checkout_settings
+            cs.enabled = self.checkout_enable_var.get()
+            cs.auto_open = self.checkout_auto_open_var.get()
+            idx = self.selected_choice_index(self.checkout_mode_combo)
+            cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
+                min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)
+            ]
+            cs.auto_open_uniform_time = self.checkout_uniform_entry.get().strip() or "16:30"
+            for day_id, entry in getattr(self, "checkout_weekday_entries", {}).items():
+                cs.auto_open_weekday_times[day_id] = entry.get().strip() or cs.auto_open_uniform_time
+
+            stop_name = self.checkout_stop_name_entry.get().strip() or "Ulm Ehinger Tor"
+            stop_place = self.checkout_stop_place_entry.get().strip() or "Ulm"
+            cs.stops = [{"name": stop_name, "place": stop_place}]
+            cs.weather_city = stop_place
+
+            try:
+                cs.walk_time_minutes = int(self.checkout_walk_entry.get().strip())
+            except ValueError:
+                pass
+            try:
+                cs.logout_time_minutes = int(self.checkout_logout_entry.get().strip())
+            except ValueError:
+                pass
+            try:
+                cs.pack_time_minutes = int(self.checkout_pack_entry.get().strip())
+            except ValueError:
+                pass
+            try:
+                cs.buffer_time_minutes = int(self.checkout_buffer_entry.get().strip())
+            except ValueError:
+                pass
+            cs.alarm_enabled = self.checkout_alarm_var.get()
+
         return True
 
     def refresh_ui_tab_labels(self) -> None:
@@ -1010,6 +1274,8 @@ class UiSettingsTabMixin:
             self.popup_target_lbl.configure(text=tr("profile.popup_position", "Position zusätzlicher Fenster & Benachrichtigungen:"))
         if hasattr(self, "popup_target_combo"):
             self.retranslate_choices(self.popup_target_combo, POPUP_TARGET_CHOICES)
+        if hasattr(self, "checkout_mode_combo"):
+            self.retranslate_choices(self.checkout_mode_combo, CHECKOUT_AUTO_OPEN_MODE_CHOICES)
         if hasattr(self, "col_widths_hdr_lbl"):
             self.col_widths_hdr_lbl.configure(text=tr("profile.saved_widths", "Gespeicherte Spaltenbreiten (Profile-Level)"))
         if hasattr(self, "btn_reset_widths"):

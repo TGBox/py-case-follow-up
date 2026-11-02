@@ -219,8 +219,16 @@ def patch_ctk_scrollable_frame() -> None:
             if getattr(self, "_in_update_dim", False):
                 return
             try:
+                if not getattr(self, "winfo_exists", lambda: True)():
+                    return
                 self._in_update_dim = True
                 return orig_update_dim(self, event)
+            except tk.TclError as e:
+                if "invalid command name" in str(e):
+                    return
+                raise
+            except Exception:
+                return
             finally:
                 self._in_update_dim = False
         ctk.CTkBaseClass._update_dimensions_event = safe_update_dim  # pyright: ignore[reportAttributeAccessIssue]
@@ -233,8 +241,16 @@ def patch_ctk_scrollable_frame() -> None:
             if getattr(self, "_in_draw", False):
                 return
             try:
+                if not getattr(self, "winfo_exists", lambda: True)():
+                    return
                 self._in_draw = True
                 return orig_draw(self, *args, **kwargs)
+            except tk.TclError as e:
+                if "invalid command name" in str(e):
+                    return
+                raise
+            except Exception:
+                return
             finally:
                 self._in_draw = False
         ctk.CTkScrollbar._draw = safe_draw  # pyright: ignore[reportAttributeAccessIssue]
@@ -296,11 +312,21 @@ def patch_ctk_tabview() -> None:
 
     def safe_draw(self, no_color_updates: bool = False):
         if orig_draw:
-            orig_draw(self, no_color_updates)
+            try:
+                if getattr(self, "winfo_exists", lambda: True)():
+                    orig_draw(self, no_color_updates)
+            except (tk.TclError, Exception):
+                return
+        if no_color_updates:
+            return
         target_color = getattr(self, "_bg_color", None) if getattr(self, "_fg_color", None) == "transparent" else getattr(self, "_fg_color", None)
         tab_dict: dict[str, Any] = getattr(self, "_tab_dict", {})
         for tab in tab_dict.values():
-            tab.configure(fg_color=target_color, bg_color=target_color)
+            try:
+                if getattr(tab, "winfo_exists", lambda: True)():
+                    tab.configure(fg_color=target_color, bg_color=target_color)
+            except (tk.TclError, Exception):
+                pass
 
     ctk.CTkTabview._create_tab = safe_create_tab  # pyright: ignore[reportAttributeAccessIssue]
     ctk.CTkTabview._draw = safe_draw  # pyright: ignore[reportAttributeAccessIssue]
@@ -637,9 +663,14 @@ def track_appearance_mode(widget: Any, apply: Callable[[str], Any]) -> None:
     does not manage. The callback is unregistered when the widget is destroyed
     so the tracker does not keep dead widgets alive.
     """
-    from customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker import (
-        AppearanceModeTracker,
-    )
+    tracker = getattr(ctk, "AppearanceModeTracker", None)
+    if tracker is None:
+        try:
+            from customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker import (
+                AppearanceModeTracker as tracker,
+            )
+        except Exception:
+            return
 
     def _callback(mode_string: str) -> None:
         try:
@@ -649,11 +680,11 @@ def track_appearance_mode(widget: Any, apply: Callable[[str], Any]) -> None:
         except tk.TclError:
             pass
 
-    AppearanceModeTracker.add(_callback, widget)
+    tracker.add(_callback, widget)
 
     def _on_destroy(event: Any) -> None:
         if event.widget is widget:
-            AppearanceModeTracker.remove(_callback)
+            tracker.remove(_callback)
 
     widget.bind("<Destroy>", _on_destroy, add="+")
 

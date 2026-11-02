@@ -149,3 +149,10 @@ class CTkImage:
     _light_image: Any
     _dark_image: Any
     def __init__(self, light_image: Any = None, dark_image: Any = None, size: tuple[int, int] = (16, 16)) -> None: ...
+
+
+class AppearanceModeTracker:
+    @classmethod
+    def add(cls, callback: Callable[[str], Any], widget: Any = None) -> None: ...
+    @classmethod
+    def remove(cls, callback: Callable[[str], Any]) -> None: ...

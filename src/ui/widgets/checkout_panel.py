@@ -22,14 +22,17 @@ import customtkinter as ctk
 
 from constants import (
     BORDER_WIDTH_CARD,
+    BORDER_WIDTH_TRANSIT_SELECTED,
     BTN_HEIGHT_CHECKOUT_ACTION,
     BTN_HEIGHT_CHECKOUT_TINY,
     BTN_WIDTH_ACTION_SM,
     BTN_WIDTH_CHECKOUT_ACTION,
     BTN_WIDTH_CHECKOUT_TINY,
+    BTN_WIDTH_CHECKOUT_UNSELECT,
     CHECKOUT_FLOATING_MIN_HEIGHT,
     CHECKOUT_FLOATING_MIN_WIDTH,
     CHECKOUT_HEADER_BTN_SIZE,
+    CHECKOUT_HINT_WRAPLENGTH,
     COLOR_CANCEL_FG,
     COLOR_CANCEL_HOVER,
     COLOR_CARD_BG,
@@ -44,6 +47,9 @@ from constants import (
     COLOR_TRANSIT_COUNTDOWN_WARN,
     COLOR_TRANSIT_DELAY,
     COLOR_TRANSIT_ONTIME,
+    COLOR_TRANSIT_SELECTED_BG,
+    COLOR_TRANSIT_SELECTED_BORDER,
+    COLOR_TRANSIT_SELECTED_TEXT,
     COLOR_TRANSPARENT,
     CORNER_RADIUS_CARD,
     CORNER_RADIUS_MD,
@@ -59,7 +65,9 @@ from constants import (
     ICON_SIZE_ACTION,
     LABEL_WIDTH_TRANSIT_LINE,
     PAD_MD,
+    PAD_NONE,
     PAD_SM,
+    PAD_TINY,
     PAD_XS,
     TRANSIT_REFRESH_INTERVAL_MS,
 )
@@ -129,6 +137,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.is_floating = is_floating
 
         self._transit_departures: list[TransitDeparture] = []
+        self._selected_dep_key: str | None = None
+        self._selected_departure: TransitDeparture | None = None
+        self._notified_stages: set[str] = set()
         self._weather_info: WeatherInfo | None = None
         self._is_fetching_transit = False
         self._note_debounce_timer: Any = None
@@ -423,6 +434,97 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
         self.transit_lead_lbl.pack(fill="x", padx=PAD_SM, pady=(0, PAD_SM))
 
+        # Hint label about double-clicking
+        self.transit_hint_lbl = ctk.CTkLabel(
+            tab,
+            text=tr("checkout_panel.transit_double_click_hint", "💡 Doppelklick auf eine Fahrt wählt diese aus und stellt die Wecker."),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_MUTED_LABEL,
+            anchor="w",
+            wraplength=CHECKOUT_HINT_WRAPLENGTH,
+            justify="left",
+        )
+        self.transit_hint_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+
+        # Container for selected transit card (positioned above refresh row)
+        self.selected_transit_container = ctk.CTkFrame(tab, fg_color=COLOR_TRANSPARENT)
+        self.selected_transit_container.pack(fill="x", padx=PAD_NONE, pady=PAD_NONE)
+
+        # Selected transit & multi-stage alarm card (initially unpacked)
+        self.selected_transit_card = ctk.CTkFrame(
+            self.selected_transit_container,
+            fg_color=COLOR_CHECKOUT_CARD_BG,
+            border_width=BORDER_WIDTH_TRANSIT_SELECTED,
+            border_color=COLOR_TRANSIT_SELECTED_BORDER,
+            corner_radius=CORNER_RADIUS_CARD,
+        )
+
+        sel_top_row = ctk.CTkFrame(self.selected_transit_card, fg_color=COLOR_TRANSPARENT)
+        sel_top_row.pack(fill="x", padx=PAD_SM, pady=(PAD_SM, PAD_XS))
+
+        self.selected_transit_title_lbl = ctk.CTkLabel(
+            sel_top_row,
+            text=f"🎯 {tr('checkout_panel.transit_selected_title', 'Gewählte Fahrt & Wecker')}",
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            text_color=COLOR_TRANSIT_SELECTED_TEXT,
+            anchor="w",
+        )
+        self.selected_transit_title_lbl.pack(side="left", fill="x", expand=True)
+
+        self.transit_unselect_btn = ctk.CTkButton(
+            sel_top_row,
+            text=tr("checkout_panel.transit_unselect_btn", "Abwählen"),
+            width=BTN_WIDTH_CHECKOUT_UNSELECT,
+            height=BTN_HEIGHT_CHECKOUT_TINY,
+            fg_color=COLOR_CANCEL_FG,
+            hover_color=COLOR_CANCEL_HOVER,
+            command=self._clear_selected_departure,
+        )
+        self.transit_unselect_btn.pack(side="right")
+
+        self.selected_transit_desc_lbl = ctk.CTkLabel(
+            self.selected_transit_card,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            anchor="w",
+        )
+        self.selected_transit_desc_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+
+        milestones_box = ctk.CTkFrame(self.selected_transit_card, fg_color=COLOR_TRANSPARENT)
+        milestones_box.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+
+        self.stage_pack_lbl = ctk.CTkLabel(
+            milestones_box,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            anchor="w",
+        )
+        self.stage_pack_lbl.pack(fill="x", pady=PAD_TINY)
+
+        self.stage_logout_lbl = ctk.CTkLabel(
+            milestones_box,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            anchor="w",
+        )
+        self.stage_logout_lbl.pack(fill="x", pady=PAD_TINY)
+
+        self.stage_walk_lbl = ctk.CTkLabel(
+            milestones_box,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            anchor="w",
+        )
+        self.stage_walk_lbl.pack(fill="x", pady=PAD_TINY)
+
+        self.stage_dep_lbl = ctk.CTkLabel(
+            milestones_box,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            anchor="w",
+        )
+        self.stage_dep_lbl.pack(fill="x", pady=PAD_TINY)
+
         # Refresh row
         refresh_row = ctk.CTkFrame(tab, fg_color=COLOR_TRANSPARENT)
         refresh_row.pack(fill="x", padx=PAD_XS, pady=PAD_XS)
@@ -472,10 +574,117 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._transit_departures = deps
         now_str = datetime.now().strftime("%H:%M")
         self.transit_status_lbl.configure(text=f"Stand: {now_str} Uhr")
+
+        if self._selected_dep_key:
+            matched = next(
+                (
+                    d
+                    for d in deps
+                    if f"{d.line}_{d.planned_time_str}_{d.destination}" == self._selected_dep_key
+                ),
+                None,
+            )
+            if matched:
+                self._selected_departure = matched
+
+        self._update_selected_card()
         self._render_departures()
         self._check_commute_alarms()
 
+    def _bind_double_click_recursive(self, widget: Any, callback: Callable[[], None]) -> None:
+        """Bind double-click event to widget and all child elements."""
+        def _on_dbl(_event: Any = None) -> None:
+            callback()
+
+        try:
+            widget.bind("<Double-Button-1>", _on_dbl, add="+")
+        except Exception:
+            pass
+        for child in widget.winfo_children():
+            self._bind_double_click_recursive(child, callback)
+
+    def _on_departure_double_clicked(self, dep: TransitDeparture) -> None:
+        """Toggle selection of a transit departure for commute alarms and countdowns."""
+        dep_key = f"{dep.line}_{dep.planned_time_str}_{dep.destination}"
+        if self._selected_dep_key == dep_key:
+            self._clear_selected_departure()
+            return
+
+        self._selected_dep_key = dep_key
+        self._selected_departure = dep
+        self._notified_stages.clear()
+        self._update_selected_card()
+        self._render_departures()
+        self._check_commute_alarms()
+
+    def _clear_selected_departure(self) -> None:
+        """Clear active departure selection and hide detail card."""
+        self._selected_dep_key = None
+        self._selected_departure = None
+        self._notified_stages.clear()
+        if hasattr(self, "selected_transit_card"):
+            self.selected_transit_card.pack_forget()
+        self._render_departures()
+
+    def _update_selected_card(self) -> None:
+        """Update information and milestones on the selected transit card."""
+        if not self._selected_departure or not hasattr(self, "selected_transit_card"):
+            if hasattr(self, "selected_transit_card"):
+                self.selected_transit_card.pack_forget()
+            return
+
+        dep = self._selected_departure
+        info = DingTransitService.calculate_leave_info(
+            dep,
+            walk_min=self.settings.walk_time_minutes,
+            logout_min=self.settings.logout_time_minutes,
+            pack_min=self.settings.pack_time_minutes,
+            buffer_min=self.settings.buffer_time_minutes,
+        )
+
+        desc_text = tr(
+            "checkout_panel.transit_selected_desc",
+            "Linie {line} nach {dest} um {time} Uhr",
+        ).format(
+            line=dep.line,
+            dest=dep.destination,
+            time=dep.real_time_str,
+        )
+        self.selected_transit_desc_lbl.configure(text=desc_text)
+
+        pack_diff = info.get("minutes_until_pack", 0)
+        pack_status = f"(in {pack_diff} Min.)" if pack_diff > 0 else "(Jetzt!)"
+        self.stage_pack_lbl.configure(
+            text=f"🎒 {tr('checkout_panel.transit_stage_pack', '1. Garderobe & Packen')}: {info.get('pack_time_str')} Uhr {pack_status}"
+        )
+
+        logout_diff = info.get("minutes_until_logout", 0)
+        logout_status = f"(in {logout_diff} Min.)" if logout_diff > 0 else "(Jetzt!)"
+        self.stage_logout_lbl.configure(
+            text=f"💻 {tr('checkout_panel.transit_stage_logout', '2. PC abmelden & ausschalten')}: {info.get('logout_time_str')} Uhr {logout_status}"
+        )
+
+        walk_diff = info.get("minutes_until_walk", 0)
+        walk_status = f"(in {walk_diff} Min.)" if walk_diff > 0 else "(Jetzt!)"
+        self.stage_walk_lbl.configure(
+            text=f"🚶 {tr('checkout_panel.transit_stage_walk', '3. Aufbrechen & Losgehen')}: {info.get('walk_time_str')} Uhr {walk_status}"
+        )
+
+        dep_diff = info.get("minutes_until_dep", 0)
+        dep_status = f"(in {dep_diff} Min.)" if dep_diff > 0 else "(Abfahrt!)"
+        self.stage_dep_lbl.configure(
+            text=f"🚏 Abfahrt: {dep.real_time_str} Uhr {dep_status}"
+        )
+
+        self.selected_transit_card.pack(
+            fill="x",
+            padx=PAD_XS,
+            pady=(PAD_NONE, PAD_XS),
+        )
+
     def _render_departures(self) -> None:
+        from ui.widgets.ctk_tooltip import CTkTooltip
+
         for widget in self.transit_scroll.winfo_children():
             widget.destroy()
 
@@ -490,7 +699,20 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             return
 
         for dep in self._transit_departures[:12]:
-            row = ctk.CTkFrame(self.transit_scroll, fg_color=COLOR_CHECKOUT_CARD_BG, corner_radius=CORNER_RADIUS_SM)
+            dep_key = f"{dep.line}_{dep.planned_time_str}_{dep.destination}"
+            is_selected = (self._selected_dep_key == dep_key)
+
+            row_bg = COLOR_TRANSIT_SELECTED_BG if is_selected else COLOR_CHECKOUT_CARD_BG
+            row_bw = BORDER_WIDTH_TRANSIT_SELECTED if is_selected else 0
+            row_bc = COLOR_TRANSIT_SELECTED_BORDER if is_selected else COLOR_CHECKOUT_BORDER
+
+            row = ctk.CTkFrame(
+                self.transit_scroll,
+                fg_color=row_bg,
+                border_width=row_bw,
+                border_color=row_bc,
+                corner_radius=CORNER_RADIUS_SM,
+            )
             row.pack(fill="x", padx=PAD_XS, pady=PAD_XS)
 
             # Line badge
@@ -508,9 +730,13 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             info_box = ctk.CTkFrame(row, fg_color=COLOR_TRANSPARENT)
             info_box.pack(side="left", fill="x", expand=True, padx=PAD_XS)
 
+            dest_text = dep.destination
+            if is_selected:
+                dest_text = f"{dest_text}  {tr('checkout_panel.transit_selected_badge', '🎯 Gewählt')}"
+
             dest_lbl = ctk.CTkLabel(
                 info_box,
-                text=dep.destination,
+                text=dest_text,
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
                 anchor="w",
             )
@@ -549,9 +775,82 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             )
             cd_lbl.pack(side="right", padx=(PAD_XS, PAD_SM))
 
+            CTkTooltip(row, tr("checkout_panel.transit_row_tooltip", "Doppelklick zum Auswählen dieser Fahrt für Wecker"))
+            self._bind_double_click_recursive(
+                row,
+                lambda d=dep: self._on_departure_double_clicked(d),
+            )
+
     def _check_commute_alarms(self) -> None:
         """Check if any departure has reached leave time and trigger toast alarm."""
-        if not self.settings.alarm_enabled or not self._transit_departures:
+        if not self.settings.alarm_enabled:
+            return
+
+        from ui.widgets.toast_notification import ToastNotification
+
+        # If a specific departure was selected by the user:
+        if self._selected_departure:
+            self._update_selected_card()
+            dep = self._selected_departure
+            info = DingTransitService.calculate_leave_info(
+                dep,
+                walk_min=self.settings.walk_time_minutes,
+                logout_min=self.settings.logout_time_minutes,
+                pack_min=self.settings.pack_time_minutes,
+                buffer_min=self.settings.buffer_time_minutes,
+            )
+
+            # Stage 1: Pack alarm
+            if info.get("minutes_until_pack", 999) <= 0 and "pack" not in self._notified_stages:
+                self._notified_stages.add("pack")
+                total_rem = (
+                    self.settings.pack_time_minutes
+                    + self.settings.logout_time_minutes
+                    + self.settings.walk_time_minutes
+                )
+                title = tr("checkout_panel.transit_toast_pack_title", "🎒 Zeit zum Packen!")
+                msg = tr(
+                    "checkout_panel.transit_toast_pack_msg",
+                    "In {minutes} Min. fährt Linie {line} nach {dest}. Bitte Sachen zusammenpacken.",
+                ).format(
+                    minutes=total_rem,
+                    line=dep.line,
+                    dest=dep.destination,
+                )
+                ToastNotification(self.winfo_toplevel(), title=title, message=msg)
+
+            # Stage 2: Logout alarm
+            if info.get("minutes_until_logout", 999) <= 0 and "logout" not in self._notified_stages:
+                self._notified_stages.add("logout")
+                rem = self.settings.logout_time_minutes + self.settings.walk_time_minutes
+                title = tr("checkout_panel.transit_toast_logout_title", "💻 Zeit zum Abmelden!")
+                msg = tr(
+                    "checkout_panel.transit_toast_logout_msg",
+                    "In {minutes} Min. fährt Linie {line} nach {dest}. Bitte PC herunterfahren.",
+                ).format(
+                    minutes=rem,
+                    line=dep.line,
+                    dest=dep.destination,
+                )
+                ToastNotification(self.winfo_toplevel(), title=title, message=msg)
+
+            # Stage 3: Walk alarm
+            if info.get("minutes_until_walk", 999) <= 0 and "walk" not in self._notified_stages:
+                self._notified_stages.add("walk")
+                title = tr("checkout_panel.transit_toast_walk_title", "🚶 Zeit zum Aufbrechen!")
+                msg = tr(
+                    "checkout_panel.transit_toast_walk_msg",
+                    "Jetzt losgehen! Linie {line} nach {dest} fährt um {dep_time} Uhr.",
+                ).format(
+                    line=dep.line,
+                    dest=dep.destination,
+                    dep_time=dep.real_time_str,
+                )
+                ToastNotification(self.winfo_toplevel(), title=title, message=msg)
+            return
+
+        # Fallback: Generic alarm for any departure if none explicitly selected
+        if not self._transit_departures:
             return
 
         for dep in self._transit_departures:
@@ -563,8 +862,6 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 buffer_min=self.settings.buffer_time_minutes,
             )
             if info.get("is_alarm_due"):
-                from ui.widgets.toast_notification import ToastNotification
-
                 title = tr("checkout_panel.transit_alarm_toast_title", "Zeit zum Aufbruch!")
                 msg = tr(
                     "checkout_panel.transit_alarm_toast_msg",

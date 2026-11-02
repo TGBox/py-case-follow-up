@@ -2171,7 +2171,22 @@
     "weather_condition": "Bedingung",
     "weather_rain": "Regenrisiko",
     "weather_umbrella_yes": "🌧 Regenschirm empfohlen!",
-    "weather_umbrella_no": "Kein Regen gemeldet."
+    "weather_umbrella_no": "Kein Regen gemeldet.",
+    "transit_selected_title": "Gewählte Fahrt & Wecker",
+    "transit_selected_desc": "Linie {line} nach {dest} um {time} Uhr",
+    "transit_unselect_btn": "Abwählen",
+    "transit_double_click_hint": "💡 Doppelklick auf eine Fahrt wählt diese aus und stellt die Wecker.",
+    "transit_row_tooltip": "Doppelklick zum Auswählen dieser Fahrt für Wecker",
+    "transit_stage_pack": "1. Garderobe & Packen",
+    "transit_stage_logout": "2. PC abmelden & ausschalten",
+    "transit_stage_walk": "3. Aufbrechen & Losgehen",
+    "transit_toast_pack_title": "🎒 Zeit zum Packen!",
+    "transit_toast_pack_msg": "In {minutes} Min. fährt Linie {line} nach {dest}. Bitte Sachen zusammenpacken.",
+    "transit_toast_logout_title": "💻 Zeit zum Abmelden!",
+    "transit_toast_logout_msg": "In {minutes} Min. fährt Linie {line} nach {dest}. Bitte PC herunterfahren.",
+    "transit_toast_walk_title": "🚶 Zeit zum Aufbrechen!",
+    "transit_toast_walk_msg": "Jetzt losgehen! Linie {line} nach {dest} fährt um {dep_time} Uhr.",
+    "transit_selected_badge": "🎯 Gewählt"
   },
   "settings_checkout": {
     "section_title": "Feierabend- & Checkout-Begleiter",

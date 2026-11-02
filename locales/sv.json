@@ -2171,7 +2171,22 @@
     "weather_condition": "Förhållande",
     "weather_rain": "Regnrisk",
     "weather_umbrella_yes": "🌧 Paraply rekommenderas!",
-    "weather_umbrella_no": "Inget regn väntas."
+    "weather_umbrella_no": "Inget regn väntas.",
+    "transit_selected_title": "Vald avgång och påminnelser",
+    "transit_selected_desc": "Linje {line} mot {dest} kl. {time}",
+    "transit_unselect_btn": "Avmarkera",
+    "transit_double_click_hint": "💡 Dubbelklicka på en avgång för att välja den och ställa in larm.",
+    "transit_row_tooltip": "Dubbelklicka för att välja denna avgång för påminnelser",
+    "transit_stage_pack": "1. Kläder & packa ihop",
+    "transit_stage_logout": "2. Logga ut & stäng av datorn",
+    "transit_stage_walk": "3. Gå iväg till hållplatsen",
+    "transit_toast_pack_title": "🎒 Dags att packa ihop!",
+    "transit_toast_pack_msg": "Linje {line} mot {dest} avgår om {minutes} min. Dags att göra sig redo.",
+    "transit_toast_logout_title": "💻 Dags att logga ut!",
+    "transit_toast_logout_msg": "Linje {line} mot {dest} avgår om {minutes} min. Vänligen logga ut och stäng av datorn.",
+    "transit_toast_walk_title": "🚶 Dags att gå!",
+    "transit_toast_walk_msg": "Gå nu! Linje {line} mot {dest} avgår kl. {dep_time}.",
+    "transit_selected_badge": "🎯 Vald"
   },
   "settings_checkout": {
     "section_title": "Avslutnings- & Avreseguide",

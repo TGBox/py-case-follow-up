@@ -663,9 +663,14 @@ def track_appearance_mode(widget: Any, apply: Callable[[str], Any]) -> None:
     does not manage. The callback is unregistered when the widget is destroyed
     so the tracker does not keep dead widgets alive.
     """
-    from customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker import (
-        AppearanceModeTracker,
-    )
+    tracker = getattr(ctk, "AppearanceModeTracker", None)
+    if tracker is None:
+        try:
+            from customtkinter.windows.widgets.appearance_mode.appearance_mode_tracker import (
+                AppearanceModeTracker as tracker,
+            )
+        except Exception:
+            return
 
     def _callback(mode_string: str) -> None:
         try:
@@ -675,11 +680,11 @@ def track_appearance_mode(widget: Any, apply: Callable[[str], Any]) -> None:
         except tk.TclError:
             pass
 
-    AppearanceModeTracker.add(_callback, widget)
+    tracker.add(_callback, widget)
 
     def _on_destroy(event: Any) -> None:
         if event.widget is widget:
-            AppearanceModeTracker.remove(_callback)
+            tracker.remove(_callback)
 
     widget.bind("<Destroy>", _on_destroy, add="+")
 

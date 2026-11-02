@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import os
 import sys
@@ -19,6 +20,7 @@ from constants import (
     APP_MIN_HEIGHT,
     APP_MIN_WIDTH,
     APP_WINDOW_TITLE,
+    BTN_WIDTH_CHECKOUT,
     BTN_WIDTH_FULLSCREEN,
     BTN_WIDTH_HELP,
     BTN_WIDTH_NEW_CASE,
@@ -50,6 +52,12 @@ from constants import (
     COMBO_WIDTH_MORE_ACTIONS,
     COMBO_WIDTH_STAMMDATEN,
     COMBO_WIDTH_VORLAGEN,
+    CHECKOUT_DEFAULT_UNIFORM_TIME,
+    CHECKOUT_DEFAULT_WIDTH,
+    CHECKOUT_FLOATING_DEFAULT_HEIGHT,
+    CHECKOUT_FLOATING_DEFAULT_WIDTH,
+    CHECKOUT_MODE_WEEKDAYS,
+    CHECKOUT_POLL_INTERVAL_MS,
     CORNER_RADIUS_CARD,
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
@@ -97,6 +105,7 @@ from constants import (
     PAD_MD,
     PAD_SM,
     PAD_SPLASH_TITLE,
+    PAD_XS,
     SPLASH_DIMENSIONS,
     THEME_DARK,
     THEME_LIGHT,
@@ -121,6 +130,7 @@ from constants import (
     HEADER_BREAKPOINT_COMPACT,
     MIN_WINDOW_VISIBLE_DIM,
     ICON_KEY_BELL,
+    ICON_KEY_CHECKOUT,
     ICON_KEY_FULLSCREEN,
     ICON_KEY_HELP,
     ICON_KEY_ON_CALL,
@@ -156,6 +166,7 @@ from ui.views.board_view import BoardView
 from ui.views.table_view import TableView
 
 from ui.widgets.toast_notification import ToastNotification
+from ui.widgets.checkout_panel import CheckoutFloatingWindow, CheckoutPanelWidget
 from ui.app_dialogs import DialogLaunchersMixin
 
 if TYPE_CHECKING:
@@ -264,8 +275,21 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.menu_frame: ctk.CTkFrame | None = None
         self.create_menu_bar()
 
+        self.checkout_panel: Any = None
+        self.checkout_floating_window: Any = None
+        self._is_checkout_visible: bool = False
+        self._auto_opened_today: str = ""
+
         self.container_frame = ctk.CTkFrame(self, fg_color="transparent")
         self.container_frame.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
+
+        self.docked_checkout_frame = ctk.CTkFrame(
+            self,
+            fg_color="transparent",
+            width=getattr(self.profile.checkout_settings, "panel_width", CHECKOUT_DEFAULT_WIDTH),
+        )
+
+        self.after(CHECKOUT_POLL_INTERVAL_MS, self._check_checkout_auto_open)
 
         # Views are built on first use (see _get_view); only the layout the
         # user actually starts in is created during startup.
@@ -636,6 +660,22 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             delay_ms=TOOLTIP_SHORT_DELAY_MS,
         )
 
+        # Feierabend- / Checkout-Begleiter Toggle Button
+        self.checkout_btn = ctk.CTkButton(
+            menu_frame,
+            text="",
+            image=get_icon(ICON_KEY_CHECKOUT, size=ICON_SIZE_HEADER),
+            command=self.toggle_checkout_panel,
+            width=BTN_WIDTH_CHECKOUT,
+            fg_color=COLOR_THEME_BTN,
+        )
+        self.checkout_btn.pack(side="right", padx=PAD_SM, pady=PAD_SM)
+        self.checkout_tooltip = CTkTooltip(
+            self.checkout_btn,
+            tr("checkout_panel.btn_tooltip_open", "Feierabend-Begleiter öffnen / schließen"),
+            delay_ms=TOOLTIP_SHORT_DELAY_MS,
+        )
+
         self.bell_btn = ctk.CTkButton(
             menu_frame,
             text="0",
@@ -734,6 +774,157 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self._on_vorlagen_selected(choice)
         elif choice in get_localized_menu_options_datenaustausch():
             self._on_datenaustausch_selected(choice)
+
+
+    # -------------------------------------------------------------------------
+    # Checkout & Departure Companion Methods
+    # -------------------------------------------------------------------------
+    def _persist_profile_settings(self) -> None:
+        self.storage_service.save_profile(self.profile)
+
+    def toggle_checkout_panel(self) -> None:
+        """Toggle the visibility of the checkout & departure companion panel."""
+        if self._is_checkout_visible:
+            self.hide_checkout_panel()
+        else:
+            self.show_checkout_panel()
+
+    def show_checkout_panel(self) -> None:
+        """Show the checkout companion, either docked or in its floating window."""
+        self._is_checkout_visible = True
+        self.profile.checkout_settings.enabled = True
+
+        if self.profile.checkout_settings.is_docked:
+            if self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
+                self.checkout_floating_window.withdraw()
+
+            if not hasattr(self, "docked_checkout_frame") or not self.docked_checkout_frame.winfo_exists():
+                self.docked_checkout_frame = ctk.CTkFrame(
+                    self,
+                    fg_color="transparent",
+                    width=self.profile.checkout_settings.panel_width,
+                )
+            self.container_frame.pack_forget()
+            self.docked_checkout_frame.pack(side="right", fill="y", padx=(PAD_XS, PAD_CONTAINER), pady=PAD_CONTAINER)
+            self.container_frame.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
+
+            if (
+                self.checkout_panel is None
+                or not self.checkout_panel.winfo_exists()
+                or self.checkout_panel.master != self.docked_checkout_frame
+            ):
+                if self.checkout_panel and self.checkout_panel.winfo_exists():
+                    self.checkout_panel.destroy()
+                self.checkout_panel = CheckoutPanelWidget(
+                    self.docked_checkout_frame,
+                    profile=self.profile,
+                    on_dock_toggle=self.toggle_checkout_docking,
+                    on_close=self.hide_checkout_panel,
+                    cases_provider=lambda: self.cases,
+                    on_persist_callback=self._persist_profile_settings,
+                    is_floating=False,
+                )
+                self.checkout_panel.pack(fill="both", expand=True)
+            else:
+                self.checkout_panel.set_floating_state(False)
+        else:
+            if hasattr(self, "docked_checkout_frame") and self.docked_checkout_frame.winfo_exists():
+                self.docked_checkout_frame.pack_forget()
+
+            if self.checkout_floating_window is None or not self.checkout_floating_window.winfo_exists():
+                self.checkout_floating_window = CheckoutFloatingWindow(
+                    master=self,
+                    on_dock_callback=self.dock_checkout_panel,
+                    on_close_callback=self.hide_checkout_panel,
+                )
+                geo = self.profile.checkout_settings.floating_geometry
+                if geo:
+                    try:
+                        self.checkout_floating_window.geometry(geo)
+                    except Exception:
+                        pass
+                else:
+                    self.checkout_floating_window.geometry(
+                        f"{CHECKOUT_FLOATING_DEFAULT_WIDTH}x{CHECKOUT_FLOATING_DEFAULT_HEIGHT}"
+                    )
+                self.checkout_floating_window.bind("<Configure>", self._on_checkout_floating_configure, add="+")
+
+            self.checkout_floating_window.deiconify()
+            self.checkout_floating_window.lift()
+
+            if (
+                self.checkout_panel is None
+                or not self.checkout_panel.winfo_exists()
+                or self.checkout_panel.master != self.checkout_floating_window
+            ):
+                if self.checkout_panel and self.checkout_panel.winfo_exists():
+                    self.checkout_panel.destroy()
+                self.checkout_panel = CheckoutPanelWidget(
+                    self.checkout_floating_window,
+                    profile=self.profile,
+                    on_dock_toggle=self.toggle_checkout_docking,
+                    on_close=self.hide_checkout_panel,
+                    cases_provider=lambda: self.cases,
+                    on_persist_callback=self._persist_profile_settings,
+                    is_floating=True,
+                )
+                self.checkout_panel.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
+            else:
+                self.checkout_panel.set_floating_state(True)
+
+    def hide_checkout_panel(self) -> None:
+        """Hide the checkout panel (both docked and floating)."""
+        self._is_checkout_visible = False
+        if hasattr(self, "docked_checkout_frame") and self.docked_checkout_frame.winfo_exists():
+            self.docked_checkout_frame.pack_forget()
+        if self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
+            self.checkout_floating_window.withdraw()
+
+    def toggle_checkout_docking(self) -> None:
+        """Toggle between docked mode and floating mode."""
+        self.profile.checkout_settings.is_docked = not self.profile.checkout_settings.is_docked
+        self._persist_profile_settings()
+        self.show_checkout_panel()
+
+    def dock_checkout_panel(self) -> None:
+        """Dock the panel back into the main application."""
+        self.profile.checkout_settings.is_docked = True
+        self._persist_profile_settings()
+        self.show_checkout_panel()
+
+    def _on_checkout_floating_configure(self, event: Any = None) -> None:
+        if self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
+            if not self.profile.checkout_settings.is_docked:
+                self.profile.checkout_settings.floating_geometry = self.checkout_floating_window.geometry()
+
+    def _check_checkout_auto_open(self) -> None:
+        """Periodic check for auto-opening the checkout companion at end of day."""
+        settings = getattr(self.profile, "checkout_settings", None)
+        if settings and settings.enabled and settings.auto_open:
+            now = datetime.now()
+            today_str = now.date().isoformat()
+            weekday_idx = now.weekday()
+            if weekday_idx in (0, 1, 2, 3, 4):
+                weekday_keys = ("monday", "tuesday", "wednesday", "thursday", "friday")
+                weekday_name = weekday_keys[weekday_idx]
+                if settings.auto_open_mode == CHECKOUT_MODE_WEEKDAYS:
+                    target_time = settings.auto_open_weekday_times.get(weekday_name, CHECKOUT_DEFAULT_UNIFORM_TIME)
+                else:
+                    target_time = settings.auto_open_uniform_time
+
+                current_time = now.strftime("%H:%M")
+                if current_time >= target_time and getattr(self, "_auto_opened_today", "") != today_str:
+                    self._auto_opened_today = today_str
+                    if not getattr(self, "_is_checkout_visible", False):
+                        self.show_checkout_panel()
+                        from ui.widgets.toast_notification import ToastNotification
+                        ToastNotification(
+                            self,
+                            title=tr("checkout_panel.title", "Feierabend- & Checkout-Begleiter"),
+                            message=tr("settings_checkout.auto_open", "Feierabend-Begleiter wurde automatisch eingeblendet."),
+                        )
+
+        self.after(CHECKOUT_POLL_INTERVAL_MS, self._check_checkout_auto_open)
 
     def toggle_fullscreen(self, event=None):
         entering = not getattr(self, "_is_fullscreen", False)

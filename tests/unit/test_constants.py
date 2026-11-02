@@ -255,7 +255,8 @@ class DesignTokenScanner(ast.NodeVisitor):
         self.violations: list[TokenViolation] = []
 
     def _flag(self, node: ast.AST, call: str, argument: str, value) -> None:
-        self.violations.append(TokenViolation(self.file, node.lineno, call, argument, repr(value)))
+        lineno = getattr(node, "lineno", 0)
+        self.violations.append(TokenViolation(self.file, lineno, call, argument, repr(value)))
 
     @staticmethod
     def _call_name(node: ast.Call) -> str:
@@ -404,6 +405,7 @@ class TestConstantsModuleIntegrity:
 #: tuple. Both must stay the same length or that mapping goes silently wrong.
 INDEX_ALIGNED_CHOICES = [
     ("src/constants.py", "COBRA_CONFLICT_MODE_CHOICES", "src/constants.py", "COBRA_CONFLICT_MODE_KEYS"),
+    ("src/constants.py", "CHECKOUT_AUTO_OPEN_MODE_CHOICES", "src/constants.py", "CHECKOUT_AUTO_OPEN_MODE_KEYS"),
     ("src/ui/dialogs/profile_settings_ui_tab.py", "POPUP_TARGET_CHOICES", "src/constants.py", "POPUP_DISPLAY_TARGETS"),
     ("src/ui/dialogs/profile_settings_ai_tab.py", "AI_PROVIDER_CHOICES", "src/ui/dialogs/profile_settings_ai_tab.py", "AI_PROVIDER_KEYS"),
     ("src/ui/dialogs/tag_management_dialog.py", "TAG_TAB_CHOICES", "src/ui/dialogs/tag_management_dialog.py", "TAG_TAB_KEYS"),

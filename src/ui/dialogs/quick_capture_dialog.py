@@ -86,6 +86,8 @@ class QuickCaptureDialog(BaseDialog):
         ), "quick_capture.text_label", "Was ist zu tun?").pack(fill="x", padx=PAD_LG, pady=(PAD_MD, PAD_XS))
         self.text_box = ctk.CTkTextbox(main, height=QUICK_CAPTURE_TEXTBOX_HEIGHT)
         self.text_box.pack(fill="both", expand=True, padx=PAD_LG, pady=(PAD_NONE, PAD_SM))
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.text_box)
 
         self.register_i18n(ctk.CTkLabel(
             main, text=tr("quick_capture.person_label", "Von / mit wem (optional):"),

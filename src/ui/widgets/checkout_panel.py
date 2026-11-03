@@ -917,6 +917,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.note_textbox.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_SM))
         self.note_textbox.insert("1.0", self.settings.daily_note_text)
         self.note_textbox.bind("<KeyRelease>", self._on_note_key_release)
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.note_textbox)
 
         # Bottom row with Keep-overnight checkbox
         bottom_box = ctk.CTkFrame(tab, fg_color=COLOR_TRANSPARENT)

@@ -205,3 +205,98 @@ def test_checkout_task_service_keep_overnight():
     changed = CheckoutTaskService.check_and_perform_midnight_reset(settings, "2026-11-02")
     assert changed
     assert settings.daily_note_text == "Wichtige dauerhafte Info"
+
+
+# --- Stop search and live check -------------------------------------------
+
+_ONE_DEPARTURE = {
+    "stopName": "Neu-Ulm, Edisonallee",
+    "countdown": "4",
+    "dateTime": {"year": 2026, "month": 11, "day": 3, "hour": 16, "minute": 40},
+    "servingLine": {"number": "5", "direction": "Ulm Hbf", "name": "Bus"},
+}
+
+
+def test_stop_finder_parses_list_single_point_and_rapid_json():
+    as_list = {
+        "points": [
+            {"anyType": "stop", "name": "Neu-Ulm, Edisonallee", "object": "Edisonallee", "mainLoc": "Neu-Ulm", "ref": {"id": "9001234"}},
+            {"anyType": "stop", "name": "Neu-Ulm, Edisonallee", "object": "Edisonallee", "mainLoc": "Neu-Ulm"},  # duplicate
+            {"anyType": "street", "name": "Neu-Ulm, Edisonallee", "object": "Edisonallee"},  # not a stop
+            {"anyType": "stop", "name": "Ulm, Ehinger Tor"},  # no object: split the full name
+        ]
+    }
+    stops = DingTransitService._parse_stop_points(as_list)
+    assert [(s.name, s.place, s.stop_id) for s in stops] == [("Edisonallee", "Neu-Ulm", "9001234"), ("Ehinger Tor", "Ulm", "")]
+
+    single = {"points": {"point": {"anyType": "stop", "object": "Edisonallee", "ref": {"place": "Neu-Ulm"}}}}
+    assert [(s.name, s.place) for s in DingTransitService._parse_stop_points(single)] == [("Edisonallee", "Neu-Ulm")]
+
+    rapid = {"locations": [{"type": "stop", "disassembledName": "Edisonallee", "parent": {"name": "Neu-Ulm"}, "id": "de:09775"}]}
+    assert [(s.name, s.place, s.stop_id) for s in DingTransitService._parse_stop_points(rapid)] == [("Edisonallee", "Neu-Ulm", "de:09775")]
+
+    assert DingTransitService._parse_stop_points({"points": None}) == []
+    assert DingTransitService._parse_stop_points(None) == []
+
+
+def test_find_stops_reports_unreachable_service_as_none(monkeypatch):
+    def boom(*_a, **_k):
+        raise OSError("offline")
+
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(boom))
+    assert DingTransitService.find_stops("Edison") is None
+    assert DingTransitService.find_stops("   ") == []
+
+    monkeypatch.setattr(
+        DingTransitService,
+        "_request_json",
+        staticmethod(lambda _e, params: {"stopFinder": {"points": [{"anyType": "stop", "object": params["name_sf"], "mainLoc": "Neu-Ulm"}]}}),
+    )
+    assert [s.name for s in DingTransitService.find_stops("Edisonallee") or []] == ["Edisonallee"]
+
+
+def test_check_stop_distinguishes_all_outcomes(monkeypatch):
+    def respond(payload):
+        monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(lambda *_a: payload))
+
+    respond({"departureList": [_ONE_DEPARTURE, _ONE_DEPARTURE]})
+    ok = DingTransitService.check_stop("Edisonallee", "Neu-Ulm")
+    assert (ok.status, ok.departure_count, ok.resolved_name) == ("ok", 2, "Neu-Ulm, Edisonallee")
+
+    respond({"dm": {"points": {"point": {"anyType": "stop", "name": "Neu-Ulm, Edisonallee"}}}, "departureList": None})
+    quiet = DingTransitService.check_stop("Edisonallee", "Neu-Ulm")
+    assert (quiet.status, quiet.resolved_name) == ("no_departures", "Edisonallee")
+
+    respond({"dm": {"points": [
+        {"anyType": "stop", "object": "Bahnhof", "mainLoc": "Ulm"},
+        {"anyType": "stop", "object": "Bahnhof", "mainLoc": "Neu-Ulm"},
+    ]}})
+    many = DingTransitService.check_stop("Bahnhof", "")
+    assert many.status == "ambiguous" and [c.place for c in many.candidates] == ["Ulm", "Neu-Ulm"]
+
+    respond({"dm": {"points": None}})
+    assert DingTransitService.check_stop("Edisnalle", "Neu-Ulm").status == "not_found"
+
+    def boom(*_a, **_k):
+        raise TimeoutError
+
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(boom))
+    assert DingTransitService.check_stop("Edisonallee", "Neu-Ulm").status == "error"
+
+
+def test_departure_cache_is_per_stop(monkeypatch):
+    calls = []
+
+    def fake(_endpoint, params):
+        calls.append(params["name_dm"])
+        return {"departureList": [dict(_ONE_DEPARTURE, stopName=params["name_dm"])]}
+
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(fake))
+    monkeypatch.setattr(DingTransitService, "_cached_departures", [])
+    monkeypatch.setattr(DingTransitService, "_last_fetch_time", None)
+    monkeypatch.setattr(DingTransitService, "_cached_stop_key", None)
+
+    assert DingTransitService.fetch_departures("Ehinger Tor", "Ulm")[0].stop_name == "Ehinger Tor"
+    assert DingTransitService.fetch_departures("Ehinger Tor", "Ulm")[0].stop_name == "Ehinger Tor"  # cached
+    assert DingTransitService.fetch_departures("Edisonallee", "Neu-Ulm")[0].stop_name == "Edisonallee"
+    assert calls == ["Ehinger Tor", "Edisonallee"]

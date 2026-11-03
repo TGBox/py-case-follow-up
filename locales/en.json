@@ -1518,8 +1518,10 @@
     "page_wiki_desc": "Connection to the BookStack wiki.",
     "page_ai": "AI and text analysis",
     "page_ai_desc": "AI provider, local models and base rules for replies.",
-    "page_data": "Data and backup",
-    "page_data_desc": "Storage location, automatic backups and export."
+    "page_data": "Storage location",
+    "page_data_desc": "Where the app keeps its cases, customers and other files.",
+    "page_backup": "Backup",
+    "page_backup_desc": "Automatic retention, full backup and restore."
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -2249,6 +2251,20 @@
     "lead_walk": "Walk",
     "lead_buffer": "Buffer",
     "lead_total": "= {minutes} min before departure",
-    "open_settings": "End-of-day settings"
+    "open_settings": "End-of-day settings",
+    "stop_placeholder": "Edisonallee",
+    "btn_check_stop": "Check departures",
+    "stop_hint": "Type the stop name and pick a suggestion.",
+    "stop_searching": "Searching stops …",
+    "stop_pick_hint": "Pick your stop from the list.",
+    "stop_no_suggestions": "No matching stop found. Check the spelling.",
+    "stop_enter_name": "Enter the stop name first.",
+    "stop_check_running": "Checking departures …",
+    "stop_check_ok": "Found: {stop}. Showing the next {count} departures.",
+    "stop_check_no_departures": "Found stop {stop}, but nothing is leaving right now.",
+    "stop_check_ambiguous": "Several stops match. Pick one from the list.",
+    "stop_check_not_found": "No stop found with this name. Check the spelling and town.",
+    "stop_check_error": "Timetable service not reachable. Check your internet connection.",
+    "remember_visibility": "Reopen after a restart if the panel was open last time"
   }
 }

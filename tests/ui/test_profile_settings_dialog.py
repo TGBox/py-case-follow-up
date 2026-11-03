@@ -137,11 +137,13 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
     # Sidebar with one page per topic; old tab names stay as aliases onto the page bodies
     assert d._page_order == [
         "profile", "appearance", "notifications", "push", "checkout",
-        "scoring", "shortcuts", "team", "wiki", "ai", "data",
+        "scoring", "shortcuts", "team", "wiki", "ai", "data", "backup",
     ]
     assert d.current_page == "profile"
     assert d.tab_user is d._page_bodies["profile"] and d.tab_ui is d._page_bodies["appearance"]
-    assert d.tab_backup is d.tab_paths and d.tab_wiki is d._page_bodies["wiki"]
+    assert d.tab_backup is d._page_bodies["backup"] and d.tab_wiki is d._page_bodies["wiki"]
+    # Backup has its own page instead of sitting below the storage paths
+    assert d.retention_daily_entry.master.master.master is d._page_bodies["backup"]  # entry -> row -> card -> page
 
     # Profile data and appearance live on separate pages
     assert d.user_name_entry.master is d._page_bodies["profile"]
@@ -235,7 +237,7 @@ def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path)
         assert d.current_page == "scoring"
         d._step_page(-2)
         assert d.current_page == "push"
-        d.show_page("data")
+        d.show_page("backup")
         d._step_page(1)  # wraps around
         assert d.current_page == "profile"
 
@@ -299,8 +301,9 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
     cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes = 3, 2, 6, 2
     d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
     try:
-        # Schedule hidden while the panel is off, commute settings stay reachable
+        # Schedule hidden while the panel is off; reopen-on-start and commute stay reachable
         assert not d.checkout_schedule_frame.winfo_manager()
+        assert d.checkout_remember_cb.winfo_manager() == "pack"
         assert d.checkout_transit_section.winfo_manager() == "pack"
         d.checkout_enable_var.set(True)
         d._update_checkout_enabled_visibility()
@@ -325,9 +328,116 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
 
         d.checkout_buffer_entry.delete(0, "end")
         d.checkout_buffer_entry.insert(0, "4")
+        d.checkout_remember_var.set(True)
         assert d.save_ui_settings()
         assert (cs.enabled, cs.auto_open_mode) == (True, CHECKOUT_MODE_WEEKDAYS)
+        assert cs.remember_visibility is True
         assert (cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes) == (3, 2, 10, 4)
+    finally:
+        d.destroy()
+
+
+class _InlineThread:
+    """Runs a worker immediately instead of on a background thread."""
+
+    def __init__(self, target, daemon=None):
+        self._target = target
+
+    def start(self):
+        self._target()
+
+
+def _drain(widget):
+    for _ in range(3):
+        widget.update()
+
+
+def test_stop_search_suggests_fills_fields_and_reports_check_result(root, tmp_path, monkeypatch):
+    from services.ding_transit_service import DingTransitService, StopCheckResult, TransitStop
+    import ui.dialogs.profile_settings_ui_tab as ui_tab
+
+    monkeypatch.setattr(ui_tab.threading, "Thread", _InlineThread)
+    monkeypatch.setattr(
+        DingTransitService,
+        "find_stops",
+        classmethod(lambda cls, q, limit=6: [TransitStop("Edisonallee", "Neu-Ulm"), TransitStop("Edisonstraße", "Ulm")]),
+    )
+    checked = []
+
+    def fake_check(cls, name, place):
+        checked.append((name, place))
+        return StopCheckResult(status="ok", departure_count=7, resolved_name="Neu-Ulm, Edisonallee")
+
+    monkeypatch.setattr(DingTransitService, "check_stop", classmethod(fake_check))
+
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]), initial_page="checkout")
+    try:
+        d.checkout_stop_name_entry.delete(0, "end")
+        d.checkout_stop_name_entry.insert(0, "Edis")
+        d._start_stop_search()
+        _drain(d)
+        assert d.checkout_stop_suggestions.winfo_manager() == "grid"
+        assert [b.cget("text") for b in d._stop_suggestion_buttons] == ["Edisonallee, Neu-Ulm", "Edisonstraße, Ulm"]
+
+        d._stop_suggestion_buttons[0].invoke()
+        _drain(d)
+        assert (d.checkout_stop_name_entry.get(), d.checkout_stop_place_entry.get()) == ("Edisonallee", "Neu-Ulm")
+        assert not d.checkout_stop_suggestions.winfo_manager()
+        assert checked == [("Edisonallee", "Neu-Ulm")]
+        assert "Neu-Ulm, Edisonallee" in d.checkout_stop_status_lbl.cget("text")
+        assert "7" in d.checkout_stop_status_lbl.cget("text")
+
+        # Already checked: leaving the field does not ask again
+        d._schedule_stop_check()
+        d._run_pending_stop_check()
+        _drain(d)
+        assert len(checked) == 1
+    finally:
+        d.destroy()
+
+
+@pytest.mark.parametrize(
+    "result, expected",
+    [
+        ("not_found", "Keine Haltestelle"),
+        ("error", "nicht erreichbar"),
+        ("no_departures", "fährt dort nichts ab"),
+        ("ambiguous", "Mehrere Haltestellen"),
+    ],
+)
+def test_stop_check_explains_problems(root, tmp_path, monkeypatch, result, expected):
+    from services.ding_transit_service import DingTransitService, StopCheckResult, TransitStop
+    import ui.dialogs.profile_settings_ui_tab as ui_tab
+
+    monkeypatch.setattr(ui_tab.threading, "Thread", _InlineThread)
+    candidates = [TransitStop("Bahnhof", "Ulm"), TransitStop("Bahnhof", "Neu-Ulm")] if result == "ambiguous" else []
+    monkeypatch.setattr(
+        DingTransitService,
+        "check_stop",
+        classmethod(lambda cls, n, p: StopCheckResult(status=result, resolved_name="Bahnhof", candidates=candidates)),
+    )
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        d.on_check_stop()
+        _drain(d)
+        assert expected in d.checkout_stop_status_lbl.cget("text")
+        assert bool(d.checkout_stop_suggestions.winfo_manager()) == (result == "ambiguous")
+    finally:
+        d.destroy()
+
+
+def test_stop_search_ignores_stale_and_offline_results(root, tmp_path, monkeypatch):
+    from services.ding_transit_service import TransitStop
+
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        d._stop_request_id = 5
+        d._on_stop_suggestions(4, [TransitStop("Alt", "Ulm")])  # an older request answers late
+        assert not d.checkout_stop_suggestions.winfo_manager()
+        d._on_stop_suggestions(5, None)
+        assert "nicht erreichbar" in d.checkout_stop_status_lbl.cget("text")
+        d._on_stop_suggestions(5, [])
+        assert "Keine passende Haltestelle" in d.checkout_stop_status_lbl.cget("text")
     finally:
         d.destroy()
 

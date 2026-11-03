@@ -4,7 +4,6 @@ import os
 import sys
 import threading
 import time
-import ctypes
 from typing import TYPE_CHECKING, Any, cast
 import customtkinter as ctk
 
@@ -376,6 +375,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.update_idletasks()
         self._close_splash_window()
         self._reveal_window(theme_mode == THEME_DARK)
+        self._restore_checkout_panel()
 
     def _on_window_configure(self, event=None):
         try:
@@ -789,10 +789,25 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         else:
             self.show_checkout_panel()
 
+    def _restore_checkout_panel(self) -> None:
+        """Reopens the checkout companion on start if it was open last time and the user wants that."""
+        settings = getattr(self.profile, "checkout_settings", None)
+        if settings and settings.remember_visibility and settings.was_open:
+            self.show_checkout_panel()
+
+    def _remember_checkout_visibility(self, is_open: bool) -> None:
+        settings = self.profile.checkout_settings
+        if settings.was_open == is_open:
+            return
+        settings.was_open = is_open
+        if settings.remember_visibility:
+            self._persist_profile_settings()
+
     def show_checkout_panel(self) -> None:
         """Show the checkout companion, either docked or in its floating window."""
         self._is_checkout_visible = True
         self.profile.checkout_settings.enabled = True
+        self._remember_checkout_visibility(True)
 
         if self.profile.checkout_settings.is_docked:
             if self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
@@ -877,6 +892,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def hide_checkout_panel(self) -> None:
         """Hide the checkout panel (both docked and floating)."""
         self._is_checkout_visible = False
+        self._remember_checkout_visibility(False)
         if hasattr(self, "docked_checkout_frame") and self.docked_checkout_frame.winfo_exists():
             self.docked_checkout_frame.pack_forget()
         if self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
@@ -1481,42 +1497,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self.cockpit_view.on_select_case_from_list(case)
 
     def apply_windows_theme(self, dark: bool):
-        if sys.platform.startswith("win"):
-            try:
-                self.update_idletasks()
-                wid = self.winfo_id()
-                if not wid:
-                    return
-                # argtypes/restype must be declared: without them ctypes assumes
-                # c_int for both, so on 64-bit Windows GetParent's HWND is
-                # truncated to 32 bits and the handle handed to dwmapi is
-                # garbage. Declaring the real signatures keeps the pointer whole.
-                from ctypes import wintypes
+        from utils.ui_utils import set_windows_titlebar_dark
 
-                user32 = ctypes.windll.user32
-                dwmapi = ctypes.windll.dwmapi
-                user32.GetParent.argtypes = [wintypes.HWND]
-                user32.GetParent.restype = wintypes.HWND
-                dwmapi.DwmSetWindowAttribute.argtypes = [
-                    wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD
-                ]
-                dwmapi.DwmSetWindowAttribute.restype = ctypes.c_long
-
-                hwnd = user32.GetParent(wintypes.HWND(wid))
-                if not hwnd:
-                    hwnd = wintypes.HWND(wid)
-                if hwnd:
-                    DWMWA_USE_IMMERSIVE_DARK_MODE = 20
-                    DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19
-                    value = ctypes.c_int(1 if dark else 0)
-                    if dwmapi.DwmSetWindowAttribute(
-                        hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(value), ctypes.sizeof(value)
-                    ) != 0:
-                        dwmapi.DwmSetWindowAttribute(
-                            hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ctypes.byref(value), ctypes.sizeof(value)
-                        )
-            except Exception:
-                pass
+        set_windows_titlebar_dark(self, dark)
 
     def _on_initial_window_mapped(self, event: Any = None):
         if event and getattr(event, "widget", None) == self and not getattr(self, "_initial_map_done", False):

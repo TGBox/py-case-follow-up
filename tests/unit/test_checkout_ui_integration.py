@@ -170,3 +170,41 @@ def test_checkout_panel_settings_button_opens_settings_only_when_wired(root):
         finally:
             wired.destroy()
             plain.destroy()
+
+
+def test_remember_visibility_round_trips_through_profile():
+    profile = UserProfile()
+    assert (profile.checkout_settings.remember_visibility, profile.checkout_settings.was_open) == (False, False)
+    profile.checkout_settings.remember_visibility = True
+    profile.checkout_settings.was_open = True
+    restored = UserProfile.from_dict(profile.to_dict())
+    assert (restored.checkout_settings.remember_visibility, restored.checkout_settings.was_open) == (True, True)
+
+
+def test_app_reopens_panel_on_start_only_when_remembered_and_open():
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    def fake_app(remember: bool, was_open: bool):
+        profile = UserProfile()
+        profile.checkout_settings.remember_visibility = remember
+        profile.checkout_settings.was_open = was_open
+        app = SimpleNamespace(profile=profile, shown=[], persisted=[])
+        app.show_checkout_panel = lambda: app.shown.append(True)
+        app._persist_profile_settings = lambda: app.persisted.append(True)
+        return app
+
+    for remember, was_open, expected in [(True, True, [True]), (True, False, []), (False, True, [])]:
+        app = fake_app(remember, was_open)
+        SupportCockpitApp._restore_checkout_panel(app)  # type: ignore[arg-type]
+        assert app.shown == expected
+
+    # Opening/closing records the state and saves it only when remembering is on
+    app = fake_app(True, False)
+    SupportCockpitApp._remember_checkout_visibility(app, True)  # type: ignore[arg-type]
+    SupportCockpitApp._remember_checkout_visibility(app, True)  # type: ignore[arg-type]  # unchanged: no save
+    assert app.profile.checkout_settings.was_open is True and len(app.persisted) == 1
+    app = fake_app(False, True)
+    SupportCockpitApp._remember_checkout_visibility(app, False)  # type: ignore[arg-type]
+    assert app.profile.checkout_settings.was_open is False and app.persisted == []

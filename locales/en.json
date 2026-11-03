@@ -2265,6 +2265,9 @@
     "stop_check_ambiguous": "Several stops match. Pick one from the list.",
     "stop_check_not_found": "No stop found with this name. Check the spelling and town.",
     "stop_check_error": "Timetable service not reachable. Check your internet connection.",
-    "remember_visibility": "Reopen after a restart if the panel was open last time"
+    "remember_visibility": "Reopen after a restart if the panel was open last time",
+    "always_show": "Always show the panel",
+    "visibility_heading": "Display",
+    "schedule_heading": "At the end of the day"
   }
 }

@@ -791,7 +791,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def _restore_checkout_panel(self) -> None:
         """Reopens the checkout companion on start if it was open last time and the user wants that."""
         settings = getattr(self.profile, "checkout_settings", None)
-        if settings and settings.remember_visibility and settings.was_open:
+        if settings and (settings.always_show or (settings.remember_visibility and settings.was_open)):
+            self.show_checkout_panel()
+
+    def apply_checkout_settings(self) -> None:
+        """Brings an open panel in line with freshly saved settings (new profile object, always-show)."""
+        settings = self.profile.checkout_settings
+        if self.checkout_panel is not None and self.checkout_panel.winfo_exists():
+            self.checkout_panel.rebind_profile(self.profile)
+            self.checkout_panel.set_closable(not settings.always_show)
+        if settings.always_show and not self._is_checkout_visible:
             self.show_checkout_panel()
 
     def _remember_checkout_visibility(self, is_open: bool) -> None:
@@ -888,8 +897,16 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             else:
                 self.checkout_panel.set_floating_state(True)
 
+        if self.checkout_panel is not None:
+            self.checkout_panel.set_closable(not self.profile.checkout_settings.always_show)
+
     def hide_checkout_panel(self) -> None:
         """Hide the checkout panel (both docked and floating)."""
+        if self.profile.checkout_settings.always_show:
+            # Always-on panel: closing the floating window docks it instead of hiding it.
+            if not self.profile.checkout_settings.is_docked:
+                self.dock_checkout_panel()
+            return
         self._is_checkout_visible = False
         self._remember_checkout_visibility(False)
         if hasattr(self, "docked_checkout_frame") and self.docked_checkout_frame.winfo_exists():

@@ -329,9 +329,13 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
         d.checkout_buffer_entry.delete(0, "end")
         d.checkout_buffer_entry.insert(0, "4")
         d.checkout_remember_var.set(True)
+        assert d.checkout_remember_cb.cget("state") == "normal"
+        d.checkout_always_var.set(True)
+        d._update_checkout_remember_state()
+        assert d.checkout_remember_cb.cget("state") == "disabled"
         assert d.save_ui_settings()
         assert (cs.enabled, cs.auto_open_mode) == (True, CHECKOUT_MODE_WEEKDAYS)
-        assert cs.remember_visibility is True
+        assert (cs.remember_visibility, cs.always_show) == (True, True)
         assert (cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes) == (3, 2, 10, 4)
     finally:
         d.destroy()

@@ -215,10 +215,12 @@ def test_app_reopens_panel_on_start_only_when_remembered_and_open():
     app = fake_app(True, False)
     SupportCockpitApp._remember_checkout_visibility(app, True)  # type: ignore[arg-type]
     SupportCockpitApp._remember_checkout_visibility(app, True)  # type: ignore[arg-type]  # unchanged: no save
-    assert app.profile.checkout_settings.was_open is True and len(app.persisted) == 1
+    assert app.profile.checkout_settings.was_open
+    assert len(app.persisted) == 1
     app = fake_app(False, True)
     SupportCockpitApp._remember_checkout_visibility(app, False)  # type: ignore[arg-type]
-    assert app.profile.checkout_settings.was_open is False and app.persisted == []
+    assert not app.profile.checkout_settings.was_open
+    assert app.persisted == []
 
 
 def test_always_shown_panel_cannot_be_closed_and_floating_close_docks_it():
@@ -492,5 +494,5 @@ def test_docking_does_not_bring_back_a_hidden_main_window():
         deiconify=lambda: calls.append("deiconify"),
     )
     SupportCockpitApp.dock_checkout_panel(app)  # type: ignore[arg-type]
-    assert profile.checkout_settings.is_docked is True
+    assert profile.checkout_settings.is_docked
     assert calls == ["save", "show"]

@@ -1,7 +1,9 @@
 # Project: Multi-Language Translation & Localization (DE, EN, SV)
 
 ## Architecture
+
 SupportCockpit internationalization architecture:
+
 - **Central Translation Service**: `src/services/i18n_service.py` (`I18nService`, `tr(key, default, **kwargs)`, `LocalizedDict`).
 - **Locale Data**: `locales/de.json`, `locales/en.json`, `locales/sv.json`.
 - **Dynamic Language Switching**: `I18nService.set_language(lang)` triggers registered callback listeners. `SupportCockpitApp.on_language_changed(new_lang)` cascades updates to all views, widgets, and dialogs via `refresh_ui_labels()`.
@@ -9,8 +11,9 @@ SupportCockpit internationalization architecture:
 - **UI Framework**: CustomTkinter (`ctk`) desktop UI with views (`src/ui/views/`), widgets (`src/ui/widgets/`), dialogs (`src/ui/dialogs/`), and app root (`src/ui/app.py`).
 
 ## Feature Inventory
+
 | # | Feature | Description | Milestone | Source |
-|---|---------|-------------|-----------|--------|
+| --- | --------- | ------------- | ----------- | -------- |
 | 1 | Locale Key Parity | 100% mutual key parity across de.json, en.json, sv.json | M1 | ORIGINAL_REQUEST §R1 |
 | 2 | High-Quality EN/SV Translations | Accurate, natural English and Swedish translations without German placeholders | M1 | ORIGINAL_REQUEST §R1 |
 | 3 | Missing tr(...) Keys Extraction | All ~241 existing tr(...) keys added to all 3 locale files | M1 | Survey Finding |
@@ -28,9 +31,11 @@ SupportCockpit internationalization architecture:
 | 15 | Full E2E Verification & Hardening | Pass 100% E2E test suite + adversarial coverage hardening | M6 | Final Milestone |
 
 ## Milestones
-*(M4/M5 abgeschlossen am 2026-09-11. Restlücken siehe todo.txt: drei Widget-Texte sind f-Strings, die `tr()` nur einbetten, sowie zwei OptionMenu-Wertelisten - sie sind übersetzt, wechseln aber nicht live mit.)*
+
+## *(M4/M5 abgeschlossen am 2026-09-11. Restlücken siehe todo.txt: drei Widget-Texte sind f-Strings, die `tr()` nur einbetten, sowie zwei OptionMenu-Wertelisten - sie sind übersetzt, wechseln aber nicht live mit.)*
+
 | # | Name | Scope | Dependencies | Status |
-|---|------|-------|-------------|--------|
+| --- | ------ | ------- | ------------- | -------- |
 | E2E | E2E Testing Track | Test infra, parity checker, AST scanner, dynamic switch tests, workflow tests, publish TEST_READY.md | none | DONE |
 | M1 | Locale Parity & Synchronization | locales/de.json, locales/en.json, locales/sv.json full parity and natural translations | none | DONE |
 | M2 | System, Constants & Enums Localization | src/constants.py, src/enums.py, src/utils/datetime_utils.py, seed & snippet services | M1 | DONE |
@@ -40,7 +45,9 @@ SupportCockpit internationalization architecture:
 | M6 | Final Milestone & Hardening | Pass 100% E2E test suite (Tiers 1-4) and adversarial hardening (Tier 5) | E2E, M5 | PLANNED |
 
 ## Interface Contracts
+
 ### I18nService ↔ UI Components
+
 - `tr(key: str, default: str = "", **kwargs) -> str`: Returns translated text for `key` in active language. If missing, returns `default` with kwargs formatted.
 - `LocalizedDict`: Dict proxy dynamically resolving key translations based on current active language.
 - `I18nService.register_listener(callback: Callable[[str], None])`: Registers a callback invoked on language change.
@@ -48,6 +55,7 @@ SupportCockpit internationalization architecture:
 - `UIComponent.refresh_ui_labels()`: Refreshes all text/labels/options of the component and child widgets.
 
 ### BaseDialog ↔ I18nService
+
 - `src/ui/dialogs/base_dialog.py` holds the shared window setup for all dialogs (title, geometry, centering, modality, Escape, Enter, unsaved-changes guard).
 - `BaseDialog.register_i18n(widget, key, default, attr="text", **fmt) -> widget`: Records which translation key produced a widget's text. Wrap it around the constructor; it returns the widget unchanged.
 - `BaseDialog.refresh_ui_labels()`: Generic implementation that re-applies every registered translation and re-evaluates the window title. Dialogs with their own dynamic content override it and call `super()`.
@@ -55,6 +63,7 @@ SupportCockpit internationalization architecture:
 - A dialog that has `refresh_ui_labels()` is registered with `I18nService` automatically on open and unregistered in `destroy()`.
 
 ### Constants ↔ UI Consumers
+
 - `DISPLAY_BOARD_COLUMN_NAMES: LocalizedDict`
 - `DISPLAY_ACTOR_NAMES: LocalizedDict`
 - `DISPLAY_CHANNEL_NAMES: LocalizedDict`
@@ -63,6 +72,7 @@ SupportCockpit internationalization architecture:
 - `HOTKEY_ACTION_LABELS: LocalizedDict`
 
 ## Code Layout
+
 - `locales/`: `de.json`, `en.json`, `sv.json`
 - `src/services/i18n_service.py`: `I18nService`, `tr`, `LocalizedDict`
 - `src/constants.py`: Application constants, localized dicts

@@ -150,7 +150,7 @@ class AiSettingsTabMixin:
             self.tab_ai,
             text=tr("profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)"),
             font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight=FONT_WEIGHT_BOLD),
-        ), "profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)").pack(anchor="w", pady=(PAD_10, PAD_CONTAINER))
+        ), "profile.ai_header", "🤖 KI- & NLP-Einstellungen (Ollama Local LLM & Google Gemini API)")  # not packed: the page title names this section
 
         # --- Provider Selection Row ---
         provider_frame = ctk.CTkFrame(self.tab_ai, fg_color="transparent")

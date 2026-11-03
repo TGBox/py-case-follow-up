@@ -23,6 +23,7 @@ from constants import (
     ICON_KEY_HELP,
     ICON_KEY_ON_CALL,
     ICON_KEY_QUIT,
+    ICON_KEY_SETTINGS,
     ICON_KEY_THEME,
     ICON_KEY_CHECKOUT,
     ICON_KEY_DOCK,
@@ -51,6 +52,7 @@ MDL2_GLYPHS: dict[str, str] = {
     ICON_KEY_CHECKOUT: "\uE823",  # Clock / Departure / Stop watch
     ICON_KEY_UNDOCK: "\uE8A7",  # Open in new window / Pop-out
     ICON_KEY_DOCK: "\uE7C5",  # Pin / Dock back
+    ICON_KEY_SETTINGS: "\uE713",  # Settings gear
 }
 
 
@@ -191,6 +193,22 @@ def _draw_dock_procedural(draw: Any, s: int, color: str) -> None:
     draw.line([(s * 0.28, s * 0.48), (s * 0.48, s * 0.48)], fill=color, width=w)
     draw.line([(s * 0.48, s * 0.28), (s * 0.48, s * 0.48)], fill=color, width=w)
 
+def _draw_settings_procedural(draw: Any, s: int, color: str) -> None:
+    import math
+    w = max(2, int(s * 0.08))
+    c = s * 0.5
+    # Eight short teeth around a ring
+    for i in range(8):
+        a = i * math.pi / 4
+        draw.line(
+            [(c + math.cos(a) * s * 0.26, c + math.sin(a) * s * 0.26), (c + math.cos(a) * s * 0.40, c + math.sin(a) * s * 0.40)],
+            fill=color,
+            width=w + 2,
+        )
+    draw.ellipse([s * 0.24, s * 0.24, s * 0.76, s * 0.76], outline=color, width=w)
+    draw.ellipse([s * 0.40, s * 0.40, s * 0.60, s * 0.60], outline=color, width=w)
+
+
 _PROCEDURAL_DRAWERS: dict[
     str, Callable[[Any, int, str], None]
 ] = {
@@ -206,6 +224,7 @@ _PROCEDURAL_DRAWERS: dict[
     ICON_KEY_CHECKOUT: _draw_checkout_procedural,
     ICON_KEY_UNDOCK: _draw_undock_procedural,
     ICON_KEY_DOCK: _draw_dock_procedural,
+    ICON_KEY_SETTINGS: _draw_settings_procedural,
 }
 
 

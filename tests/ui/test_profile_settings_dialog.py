@@ -12,6 +12,7 @@ from customtkinter import ScalingTracker
 
 import services.ai_service as ai_service_module
 from config import AppConfig, get_default_workspace_dir
+from constants import CHECKOUT_MODE_WEEKDAYS
 from models.export_template import ExportTemplate
 from models.profile import (
     AiSettings,
@@ -133,16 +134,19 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
     storage = _mock_storage(tmp_path, ["Daniel Rösch"])
     d = ProfileSettingsDialog(root, profile=profile, storage_service=storage)
 
-    # Four consolidated tabs, old names kept as aliases
-    assert [t[0] for t in d._tab_keys] == ["tab_user", "tab_paths", "tab_ai", "tab_scoring"]
-    assert "Benutzerprofil" in d._tab_name_map["tab_user"]
-    assert "Speicherort & Datenexport" in d._tab_name_map["tab_paths"]
-    assert "Sonstiges" in d._tab_name_map["tab_scoring"]
-    assert d.tab_ui is d.tab_user and d.tab_backup is d.tab_paths and d.tab_wiki is d.tab_scoring
+    # Sidebar with one page per topic; old tab names stay as aliases onto the page bodies
+    assert d._page_order == [
+        "profile", "appearance", "notifications", "push", "checkout",
+        "scoring", "shortcuts", "team", "wiki", "ai", "data",
+    ]
+    assert d.current_page == "profile"
+    assert d.tab_user is d._page_bodies["profile"] and d.tab_ui is d._page_bodies["appearance"]
+    assert d.tab_backup is d.tab_paths and d.tab_wiki is d._page_bodies["wiki"]
 
-    # User tab: two columns side by side, compact field widths
-    assert d.user_name_entry.master is not d.language_combo.master
-    assert d.user_name_entry.master.master is d.language_combo.master.master
+    # Profile data and appearance live on separate pages
+    assert d.user_name_entry.master is d._page_bodies["profile"]
+    assert d.language_combo.master is d._page_bodies["appearance"]
+    assert d.btn_open_p2p.master is d._page_bodies["team"]
     widths = {
         d.user_name_entry: 185, d.user_dept_entry: 185, d.user_ext_entry: 185, d.user_mobile_entry: 185,
         d.user_email_entry: 380, d.language_combo: 380, d.theme_combo: 380, d.layout_combo: 380,
@@ -217,6 +221,115 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
 # ---------------------------------------------------------------------------
 # Dialog with a real storage: switching, auto-save on switch, creating a profile, saving
 # ---------------------------------------------------------------------------
+
+
+def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path):
+    storage = _mock_storage(tmp_path, ["Daniel"])
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=storage, initial_page="checkout")
+    try:
+        assert d.current_page == "checkout"
+        assert d._pages["checkout"].winfo_manager() == "pack"
+        assert not d._pages["profile"].winfo_manager()
+
+        d._step_page(1)
+        assert d.current_page == "scoring"
+        d._step_page(-2)
+        assert d.current_page == "push"
+        d.show_page("data")
+        d._step_page(1)  # wraps around
+        assert d.current_page == "profile"
+
+        d.show_page("does-not-exist")
+        assert d.current_page == "profile"
+    finally:
+        d.destroy()
+
+
+def test_unknown_initial_page_falls_back_to_profile(root, tmp_path):
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]), initial_page="nope")
+    try:
+        assert d.current_page == "profile"
+    finally:
+        d.destroy()
+
+
+def test_push_details_only_shown_while_push_is_on(root, tmp_path):
+    profile = UserProfile()
+    profile.reminder_settings.mobile_ntfy_enabled = False
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        assert not d.ntfy_details_frame.winfo_manager()
+        d.ntfy_switch.select()
+        d.on_toggle_ntfy()
+        assert d.ntfy_details_frame.winfo_manager() == "pack"
+        assert d.ntfy_topic_entry.cget("state") == "normal"
+        d.ntfy_switch.deselect()
+        d.on_toggle_ntfy()
+        assert not d.ntfy_details_frame.winfo_manager()
+        assert d.ntfy_topic_entry.cget("state") == "disabled"
+    finally:
+        d.destroy()
+
+
+def test_push_advanced_section_opens_when_an_advanced_option_is_in_use(root, tmp_path):
+    profile = UserProfile()
+    profile.reminder_settings.mobile_ntfy_digest_enabled = False
+    profile.reminder_settings.mobile_ntfy_remote_control = False
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        assert not d.ntfy_advanced_section.expanded
+        d.ntfy_advanced_section.toggle()
+        assert d.ntfy_advanced_section.expanded
+        assert d.ntfy_advanced_section.body.winfo_manager() == "pack"
+    finally:
+        d.destroy()
+
+    profile.reminder_settings.mobile_ntfy_remote_control = True
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        assert d.ntfy_advanced_section.expanded
+    finally:
+        d.destroy()
+
+
+def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
+    profile = UserProfile()
+    cs = profile.checkout_settings
+    cs.enabled = False
+    cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes = 3, 2, 6, 2
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    try:
+        # Schedule hidden while the panel is off, commute settings stay reachable
+        assert not d.checkout_schedule_frame.winfo_manager()
+        assert d.checkout_transit_section.winfo_manager() == "pack"
+        d.checkout_enable_var.set(True)
+        d._update_checkout_enabled_visibility()
+        assert d.checkout_schedule_frame.winfo_manager() == "pack"
+
+        # Switching the schedule mode swaps the inputs in the same slot
+        uniform_parent = d.checkout_uniform_frame.master
+        d.checkout_mode_combo.set(d.checkout_mode_combo.cget("values")[1])
+        d._update_checkout_mode_visibility()
+        assert d.checkout_weekdays_frame.winfo_manager() == "pack"
+        assert not d.checkout_uniform_frame.winfo_manager()
+        assert d.checkout_weekdays_frame.master is uniform_parent
+
+        # Lead time adds up and ignores junk
+        assert "13" in d.checkout_lead_total_lbl.cget("text")
+        d.checkout_walk_entry.delete(0, "end")
+        d.checkout_walk_entry.insert(0, "10")
+        d.checkout_buffer_entry.delete(0, "end")
+        d.checkout_buffer_entry.insert(0, "x")
+        d._update_checkout_lead_total()
+        assert "15" in d.checkout_lead_total_lbl.cget("text")
+
+        d.checkout_buffer_entry.delete(0, "end")
+        d.checkout_buffer_entry.insert(0, "4")
+        assert d.save_ui_settings()
+        assert (cs.enabled, cs.auto_open_mode) == (True, CHECKOUT_MODE_WEEKDAYS)
+        assert (cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes) == (3, 2, 10, 4)
+    finally:
+        d.destroy()
 
 
 def test_profile_switch_create_and_save_round_trip(root, tmp_path):

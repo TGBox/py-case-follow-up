@@ -235,8 +235,8 @@ def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path)
     d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=storage, initial_page="checkout")
     try:
         assert d.current_page == "checkout"
-        assert d._pages["checkout"].winfo_manager() == "pack"
-        assert not d._pages["profile"].winfo_manager()
+        # Pages are stacked in one grid cell and raised, not packed and unpacked.
+        assert all(page.winfo_manager() == "grid" for page in d._pages.values())
 
         d._step_page(1)
         assert d.current_page == "work"
@@ -889,3 +889,37 @@ def test_toggle_defaults_keeps_custom_entries_and_writes_backup(example_storage,
     items, added = toggle()
     assert added is False and not has_defaults()
     assert {id_of(i) for i in items} == {"custom"}
+
+
+def test_tab_traversal_skips_widgets_on_covered_pages(root, tmp_path):
+    """Pages stay mapped under the shown one, so Tab must not wander into them."""
+    storage = _mock_storage(tmp_path, ["Daniel"])
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=storage, initial_page="checkout")
+    try:
+        on_checkout = ctk.CTkEntry(d._page_bodies["checkout"])
+        on_profile = ctk.CTkEntry(d._page_bodies["profile"])
+        assert not d._is_on_hidden_page(on_checkout)
+        assert d._is_on_hidden_page(on_profile)
+        assert not d._is_on_hidden_page(d.save_btn)
+
+        # Windows stay withdrawn in the test session, so Tk's traversal has nothing
+        # viewable to offer; a scripted ring stands in for it.
+        class Stop:
+            def __init__(self, name, master, ring):
+                self.name, self.master, self._ring = name, master, ring
+            def tk_focusNext(self):
+                return self._ring[(self._ring.index(self) + 1) % len(self._ring)]
+            def tk_focusPrev(self):
+                return self._ring[(self._ring.index(self) - 1) % len(self._ring)]
+
+        ring: list = []
+        a = Stop("a", d._page_bodies["checkout"], ring)
+        hidden = Stop("hidden", d._page_bodies["profile"], ring)
+        b = Stop("b", d._page_bodies["checkout"], ring)
+        ring.extend([a, hidden, b])
+        assert d._next_focus_in_page(a, 1) is b
+        assert d._next_focus_in_page(b, -1) is a
+        d.show_page("profile")
+        assert d._next_focus_in_page(a, 1) is hidden
+    finally:
+        d.destroy()

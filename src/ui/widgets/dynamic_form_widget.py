@@ -47,6 +47,10 @@ from constants import (
     FONT_SIZE_TITLE,
     FONT_WEIGHT_BOLD,
     FONT_WEIGHT_NORMAL,
+    FORM_EAGER_OVERSCAN_PX,
+    FORM_LAZY_CHUNK_SIZE,
+    FORM_ROW_HEIGHT_DEFAULT,
+    FORM_ROW_HEIGHT_TEXTBOX_EXTRA,
     HEIGHT_MINI_ATTACH_ROW,
     HEIGHT_MINI_ATTACH_SCROLL,
     HEIGHT_OPEN_FILE_BTN,
@@ -70,6 +74,7 @@ from constants import (
     POPUP_TAG_PICKER_WIDTH,
     SEARCH_DEBOUNCE_MS,
     SPACING_SM,
+    TEXTBOX_DEFAULT_HEIGHT,
     TEXTBOX_DEFAULT_WIDTH,
     TEXTBOX_MAX_HEIGHT,
     TEXTBOX_MIN_HEIGHT,
@@ -325,6 +330,11 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
 
         self.field_widgets: dict[str, Any] = {}
         self._field_border_defaults: dict[str, tuple[Any, Any]] = {}
+        # Fields of the current schema not built yet (see load_schema), with
+        # the form_data they will be built from, and the pending after() job.
+        self._pending_fields: list[SchemaField] = []
+        self._pending_form_data: dict[str, Any] = {}
+        self._pending_job: str | None = None
         self.create_widgets()
 
     def create_widgets(self):
@@ -483,11 +493,7 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             self._render_number_field(row_frame, f, val, target_widget_dict, entry_kwargs)
 
         # 8. MULTILINE TEXTBOX FIELD
-        elif any(k in fid_lower or k in flabel_lower for k in (
-            "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
-            "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
-            "dateien", "dateianfragen", "files", "anfragen", "liste", "korrekturdateien"
-        )):
+        elif self._is_textbox_field(f):
             self._render_textbox_field(row_frame, f, val, target_widget_dict, entry_kwargs)
 
         # 9. STANDARD SINGLE-LINE TEXT ENTRY
@@ -497,6 +503,133 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         entry = target_widget_dict.get(f.field_id)
         if entry is not None:
             self._set_field_highlight(entry[1], is_missing)
+
+    @staticmethod
+    def _is_textbox_field(f: SchemaField) -> bool:
+        """Text fields that get a multi-line box instead of a one-line entry (by id/label keywords)."""
+        fid_lower = f.field_id.lower()
+        flabel_lower = f.label.lower()
+        return any(k in fid_lower or k in flabel_lower for k in (
+            "error_message", "reproduction", "steps", "expected", "schritte", "beschreibung",
+            "erklärung", "verhalten", "stack_trace", "log", "notiz", "details", "begründung",
+            "dateien", "dateianfragen", "files", "anfragen", "liste", "korrekturdateien"
+        ))
+
+    def _estimated_row_height(self, f: SchemaField) -> int:
+        """Rough logical height of one field row; only used to size the eager part of a build."""
+        if f.field_type == FieldType.TEXT and self._is_textbox_field(f):
+            custom_height = TEXTBOX_DEFAULT_HEIGHT
+            ui = getattr(self.profile, "ui_settings", None)
+            heights = getattr(ui, "custom_textbox_heights", None) or {}
+            if f.field_id in heights:
+                custom_height = heights[f.field_id]
+            elif ui and getattr(ui, "textbox_height", None):
+                custom_height = ui.textbox_height
+            return int(custom_height) + FORM_ROW_HEIGHT_TEXTBOX_EXTRA
+        return FORM_ROW_HEIGHT_DEFAULT
+
+    def _visible_form_height(self) -> int:
+        """Height of the form's viewport in logical pixels, or 0 while it has no size yet."""
+        try:
+            canvas = getattr(self.scroll_frame, "_parent_canvas", None)
+            h = int(canvas.winfo_height()) if canvas is not None else 0
+            if h <= 1:
+                return 0
+            scale = float(ctk.ScalingTracker.get_widget_scaling(self)) or 1.0
+            return int(h / scale)
+        except Exception:
+            return 0
+
+    def _split_eager_fields(self, fields: list[SchemaField]) -> int:
+        """Returns how many leading fields to build at once.
+
+        Enough to fill the visible viewport plus a little overscan, so the
+        first paint shows a full form; everything below is built in idle
+        chunks while the user already reads the top. While the viewport has
+        no size yet (not mapped, hidden test root), everything is built at
+        once: there is nothing visible to prioritise, and callers that read
+        the widgets right away keep working.
+        """
+        viewport = self._visible_form_height()
+        if viewport <= 0:
+            return len(fields)
+        budget = viewport + FORM_EAGER_OVERSCAN_PX
+        used = 0
+        for i, f in enumerate(fields):
+            used += self._estimated_row_height(f)
+            if used > budget:
+                return max(i, 1)
+        return len(fields)
+
+    def _cancel_pending_fields(self) -> None:
+        if self._pending_job is not None:
+            try:
+                self.after_cancel(self._pending_job)
+            except Exception:
+                pass
+            self._pending_job = None
+        self._pending_fields = []
+        self._pending_form_data = {}
+
+    def _schedule_pending_chunk(self) -> None:
+        if self._pending_fields and self._pending_job is None:
+            try:
+                # A timer, not after_idle: idle callbacks share one queue with
+                # Tk's own relayout and repaint, so an idle chunk could run
+                # before the eager part is painted. A timer only fires once the
+                # idle queue has drained - i.e. after that paint.
+                self._pending_job = self.after(1, self._render_pending_chunk)
+            except Exception:
+                # No event loop (teardown): build the rest right away.
+                self._pending_job = None
+                self.flush_pending_fields()
+
+    def _render_pending_chunk(self) -> None:
+        self._pending_job = None
+        if not self._pending_fields:
+            return
+        try:
+            if not self.scroll_frame.winfo_exists():
+                self._cancel_pending_fields()
+                return
+        except Exception:
+            self._cancel_pending_fields()
+            return
+        chunk = self._pending_fields[:FORM_LAZY_CHUNK_SIZE]
+        del self._pending_fields[:FORM_LAZY_CHUNK_SIZE]
+        self._render_fields(chunk, self._pending_form_data)
+        # Rows that depend on another field are hidden straight away, not
+        # only once the last chunk is in.
+        self.update_conditional_visibility()
+        if self._pending_fields:
+            self._schedule_pending_chunk()
+        else:
+            self._pending_form_data = {}
+
+    def flush_pending_fields(self) -> None:
+        """Builds every field still waiting; used before anything reads the whole form."""
+        # getattr: tests build this widget with __new__ and set only what they need.
+        if not getattr(self, "_pending_fields", None):
+            return
+        if self._pending_job is not None:
+            try:
+                self.after_cancel(self._pending_job)
+            except Exception:
+                pass
+            self._pending_job = None
+        rest, data = self._pending_fields, self._pending_form_data
+        self._pending_fields, self._pending_form_data = [], {}
+        self._render_fields(rest, data)
+        self.update_conditional_visibility()
+
+    def _render_fields(self, fields: list[SchemaField], form_data: dict[str, Any]) -> None:
+        for f in fields:
+            self.render_single_field(
+                self.scroll_frame, f, form_data.get(f.field_id), self.field_widgets, self.missing_fields, self.current_case
+            )
+            row = self.field_row_frames.get(f.field_id)
+            if row is not None:
+                self._bind_mouse_wheel_recursive(row)
 
     def _set_field_highlight(self, widget: Any, is_missing: bool) -> None:
         """Marks or unmarks one field as a missing required field.
@@ -558,6 +691,8 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         self.current_case = case
         self.missing_fields = missing_fields or []
 
+        # A rebuild supersedes whatever the previous build still had queued.
+        self._cancel_pending_fields()
         for widget in self.scroll_frame.winfo_children():
             widget.destroy()
         self.field_widgets.clear()
@@ -601,11 +736,9 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             top_fields = [f for f in sorted_fields if f.field_id not in rep_set]
             self.card_fields = [f for f in sorted_fields if f.field_id in rep_set]
 
-            # 1. Top level non-repeatable fields
-            for f in top_fields:
-                self.render_single_field(
-                    self.scroll_frame, f, form_data.get(f.field_id), self.field_widgets, self.missing_fields, case
-                )
+            # 1. Top level non-repeatable fields (the cards below them are
+            # usually few and are built at once, so these are built at once too).
+            self._render_fields(top_fields, form_data)
 
             # 2. Parse or initialize file_requests
             raw_reqs = form_data.get("file_requests")
@@ -623,11 +756,18 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
             self.render_repeatable_cards()
 
         else:
-            for f in sorted_fields:
-                self.render_single_field(
-                    self.scroll_frame, f, form_data.get(f.field_id), self.field_widgets, self.missing_fields, case
-                )
+            # Build what fills the viewport now, the rest in idle chunks: the
+            # first paint used to wait for the last field, which on a long
+            # schema with several text boxes made the open case feel slow even
+            # though only the top of the form is visible at that moment.
+            eager = self._split_eager_fields(sorted_fields)
+            self._render_fields(sorted_fields[:eager], form_data)
+            if eager < len(sorted_fields):
+                self._pending_fields = list(sorted_fields[eager:])
+                self._pending_form_data = dict(form_data)
+                self._schedule_pending_chunk()
 
+        # The scroll frame's own surfaces; the rows bind themselves as they are built.
         self._bind_mouse_wheel_recursive(self.scroll_frame)
         self.update_conditional_visibility()
 
@@ -728,7 +868,9 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         if not self.schema or not self.schema.fields:
             return
 
-        current_data = self.get_form_data()
+        # Fields still queued keep their loaded value; reading them must not
+        # force the build they are waiting for.
+        current_data = self._current_values(flush=False)
 
         for f in self.schema.fields:
             dep_id = getattr(f, "depends_on_field_id", "")
@@ -894,7 +1036,17 @@ class DynamicFormWidget(FieldRendererMixin, ctk.CTkFrame):
         )
 
     def get_form_data(self) -> dict[str, Any]:
+        return self._current_values(flush=True)
+
+    def _current_values(self, flush: bool) -> dict[str, Any]:
+        """Values of all fields; with flush=False, queued fields answer with the value they were loaded with."""
+        if flush:
+            self.flush_pending_fields()
         data = {}
+        pending_data = getattr(self, "_pending_form_data", {})
+        for f in getattr(self, "_pending_fields", ()):
+            if f.field_id in pending_data:
+                data[f.field_id] = pending_data[f.field_id]
         for fid, (ftype, widget) in self.field_widgets.items():
             data[fid] = self._extract_widget_value(ftype, widget)
 

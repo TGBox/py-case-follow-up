@@ -351,7 +351,7 @@ class ProfileSettingsDialog(
         # configure() redraws a canvas, and doing all of them on every switch
         # was most of the Python-side cost of changing pages.
         for pid in (self.current_page, page_id):
-            item = self._nav_items.get(pid)
+            item = self._nav_items.get(pid) if pid is not None else None
             if item is None:
                 continue
             accent, btn = item

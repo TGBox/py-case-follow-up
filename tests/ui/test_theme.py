@@ -152,8 +152,8 @@ def test_profile_settings_dialog_follows_appearance_switch(root, tmp_path):
     assert d.paths_scroll._parent_canvas.cget("bg") == DARK_PAGE[0]
     assert d.nav_frame._fg_color == COLOR_SETTINGS_NAV_BG
 
-    # Export/import cards on the paths tab are bordered panels
-    cards = [f for f in _frames(d.paths_scroll) if f.cget("corner_radius") == 8]
+    # Retention and export/import cards on the backup page are bordered panels
+    cards = [f for f in _frames(d.tab_backup) if f.cget("corner_radius") == 8]
     assert len(cards) >= 2
     assert all(c.cget("border_width") == 1 and c.cget("fg_color") == COLOR_PANEL_BG for c in cards)
 
@@ -250,3 +250,44 @@ def test_dynamic_form_fields_have_fixed_widths(root):
     widths = {fid: w.cget("width") for fid, (_, w) in form.field_widgets.items()}
     assert widths == {"f_text": 400, "f_num": 400, "f_drop": 400, "f_date": 295, "f_file": 280, "f_details": 520}
     form.destroy()
+
+
+def test_toplevel_titlebar_follows_theme_via_patched_helper(monkeypatch):
+    """CTkToplevel dialogs colour their native title bar through the robust helper."""
+    import sys as _sys
+
+    import utils.ui_utils as ui_utils
+
+    calls = []
+    monkeypatch.setattr(ui_utils, "set_windows_titlebar_dark", lambda win, dark: calls.append(dark) or True)
+    monkeypatch.setattr(_sys, "platform", "win32")
+
+    class FakeToplevel:
+        _deactivate_windows_window_header_manipulation = False
+
+        def after(self, _ms, func):
+            func()
+
+        def winfo_exists(self):
+            return True
+
+    patched = ctk.CTkToplevel._windows_set_titlebar_color
+    assert getattr(ctk.CTkToplevel, "_titlebar_patch_applied", False)
+
+    patched(FakeToplevel(), "dark")
+    patched(FakeToplevel(), "light")
+    assert calls == [True, True, False, False]  # immediately and once more after mapping
+
+    blocked = FakeToplevel()
+    blocked._deactivate_windows_window_header_manipulation = True
+    patched(blocked, "dark")
+    assert len(calls) == 4
+
+
+def test_titlebar_helper_is_a_no_op_off_windows(root, monkeypatch):
+    import sys as _sys
+
+    from utils.ui_utils import set_windows_titlebar_dark
+
+    monkeypatch.setattr(_sys, "platform", "linux")
+    assert set_windows_titlebar_dark(root, True) is False

@@ -1,3 +1,4 @@
+import threading
 from typing import TYPE_CHECKING, Any
 from collections.abc import Callable
 import customtkinter as ctk
@@ -53,6 +54,19 @@ from constants import (
     ENTRY_WIDTH_CHECKOUT_TIME,
     ENTRY_WIDTH_CHECKOUT_LEAD,
     ENTRY_WIDTH_CHECKOUT_PLACE,
+    BTN_WIDTH_CHECK_STOP,
+    COLOR_PANEL_BG,
+    COLOR_PANEL_BORDER,
+    COLOR_SETTINGS_NAV_HOVER,
+    COLOR_SETTINGS_NAV_TEXT,
+    COLOR_TRANSIT_COUNTDOWN_WARN,
+    COLOR_TRANSIT_DELAY,
+    COLOR_TRANSIT_ONTIME,
+    CORNER_RADIUS_MD,
+    SETTINGS_NAV_ITEM_HEIGHT,
+    SETTINGS_STOP_STATUS_WRAP,
+    TRANSIT_STOP_SEARCH_DEBOUNCE_MS,
+    TRANSIT_STOP_SEARCH_MIN_CHARS,
 )
 from enums import get_layout_display, get_layout_val_from_display, LAYOUT_DISPLAY, get_theme_display, get_theme_val_from_display
 from ui.widgets.collapsible_section import CollapsibleSection
@@ -675,7 +689,20 @@ class UiSettingsTabMixin:
             "settings_checkout.enable_panel",
             "Feierabend-Panel aktivieren",
         )
-        self.checkout_enable_cb.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+        self.checkout_enable_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        # Independent of the schedule: a panel opened by hand stays open across restarts.
+        self.checkout_remember_var = ctk.BooleanVar(value=bool(getattr(cs, "remember_visibility", False)))
+        self.checkout_remember_cb = self.register_i18n(
+            ctk.CTkSwitch(  # type: ignore[attr-defined]
+                right_col,
+                text=tr("settings_checkout.remember_visibility", "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war"),
+                variable=self.checkout_remember_var,
+            ),
+            "settings_checkout.remember_visibility",
+            "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
+        )
+        self.checkout_remember_cb.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
         self.checkout_schedule_frame = ctk.CTkFrame(right_col, fg_color="transparent")
         schedule = self.checkout_schedule_frame
@@ -780,7 +807,7 @@ class UiSettingsTabMixin:
             "Haltestellen-Name:",
         )
         self.checkout_stop_name_lbl.grid(row=0, column=0, sticky="w", padx=(PAD_NONE, PAD_MD))
-        self.checkout_stop_name_entry = ctk.CTkEntry(stop_grid, width=PROFILE_TAB_FIELD_WIDTH)
+        self.checkout_stop_name_entry = ctk.CTkEntry(stop_grid, width=PROFILE_TAB_FIELD_WIDTH, placeholder_text=tr("settings_checkout.stop_placeholder", "Edisonallee"))
         self.checkout_stop_name_entry.insert(0, stop_name)
         self.checkout_stop_name_entry.grid(row=1, column=0, sticky="w", padx=(PAD_NONE, PAD_MD))
 
@@ -793,6 +820,45 @@ class UiSettingsTabMixin:
         self.checkout_stop_place_entry = ctk.CTkEntry(stop_grid, width=ENTRY_WIDTH_CHECKOUT_PLACE)
         self.checkout_stop_place_entry.insert(0, stop_place)
         self.checkout_stop_place_entry.grid(row=1, column=1, sticky="w")
+
+        # Suggestions from the stop finder appear right under the two fields.
+        self.checkout_stop_suggestions = ctk.CTkFrame(
+            stop_grid, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER, corner_radius=CORNER_RADIUS_MD
+        )
+        self._stop_suggestion_buttons: list[ctk.CTkButton] = []
+        self._stop_request_id = 0
+        self._stop_last_query = ""
+        self._stop_checked_value: tuple[str, str] | None = None
+
+        self.checkout_stop_name_entry.bind("<KeyRelease>", self._on_stop_name_typed, add="+")
+        for entry in (self.checkout_stop_name_entry, self.checkout_stop_place_entry):
+            entry.bind("<FocusOut>", lambda _e: self._schedule_stop_check(), add="+")
+            entry.bind("<Return>", lambda _e: self.on_check_stop(), add="+")
+
+        status_row = ctk.CTkFrame(commute, fg_color="transparent")
+        status_row.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_MD))
+        self.checkout_stop_check_btn = self.register_i18n(
+            ctk.CTkButton(
+                status_row,
+                text=tr("settings_checkout.btn_check_stop", "Abfahrten prüfen"),
+                command=self.on_check_stop,
+                fg_color=COLOR_MUTED_GRAY_FG,
+                hover_color=COLOR_MUTED_GRAY_HOVER,
+                width=BTN_WIDTH_CHECK_STOP,
+            ),
+            "settings_checkout.btn_check_stop",
+            "Abfahrten prüfen",
+        )
+        self.checkout_stop_check_btn.pack(side="left", padx=(PAD_NONE, PAD_MD))
+        self.checkout_stop_status_lbl = ctk.CTkLabel(
+            status_row,
+            text=tr("settings_checkout.stop_hint", "Tippe den Namen der Haltestelle und wähle einen Vorschlag."),
+            text_color=COLOR_TIP_TEXT,
+            anchor="w",
+            justify="left",
+            wraplength=SETTINGS_STOP_STATUS_WRAP,
+        )
+        self.checkout_stop_status_lbl.pack(side="left", fill="x", expand=True)
 
         # Lead time before departure, in the order the steps happen:
         # shut down + pack up + walk + buffer = minutes before the bus leaves.
@@ -853,6 +919,185 @@ class UiSettingsTabMixin:
         self._update_checkout_mode_visibility()
         self._update_checkout_enabled_visibility()
 
+    # ------------------------------------------------------------------
+    # Stop search and live check (end-of-day page)
+    # ------------------------------------------------------------------
+    def _set_stop_status(self, text: str, color: Any = COLOR_TIP_TEXT) -> None:
+        if hasattr(self, "checkout_stop_status_lbl") and self.checkout_stop_status_lbl.winfo_exists():
+            self.checkout_stop_status_lbl.configure(text=text, text_color=color)
+
+    def _current_stop(self) -> tuple[str, str]:
+        return self.checkout_stop_name_entry.get().strip(), self.checkout_stop_place_entry.get().strip()
+
+    def _on_stop_name_typed(self, event: Any = None) -> None:
+        keysym = getattr(event, "keysym", "")
+        if keysym in ("Return", "Tab", "Escape", "Up", "Down", "Left", "Right"):
+            if keysym == "Escape":
+                self._hide_stop_suggestions()
+            return
+        self._stop_checked_value = None
+        query = self.checkout_stop_name_entry.get().strip()
+        if len(query) < TRANSIT_STOP_SEARCH_MIN_CHARS:
+            self._hide_stop_suggestions()
+            return
+        from utils.ui_utils import debounce
+
+        debounce(self.checkout_stop_name_entry, "stop_search", TRANSIT_STOP_SEARCH_DEBOUNCE_MS, self._start_stop_search)
+
+    def _start_stop_search(self) -> None:
+        query = self.checkout_stop_name_entry.get().strip()
+        if len(query) < TRANSIT_STOP_SEARCH_MIN_CHARS or query == self._stop_last_query:
+            return
+        self._stop_last_query = query
+        self._stop_request_id += 1
+        request_id = self._stop_request_id
+        self._set_stop_status(tr("settings_checkout.stop_searching", "Suche Haltestellen …"))
+
+        def worker() -> None:
+            from services.ding_transit_service import DingTransitService
+
+            results = DingTransitService.find_stops(query)
+            self._deliver_stop_result(lambda: self._on_stop_suggestions(request_id, results))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _deliver_stop_result(self, callback: Callable[[], None]) -> None:
+        """Hands a worker result back to the Tk thread, if the dialog still exists."""
+        try:
+            if self.winfo_toplevel().winfo_exists():
+                self.winfo_toplevel().after(0, callback)
+        except Exception:
+            pass
+
+    def _on_stop_suggestions(self, request_id: int, results: list[Any] | None) -> None:
+        if request_id != self._stop_request_id or not self.checkout_stop_suggestions.winfo_exists():
+            return
+        if results is None:
+            self._hide_stop_suggestions()
+            self._set_stop_status(
+                tr("settings_checkout.stop_check_error", "Fahrplanauskunft nicht erreichbar. Prüfe die Internetverbindung."),
+                COLOR_TRANSIT_DELAY,
+            )
+            return
+        if not results:
+            self._hide_stop_suggestions()
+            self._set_stop_status(
+                tr("settings_checkout.stop_no_suggestions", "Keine passende Haltestelle gefunden. Prüfe die Schreibweise."),
+                COLOR_TRANSIT_COUNTDOWN_WARN,
+            )
+            return
+        self._show_stop_suggestions(results)
+        self._set_stop_status(tr("settings_checkout.stop_pick_hint", "Wähle deine Haltestelle aus der Liste."))
+
+    def _show_stop_suggestions(self, stops: list[Any]) -> None:
+        for btn in self._stop_suggestion_buttons:
+            btn.destroy()
+        self._stop_suggestion_buttons = []
+        for stop in stops:
+            label = f"{stop.name}, {stop.place}" if stop.place else stop.name
+            btn = ctk.CTkButton(
+                self.checkout_stop_suggestions,
+                text=label,
+                anchor="w",
+                height=SETTINGS_NAV_ITEM_HEIGHT,
+                fg_color="transparent",
+                hover_color=COLOR_SETTINGS_NAV_HOVER,
+                text_color=COLOR_SETTINGS_NAV_TEXT,
+                command=lambda s=stop: self.on_pick_stop(s),
+            )
+            btn.pack(fill="x", padx=PAD_XS, pady=PAD_TINY)
+            self._stop_suggestion_buttons.append(btn)
+        self.checkout_stop_suggestions.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(PAD_XS, PAD_NONE))
+
+    def _hide_stop_suggestions(self) -> None:
+        if hasattr(self, "checkout_stop_suggestions") and self.checkout_stop_suggestions.winfo_manager():
+            self.checkout_stop_suggestions.grid_remove()
+
+    def on_pick_stop(self, stop: Any) -> None:
+        """Fills name and place from a suggestion and checks it right away."""
+        self.checkout_stop_name_entry.delete(0, "end")
+        self.checkout_stop_name_entry.insert(0, stop.name)
+        if stop.place:
+            self.checkout_stop_place_entry.delete(0, "end")
+            self.checkout_stop_place_entry.insert(0, stop.place)
+        self._stop_last_query = stop.name
+        self._hide_stop_suggestions()
+        self.on_check_stop()
+
+    def _schedule_stop_check(self) -> None:
+        name, place = self._current_stop()
+        if not name or self._stop_checked_value == (name, place):
+            return
+        from utils.ui_utils import debounce
+
+        debounce(self.checkout_stop_name_entry, "stop_check", TRANSIT_STOP_SEARCH_DEBOUNCE_MS, self._run_pending_stop_check)
+
+    def _run_pending_stop_check(self) -> None:
+        # A suggestion may have been picked (and checked) while this was pending.
+        if self._current_stop() != self._stop_checked_value:
+            self.on_check_stop()
+
+    def on_check_stop(self) -> None:
+        """Asks the live timetable whether the entered stop resolves and has departures."""
+        name, place = self._current_stop()
+        if not name:
+            self._set_stop_status(
+                tr("settings_checkout.stop_enter_name", "Gib zuerst den Namen der Haltestelle ein."),
+                COLOR_TRANSIT_COUNTDOWN_WARN,
+            )
+            return
+        self._stop_checked_value = (name, place)
+        self._stop_request_id += 1
+        request_id = self._stop_request_id
+        self._set_stop_status(tr("settings_checkout.stop_check_running", "Prüfe Abfahrten …"))
+
+        def worker() -> None:
+            from services.ding_transit_service import DingTransitService
+
+            result = DingTransitService.check_stop(name, place)
+            self._deliver_stop_result(lambda: self._on_stop_checked(request_id, result))
+
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _on_stop_checked(self, request_id: int, result: Any) -> None:
+        if request_id != self._stop_request_id:
+            return
+        if result.status == "ok":
+            self._set_stop_status(
+                tr(
+                    "settings_checkout.stop_check_ok",
+                    "Gefunden: {stop}. Nächste {count} Abfahrten werden angezeigt.",
+                    stop=result.resolved_name,
+                    count=result.departure_count,
+                ),
+                COLOR_TRANSIT_ONTIME,
+            )
+        elif result.status == "no_departures":
+            self._set_stop_status(
+                tr(
+                    "settings_checkout.stop_check_no_departures",
+                    "Haltestelle {stop} gefunden, aber gerade fährt dort nichts ab.",
+                    stop=result.resolved_name,
+                ),
+                COLOR_TRANSIT_COUNTDOWN_WARN,
+            )
+        elif result.status == "ambiguous":
+            self._show_stop_suggestions(result.candidates)
+            self._set_stop_status(
+                tr("settings_checkout.stop_check_ambiguous", "Mehrere Haltestellen passen. Wähle eine aus der Liste."),
+                COLOR_TRANSIT_COUNTDOWN_WARN,
+            )
+        elif result.status == "not_found":
+            self._set_stop_status(
+                tr("settings_checkout.stop_check_not_found", "Keine Haltestelle unter diesem Namen gefunden. Prüfe Schreibweise und Ort."),
+                COLOR_TRANSIT_DELAY,
+            )
+        else:
+            self._set_stop_status(
+                tr("settings_checkout.stop_check_error", "Fahrplanauskunft nicht erreichbar. Prüfe die Internetverbindung."),
+                COLOR_TRANSIT_DELAY,
+            )
+
     def _update_checkout_lead_total(self) -> None:
         """Shows how many minutes before departure the leave-now alarm rings."""
         if not hasattr(self, "checkout_lead_total_lbl"):
@@ -876,7 +1121,7 @@ class UiSettingsTabMixin:
             return
         if self.checkout_enable_var.get():
             if not frame.winfo_manager():
-                frame.pack(anchor="w", fill="x", after=self.checkout_enable_cb)
+                frame.pack(anchor="w", fill="x", after=self.checkout_remember_cb)
         elif frame.winfo_manager():
             frame.pack_forget()
 
@@ -1190,6 +1435,7 @@ class UiSettingsTabMixin:
             cs = self.profile.checkout_settings
             cs.enabled = self.checkout_enable_var.get()
             cs.auto_open = self.checkout_auto_open_var.get()
+            cs.remember_visibility = bool(self.checkout_remember_var.get())
             idx = self.selected_choice_index(self.checkout_mode_combo)
             cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
                 min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)

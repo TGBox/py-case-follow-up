@@ -465,6 +465,9 @@ class CheckoutSettings:
         }
     )
     is_docked: bool = True
+    # Reopen the panel on start if it was open when the app was last used
+    remember_visibility: bool = False
+    was_open: bool = False
     floating_geometry: str = ""
     panel_width: int = CHECKOUT_DEFAULT_WIDTH
     stops: list[dict[str, str]] = field(
@@ -502,6 +505,8 @@ class CheckoutSettings:
             "auto_open_uniform_time": self.auto_open_uniform_time,
             "auto_open_weekday_times": dict(self.auto_open_weekday_times),
             "is_docked": self.is_docked,
+            "remember_visibility": self.remember_visibility,
+            "was_open": self.was_open,
             "floating_geometry": self.floating_geometry,
             "panel_width": self.panel_width,
             "stops": [dict(s) for s in self.stops],
@@ -571,6 +576,8 @@ class CheckoutSettings:
             auto_open_uniform_time=str(data.get("auto_open_uniform_time", CHECKOUT_DEFAULT_UNIFORM_TIME)),
             auto_open_weekday_times=default_weekdays,
             is_docked=bool(data.get("is_docked", True)),
+            remember_visibility=bool(data.get("remember_visibility", False)),
+            was_open=bool(data.get("was_open", False)),
             floating_geometry=str(data.get("floating_geometry", "")),
             panel_width=int(data.get("panel_width", CHECKOUT_DEFAULT_WIDTH)),
             stops=stops,

@@ -10,7 +10,7 @@ import json
 import logging
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -20,6 +20,8 @@ from constants import (
     TRANSIT_DEFAULT_STOP_NAME,
     TRANSIT_DEFAULT_STOP_PLACE,
     TRANSIT_EFA_ENDPOINT,
+    TRANSIT_EFA_STOPFINDER_ENDPOINT,
+    TRANSIT_STOP_SUGGESTION_LIMIT,
     TRANSIT_REQUEST_TIMEOUT_SECONDS,
 )
 
@@ -41,12 +43,61 @@ class TransitDeparture:
     raw_datetime: datetime | None = None
 
 
+@dataclass
+class TransitStop:
+    """A stop suggestion from the EFA stop finder."""
+
+    name: str
+    place: str
+    stop_id: str = ""
+
+
+@dataclass
+class StopCheckResult:
+    """Outcome of looking up departures for a configured stop.
+
+    status is one of: "ok" (departures found), "no_departures" (stop resolved
+    but nothing leaves soon), "ambiguous" (several stops match, see
+    candidates), "not_found" (no stop by that name) or "error" (service not
+    reachable).
+    """
+
+    status: str
+    departure_count: int = 0
+    resolved_name: str = ""
+    candidates: list[TransitStop] = field(default_factory=list)
+
+
 class DingTransitService:
     """Service to fetch and calculate live transit departures and commute alarms."""
 
     _cached_departures: list[TransitDeparture] = []
     _last_fetch_time: datetime | None = None
+    _cached_stop_key: tuple[str, str] | None = None
     _cache_ttl_seconds: float = 30.0
+
+    @staticmethod
+    def _request_json(endpoint: str, params: dict[str, str]) -> dict[str, Any]:
+        url = f"{endpoint}?{urllib.parse.urlencode(params)}"
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "SupportCockpit/1.0 (DingTransitService)"},
+        )
+        with urllib.request.urlopen(req, timeout=TRANSIT_REQUEST_TIMEOUT_SECONDS) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        return data if isinstance(data, dict) else {}
+
+    @staticmethod
+    def _departure_params(stop_name: str, place: str, limit: int) -> dict[str, str]:
+        return {
+            "outputFormat": "JSON",
+            "type_dm": "stop",
+            "name_dm": stop_name,
+            "place_dm": place,
+            "useRealtime": "1",
+            "mode": "direct",
+            "limit": str(limit),
+        }
 
     @classmethod
     def fetch_departures(
@@ -58,6 +109,11 @@ class DingTransitService:
     ) -> list[TransitDeparture]:
         """Fetch live departures from the EFA endpoint for the given stop and place."""
         now = datetime.now()
+        stop_key = (stop_name.strip().lower(), place.strip().lower())
+        # A different stop must never be answered from the previous stop's cache.
+        if cls._cached_stop_key != stop_key:
+            cls._cached_departures = []
+            cls._last_fetch_time = None
         if (
             not force_refresh
             and cls._last_fetch_time is not None
@@ -66,32 +122,108 @@ class DingTransitService:
         ):
             return list(cls._cached_departures)
 
-        params = {
-            "outputFormat": "JSON",
-            "type_dm": "stop",
-            "name_dm": stop_name,
-            "place_dm": place,
-            "useRealtime": "1",
-            "mode": "direct",
-            "limit": str(limit),
-        }
-        url = f"{TRANSIT_EFA_ENDPOINT}?{urllib.parse.urlencode(params)}"
-
         try:
-            req = urllib.request.Request(
-                url,
-                headers={"User-Agent": "SupportCockpit/1.0 (DingTransitService)"},
-            )
-            with urllib.request.urlopen(req, timeout=TRANSIT_REQUEST_TIMEOUT_SECONDS) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-
+            data = cls._request_json(TRANSIT_EFA_ENDPOINT, cls._departure_params(stop_name, place, limit))
             parsed = cls._parse_efa_response(data)
             cls._cached_departures = parsed
             cls._last_fetch_time = now
+            cls._cached_stop_key = stop_key
             return parsed
         except Exception as e:
             logger.warning("Failed to fetch DING live departures: %s", e)
             return list(cls._cached_departures)
+
+    @classmethod
+    def find_stops(cls, query: str, limit: int = TRANSIT_STOP_SUGGESTION_LIMIT) -> list[TransitStop] | None:
+        """Stop suggestions for a partial name. Returns None when the service is unreachable."""
+        query = query.strip()
+        if not query:
+            return []
+        params = {
+            "outputFormat": "JSON",
+            "type_sf": "any",
+            "name_sf": query,
+            "anyObjFilter_sf": "2",  # stops only
+            "anyMaxSizeHitList": str(limit),
+            "locationServerActive": "1",
+        }
+        try:
+            data = cls._request_json(TRANSIT_EFA_STOPFINDER_ENDPOINT, params)
+        except Exception as e:
+            logger.warning("Stop search failed: %s", e)
+            return None
+        return cls._parse_stop_points(data.get("stopFinder") or data)[:limit]
+
+    @classmethod
+    def check_stop(cls, stop_name: str, place: str) -> StopCheckResult:
+        """Looks up the stop live, bypassing the cache, and reports whether it works."""
+        try:
+            data = cls._request_json(TRANSIT_EFA_ENDPOINT, cls._departure_params(stop_name, place, 10))
+        except Exception as e:
+            logger.warning("Stop check failed: %s", e)
+            return StopCheckResult(status="error")
+
+        departures = cls._parse_efa_response(data)
+        raw_dm = data.get("dm")
+        dm: dict[str, Any] = raw_dm if isinstance(raw_dm, dict) else {}
+        candidates = cls._parse_stop_points(dm)
+        raw_points = dm.get("points")
+        ambiguous = isinstance(raw_points, list) and len(candidates) > 1
+
+        if departures:
+            resolved = departures[0].stop_name or (candidates[0].name if len(candidates) == 1 else stop_name)
+            return StopCheckResult(status="ok", departure_count=len(departures), resolved_name=resolved)
+        if ambiguous:
+            return StopCheckResult(status="ambiguous", candidates=candidates)
+        if candidates:
+            return StopCheckResult(status="no_departures", resolved_name=candidates[0].name)
+        return StopCheckResult(status="not_found")
+
+    @staticmethod
+    def _parse_stop_points(container: Any) -> list[TransitStop]:
+        """Reads stop entries from an EFA stop finder (or ODV) block.
+
+        EFA returns ``points`` as a list when several stops match, as
+        ``{"point": {...}}`` for exactly one, and as null for none. The
+        rapidJSON variant uses ``locations`` instead.
+        """
+        if not isinstance(container, dict):
+            return []
+        raw: Any = container.get("points")
+        if isinstance(raw, dict):
+            raw = raw.get("point")
+        if isinstance(raw, dict):
+            raw = [raw]
+        if not isinstance(raw, list):
+            raw = container.get("locations") if isinstance(container.get("locations"), list) else []
+
+        stops: list[TransitStop] = []
+        seen: set[tuple[str, str]] = set()
+        for item in raw:
+            if not isinstance(item, dict):
+                continue
+            kind = str(item.get("anyType") or item.get("type") or "stop").lower()
+            if kind not in ("stop", "any"):
+                continue
+            raw_ref = item.get("ref")
+            raw_parent = item.get("parent")
+            ref: dict[str, Any] = raw_ref if isinstance(raw_ref, dict) else {}
+            parent: dict[str, Any] = raw_parent if isinstance(raw_parent, dict) else {}
+            full_name = str(item.get("name") or "").strip()
+            name = str(item.get("object") or item.get("disassembledName") or "").strip()
+            place = str(item.get("mainLoc") or ref.get("place") or parent.get("name") or "").strip()
+            if not name and full_name:
+                # "Neu-Ulm, Edisonallee" -> place "Neu-Ulm", name "Edisonallee"
+                head, sep, tail = full_name.partition(", ")
+                name, place = (tail, place or head) if sep else (full_name, place)
+            if not name:
+                continue
+            key = (name.lower(), place.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            stops.append(TransitStop(name=name, place=place, stop_id=str(ref.get("id") or item.get("id") or "")))
+        return stops
 
     @classmethod
     def _parse_efa_response(cls, data: dict[str, Any]) -> list[TransitDeparture]:

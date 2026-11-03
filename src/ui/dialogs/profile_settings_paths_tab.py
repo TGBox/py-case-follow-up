@@ -45,7 +45,6 @@ from constants import (
     PAD_GAP,
     PAD_MD,
     PAD_LG,
-    PAD_XL,
     PROFILE_CARD_DESC_WRAPLENGTH,
     PROFILE_DESC_WRAPLENGTH,
 )
@@ -60,6 +59,7 @@ class PathsSettingsTabMixin:
 
     if TYPE_CHECKING:
         tab_paths: ctk.CTkFrame
+        tab_backup: ctk.CTkFrame
         profile: Any
         storage_service: Any
         status_lbl: ctk.CTkLabel
@@ -86,13 +86,8 @@ class PathsSettingsTabMixin:
         cols_container.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
         cols_container.columnconfigure(0, weight=1)
 
-        # Stacked rather than side by side: next to the settings sidebar there
-        # is not enough width for two columns of path rows.
         left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
         left_col.grid(row=0, column=0, sticky="nsew")
-
-        right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        right_col.grid(row=1, column=0, sticky="nsew", pady=(PAD_XL, PAD_NONE))
 
         # =========================================================================
         # --- LINKE SPALTE: Speicherorte & Retention ---
@@ -195,20 +190,22 @@ class PathsSettingsTabMixin:
         )
         btn_reset_paths.pack(anchor="w", pady=(PAD_MD, PAD_LG))
 
+    def setup_backup_section(self, parent: ctk.CTkFrame) -> None:
+        """Retention rules plus full ZIP backup and restore, on a page of their own."""
         # --- Sektion 2: Automatische Backup-Aufbewahrung (Retention) ---
         self.register_i18n(
             ctk.CTkLabel(
-                left_col,
+                parent,
                 text=tr("profile.retention_title", "🔄 Automatische Backup-Aufbewahrung (Retention)"),
                 font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
             ),
             "profile.retention_title",
             "🔄 Automatische Backup-Aufbewahrung (Retention)",
-        ).pack(anchor="w", pady=(PAD_MD, PAD_SM))
+        ).pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.register_i18n(
             ctk.CTkLabel(
-                left_col,
+                parent,
                 text=tr(
                     "profile.retention_desc",
                     "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
@@ -223,7 +220,7 @@ class PathsSettingsTabMixin:
             "Tägliche Sicherungen (cases_YYYY-MM-DD.json) werden beim Programmstart nach dem Großvater-Vater-Sohn-Prinzip bereinigt: Die letzten Tage vollständig behalten, danach wöchentlich und monatlich verdichten. Ältere Backups werden automatisch gelöscht.",
         ).pack(anchor="w", pady=(PAD_NONE, PAD_GAP))
 
-        retention_card = ctk.CTkFrame(left_col, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        retention_card = ctk.CTkFrame(parent, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         retention_card.pack(fill="x", pady=(PAD_NONE, PAD_MD), padx=PAD_XS)
 
         # Row 1: Daily days
@@ -282,7 +279,7 @@ class PathsSettingsTabMixin:
         # =========================================================================
         self.register_i18n(
             ctk.CTkLabel(
-                right_col,
+                parent,
                 text=tr("profile.backup_title", "📦 Komplett-Datensicherung & ZIP-Archivierung"),
                 font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"),
             ),
@@ -297,7 +294,7 @@ class PathsSettingsTabMixin:
             "den Wechsel auf einen anderen Arbeitsplatz genutzt werden.",
         )
         ctk.CTkLabel(
-            right_col,
+            parent,
             text=desc_str,
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_MUTED_BODY,
@@ -307,7 +304,7 @@ class PathsSettingsTabMixin:
         ).pack(anchor="w", pady=(PAD_NONE, PAD_LG))
 
         # Section 2.1: Export
-        exp_card = ctk.CTkFrame(right_col, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        exp_card = ctk.CTkFrame(parent, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         exp_card.pack(fill="x", pady=(PAD_NONE, PAD_LG), padx=PAD_XS)
 
         self.register_i18n(
@@ -348,7 +345,7 @@ class PathsSettingsTabMixin:
         btn_export.pack(anchor="w", padx=PAD_LG, pady=(PAD_NONE, PAD_LG))
 
         # Section 2.2: Import
-        imp_card = ctk.CTkFrame(right_col, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
+        imp_card = ctk.CTkFrame(parent, corner_radius=CORNER_RADIUS_CARD, fg_color=COLOR_PANEL_BG, border_width=1, border_color=COLOR_PANEL_BORDER)
         imp_card.pack(fill="x", pady=(PAD_NONE, PAD_LG), padx=PAD_XS)
 
         self.register_i18n(
@@ -635,5 +632,6 @@ class PathsSettingsTabMixin:
         return True
 
     def setup_backup_tab(self) -> None:
-        """Integrated into setup_paths_tab; retained for backward compatibility."""
-        pass
+        """Builds the backup section into ``tab_backup`` unless it already exists."""
+        if not hasattr(self, "retention_daily_entry"):
+            self.setup_backup_section(self.tab_backup)

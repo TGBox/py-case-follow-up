@@ -1,11 +1,16 @@
 from collections.abc import Callable
 import re
+import sys
 import webbrowser
 from typing import Any, Literal, cast
 import tkinter as tk
 import customtkinter as ctk
 
 from constants import (
+    WIN_DWMWA_USE_IMMERSIVE_DARK_MODE,
+    WIN_DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1,
+    WIN_SWP_REFRESH_FRAME,
+    WIN_TITLEBAR_RETRY_MS,
     ATTR_AUTO_HIDE_SCROLLBAR_INSTALLED,
     ATTR_LINK_CLICK_HANDLER,
     COLOR_FALLBACK_TEXT_BG,
@@ -351,10 +356,85 @@ def patch_ctk_rendering() -> None:
         pass
 
 
+def set_windows_titlebar_dark(window: Any, dark: bool) -> bool:
+    """Switches the native Windows title bar of a Tk window to dark or light.
+
+    Uses DWMWA_USE_IMMERSIVE_DARK_MODE and then asks Windows to redraw the
+    frame (SWP_FRAMECHANGED), so the change shows immediately without the
+    withdraw/deiconify flicker CustomTkinter uses. Returns False on other
+    platforms or when Windows refuses the call.
+    """
+    if not sys.platform.startswith("win"):
+        return False
+    try:
+        import ctypes
+        from ctypes import wintypes
+
+        window.update_idletasks()
+        wid = window.winfo_id()
+        if not wid:
+            return False
+        # argtypes/restype must be declared: without them ctypes assumes c_int,
+        # so on 64-bit Windows the HWND from GetParent is truncated to 32 bits.
+        # That is also why CustomTkinter's own title bar colouring silently
+        # fails for CTkToplevel windows.
+        user32 = ctypes.windll.user32  # pyright: ignore[reportAttributeAccessIssue]
+        dwmapi = ctypes.windll.dwmapi  # pyright: ignore[reportAttributeAccessIssue]
+        user32.GetParent.argtypes = [wintypes.HWND]
+        user32.GetParent.restype = wintypes.HWND
+        user32.SetWindowPos.argtypes = [
+            wintypes.HWND, wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, wintypes.UINT
+        ]
+        user32.SetWindowPos.restype = wintypes.BOOL
+        dwmapi.DwmSetWindowAttribute.argtypes = [wintypes.HWND, wintypes.DWORD, ctypes.c_void_p, wintypes.DWORD]
+        dwmapi.DwmSetWindowAttribute.restype = ctypes.c_long
+
+        hwnd = user32.GetParent(wintypes.HWND(wid)) or wintypes.HWND(wid)
+        value = ctypes.c_int(1 if dark else 0)
+        ok = dwmapi.DwmSetWindowAttribute(
+            hwnd, WIN_DWMWA_USE_IMMERSIVE_DARK_MODE, ctypes.byref(value), ctypes.sizeof(value)
+        ) == 0
+        if not ok:
+            ok = dwmapi.DwmSetWindowAttribute(
+                hwnd, WIN_DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, ctypes.byref(value), ctypes.sizeof(value)
+            ) == 0
+        user32.SetWindowPos(hwnd, None, 0, 0, 0, 0, WIN_SWP_REFRESH_FRAME)
+        return ok
+    except Exception:
+        return False
+
+
+def patch_ctk_toplevel_titlebar() -> None:
+    """Gives every CTkToplevel (dialogs, floating panels) a title bar that follows the theme.
+
+    CustomTkinter's built-in variant hides and re-shows the window and, on
+    64-bit Windows, hands DWM a truncated window handle, so dialogs kept a
+    white title bar in dark mode. The replacement keeps CustomTkinter's call
+    sites (creation and every appearance change) but uses the robust helper.
+    """
+    if getattr(ctk.CTkToplevel, "_titlebar_patch_applied", False):
+        return
+
+    def themed_titlebar(self, color_mode: str) -> None:
+        if not sys.platform.startswith("win") or getattr(self, "_deactivate_windows_window_header_manipulation", False):
+            return
+        dark = str(color_mode).lower() == "dark"
+        set_windows_titlebar_dark(self, dark)
+        # The outer frame window may only exist once Tk has mapped the dialog.
+        try:
+            self.after(WIN_TITLEBAR_RETRY_MS, lambda: self.winfo_exists() and set_windows_titlebar_dark(self, dark))
+        except Exception:
+            pass
+
+    ctk.CTkToplevel._windows_set_titlebar_color = themed_titlebar  # pyright: ignore[reportAttributeAccessIssue]
+    ctk.CTkToplevel._titlebar_patch_applied = True  # pyright: ignore[reportAttributeAccessIssue]
+
+
 # Automatically apply patches on import
 patch_ctk_scrollable_frame()
 patch_ctk_tabview()
 patch_ctk_rendering()
+patch_ctk_toplevel_titlebar()
 
 
 

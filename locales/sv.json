@@ -1518,8 +1518,10 @@
     "page_wiki_desc": "Anslutning till BookStack-wikin.",
     "page_ai": "AI och textanalys",
     "page_ai_desc": "AI-leverantör, lokala modeller och grundregler för svar.",
-    "page_data": "Data och säkerhetskopiering",
-    "page_data_desc": "Lagringsplats, automatiska säkerhetskopior och export."
+    "page_data": "Lagringsplats",
+    "page_data_desc": "Var appen sparar ärenden, kunder och andra filer.",
+    "page_backup": "Säkerhetskopiering",
+    "page_backup_desc": "Automatisk lagring, fullständig säkerhetskopia och återställning."
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -2249,6 +2251,20 @@
     "lead_walk": "Gångväg",
     "lead_buffer": "Marginal",
     "lead_total": "= {minutes} min före avgång",
-    "open_settings": "Inställningar för arbetsdagens slut"
+    "open_settings": "Inställningar för arbetsdagens slut",
+    "stop_placeholder": "Edisonallee",
+    "btn_check_stop": "Kontrollera avgångar",
+    "stop_hint": "Skriv hållplatsens namn och välj ett förslag.",
+    "stop_searching": "Söker hållplatser …",
+    "stop_pick_hint": "Välj din hållplats i listan.",
+    "stop_no_suggestions": "Ingen matchande hållplats hittades. Kontrollera stavningen.",
+    "stop_enter_name": "Ange hållplatsens namn först.",
+    "stop_check_running": "Kontrollerar avgångar …",
+    "stop_check_ok": "Hittad: {stop}. De nästa {count} avgångarna visas.",
+    "stop_check_no_departures": "Hållplatsen {stop} hittades, men inget avgår just nu.",
+    "stop_check_ambiguous": "Flera hållplatser matchar. Välj en i listan.",
+    "stop_check_not_found": "Ingen hållplats med det namnet hittades. Kontrollera stavning och ort.",
+    "stop_check_error": "Tidtabellstjänsten kan inte nås. Kontrollera internetanslutningen.",
+    "remember_visibility": "Öppna igen efter omstart om panelen var öppen senast"
   }
 }

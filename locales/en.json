@@ -1492,7 +1492,34 @@
     "zip_backup_success": "✅ ZIP backup created successfully: {file_count} files ({mb_size:.2f} MB)",
     "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted.",
     "shortcut_conflict": "⚠ Shortcut conflict: The following hotkeys are assigned multiple times: {dup_str}",
-    "shortcut_conflict_generic": "⚠ Shortcut conflict: Hotkeys cannot be assigned multiple times!"
+    "shortcut_conflict_generic": "⚠ Shortcut conflict: Hotkeys cannot be assigned multiple times!",
+    "nav_title": "Settings",
+    "nav_group_you": "You",
+    "nav_group_notify": "Reminders and notifications",
+    "nav_group_work": "Work",
+    "nav_group_system": "System",
+    "page_profile": "Profile",
+    "page_profile_desc": "Who you are and how you appear in cases and emails.",
+    "page_appearance": "Appearance",
+    "page_appearance_desc": "Language, colours, text size and layout of the app.",
+    "page_notifications": "Notifications",
+    "page_notifications_desc": "Alerts on this PC when follow-ups are due.",
+    "page_push": "Phone push",
+    "page_push_desc": "Messages to your phone while you're away from your desk. Uses ntfy.sh.",
+    "page_checkout": "End of day",
+    "page_checkout_desc": "Checklist, departures and a leave-now alarm at the end of your shift.",
+    "page_scoring": "Prioritization",
+    "page_scoring_desc": "How strongly cases move up the list.",
+    "page_shortcuts": "Keyboard shortcuts",
+    "page_shortcuts_desc": "Key combinations for actions and text snippets.",
+    "page_team": "Team sync",
+    "page_team_desc": "Compare cases with colleagues on your network.",
+    "page_wiki": "Wiki",
+    "page_wiki_desc": "Connection to the BookStack wiki.",
+    "page_ai": "AI and text analysis",
+    "page_ai_desc": "AI provider, local models and base rules for replies.",
+    "page_data": "Data and backup",
+    "page_data_desc": "Storage location, automatic backups and export."
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -2098,7 +2125,8 @@
     "unlock_notification_placeholder": "e.g. Welcome back! Please check open cases and due follow-ups.",
     "unlock_notification_text_label": "Custom notification text:",
     "unlock_notification_toggle": "🖥 Show notification after unlocking screen",
-    "unlock_toast_title": "🖥 Workstation unlocked"
+    "unlock_toast_title": "🖥 Workstation unlocked",
+    "advanced_heading": "Advanced: digest and remote control"
   },
   "urgency_levels": {
     "RED": "High",
@@ -2213,6 +2241,14 @@
     "worktime_heading": "Work Time & End of Day Forecast",
     "work_start": "Default work start",
     "work_target": "Target work time (hours)",
-    "work_break": "Break time (minutes)"
+    "work_break": "Break time (minutes)",
+    "commute_heading": "Commute by public transport",
+    "lead_time_label": "Lead time before departure",
+    "lead_logout": "Shut down",
+    "lead_pack": "Pack up",
+    "lead_walk": "Walk",
+    "lead_buffer": "Buffer",
+    "lead_total": "= {minutes} min before departure",
+    "open_settings": "End-of-day settings"
   }
 }

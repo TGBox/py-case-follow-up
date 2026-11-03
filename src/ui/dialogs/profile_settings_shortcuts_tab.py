@@ -121,36 +121,19 @@ class ShortcutsSettingsTabMixin:
         def setup_wiki_section(self, parent_frame: ctk.CTkFrame) -> None: ...
 
     def setup_scoring_tab(self) -> None:
-        from utils.ui_utils import enable_auto_hiding_scrollbar
-        scroll = ctk.CTkScrollableFrame(self.tab_scoring, fg_color="transparent")
-        scroll.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
-        enable_auto_hiding_scrollbar(scroll)
-        self.scoring_scroll = scroll
-
-        # 2-Column Side-by-Side Container
-        cols_container = ctk.CTkFrame(scroll, fg_color="transparent")
-        cols_container.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
-        cols_container.columnconfigure(0, weight=1, uniform="scoring_cols")
-        cols_container.columnconfigure(1, weight=1, uniform="scoring_cols")
-
-        left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        left_col.grid(row=0, column=0, sticky="nsew", padx=(PAD_NONE, PAD_LG))
-
-        right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        right_col.grid(row=0, column=1, sticky="nsew", padx=(PAD_LG, PAD_NONE))
-
-        # =====================================================================
-        # --- LINKE SPALTE: BookStack Wiki Server & Prioritäts-Scoring ---
-        # =====================================================================
+        """Builds wiki, scoring and shortcuts into ``tab_scoring`` (pre-sidebar layout)."""
         if hasattr(self, "setup_wiki_section"):
-            self.setup_wiki_section(left_col)
+            self.setup_wiki_section(self.tab_scoring)
+        self.setup_scoring_section(self.tab_scoring)
+        self.setup_shortcuts_section(self.tab_scoring)
 
+    def setup_scoring_section(self, left_col: ctk.CTkFrame) -> None:
         self.scoring_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.scoring_points_title", "Prioritäts-Scoring Punkte"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
             "profile.scoring_points_title",
             "Prioritäts-Scoring Punkte",
         )
-        self.scoring_hdr_lbl.pack(anchor="w", pady=(PAD_MD, PAD_SM))
+        # The page title already names this section; the label is kept for i18n refresh only.
 
         row4 = ctk.CTkFrame(left_col, fg_color="transparent")
         row4.pack(fill="x", pady=PAD_XS)
@@ -163,15 +146,13 @@ class ShortcutsSettingsTabMixin:
         self.vip_bonus_entry.insert(0, str(self.profile.scoring_matrix.vip_bonus_points))
         self.vip_bonus_entry.pack(side="left", padx=(PAD_MD, PAD_NONE))
 
-        # =====================================================================
-        # --- RECHTE SPALTE: App-Aktionen Tastenkürzel & Snippet-Makros ---
-        # =====================================================================
+    def setup_shortcuts_section(self, right_col: ctk.CTkFrame) -> None:
         self.app_shortcuts_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(right_col, text=tr("profile.shortcuts_app_header", LABEL_APP_SHORTCUTS_HEADER), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
             "profile.shortcuts_app_header",
             LABEL_APP_SHORTCUTS_HEADER,
         )
-        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_MD))
+        self.app_shortcuts_hdr_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
         self.shortcut_entries: dict[str, ctk.CTkEntry] = {}
         self.rec_buttons: list[ctk.CTkButton] = []
@@ -257,7 +238,7 @@ class ShortcutsSettingsTabMixin:
                 s_entry.bind("<KeyRelease>", lambda evt: self.validate_shortcut_conflicts())
 
         # Conflict Warning Label at the bottom across full width
-        self.conflict_warn_lbl = ctk.CTkLabel(scroll, text="", text_color=COLOR_DANGER, font=ctk.CTkFont(weight="bold"))
+        self.conflict_warn_lbl = ctk.CTkLabel(right_col, text="", text_color=COLOR_DANGER, font=ctk.CTkFont(weight="bold"))
         self.conflict_warn_lbl.pack(fill="x", pady=(PAD_MD, PAD_SM))
 
     def setup_shortcuts_tab(self) -> None:

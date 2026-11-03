@@ -61,6 +61,7 @@ from constants import (
     ICON_DELETE_X,
     ICON_KEY_CHECKOUT,
     ICON_KEY_DOCK,
+    ICON_KEY_SETTINGS,
     ICON_KEY_UNDOCK,
     ICON_SIZE_ACTION,
     LABEL_WIDTH_TRANSIT_LINE,
@@ -119,6 +120,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         cases_provider: Callable[[], list[Case]] | None = None,
         on_persist_callback: Callable[[], None] | None = None,
         is_floating: bool = False,
+        on_open_settings: Callable[[], None] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -135,6 +137,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.cases_provider = cases_provider or (lambda: [])
         self.on_persist_callback = on_persist_callback
         self.is_floating = is_floating
+        self.on_open_settings = on_open_settings
 
         self._transit_departures: list[TransitDeparture] = []
         self._selected_dep_key: str | None = None
@@ -211,6 +214,24 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         btn_box = ctk.CTkFrame(self.header_frame, fg_color=COLOR_TRANSPARENT)
         btn_box.pack(side="right")
 
+        from ui.widgets.ctk_tooltip import CTkTooltip
+
+        # Settings shortcut: opens the profile dialog on the end-of-day page
+        if self.on_open_settings is not None:
+            self.settings_btn = ctk.CTkButton(
+                btn_box,
+                text="",
+                image=get_icon(ICON_KEY_SETTINGS, size=ICON_SIZE_ACTION),
+                command=self.on_open_settings,
+                width=CHECKOUT_HEADER_BTN_SIZE,
+                height=CHECKOUT_HEADER_BTN_SIZE,
+                fg_color=COLOR_THEME_BTN,
+            )
+            self.settings_btn.pack(side="left", padx=PAD_XS)
+            self._settings_tooltip = CTkTooltip(
+                self.settings_btn, tr("settings_checkout.open_settings", "Feierabend-Einstellungen")
+            )
+
         # Dock / Undock button
         dock_icon_key = ICON_KEY_DOCK if self.is_floating else ICON_KEY_UNDOCK
         self.dock_btn = ctk.CTkButton(
@@ -223,7 +244,6 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             fg_color=COLOR_THEME_BTN,
         )
         self.dock_btn.pack(side="left", padx=PAD_XS)
-        from ui.widgets.ctk_tooltip import CTkTooltip
 
         dock_tooltip_text = (
             tr("checkout_panel.btn_dock", "Wieder andocken")

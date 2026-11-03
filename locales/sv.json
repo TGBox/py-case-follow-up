@@ -1499,11 +1499,11 @@
     "nav_group_work": "Arbete",
     "nav_group_system": "System",
     "page_profile": "Profil",
-    "page_profile_desc": "Vem du är och hur du visas i ärenden och e-post.",
+    "page_profile_desc": "Vem du är, hur du visas i ärenden och e-post och hur du synkar med teamet.",
     "page_appearance": "Utseende",
     "page_appearance_desc": "Språk, färger, textstorlek och appens layout.",
     "page_notifications": "Aviseringar",
-    "page_notifications_desc": "Aviseringar på den här datorn när uppföljningar förfaller.",
+    "page_notifications_desc": "Aviseringar på datorn och i mobilen när uppföljningar förfaller.",
     "page_push": "Push till mobilen",
     "page_push_desc": "Meddelanden till mobilen när du inte är vid datorn. Använder ntfy.sh.",
     "page_checkout": "Arbetsdagens slut",
@@ -1521,7 +1521,17 @@
     "page_data": "Lagringsplats",
     "page_data_desc": "Var appen sparar ärenden, kunder och andra filer.",
     "page_backup": "Säkerhetskopiering",
-    "page_backup_desc": "Automatisk lagring, fullständig säkerhetskopia och återställning."
+    "page_backup_desc": "Automatisk lagring, fullständig säkerhetskopia och återställning.",
+    "page_work": "Arbetssätt",
+    "page_work_desc": "Hur ärenden prioriteras och vilka kortkommandon som gäller.",
+    "page_knowledge": "Wiki och AI",
+    "page_knowledge_desc": "Anslutning till BookStack-wikin och AI-stöd vid skrivande.",
+    "section_team": "Teamsynk",
+    "section_notify_pc": "På den här datorn",
+    "section_notify_phone": "Till mobilen (ntfy.sh)",
+    "section_scoring": "Prioritering",
+    "section_wiki": "Wiki (BookStack)",
+    "section_ai": "AI och textanalys"
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -2216,7 +2226,9 @@
     "transit_toast_logout_msg": "Linje {line} mot {dest} avgår om {minutes} min. Vänligen logga ut och stäng av datorn.",
     "transit_toast_walk_title": "🚶 Dags att gå!",
     "transit_toast_walk_msg": "Gå nu! Linje {line} mot {dest} avgår kl. {dep_time}.",
-    "transit_selected_badge": "🎯 Vald"
+    "transit_selected_badge": "🎯 Vald",
+    "summary_net": "Netto {hours}:{minutes:02d} h",
+    "summary_end": "Slutar ca. {time}"
   },
   "settings_checkout": {
     "section_title": "Avslutnings- & Avreseguide",

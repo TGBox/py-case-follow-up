@@ -1499,11 +1499,11 @@
     "nav_group_work": "Work",
     "nav_group_system": "System",
     "page_profile": "Profile",
-    "page_profile_desc": "Who you are and how you appear in cases and emails.",
+    "page_profile_desc": "Who you are, how you appear in cases and emails, and how you sync with your team.",
     "page_appearance": "Appearance",
     "page_appearance_desc": "Language, colours, text size and layout of the app.",
     "page_notifications": "Notifications",
-    "page_notifications_desc": "Alerts on this PC when follow-ups are due.",
+    "page_notifications_desc": "Alerts on this PC and on your phone when follow-ups are due.",
     "page_push": "Phone push",
     "page_push_desc": "Messages to your phone while you're away from your desk. Uses ntfy.sh.",
     "page_checkout": "End of day",
@@ -1521,7 +1521,17 @@
     "page_data": "Storage location",
     "page_data_desc": "Where the app keeps its cases, customers and other files.",
     "page_backup": "Backup",
-    "page_backup_desc": "Automatic retention, full backup and restore."
+    "page_backup_desc": "Automatic retention, full backup and restore.",
+    "page_work": "Way of working",
+    "page_work_desc": "How cases are prioritized and which keyboard shortcuts apply.",
+    "page_knowledge": "Wiki and AI",
+    "page_knowledge_desc": "Connection to the BookStack wiki and AI help with writing.",
+    "section_team": "Team sync",
+    "section_notify_pc": "On this PC",
+    "section_notify_phone": "To your phone (ntfy.sh)",
+    "section_scoring": "Prioritization",
+    "section_wiki": "Wiki (BookStack)",
+    "section_ai": "AI and text analysis"
   },
   "quick_customer": {
     "contact_person": "Contact person:",
@@ -2216,7 +2226,9 @@
     "transit_toast_logout_msg": "Line {line} to {dest} departs in {minutes} min. Please log out and shut down.",
     "transit_toast_walk_title": "🚶 Time to leave!",
     "transit_toast_walk_msg": "Leave now! Line {line} to {dest} departs at {dep_time}.",
-    "transit_selected_badge": "🎯 Selected"
+    "transit_selected_badge": "🎯 Selected",
+    "summary_net": "Net {hours}:{minutes:02d} h",
+    "summary_end": "Done at about {time}"
   },
   "settings_checkout": {
     "section_title": "Departure & Checkout Companion",

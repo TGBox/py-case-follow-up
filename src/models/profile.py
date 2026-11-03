@@ -471,6 +471,8 @@ class CheckoutSettings:
     remember_visibility: bool = False
     was_open: bool = False
     floating_geometry: str = ""
+    # Sections folded away in the docked one-column layout
+    collapsed_sections: list[str] = field(default_factory=list)
     panel_width: int = CHECKOUT_DEFAULT_WIDTH
     stops: list[dict[str, str]] = field(
         default_factory=lambda: [
@@ -511,6 +513,7 @@ class CheckoutSettings:
             "remember_visibility": self.remember_visibility,
             "was_open": self.was_open,
             "floating_geometry": self.floating_geometry,
+            "collapsed_sections": list(self.collapsed_sections),
             "panel_width": self.panel_width,
             "stops": [dict(s) for s in self.stops],
             "walk_time_minutes": self.walk_time_minutes,
@@ -583,6 +586,9 @@ class CheckoutSettings:
             remember_visibility=bool(data.get("remember_visibility", False)),
             was_open=bool(data.get("was_open", False)),
             floating_geometry=str(data.get("floating_geometry", "")),
+            collapsed_sections=[str(x) for x in data.get("collapsed_sections", []) if isinstance(x, str)]
+            if isinstance(data.get("collapsed_sections"), list)
+            else [],
             panel_width=int(data.get("panel_width", CHECKOUT_DEFAULT_WIDTH)),
             stops=stops,
             walk_time_minutes=int(data.get("walk_time_minutes", CHECKOUT_DEFAULT_WALK_MINUTES)),

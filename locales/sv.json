@@ -2265,6 +2265,9 @@
     "stop_check_ambiguous": "Flera hållplatser matchar. Välj en i listan.",
     "stop_check_not_found": "Ingen hållplats med det namnet hittades. Kontrollera stavning och ort.",
     "stop_check_error": "Tidtabellstjänsten kan inte nås. Kontrollera internetanslutningen.",
-    "remember_visibility": "Öppna igen efter omstart om panelen var öppen senast"
+    "remember_visibility": "Öppna igen efter omstart om panelen var öppen senast",
+    "always_show": "Visa panelen hela tiden",
+    "visibility_heading": "Visning",
+    "schedule_heading": "Vid arbetsdagens slut"
   }
 }

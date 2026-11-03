@@ -117,6 +117,8 @@ class TimelineEntryDialog(BaseDialog):
         self.note_textbox = ctk.CTkTextbox(main_frame, height=TEXTBOX_HEIGHT_TIMELINE_EDIT)
         self.note_textbox.insert("1.0", self.entry.note or "")
         self.note_textbox.pack(fill="both", expand=True, padx=PAD_LG, pady=(PAD_NONE, PAD_SM))
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.note_textbox)
 
         self.error_label = ctk.CTkLabel(main_frame, text="", text_color=COLOR_DARKRED, anchor=ANCHOR_WEST)
         self.error_label.pack(fill="x", padx=PAD_LG)

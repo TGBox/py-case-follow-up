@@ -164,9 +164,10 @@ class DingTransitService:
             return StopCheckResult(status="error")
 
         departures = cls._parse_efa_response(data)
-        dm = data.get("dm") if isinstance(data.get("dm"), dict) else {}
+        raw_dm = data.get("dm")
+        dm: dict[str, Any] = raw_dm if isinstance(raw_dm, dict) else {}
         candidates = cls._parse_stop_points(dm)
-        raw_points = dm.get("points") if isinstance(dm, dict) else None
+        raw_points = dm.get("points")
         ambiguous = isinstance(raw_points, list) and len(candidates) > 1
 
         if departures:
@@ -204,8 +205,10 @@ class DingTransitService:
             kind = str(item.get("anyType") or item.get("type") or "stop").lower()
             if kind not in ("stop", "any"):
                 continue
-            ref = item.get("ref") if isinstance(item.get("ref"), dict) else {}
-            parent = item.get("parent") if isinstance(item.get("parent"), dict) else {}
+            raw_ref = item.get("ref")
+            raw_parent = item.get("parent")
+            ref: dict[str, Any] = raw_ref if isinstance(raw_ref, dict) else {}
+            parent: dict[str, Any] = raw_parent if isinstance(raw_parent, dict) else {}
             full_name = str(item.get("name") or "").strip()
             name = str(item.get("object") or item.get("disassembledName") or "").strip()
             place = str(item.get("mainLoc") or ref.get("place") or parent.get("name") or "").strip()

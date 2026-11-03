@@ -13,6 +13,7 @@ with 6 dedicated tabs:
 from __future__ import annotations
 
 import logging
+import sys
 import threading
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
@@ -91,8 +92,10 @@ logger = logging.getLogger(__name__)
 class CheckoutFloatingWindow(ctk.CTkToplevel):
     """Floating tool window for the Checkout panel on multi-monitor setups.
 
-    Marked as transient(master) and -topmost, so it does not clutter the Windows
-    taskbar while staying pinned on top across screens.
+    Deliberately not transient(master): a transient window disappears together
+    with its owner, but the panel has to stay on screen while the main window is
+    minimized to the taskbar or hidden in the tray. -topmost keeps it above all
+    other windows; on Windows -toolwindow keeps it out of the taskbar.
     """
 
     def __init__(
@@ -102,7 +105,11 @@ class CheckoutFloatingWindow(ctk.CTkToplevel):
         on_close_callback: Callable[[], None],
     ) -> None:
         super().__init__(master)
-        self.transient(master)
+        if sys.platform.startswith("win"):
+            try:
+                self.attributes("-toolwindow", True)
+            except Exception:
+                pass
         self.attributes("-topmost", True)
         self.resizable(True, True)
         self.title(tr("checkout_panel.title", "Feierabend- & Checkout-Begleiter"))

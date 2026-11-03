@@ -437,3 +437,60 @@ def test_docked_column_shows_fewer_departures_than_the_tab(root):
         finally:
             docked.destroy()
             floating.destroy()
+
+
+def test_floating_panel_stays_on_screen_when_the_main_window_is_hidden(root):
+    floating = CheckoutFloatingWindow(master=root, on_dock_callback=lambda: None, on_close_callback=lambda: None)
+    try:
+        # Not transient: a transient window would vanish with a minimized / tray-hidden main window
+        assert not str(floating.wm_transient())
+        floating.deiconify()
+        root.withdraw()
+        root.update()
+        assert floating.state() == "normal"
+    finally:
+        root.deiconify()
+        floating.destroy()
+
+
+def test_gear_button_restores_a_hidden_main_window_before_opening_settings():
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    calls = []
+    app = SimpleNamespace(
+        state=lambda: "withdrawn",
+        winfo_viewable=lambda: False,
+        bring_to_foreground=lambda: calls.append("restore"),
+        after=lambda _ms, fn: (calls.append("later"), fn()),
+        open_profile_settings_dialog=lambda initial_page=None: calls.append(("open", initial_page)),
+    )
+    SupportCockpitApp._open_checkout_settings(app)  # type: ignore[arg-type]
+    assert calls == ["restore", "later", ("open", "checkout")]
+
+    calls.clear()
+    app.state = lambda: "zoomed"
+    app.winfo_viewable = lambda: True
+    SupportCockpitApp._open_checkout_settings(app)  # type: ignore[arg-type]
+    assert calls == [("open", "checkout")]
+
+
+def test_docking_does_not_bring_back_a_hidden_main_window():
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    profile = UserProfile()
+    profile.checkout_settings.is_docked = False
+    calls = []
+    app = SimpleNamespace(
+        profile=profile,
+        _persist_profile_settings=lambda: calls.append("save"),
+        show_checkout_panel=lambda: calls.append("show"),
+        bring_to_foreground=lambda: calls.append("restore"),
+        deiconify=lambda: calls.append("deiconify"),
+    )
+    SupportCockpitApp.dock_checkout_panel(app)  # type: ignore[arg-type]
+    assert profile.checkout_settings.is_docked is True
+    assert calls == ["save", "show"]

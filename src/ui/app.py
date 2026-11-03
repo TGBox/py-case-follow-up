@@ -17,6 +17,7 @@ from constants import (
     APP_DEFAULT_GEOMETRY,
     APP_MIN_HEIGHT,
     APP_MIN_WIDTH,
+    CHECKOUT_SETTINGS_OPEN_DELAY_MS,
     APP_WINDOW_TITLE,
     BTN_WIDTH_CHECKOUT,
     BTN_WIDTH_FULLSCREEN,
@@ -845,7 +846,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     on_close=self.hide_checkout_panel,
                     cases_provider=lambda: self.cases,
                     on_persist_callback=self._persist_profile_settings,
-                    on_open_settings=lambda: self.open_profile_settings_dialog(initial_page="checkout"),
+                    on_open_settings=self._open_checkout_settings,
                     is_floating=False,
                 )
                 self.checkout_panel.pack(fill="both", expand=True)
@@ -890,7 +891,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     on_close=self.hide_checkout_panel,
                     cases_provider=lambda: self.cases,
                     on_persist_callback=self._persist_profile_settings,
-                    on_open_settings=lambda: self.open_profile_settings_dialog(initial_page="checkout"),
+                    on_open_settings=self._open_checkout_settings,
                     is_floating=True,
                 )
                 self.checkout_panel.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
@@ -920,8 +921,25 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._persist_profile_settings()
         self.show_checkout_panel()
 
+    def _open_checkout_settings(self) -> None:
+        """Opens the settings on the end-of-day page, from the panel's gear button.
+
+        The floating panel can be on screen while the main window sits in the
+        tray. Dialogs belong to the main window, so it is brought back first;
+        otherwise the dialog would open hidden and block input.
+        """
+        if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
+            self.bring_to_foreground()
+            self.after(CHECKOUT_SETTINGS_OPEN_DELAY_MS, lambda: self.open_profile_settings_dialog(initial_page="checkout"))
+            return
+        self.open_profile_settings_dialog(initial_page="checkout")
+
     def dock_checkout_panel(self) -> None:
-        """Dock the panel back into the main application."""
+        """Dock the panel back into the main application.
+
+        Only re-parents the panel: if the main window is minimized or in the
+        tray it stays there, so to the user the floating panel simply closes.
+        """
         self.profile.checkout_settings.is_docked = True
         self._persist_profile_settings()
         self.show_checkout_panel()

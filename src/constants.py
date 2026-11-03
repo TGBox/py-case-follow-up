@@ -2086,3 +2086,6 @@ SMILEY_TRIGGER_CHARS = (" ", "\r", "\n", "\t", ".", ",", "!", "?")
 CHECKOUT_TAB_MAX_DEPARTURES = 12
 CHECKOUT_STACK_MAX_DEPARTURES = 6
 CHECKOUT_STACK_NOTE_HEIGHT = 90
+
+# Delay before the settings dialog opens after the main window was restored for it
+CHECKOUT_SETTINGS_OPEN_DELAY_MS = 150

@@ -138,3 +138,35 @@ def test_checkout_panel_transit_selection(root):
             call_count = mock_toast.call_count
             panel._check_commute_alarms()
             assert mock_toast.call_count == call_count
+
+
+def test_checkout_panel_settings_button_opens_settings_only_when_wired(root):
+    from datetime import date
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+    opened = []
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        wired = CheckoutPanelWidget(
+            master=root,
+            profile=profile,
+            on_dock_toggle=lambda: None,
+            on_close=lambda: None,
+            on_open_settings=lambda: opened.append(True),
+        )
+        plain = CheckoutPanelWidget(
+            master=root,
+            profile=profile,
+            on_dock_toggle=lambda: None,
+            on_close=lambda: None,
+        )
+        try:
+            wired.settings_btn.invoke()
+            assert opened == [True]
+            assert not hasattr(plain, "settings_btn")
+        finally:
+            wired.destroy()
+            plain.destroy()

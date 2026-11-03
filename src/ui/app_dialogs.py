@@ -409,12 +409,13 @@ class DialogLaunchersMixin:
             self.customer_service.save_customer(c)
         self.on_customers_updated()
 
-    def open_profile_settings_dialog(self):
+    def open_profile_settings_dialog(self, initial_page: str | None = None):
         ProfileSettingsDialog(
             self,
             profile=self.profile,
             storage_service=self.storage_service,
             on_profile_updated=self.on_profile_updated,
+            initial_page=initial_page,
         )
 
     def on_profile_updated(self):

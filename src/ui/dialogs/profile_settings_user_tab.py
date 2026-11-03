@@ -27,14 +27,15 @@ from constants import (
     DEFAULT_USER_COLOR,
     ENTRY_WIDTH_COMPACT,
     ENTRY_WIDTH_MD,
+    FONT_SIZE_BODY,
     FONT_SIZE_SM,
     FONT_SIZE_SUBTITLE,
-    FONT_SIZE_XS,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
     PAD_XS,
     PROFILE_TAB_FIELD_WIDTH,
+    SETTINGS_PAGE_DESC_WRAP,
     TEXTBOX_HEIGHT_SIGNATURE,
     USER_COLOR_PRESETS,
     USER_COLOR_PRESET_TILE_SIZE,
@@ -264,42 +265,6 @@ class UserSettingsTabMixin:
         )
         self.btn_load_sig.pack(side="left")
 
-        # Section 4: P2P-Kollegen-Synchronisation (Kompakt nebeneinander)
-        self.p2p_hdr_lbl = self.register_i18n(
-            ctk.CTkLabel(left_col, text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
-            "profile.p2p_sync_header",
-            "P2P-Kollegen-Synchronisation",
-        )
-        self.p2p_hdr_lbl.grid(row=12, column=0, columnspan=2, sticky="w", pady=(PAD_SM, PAD_XS))
-
-        self.btn_open_p2p = self.register_i18n(
-            ctk.CTkButton(
-                left_col,
-                text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."),
-                command=self.on_open_p2p_sync_dialog,
-                fg_color=COLOR_PRIMARY,
-                hover_color=COLOR_PRIMARY_HOVER,
-                width=ENTRY_WIDTH_COMPACT,
-            ),
-            "profile.btn_open_p2p_sync",
-            "🔄 P2P-Sync öffnen...",
-        )
-        self.btn_open_p2p.grid(row=13, column=0, sticky="w", padx=(PAD_NONE, PAD_SM), pady=(PAD_NONE, PAD_SM))
-
-        self.p2p_desc_lbl = self.register_i18n(
-            ctk.CTkLabel(
-                left_col,
-                text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
-                font=ctk.CTkFont(size=FONT_SIZE_XS),
-                text_color=COLOR_NOTE_TEXT,
-                wraplength=ENTRY_WIDTH_COMPACT,
-                justify="left",
-            ),
-            "profile.p2p_sync_desc",
-            "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
-        )
-        self.p2p_desc_lbl.grid(row=13, column=1, sticky="w", padx=(PAD_SM, PAD_NONE), pady=(PAD_NONE, PAD_SM))
-
         # Section 5: Persönliche Farbmarkierung (Kompakte Zeile)
         self.color_marker_hdr_lbl = self.register_i18n(
             ctk.CTkLabel(left_col, text=tr("profile.color_marker_header", "Persönliche Farbmarkierung"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
@@ -389,6 +354,42 @@ class UserSettingsTabMixin:
             text_color=COLOR_NOTE_TEXT,
         )
         self.preview_sample_lbl.pack(side="left")
+
+    def setup_p2p_section(self, parent: ctk.CTkFrame) -> None:
+        self.p2p_hdr_lbl = self.register_i18n(
+            ctk.CTkLabel(parent, text=tr("profile.p2p_sync_header", "P2P-Kollegen-Synchronisation"), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold")),
+            "profile.p2p_sync_header",
+            "P2P-Kollegen-Synchronisation",
+        )
+        # The page title already names this section; the label is kept for i18n refresh only.
+
+        self.p2p_desc_lbl = self.register_i18n(
+            ctk.CTkLabel(
+                parent,
+                text=tr("profile.p2p_sync_desc", "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen."),
+                font=ctk.CTkFont(size=FONT_SIZE_BODY),
+                text_color=COLOR_NOTE_TEXT,
+                wraplength=SETTINGS_PAGE_DESC_WRAP,
+                justify="left",
+            ),
+            "profile.p2p_sync_desc",
+            "Vergleichen Sie Ihre Fälle direkt mit den Daten Ihrer Kollegen im Netzwerk und übernehmen Sie Aktualisierungen.",
+        )
+        self.p2p_desc_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        self.btn_open_p2p = self.register_i18n(
+            ctk.CTkButton(
+                parent,
+                text=tr("profile.btn_open_p2p_sync", "🔄 P2P-Sync öffnen..."),
+                command=self.on_open_p2p_sync_dialog,
+                fg_color=COLOR_PRIMARY,
+                hover_color=COLOR_PRIMARY_HOVER,
+                width=ENTRY_WIDTH_COMPACT,
+            ),
+            "profile.btn_open_p2p_sync",
+            "🔄 P2P-Sync öffnen...",
+        )
+        self.btn_open_p2p.pack(anchor="w", pady=(PAD_SM, PAD_NONE))
 
     def on_toggle_color_marker(self) -> None:
         if hasattr(self, "color_marker_switch"):

@@ -1492,7 +1492,34 @@
     "zip_backup_success": "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
     "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
     "shortcut_conflict": "⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}",
-    "shortcut_conflict_generic": "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!"
+    "shortcut_conflict_generic": "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!",
+    "nav_title": "Einstellungen",
+    "nav_group_you": "Du",
+    "nav_group_notify": "Erinnern und benachrichtigen",
+    "nav_group_work": "Arbeit",
+    "nav_group_system": "System",
+    "page_profile": "Profil",
+    "page_profile_desc": "Wer du bist und wie du in Fällen und E-Mails auftrittst.",
+    "page_appearance": "Darstellung",
+    "page_appearance_desc": "Sprache, Farben, Schriftgröße und Anordnung der App.",
+    "page_notifications": "Benachrichtigungen",
+    "page_notifications_desc": "Hinweise auf diesem PC, wenn Wiedervorlagen fällig werden.",
+    "page_push": "Smartphone-Push",
+    "page_push_desc": "Meldungen aufs Handy, wenn du nicht am Platz bist. Läuft über ntfy.sh.",
+    "page_checkout": "Feierabend",
+    "page_checkout_desc": "Checkliste, Abfahrten und Geh-Wecker zum Dienstende.",
+    "page_scoring": "Priorisierung",
+    "page_scoring_desc": "Wie stark Fälle in der Liste nach oben rücken.",
+    "page_shortcuts": "Tastenkürzel",
+    "page_shortcuts_desc": "Tastenkombinationen für Aktionen und Textbausteine.",
+    "page_team": "Team-Sync",
+    "page_team_desc": "Fälle mit Kolleginnen und Kollegen im Netzwerk abgleichen.",
+    "page_wiki": "Wiki",
+    "page_wiki_desc": "Verbindung zum BookStack-Wiki.",
+    "page_ai": "KI und Textanalyse",
+    "page_ai_desc": "KI-Anbieter, lokale Modelle und Grundregeln für Antworten.",
+    "page_data": "Daten und Backup",
+    "page_data_desc": "Speicherort, automatische Sicherungen und Export."
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -2098,7 +2125,8 @@
     "unlock_notification_placeholder": "z. B. Willkommen zurück! Bitte offene Wiedervorlagen prüfen.",
     "unlock_notification_text_label": "Eigener Benachrichtigungstext:",
     "unlock_notification_toggle": "🖥 Benachrichtigung nach Entsperren des Bildschirms anzeigen",
-    "unlock_toast_title": "🖥 Arbeitsplatz entsperrt"
+    "unlock_toast_title": "🖥 Arbeitsplatz entsperrt",
+    "advanced_heading": "Erweitert: Sammelbericht und Fernsteuerung"
   },
   "urgency_levels": {
     "RED": "Hoch",
@@ -2213,6 +2241,14 @@
     "worktime_heading": "Arbeitszeit & Feierabend-Prognose",
     "work_start": "Standard Arbeitsbeginn",
     "work_target": "Soll-Arbeitszeit (Stunden)",
-    "work_break": "Pausenzeit (Minuten)"
+    "work_break": "Pausenzeit (Minuten)",
+    "commute_heading": "Heimweg mit Bus und Bahn",
+    "lead_time_label": "Vorlauf vor der Abfahrt",
+    "lead_logout": "Herunterfahren",
+    "lead_pack": "Packen",
+    "lead_walk": "Fußweg",
+    "lead_buffer": "Puffer",
+    "lead_total": "= {minutes} Min. vor Abfahrt",
+    "open_settings": "Feierabend-Einstellungen"
   }
 }

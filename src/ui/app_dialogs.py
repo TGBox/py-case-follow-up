@@ -485,6 +485,9 @@ class DialogLaunchersMixin:
         if self.is_view_built(LayoutMode.TABLE.value) and hasattr(self.table_view, "setup_treeview_style"):
             self.table_view.setup_treeview_style()
         self.scoring_service = ScoringService(self.profile.scoring_matrix)
+        apply_checkout = getattr(self, "apply_checkout_settings", None)
+        if callable(apply_checkout):
+            apply_checkout()
         lang_code = getattr(self.profile.ui_settings, "language", DEFAULT_LANGUAGE)
         get_i18n().current_language = lang_code
         self.on_language_changed(lang_code)

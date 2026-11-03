@@ -175,10 +175,13 @@ def test_checkout_panel_settings_button_opens_settings_only_when_wired(root):
 def test_remember_visibility_round_trips_through_profile():
     profile = UserProfile()
     assert (profile.checkout_settings.remember_visibility, profile.checkout_settings.was_open) == (False, False)
+    assert profile.checkout_settings.always_show is False
     profile.checkout_settings.remember_visibility = True
     profile.checkout_settings.was_open = True
+    profile.checkout_settings.always_show = True
     restored = UserProfile.from_dict(profile.to_dict())
     assert (restored.checkout_settings.remember_visibility, restored.checkout_settings.was_open) == (True, True)
+    assert restored.checkout_settings.always_show is True
 
 
 def test_app_reopens_panel_on_start_only_when_remembered_and_open():
@@ -186,8 +189,9 @@ def test_app_reopens_panel_on_start_only_when_remembered_and_open():
 
     from ui.app import SupportCockpitApp
 
-    def fake_app(remember: bool, was_open: bool):
+    def fake_app(remember: bool, was_open: bool, always: bool = False):
         profile = UserProfile()
+        profile.checkout_settings.always_show = always
         profile.checkout_settings.remember_visibility = remember
         profile.checkout_settings.was_open = was_open
         app = SimpleNamespace(profile=profile, shown=[], persisted=[])
@@ -195,8 +199,13 @@ def test_app_reopens_panel_on_start_only_when_remembered_and_open():
         app._persist_profile_settings = lambda: app.persisted.append(True)
         return app
 
-    for remember, was_open, expected in [(True, True, [True]), (True, False, []), (False, True, [])]:
-        app = fake_app(remember, was_open)
+    for remember, was_open, always, expected in [
+        (True, True, False, [True]),
+        (True, False, False, []),
+        (False, True, False, []),
+        (False, False, True, [True]),  # always-show opens regardless of the last state
+    ]:
+        app = fake_app(remember, was_open, always)
         SupportCockpitApp._restore_checkout_panel(app)  # type: ignore[arg-type]
         assert app.shown == expected
 
@@ -208,3 +217,73 @@ def test_app_reopens_panel_on_start_only_when_remembered_and_open():
     app = fake_app(False, True)
     SupportCockpitApp._remember_checkout_visibility(app, False)  # type: ignore[arg-type]
     assert app.profile.checkout_settings.was_open is False and app.persisted == []
+
+
+def test_always_shown_panel_cannot_be_closed_and_floating_close_docks_it():
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    profile = UserProfile()
+    profile.checkout_settings.always_show = True
+    profile.checkout_settings.is_docked = False
+    app = SimpleNamespace(profile=profile, _is_checkout_visible=True, docked=[], remembered=[])
+    app.dock_checkout_panel = lambda: app.docked.append(True)
+    app._remember_checkout_visibility = lambda is_open: app.remembered.append(is_open)
+
+    SupportCockpitApp.hide_checkout_panel(app)  # type: ignore[arg-type]
+    assert app._is_checkout_visible is True and app.docked == [True] and app.remembered == []
+
+    profile.checkout_settings.is_docked = True
+    SupportCockpitApp.hide_checkout_panel(app)  # type: ignore[arg-type]
+    assert app._is_checkout_visible is True and app.docked == [True]
+
+
+def test_apply_checkout_settings_rebinds_panel_and_opens_always_shown_panel():
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    profile = UserProfile()
+    profile.checkout_settings.always_show = True
+    calls = []
+    panel = SimpleNamespace(
+        winfo_exists=lambda: True,
+        rebind_profile=lambda p: calls.append(("rebind", p)),
+        set_closable=lambda c: calls.append(("closable", c)),
+    )
+    app = SimpleNamespace(profile=profile, checkout_panel=panel, _is_checkout_visible=False)
+    app.show_checkout_panel = lambda: calls.append(("show", None))
+
+    SupportCockpitApp.apply_checkout_settings(app)  # type: ignore[arg-type]
+    assert calls == [("rebind", profile), ("closable", False), ("show", None)]
+
+
+def test_panel_close_button_toggles_and_rebind_refreshes_on_new_stop(root):
+    from datetime import date
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data") as refresh, \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        try:
+            assert panel.close_btn.winfo_manager() == "pack"
+            panel.set_closable(False)
+            assert not panel.close_btn.winfo_manager()
+            panel.set_closable(True)
+            assert panel.close_btn.winfo_manager() == "pack"
+
+            refresh.reset_mock()
+            same = UserProfile.from_dict(profile.to_dict())
+            panel.rebind_profile(same)
+            assert panel.settings is same.checkout_settings and not refresh.called
+
+            moved = UserProfile.from_dict(profile.to_dict())
+            moved.checkout_settings.stops = [{"name": "Edisonallee", "place": "Neu-Ulm"}]
+            panel.rebind_profile(moved)
+            refresh.assert_called_once_with(force=True)
+        finally:
+            panel.destroy()

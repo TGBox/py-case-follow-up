@@ -465,6 +465,8 @@ class CheckoutSettings:
         }
     )
     is_docked: bool = True
+    # Keep the panel on screen all the time (opened on start, cannot be closed)
+    always_show: bool = False
     # Reopen the panel on start if it was open when the app was last used
     remember_visibility: bool = False
     was_open: bool = False
@@ -505,6 +507,7 @@ class CheckoutSettings:
             "auto_open_uniform_time": self.auto_open_uniform_time,
             "auto_open_weekday_times": dict(self.auto_open_weekday_times),
             "is_docked": self.is_docked,
+            "always_show": self.always_show,
             "remember_visibility": self.remember_visibility,
             "was_open": self.was_open,
             "floating_geometry": self.floating_geometry,
@@ -576,6 +579,7 @@ class CheckoutSettings:
             auto_open_uniform_time=str(data.get("auto_open_uniform_time", CHECKOUT_DEFAULT_UNIFORM_TIME)),
             auto_open_weekday_times=default_weekdays,
             is_docked=bool(data.get("is_docked", True)),
+            always_show=bool(data.get("always_show", False)),
             remember_visibility=bool(data.get("remember_visibility", False)),
             was_open=bool(data.get("was_open", False)),
             floating_geometry=str(data.get("floating_geometry", "")),

@@ -40,6 +40,7 @@ from constants import (
     NTFY_IDLE_MINUTES_OPTIONS,
     NTFY_TAG_BELL,
     NTFY_TAG_TEST,
+    PAD_LG,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
@@ -677,6 +678,47 @@ class UiSettingsTabMixin:
             cs = CheckoutSettings()
             self.profile.checkout_settings = cs
 
+        # When the panel is on screen, independent of the end-of-day schedule
+        self.checkout_visibility_hdr = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("settings_checkout.visibility_heading", "Anzeige"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")),
+            "settings_checkout.visibility_heading",
+            "Anzeige",
+        )
+        self.checkout_visibility_hdr.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+
+        self.checkout_always_var = ctk.BooleanVar(value=bool(getattr(cs, "always_show", False)))
+        self.checkout_always_cb = self.register_i18n(
+            ctk.CTkSwitch(  # type: ignore[attr-defined]
+                right_col,
+                text=tr("settings_checkout.always_show", "Panel dauerhaft anzeigen"),
+                variable=self.checkout_always_var,
+                command=self._update_checkout_remember_state,
+            ),
+            "settings_checkout.always_show",
+            "Panel dauerhaft anzeigen",
+        )
+        self.checkout_always_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        self.checkout_remember_var = ctk.BooleanVar(value=bool(getattr(cs, "remember_visibility", False)))
+        self.checkout_remember_cb = self.register_i18n(
+            ctk.CTkSwitch(  # type: ignore[attr-defined]
+                right_col,
+                text=tr("settings_checkout.remember_visibility", "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war"),
+                variable=self.checkout_remember_var,
+            ),
+            "settings_checkout.remember_visibility",
+            "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
+        )
+        self.checkout_remember_cb.pack(anchor="w", pady=(PAD_NONE, PAD_LG))
+
+        # Opening automatically at the end of the working day
+        self.checkout_schedule_hdr = self.register_i18n(
+            ctk.CTkLabel(right_col, text=tr("settings_checkout.schedule_heading", "Zur Feierabendzeit"), font=ctk.CTkFont(size=FONT_SIZE_BODY, weight="bold")),
+            "settings_checkout.schedule_heading",
+            "Zur Feierabendzeit",
+        )
+        self.checkout_schedule_hdr.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+
         # Enable panel; the schedule below it only matters while this is on.
         self.checkout_enable_var = ctk.BooleanVar(value=cs.enabled)
         self.checkout_enable_cb = self.register_i18n(
@@ -689,20 +731,7 @@ class UiSettingsTabMixin:
             "settings_checkout.enable_panel",
             "Feierabend-Panel aktivieren",
         )
-        self.checkout_enable_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
-
-        # Independent of the schedule: a panel opened by hand stays open across restarts.
-        self.checkout_remember_var = ctk.BooleanVar(value=bool(getattr(cs, "remember_visibility", False)))
-        self.checkout_remember_cb = self.register_i18n(
-            ctk.CTkSwitch(  # type: ignore[attr-defined]
-                right_col,
-                text=tr("settings_checkout.remember_visibility", "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war"),
-                variable=self.checkout_remember_var,
-            ),
-            "settings_checkout.remember_visibility",
-            "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
-        )
-        self.checkout_remember_cb.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
+        self.checkout_enable_cb.pack(anchor="w", pady=(PAD_NONE, PAD_MD))
 
         self.checkout_schedule_frame = ctk.CTkFrame(right_col, fg_color="transparent")
         schedule = self.checkout_schedule_frame
@@ -918,6 +947,12 @@ class UiSettingsTabMixin:
 
         self._update_checkout_mode_visibility()
         self._update_checkout_enabled_visibility()
+        self._update_checkout_remember_state()
+
+    def _update_checkout_remember_state(self) -> None:
+        """Reopen-after-restart has no effect while the panel is shown permanently."""
+        if hasattr(self, "checkout_remember_cb"):
+            self.checkout_remember_cb.configure(state="disabled" if self.checkout_always_var.get() else "normal")
 
     # ------------------------------------------------------------------
     # Stop search and live check (end-of-day page)
@@ -1121,7 +1156,7 @@ class UiSettingsTabMixin:
             return
         if self.checkout_enable_var.get():
             if not frame.winfo_manager():
-                frame.pack(anchor="w", fill="x", after=self.checkout_remember_cb)
+                frame.pack(anchor="w", fill="x", after=self.checkout_enable_cb)
         elif frame.winfo_manager():
             frame.pack_forget()
 
@@ -1436,6 +1471,7 @@ class UiSettingsTabMixin:
             cs.enabled = self.checkout_enable_var.get()
             cs.auto_open = self.checkout_auto_open_var.get()
             cs.remember_visibility = bool(self.checkout_remember_var.get())
+            cs.always_show = bool(self.checkout_always_var.get())
             idx = self.selected_choice_index(self.checkout_mode_combo)
             cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
                 min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)

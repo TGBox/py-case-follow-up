@@ -172,6 +172,31 @@ def enable_auto_hiding_scrollbar(scroll_frame: ctk.CTkScrollableFrame) -> None:
         pass
 
 
+def _no_idle_flush() -> None:
+    """Stands in for Canvas.update_idletasks on CTk-internal canvases (see patch below)."""
+
+
+def _suppress_canvas_idle_flush(cls: Any) -> None:
+    """Makes `self._canvas.update_idletasks()` inside cls._draw a no-op.
+
+    Done per instance on first draw (an instance attribute shadows the bound
+    method), because the canvas only exists after __init__ and _draw is the
+    first place that reliably sees it.
+    """
+    if cls is None or not hasattr(cls, "_draw") or getattr(cls, "_idle_flush_suppressed", False):
+        return
+    orig_draw = cls._draw
+
+    def quiet_draw(self, *args, **kwargs):
+        canvas = getattr(self, "_canvas", None)
+        if canvas is not None and "update_idletasks" not in canvas.__dict__:
+            canvas.update_idletasks = _no_idle_flush
+        return orig_draw(self, *args, **kwargs)
+
+    cls._draw = quiet_draw
+    cls._idle_flush_suppressed = True
+
+
 def patch_ctk_scrollable_frame() -> None:
     """Fixes CustomTkinter event callback signature mismatches (e.g. Python 3.14/Windows Tcl events).
 
@@ -237,6 +262,20 @@ def patch_ctk_scrollable_frame() -> None:
             finally:
                 self._in_update_dim = False
         ctk.CTkBaseClass._update_dimensions_event = safe_update_dim  # pyright: ignore[reportAttributeAccessIssue]
+
+    # CTkScrollbar._draw and CTkOptionMenu._draw end with
+    # self._canvas.update_idletasks(). That call is not local to the widget: it
+    # flushes the idle queue of the *whole* application - every pending
+    # geometry pass and redraw of everything built so far. A CTkTextbox owns
+    # two scrollbars and every text insert runs their set() -> _draw(), so a
+    # form with N text fields paid for N full relayouts of the form during
+    # one load_schema(). Profiled at ~65 % of the form build; visibly, the
+    # fields appeared one after another instead of all at once. The flush is
+    # only there so a scrollbar repaints before the next idle moment - Tk does
+    # that on its own as soon as the event loop idles - so it is turned into a
+    # no-op on these widgets' private canvases.
+    _suppress_canvas_idle_flush(getattr(ctk, "CTkScrollbar", None))
+    _suppress_canvas_idle_flush(getattr(ctk, "CTkOptionMenu", None))
 
     # Prevent CTkScrollbar._draw from triggering re-entrant update_idletasks
     # cascades. Same undeclared-internal situation as CTkBaseClass above.

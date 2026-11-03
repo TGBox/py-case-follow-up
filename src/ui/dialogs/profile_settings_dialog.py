@@ -180,6 +180,9 @@ class ProfileSettingsDialog(
 
         self.page_area = ctk.CTkFrame(body, fg_color="transparent")
         self.page_area.pack(side="left", fill="both", expand=True)
+        # All pages share this one cell and are stacked; see show_page.
+        self.page_area.grid_rowconfigure(0, weight=1)
+        self.page_area.grid_columnconfigure(0, weight=1)
 
         self._pages: dict[str, ctk.CTkFrame] = {}
         self._page_bodies: dict[str, Any] = {}
@@ -241,6 +244,14 @@ class ProfileSettingsDialog(
 
         self.bind("<Control-Next>", lambda _e: self._step_page(1), add="+")
         self.bind("<Control-Prior>", lambda _e: self._step_page(-1), add="+")
+        # Toplevel bindings run before the "all" tag that holds Tk's own Tab
+        # traversal, so returning "break" here replaces it for this dialog.
+        self.bind("<Tab>", lambda e: self._tab_within_page(e.widget, 1), add="+")
+        self.bind("<Shift-Tab>", lambda e: self._tab_within_page(e.widget, -1), add="+")
+        try:
+            self.bind("<ISO_Left_Tab>", lambda e: self._tab_within_page(e.widget, -1), add="+")
+        except Exception:
+            pass  # X11-only keysym; Windows reports Shift-Tab as <Shift-Tab>
         first = self._initial_page if self._initial_page in self._pages else self._page_order[0]
         self.show_page(first)
 
@@ -307,6 +318,7 @@ class ProfileSettingsDialog(
             body = ctk.CTkFrame(page, fg_color="transparent")
             body.pack(fill="both", expand=True)
 
+        page.grid(row=0, column=0, sticky="nsew")
         self._pages[page_id] = page
         self._page_bodies[page_id] = body
 
@@ -327,14 +339,60 @@ class ProfileSettingsDialog(
         """Brings one settings page to the front and marks it in the sidebar."""
         if page_id not in self._pages:
             return
-        if self.current_page in self._pages:
-            self._pages[self.current_page].pack_forget()
-        self._pages[page_id].pack(fill="both", expand=True)
-        for pid, (accent, btn) in self._nav_items.items():
+        # The pages stay mapped on top of each other and the chosen one is
+        # raised. Packing one page and unpacking the previous one meant that
+        # every switch unmapped and mapped a few hundred widgets and laid the
+        # page out again; raising is a stacking change only (measured at half
+        # the cost per switch, a third on a page's first visit). The price is
+        # that Tab would walk into the covered pages - _tab_within_page keeps
+        # keyboard traversal on the visible one.
+        self._pages[page_id].tkraise()
+        # Only the item losing and the item gaining the highlight change; every
+        # configure() redraws a canvas, and doing all of them on every switch
+        # was most of the Python-side cost of changing pages.
+        for pid in (self.current_page, page_id):
+            item = self._nav_items.get(pid) if pid is not None else None
+            if item is None:
+                continue
+            accent, btn = item
             selected = pid == page_id
             btn.configure(fg_color=COLOR_SETTINGS_NAV_SELECTED if selected else "transparent")
             accent.configure(fg_color=COLOR_SETTINGS_NAV_ACCENT if selected else "transparent")
         self.current_page = page_id
+
+    def _is_on_hidden_page(self, widget: Any) -> bool:
+        """True for a widget that lives on one of the stacked pages other than the shown one."""
+        current = self._pages.get(self.current_page) if self.current_page else None
+        w = widget
+        while w is not None and w is not self:
+            if w in self._pages.values():
+                return w is not current
+            w = getattr(w, "master", None)
+        return False
+
+    def _next_focus_in_page(self, start: Any, delta: int) -> Any:
+        """Next widget in Tab order that is not on a covered page (None: nothing to move to)."""
+        w = start
+        for _ in range(500):  # bounded: traversal is a cycle through every widget
+            w = w.tk_focusNext() if delta > 0 else w.tk_focusPrev()
+            if w is None or w is start:
+                return None
+            if not self._is_on_hidden_page(w):
+                return w
+        return None
+
+    def _tab_within_page(self, widget: Any, delta: int) -> str | None:
+        try:
+            target = self._next_focus_in_page(widget, delta)
+        except Exception:
+            return None
+        if target is None:
+            return None
+        try:
+            target.focus_set()
+        except Exception:
+            return None
+        return "break"
 
     def _step_page(self, delta: int) -> str:
         if self.current_page in self._page_order:

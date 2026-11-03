@@ -232,11 +232,14 @@ def test_always_shown_panel_cannot_be_closed_and_floating_close_docks_it():
     app._remember_checkout_visibility = lambda is_open: app.remembered.append(is_open)
 
     SupportCockpitApp.hide_checkout_panel(app)  # type: ignore[arg-type]
-    assert app._is_checkout_visible is True and app.docked == [True] and app.remembered == []
+    assert app._is_checkout_visible
+    assert app.docked == [True]
+    assert app.remembered == []
 
     profile.checkout_settings.is_docked = True
     SupportCockpitApp.hide_checkout_panel(app)  # type: ignore[arg-type]
-    assert app._is_checkout_visible is True and app.docked == [True]
+    assert app._is_checkout_visible
+    assert app.docked == [True]
 
 
 def test_apply_checkout_settings_rebinds_panel_and_opens_always_shown_panel():
@@ -285,5 +288,64 @@ def test_panel_close_button_toggles_and_rebind_refreshes_on_new_stop(root):
             moved.checkout_settings.stops = [{"name": "Edisonallee", "place": "Neu-Ulm"}]
             panel.rebind_profile(moved)
             refresh.assert_called_once_with(force=True)
+        finally:
+            panel.destroy()
+
+
+def test_no_departure_is_chosen_or_announced_without_a_double_click(root):
+    from datetime import date, datetime, timedelta
+
+    from services.ding_transit_service import TransitDeparture
+
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+    profile.checkout_settings.alarm_enabled = True
+    soon = datetime.now() + timedelta(minutes=2)  # well inside the lead time: would be "due"
+    dep = TransitDeparture("1", "Edisonallee", "5", "Ulm Hbf", "Bus", soon.strftime("%H:%M"), soon.strftime("%H:%M"), 0, "", 2, soon)
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None), \
+         patch("ui.widgets.toast_notification.ToastNotification") as toast:
+        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        try:
+            panel._on_transit_data_loaded([dep])
+            assert panel._selected_departure is None
+            assert not toast.called
+            # Hint is shown instead of the (empty) selection card
+            assert panel.transit_hint_lbl.winfo_manager() == "pack"
+            assert not panel.selected_transit_card.winfo_manager()
+
+            panel._on_departure_double_clicked(dep)
+            assert toast.called
+            assert panel.selected_transit_card.winfo_manager() == "pack"
+            assert not panel.transit_hint_lbl.winfo_manager()
+
+            panel._clear_selected_departure()
+            assert panel.transit_hint_lbl.winfo_manager() == "pack"
+            assert not panel.selected_transit_card.winfo_manager()
+        finally:
+            panel.destroy()
+
+
+def test_transit_tab_puts_the_departure_list_right_below_the_header(root):
+    from datetime import date
+
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        try:
+            packed = [w for w in panel.tab_transit.pack_slaves()]
+            # header card, hint, list: no empty placeholder frame in between
+            assert packed[0] is panel.transit_card
+            assert packed[1] is panel.transit_hint_lbl
+            assert len(packed) == 3
+            assert panel.transit_status_lbl.master.master is panel.transit_card
+            assert panel.transit_refresh_btn.master.master is panel.transit_card
         finally:
             panel.destroy()

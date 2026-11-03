@@ -1,7 +1,6 @@
 from datetime import datetime
 import logging
 import os
-import sys
 import threading
 import time
 from typing import TYPE_CHECKING, Any, cast

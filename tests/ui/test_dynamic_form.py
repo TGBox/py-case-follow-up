@@ -343,3 +343,56 @@ def test_saved_file_requests_export_as_numbered_blocks(storage):
     for text in ("--- Datei-Anforderung #1 ---", "--- Datei-Anforderung #2 ---",
                  "ESOL_20260801.dat", "ESOL_20260802.dat", "RE-2026-0811", "RE-2026-0812"):
         assert text in rendered
+
+
+# --- Lazy build: only what fits the viewport is built at once ---
+
+def _long_schema(n: int = 30) -> QuestionSchema:
+    return _schema(*[
+        SchemaField(field_id=f"beschreibung_{i}", label=f"Beschreibung {i}", field_type=FieldType.TEXT, order=i)
+        for i in range(n)
+    ])
+
+
+def test_hidden_form_builds_every_field_at_once(root):
+    """Without a visible viewport there is nothing to prioritise: everything is built synchronously."""
+    form = DynamicFormWidget(root)
+    form.pack()
+    form.load_schema(_long_schema(), {})
+    assert len(form.field_widgets) == 30
+    assert form._pending_fields == []
+
+
+def test_visible_form_builds_the_viewport_first_and_the_rest_later(root):
+    form = DynamicFormWidget(root)
+    form.pack(fill="both", expand=True)
+    # Windows stay withdrawn in the test session, so the viewport is told its size.
+    form._visible_form_height = lambda: 400
+
+    data = {f"beschreibung_{i}": f"Text {i}" for i in range(30)}
+    form.load_schema(_long_schema(), data)
+
+    eager = len(form.field_widgets)
+    assert 0 < eager < 30, "a 400px viewport cannot hold 30 text boxes"
+    assert len(form._pending_fields) == 30 - eager
+    # Values of fields not built yet are still reported from the loaded data.
+    assert form._current_values(flush=False)["beschreibung_29"] == "Text 29"
+
+    # Reading the whole form builds the remainder on the spot ...
+    assert form.get_form_data()["beschreibung_29"] == "Text 29"
+    assert len(form.field_widgets) == 30 and form._pending_fields == []
+
+    # ... and otherwise the event loop finishes the build on its own.
+    form.load_schema(_long_schema(), data)
+    assert form._pending_fields
+    for _ in range(40):
+        if not form._pending_fields:
+            break
+        root.update()
+        root.after(2)
+    assert len(form.field_widgets) == 30
+
+    # A new load supersedes a build still in progress.
+    form.load_schema(_long_schema(), data)
+    form.load_schema(_schema(SchemaField(field_id="einzeln", label="Einzeln", field_type=FieldType.TEXT)), {})
+    assert form._pending_fields == [] and list(form.field_widgets) == ["einzeln"]

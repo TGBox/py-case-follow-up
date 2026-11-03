@@ -827,9 +827,14 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     fg_color="transparent",
                     width=self.profile.checkout_settings.panel_width,
                 )
-            self.container_frame.pack_forget()
-            self.docked_checkout_frame.pack(side="right", fill="y", padx=(PAD_XS, PAD_CONTAINER), pady=PAD_CONTAINER)
-            self.container_frame.pack(fill="both", expand=True, padx=PAD_CONTAINER, pady=PAD_CONTAINER)
+            # before=: the panel has to precede the main container in pack
+            # order to end up on its right. Unpacking and repacking the
+            # container for that unmapped and remapped the entire main window
+            # content on every dock; the relayout the narrower width causes is
+            # unavoidable, the remap is not.
+            self.docked_checkout_frame.pack(
+                side="right", fill="y", padx=(PAD_XS, PAD_CONTAINER), pady=PAD_CONTAINER, before=self.container_frame
+            )
 
             if (
                 self.checkout_panel is None

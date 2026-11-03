@@ -1499,11 +1499,11 @@
     "nav_group_work": "Arbeit",
     "nav_group_system": "System",
     "page_profile": "Profil",
-    "page_profile_desc": "Wer du bist und wie du in Fällen und E-Mails auftrittst.",
+    "page_profile_desc": "Wer du bist, wie du in Fällen und E-Mails auftrittst und wie du dich mit dem Team abgleichst.",
     "page_appearance": "Darstellung",
     "page_appearance_desc": "Sprache, Farben, Schriftgröße und Anordnung der App.",
     "page_notifications": "Benachrichtigungen",
-    "page_notifications_desc": "Hinweise auf diesem PC, wenn Wiedervorlagen fällig werden.",
+    "page_notifications_desc": "Hinweise auf diesem PC und aufs Handy, wenn Wiedervorlagen fällig werden.",
     "page_push": "Smartphone-Push",
     "page_push_desc": "Meldungen aufs Handy, wenn du nicht am Platz bist. Läuft über ntfy.sh.",
     "page_checkout": "Feierabend",
@@ -1521,7 +1521,17 @@
     "page_data": "Speicherort",
     "page_data_desc": "Wo die App ihre Fälle, Kunden und weiteren Dateien ablegt.",
     "page_backup": "Backup",
-    "page_backup_desc": "Automatische Aufbewahrung, Komplettsicherung und Wiederherstellung."
+    "page_backup_desc": "Automatische Aufbewahrung, Komplettsicherung und Wiederherstellung.",
+    "page_work": "Arbeitsweise",
+    "page_work_desc": "Wie Fälle priorisiert werden und welche Tastenkürzel gelten.",
+    "page_knowledge": "Wiki und KI",
+    "page_knowledge_desc": "Verbindung zum BookStack-Wiki und KI-Unterstützung beim Schreiben.",
+    "section_team": "Team-Sync",
+    "section_notify_pc": "Auf diesem PC",
+    "section_notify_phone": "Aufs Smartphone (ntfy.sh)",
+    "section_scoring": "Priorisierung",
+    "section_wiki": "Wiki (BookStack)",
+    "section_ai": "KI und Textanalyse"
   },
   "quick_customer": {
     "contact_person": "Ansprechpartner:",
@@ -2216,7 +2226,9 @@
     "transit_toast_logout_msg": "In {minutes} Min. fährt Linie {line} nach {dest}. Bitte PC herunterfahren.",
     "transit_toast_walk_title": "🚶 Zeit zum Aufbrechen!",
     "transit_toast_walk_msg": "Jetzt losgehen! Linie {line} nach {dest} fährt um {dep_time} Uhr.",
-    "transit_selected_badge": "🎯 Gewählt"
+    "transit_selected_badge": "🎯 Gewählt",
+    "summary_net": "Netto {hours}:{minutes:02d} Std.",
+    "summary_end": "Feierabend ca. {time} Uhr"
   },
   "settings_checkout": {
     "section_title": "Feierabend- & Checkout-Begleiter",

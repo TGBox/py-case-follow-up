@@ -6,6 +6,8 @@
 
 from unittest.mock import patch
 
+import customtkinter as ctk
+
 
 from models.profile import UserProfile
 from ui.widgets.checkout_panel import CheckoutFloatingWindow, CheckoutPanelWidget
@@ -349,3 +351,89 @@ def test_transit_tab_puts_the_departure_list_right_below_the_header(root):
             assert panel.transit_refresh_btn.master.master is panel.transit_card
         finally:
             panel.destroy()
+
+
+def _build_panel(root, profile, floating: bool):
+    from datetime import date
+
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+    return CheckoutPanelWidget(
+        master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None, is_floating=floating
+    )
+
+
+def test_docked_panel_shows_everything_in_one_column_and_floating_keeps_tabs(root):
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        docked = _build_panel(root, UserProfile(), floating=False)
+        floating = _build_panel(root, UserProfile(), floating=True)
+        try:
+            assert docked.tabview is None
+            assert list(docked._sections) == ["transit", "tasks", "note", "tomorrow"]
+            assert all(s.expanded for s in docked._sections.values())
+            # Weather and working time sit in the summary strip instead of own tabs
+            assert docked.weather_temp_lbl.winfo_manager() == "pack"
+            assert "Feierabend" in docked.worktime_end_lbl.cget("text")
+            # Lists are plain frames: the column scrolls as a whole
+            assert not isinstance(docked.transit_scroll, ctk.CTkScrollableFrame)
+
+            assert floating.tabview is not None
+            assert isinstance(floating.transit_scroll, ctk.CTkScrollableFrame)
+        finally:
+            docked.destroy()
+            floating.destroy()
+
+
+def test_folded_sections_are_remembered_and_note_title_shows_the_badge(root):
+    profile = UserProfile()
+    profile.checkout_settings.collapsed_sections = ["tomorrow"]
+    saved = []
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        panel = _build_panel(root, profile, floating=False)
+        panel.on_persist_callback = lambda: saved.append(True)
+        try:
+            assert not panel._sections["tomorrow"].expanded
+            panel._sections["tasks"].toggle()
+            assert profile.checkout_settings.collapsed_sections == ["tomorrow", "tasks"]
+            panel._sections["tomorrow"].toggle()
+            assert profile.checkout_settings.collapsed_sections == ["tasks"]
+            assert len(saved) == 2
+
+            panel._update_note_tab_badge(True)
+            assert "●" in panel._sections["note"].header_btn.cget("text")
+        finally:
+            panel.destroy()
+
+    restored = UserProfile.from_dict(profile.to_dict())
+    assert restored.checkout_settings.collapsed_sections == ["tasks"]
+
+
+def test_docked_column_shows_fewer_departures_than_the_tab(root):
+    from datetime import datetime, timedelta
+
+    from services.ding_transit_service import TransitDeparture
+
+    now = datetime.now()
+    deps = [
+        TransitDeparture("1", "Stop", "5", f"Ziel {i}", "Bus", "", (now + timedelta(minutes=i)).strftime("%H:%M"), 0, "", i, now + timedelta(minutes=i))
+        for i in range(15)
+    ]
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        docked = _build_panel(root, UserProfile(), floating=False)
+        floating = _build_panel(root, UserProfile(), floating=True)
+        try:
+            for panel in (docked, floating):
+                panel._on_transit_data_loaded(deps)
+            assert len(docked.transit_scroll.winfo_children()) == 6
+            assert len(floating.transit_scroll.winfo_children()) == 12
+        finally:
+            docked.destroy()
+            floating.destroy()

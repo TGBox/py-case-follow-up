@@ -2265,6 +2265,9 @@
     "stop_check_ambiguous": "Mehrere Haltestellen passen. Wähle eine aus der Liste.",
     "stop_check_not_found": "Keine Haltestelle unter diesem Namen gefunden. Prüfe Schreibweise und Ort.",
     "stop_check_error": "Fahrplanauskunft nicht erreichbar. Prüfe die Internetverbindung.",
-    "remember_visibility": "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war"
+    "remember_visibility": "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
+    "always_show": "Panel dauerhaft anzeigen",
+    "visibility_heading": "Anzeige",
+    "schedule_heading": "Zur Feierabendzeit"
   }
 }

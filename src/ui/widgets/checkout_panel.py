@@ -160,6 +160,26 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.refresh_weather_data(force=False)
         self._schedule_next_transit_refresh()
 
+    def set_closable(self, closable: bool) -> None:
+        """Shows or hides the close button (hidden while the panel is set to always show)."""
+        if not hasattr(self, "close_btn"):
+            return
+        if closable and not self.close_btn.winfo_manager():
+            self.close_btn.pack(side="left", padx=PAD_XS)
+        elif not closable and self.close_btn.winfo_manager():
+            self.close_btn.pack_forget()
+
+    def rebind_profile(self, profile: UserProfile) -> None:
+        """Switches to a reloaded profile so changed settings (e.g. the stop) apply right away."""
+        old_stop = self.settings.stops[0] if self.settings.stops else None
+        self.profile = profile
+        self.settings = profile.checkout_settings
+        new_stop = self.settings.stops[0] if self.settings.stops else None
+        if new_stop != old_stop:
+            self._selected_dep_key = None
+            self._selected_departure = None
+            self.refresh_transit_data(force=True)
+
     def _persist_settings(self) -> None:
         if self.on_persist_callback:
             try:

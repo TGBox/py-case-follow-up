@@ -1224,8 +1224,6 @@ class UiSettingsTabMixin:
         return True
 
     def refresh_ui_tab_labels(self) -> None:
-        if hasattr(self, "appearance_hdr_lbl"):
-            self.appearance_hdr_lbl.configure(text=tr("profile.appearance_layout", "Erscheinungsbild & Layout"))
         if hasattr(self, "lang_lbl"):
             self.lang_lbl.configure(text=tr("profile.language", "Sprache / Language:"))
         if hasattr(self, "theme_lbl"):
@@ -1255,8 +1253,6 @@ class UiSettingsTabMixin:
             self.unlock_notify_lbl.configure(text=tr("ntfy.unlock_notification_text_label", "Eigener Benachrichtigungstext:"))
         if hasattr(self, "unlock_notify_entry"):
             self.unlock_notify_entry.configure(placeholder_text=tr("ntfy.unlock_notification_placeholder", "z. B. Willkommen zurück! Bitte offene Wiedervorlagen prüfen."))
-        if hasattr(self, "ntfy_hdr_lbl"):
-            self.ntfy_hdr_lbl.configure(text=tr("ntfy.section_title", "📱 Smartphone-Push bei Abwesenheit (ntfy.sh)"))
         if hasattr(self, "ntfy_switch"):
             self.ntfy_switch.configure(text=tr("ntfy.enable_toggle", "📱 Smartphone-Push bei Abwesenheit aktivieren (ntfy.sh)"))
         if hasattr(self, "ntfy_topic_lbl"):

@@ -2061,3 +2061,23 @@ WIN_TITLEBAR_RETRY_MS = 30
 # --- Settings dialog: stop search on the end-of-day page ---
 BTN_WIDTH_CHECK_STOP = 150
 SETTINGS_STOP_STATUS_WRAP = 420
+
+# --- Text smileys typed in notes become emoji ---
+SMILEY_SHORTCUTS = {
+    ":)": "🙂",
+    ":-)": "🙂",
+    ";)": "😉",
+    ";-)": "😉",
+    ":D": "😄",
+    ":-D": "😄",
+    ":(": "🙁",
+    ":-(": "🙁",
+    ":P": "😛",
+    ":-P": "😛",
+    ":p": "😛",
+    ":-p": "😛",
+    ":O": "😮",
+    ":-O": "😮",
+}
+# Typing one of these right after a smiley code converts it
+SMILEY_TRIGGER_CHARS = (" ", "\r", "\n", "\t", ".", ",", "!", "?")

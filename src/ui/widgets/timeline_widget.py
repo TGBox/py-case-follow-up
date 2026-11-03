@@ -164,6 +164,8 @@ class TimelineWidget(ctk.CTkFrame):
 
         self.note_textbox = ctk.CTkTextbox(input_frame, height=self._stored_note_height())
         self.note_textbox.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.note_textbox)
 
         # Griff unter dem Feld: nach unten ziehen macht es hoeher. Die Hoehe
         # landet wie die Spaltenbreiten im Profil (ui_settings).

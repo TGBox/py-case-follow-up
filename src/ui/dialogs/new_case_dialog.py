@@ -472,6 +472,8 @@ class NewCaseDialog(BaseDialog):
 
         from utils.ui_utils import enable_textbox_cursor_autoscroll
         enable_textbox_cursor_autoscroll(self.note_textbox)
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.note_textbox)
 
     def render_tags_checkboxes(self):
         num_cols = TAG_PILL_COLS

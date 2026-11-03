@@ -133,6 +133,8 @@ class ChangePracticeDialog(BaseDialog):
 
         self.note_textbox = ctk.CTkTextbox(main, height=TEXTBOX_HEIGHT_INITIAL_NOTE)
         self.note_textbox.pack(fill="x", pady=(PAD_NONE, PAD_MD))
+        from utils.smiley_utils import enable_smiley_shortcuts
+        enable_smiley_shortcuts(self.note_textbox)
 
         # Error label
         self.error_label = ctk.CTkLabel(main, text="", text_color=COLOR_DANGER)

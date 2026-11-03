@@ -80,8 +80,10 @@ SETTINGS_PAGES: list[tuple[str, str, list[tuple[str, str, str, str, str, bool]]]
          "profile.page_ai_desc", "KI-Anbieter, lokale Modelle und Grundregeln für Antworten.", True),
     ]),
     ("profile.nav_group_system", "System", [
-        ("data", "profile.page_data", "Daten und Backup",
-         "profile.page_data_desc", "Speicherort, automatische Sicherungen und Export.", False),
+        ("data", "profile.page_data", "Speicherort",
+         "profile.page_data_desc", "Wo die App ihre Fälle, Kunden und weiteren Dateien ablegt.", False),
+        ("backup", "profile.page_backup", "Backup",
+         "profile.page_backup_desc", "Automatische Aufbewahrung, Komplettsicherung und Wiederherstellung.", True),
     ]),
 ]
 
@@ -212,7 +214,7 @@ class ProfileSettingsDialog(
         self.tab_user = self._page_bodies["profile"]
         self.tab_ui = self._page_bodies["appearance"]
         self.tab_paths = self._page_bodies["data"]
-        self.tab_backup = self.tab_paths
+        self.tab_backup = self._page_bodies["backup"]
         self.tab_ai = self._page_bodies["ai"]
         self.tab_scoring = self._page_bodies["scoring"]
         self.tab_wiki = self._page_bodies["wiki"]
@@ -230,6 +232,7 @@ class ProfileSettingsDialog(
         self.setup_wiki_section(pb["wiki"])
         self.setup_ai_tab()
         self.setup_paths_tab()
+        self.setup_backup_section(pb["backup"])
 
         self.bind("<Control-Next>", lambda _e: self._step_page(1), add="+")
         self.bind("<Control-Prior>", lambda _e: self._step_page(-1), add="+")

@@ -10,6 +10,7 @@ from constants import (
     COLOR_CARD_BG,
     COLOR_CARD_BORDER,
     COLOR_PANEL_BG,
+    COLOR_SETTINGS_NAV_BG,
     COLOR_URGENCY_GREEN,
     COLOR_URGENCY_RED,
     COLOR_URGENCY_YELLOW,
@@ -23,6 +24,8 @@ from services.storage_service import StorageService
 
 LIGHT_TAB = ("gray86", "gray10")  # (label bg, label fg) on a tab in light mode
 DARK_TAB = ("gray17", "#DCE4EE")
+LIGHT_PAGE = ("gray92", "gray10")  # (label bg, label fg) on a dialog background in light mode
+DARK_PAGE = ("gray14", "#DCE4EE")
 
 
 @pytest.fixture(autouse=True)
@@ -142,10 +145,12 @@ def test_profile_settings_dialog_follows_appearance_switch(root, tmp_path):
 
     ctk.set_appearance_mode("Dark")
     root.update_idletasks()
-    assert _label_colors(d.user_tab_hdr_lbl) == DARK_TAB
-    assert _label_colors(d.app_shortcuts_hdr_lbl) == DARK_TAB
-    assert tuple(d.tab_paths._fg_color) == ("gray86", "gray17")
-    assert d.paths_scroll._parent_canvas.cget("bg") == "gray17"
+    # Settings pages sit directly on the dialog background next to the sidebar
+    assert _label_colors(d.user_tab_hdr_lbl) == DARK_PAGE
+    assert _label_colors(d.app_shortcuts_hdr_lbl) == DARK_PAGE
+    assert d.tab_paths._fg_color == "transparent"
+    assert d.paths_scroll._parent_canvas.cget("bg") == DARK_PAGE[0]
+    assert d.nav_frame._fg_color == COLOR_SETTINGS_NAV_BG
 
     # Export/import cards on the paths tab are bordered panels
     cards = [f for f in _frames(d.paths_scroll) if f.cget("corner_radius") == 8]
@@ -154,8 +159,8 @@ def test_profile_settings_dialog_follows_appearance_switch(root, tmp_path):
 
     ctk.set_appearance_mode("Light")
     root.update_idletasks()
-    assert _label_colors(d.user_tab_hdr_lbl) == LIGHT_TAB
-    assert _label_colors(d.app_shortcuts_hdr_lbl) == LIGHT_TAB
+    assert _label_colors(d.user_tab_hdr_lbl) == LIGHT_PAGE
+    assert _label_colors(d.app_shortcuts_hdr_lbl) == LIGHT_PAGE
     d.destroy()
 
 

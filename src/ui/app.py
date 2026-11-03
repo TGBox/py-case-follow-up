@@ -822,6 +822,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     on_close=self.hide_checkout_panel,
                     cases_provider=lambda: self.cases,
                     on_persist_callback=self._persist_profile_settings,
+                    on_open_settings=lambda: self.open_profile_settings_dialog(initial_page="checkout"),
                     is_floating=False,
                 )
                 self.checkout_panel.pack(fill="both", expand=True)
@@ -866,6 +867,7 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     on_close=self.hide_checkout_panel,
                     cases_provider=lambda: self.cases,
                     on_persist_callback=self._persist_profile_settings,
+                    on_open_settings=lambda: self.open_profile_settings_dialog(initial_page="checkout"),
                     is_floating=True,
                 )
                 self.checkout_panel.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)

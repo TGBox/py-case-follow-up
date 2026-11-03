@@ -21,14 +21,14 @@ class WikiSettingsTabMixin:
             "profile.wiki_title",
             "BookStack Server Konfiguration",
         )
-        self.wiki_hdr_lbl.pack(anchor="w", pady=(PAD_SM, PAD_SM))
+        # The page title already names this section; the label is kept for i18n refresh only.
 
         self.wiki_url_lbl = self.register_i18n(
             ctk.CTkLabel(parent_frame, text=tr("profile.wiki_url", "BookStack API URL:")),
             "profile.wiki_url",
             "BookStack API URL:",
         )
-        self.wiki_url_lbl.pack(anchor="w", pady=(PAD_SM, PAD_XS))
+        self.wiki_url_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
         self.wiki_url_entry = self.register_i18n(
             ctk.CTkEntry(parent_frame, placeholder_text=tr("profile.wiki_url_placeholder", "https://wiki.meinepraxis.de/api")),
             "profile.wiki_url_placeholder",

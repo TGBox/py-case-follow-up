@@ -84,14 +84,15 @@ class PathsSettingsTabMixin:
         # 2-Column Side-by-Side Container
         cols_container = ctk.CTkFrame(self.paths_scroll, fg_color="transparent")
         cols_container.pack(fill="both", expand=True, padx=PAD_SM, pady=PAD_SM)
-        cols_container.columnconfigure(0, weight=1, uniform="paths_cols")
-        cols_container.columnconfigure(1, weight=1, uniform="paths_cols")
+        cols_container.columnconfigure(0, weight=1)
 
+        # Stacked rather than side by side: next to the settings sidebar there
+        # is not enough width for two columns of path rows.
         left_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        left_col.grid(row=0, column=0, sticky="nsew", padx=(PAD_NONE, PAD_XL))
+        left_col.grid(row=0, column=0, sticky="nsew")
 
         right_col = ctk.CTkFrame(cols_container, fg_color="transparent")
-        right_col.grid(row=0, column=1, sticky="nsew", padx=(PAD_XL, PAD_NONE))
+        right_col.grid(row=1, column=0, sticky="nsew", pady=(PAD_XL, PAD_NONE))
 
         # =========================================================================
         # --- LINKE SPALTE: Speicherorte & Retention ---

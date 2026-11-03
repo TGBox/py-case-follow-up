@@ -1492,7 +1492,34 @@
     "zip_backup_success": "✅ ZIP-säkerhetskopia skapad: {file_count} filer ({mb_size:.2f} MB)",
     "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade.",
     "shortcut_conflict": "⚠ Genvägskonflikt: Följande snabbtangenter är tilldelade flera gånger: {dup_str}",
-    "shortcut_conflict_generic": "⚠ Genvägskonflikt: Snabbtangenter får inte tilldelas flera gånger!"
+    "shortcut_conflict_generic": "⚠ Genvägskonflikt: Snabbtangenter får inte tilldelas flera gånger!",
+    "nav_title": "Inställningar",
+    "nav_group_you": "Du",
+    "nav_group_notify": "Påminnelser och aviseringar",
+    "nav_group_work": "Arbete",
+    "nav_group_system": "System",
+    "page_profile": "Profil",
+    "page_profile_desc": "Vem du är och hur du visas i ärenden och e-post.",
+    "page_appearance": "Utseende",
+    "page_appearance_desc": "Språk, färger, textstorlek och appens layout.",
+    "page_notifications": "Aviseringar",
+    "page_notifications_desc": "Aviseringar på den här datorn när uppföljningar förfaller.",
+    "page_push": "Push till mobilen",
+    "page_push_desc": "Meddelanden till mobilen när du inte är vid datorn. Använder ntfy.sh.",
+    "page_checkout": "Arbetsdagens slut",
+    "page_checkout_desc": "Checklista, avgångar och gå-larm när arbetsdagen slutar.",
+    "page_scoring": "Prioritering",
+    "page_scoring_desc": "Hur mycket ärenden flyttas upp i listan.",
+    "page_shortcuts": "Kortkommandon",
+    "page_shortcuts_desc": "Tangentkombinationer för åtgärder och textmallar.",
+    "page_team": "Teamsynk",
+    "page_team_desc": "Jämför ärenden med kollegor i nätverket.",
+    "page_wiki": "Wiki",
+    "page_wiki_desc": "Anslutning till BookStack-wikin.",
+    "page_ai": "AI och textanalys",
+    "page_ai_desc": "AI-leverantör, lokala modeller och grundregler för svar.",
+    "page_data": "Data och säkerhetskopiering",
+    "page_data_desc": "Lagringsplats, automatiska säkerhetskopior och export."
   },
   "quick_customer": {
     "contact_person": "Kontaktperson:",
@@ -2098,7 +2125,8 @@
     "unlock_notification_placeholder": "t.ex. Välkommen tillbaka! Kontrollera öppna ärenden och förfallna uppföljningar.",
     "unlock_notification_text_label": "Anpassad aviseringstext:",
     "unlock_notification_toggle": "🖥 Visa avisering efter att skärmen låsts upp",
-    "unlock_toast_title": "🖥 Arbetsstation upplåst"
+    "unlock_toast_title": "🖥 Arbetsstation upplåst",
+    "advanced_heading": "Avancerat: sammanfattning och fjärrstyrning"
   },
   "urgency_levels": {
     "RED": "Hög",
@@ -2213,6 +2241,14 @@
     "worktime_heading": "Arbetstid & Hemgångsprognos",
     "work_start": "Standard arbetsstart",
     "work_target": "Målarbetstid (timmar)",
-    "work_break": "Rasttid (minuter)"
+    "work_break": "Rasttid (minuter)",
+    "commute_heading": "Hemresa med kollektivtrafik",
+    "lead_time_label": "Tid före avgång",
+    "lead_logout": "Stänga av",
+    "lead_pack": "Packa",
+    "lead_walk": "Gångväg",
+    "lead_buffer": "Marginal",
+    "lead_total": "= {minutes} min före avgång",
+    "open_settings": "Inställningar för arbetsdagens slut"
   }
 }

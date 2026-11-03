@@ -2081,3 +2081,8 @@ SMILEY_SHORTCUTS = {
 }
 # Typing one of these right after a smiley code converts it
 SMILEY_TRIGGER_CHARS = (" ", "\r", "\n", "\t", ".", ",", "!", "?")
+
+# --- Checkout panel: docked one-column layout ---
+CHECKOUT_TAB_MAX_DEPARTURES = 12
+CHECKOUT_STACK_MAX_DEPARTURES = 6
+CHECKOUT_STACK_NOTE_HEIGHT = 90

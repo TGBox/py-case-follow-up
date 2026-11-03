@@ -71,6 +71,10 @@ from constants import (
     PAD_TINY,
     PAD_XS,
     TRANSIT_REFRESH_INTERVAL_MS,
+    FONT_SIZE_TITLE,
+    CHECKOUT_TAB_MAX_DEPARTURES,
+    CHECKOUT_STACK_MAX_DEPARTURES,
+    CHECKOUT_STACK_NOTE_HEIGHT,
 )
 from models.case import Case
 from models.profile import UserProfile
@@ -78,6 +82,7 @@ from services.checkout_task_service import CheckoutTaskService
 from services.ding_transit_service import DingTransitService, TransitDeparture
 from services.i18n_service import tr
 from services.weather_service import WeatherInfo, WeatherService
+from ui.widgets.collapsible_section import CollapsibleSection
 from utils.icon_utils import get_icon
 
 logger = logging.getLogger(__name__)
@@ -288,6 +293,11 @@ class CheckoutPanelWidget(ctk.CTkFrame):
     # Tabs Setup
     # -------------------------------------------------------------------------
     def _build_tabs(self) -> None:
+        # Docked next to the cases the panel is tall and narrow: tabs would leave
+        # most of it empty, so everything is shown at once in one column.
+        if not self.is_floating:
+            self._build_stack()
+            return
         self.tabview = ctk.CTkTabview(self, corner_radius=CORNER_RADIUS_MD)
         self.tabview.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
 
@@ -318,13 +328,125 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._setup_weather_tab()
 
     # -------------------------------------------------------------------------
+    # Docked layout: summary strip plus collapsible sections in one column
+    # -------------------------------------------------------------------------
+    def _build_stack(self) -> None:
+        self.tabview = None
+        self._sections: dict[str, CollapsibleSection] = {}
+        self.stack_scroll = ctk.CTkScrollableFrame(self, fg_color=COLOR_TRANSPARENT)
+        self.stack_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_NONE, PAD_XS))
+
+        self._setup_summary_strip(self.stack_scroll)
+
+        note_title = (
+            tr("checkout_panel.tab_note_badged", "Tagesnotiz ●")
+            if self.settings.daily_note_text.strip()
+            else tr("checkout_panel.tab_note", "Tagesnotiz")
+        )
+        self.tab_name_note = note_title
+        self.tab_transit = self._add_stack_section("transit", tr("checkout_panel.tab_transit", "ÖPNV"))
+        self.tab_tasks = self._add_stack_section("tasks", tr("checkout_panel.tab_tasks", "Tasks"))
+        self.tab_note = self._add_stack_section("note", note_title)
+        self.tab_tomorrow = self._add_stack_section("tomorrow", tr("checkout_panel.tab_tomorrow", "Morgen"))
+
+        self._setup_transit_tab()
+        self._setup_tasks_tab()
+        self._setup_note_tab()
+        self._setup_tomorrow_tab()
+
+    def _add_stack_section(self, section_id: str, title: str) -> ctk.CTkFrame:
+        collapsed = section_id in self.settings.collapsed_sections
+        section = CollapsibleSection(
+            self.stack_scroll,
+            title=title,
+            expanded=not collapsed,
+            on_toggle=lambda expanded, sid=section_id: self._on_section_toggled(sid, expanded),
+        )
+        section.pack(fill="x", pady=(PAD_SM, PAD_NONE))
+        self._sections[section_id] = section
+        return section.body
+
+    def _on_section_toggled(self, section_id: str, expanded: bool) -> None:
+        collapsed = [s for s in self.settings.collapsed_sections if s != section_id]
+        if not expanded:
+            collapsed.append(section_id)
+        self.settings.collapsed_sections = collapsed
+        self._persist_settings()
+
+    def _list_container(self, parent: Any) -> Any:
+        """A scrollable list inside a tab; a plain frame in the docked column, which scrolls as a whole."""
+        if self.is_floating:
+            return ctk.CTkScrollableFrame(parent, fg_color=COLOR_TRANSPARENT)
+        return ctk.CTkFrame(parent, fg_color=COLOR_TRANSPARENT)
+
+    def _setup_summary_strip(self, parent: Any) -> None:
+        """Weather and working time in two short lines at the top of the docked panel."""
+        card = ctk.CTkFrame(parent, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_MD)
+        card.pack(fill="x", pady=(PAD_XS, PAD_NONE))
+
+        weather_row = ctk.CTkFrame(card, fg_color=COLOR_TRANSPARENT)
+        weather_row.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_NONE))
+        city = self.settings.weather_city or "Ulm"
+        # Kept for the shared weather update; the city sits in the tooltip here.
+        self.weather_city_lbl = ctk.CTkLabel(
+            weather_row,
+            text=tr("checkout_panel.weather_title", "Wetter für den Heimweg ({city})").format(city=city),
+        )
+        self.weather_temp_lbl = ctk.CTkLabel(
+            weather_row, text="...", font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight=FONT_WEIGHT_BOLD), anchor="w"
+        )
+        self.weather_temp_lbl.pack(side="left", padx=(PAD_NONE, PAD_SM))
+        self.weather_desc_lbl = ctk.CTkLabel(
+            weather_row, text="", font=ctk.CTkFont(size=FONT_SIZE_SM), text_color=COLOR_MUTED_LABEL, anchor="w"
+        )
+        self.weather_desc_lbl.pack(side="left", fill="x", expand=True)
+        self.weather_umbrella_lbl = ctk.CTkLabel(
+            card, text="", font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD), anchor="w"
+        )
+        self.weather_umbrella_lbl.pack(fill="x", padx=PAD_SM)
+
+        work_row = ctk.CTkFrame(card, fg_color=COLOR_TRANSPARENT)
+        work_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+        elapsed_minutes, projected_end = self._compute_worktime()
+        self.worktime_net_lbl = ctk.CTkLabel(
+            work_row,
+            text=tr("checkout_panel.summary_net", "Netto {hours}:{minutes:02d} Std.").format(
+                hours=elapsed_minutes // 60, minutes=elapsed_minutes % 60
+            ),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_CANCEL_FG if elapsed_minutes >= 600 else COLOR_MUTED_LABEL,
+            anchor="w",
+        )
+        self.worktime_net_lbl.pack(side="left")
+        self.worktime_end_lbl = ctk.CTkLabel(
+            work_row,
+            text=tr("checkout_panel.summary_end", "Feierabend ca. {time} Uhr").format(time=projected_end.strftime("%H:%M")),
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            text_color=COLOR_SUCCESS,
+            anchor="e",
+        )
+        self.worktime_end_lbl.pack(side="right")
+
+    def _compute_worktime(self) -> tuple[int, datetime]:
+        """Net minutes worked so far today and the projected end of the working day."""
+        now = datetime.now()
+        start_parts = self.settings.work_start_time.split(":")
+        try:
+            start_dt = now.replace(hour=int(start_parts[0]), minute=int(start_parts[1]), second=0, microsecond=0)
+        except Exception:
+            start_dt = now.replace(hour=8, minute=0, second=0, microsecond=0)
+        elapsed_minutes = max(0, int((now - start_dt).total_seconds() / 60) - self.settings.work_break_minutes)
+        target_minutes = int(self.settings.work_target_hours * 60) + self.settings.work_break_minutes
+        return elapsed_minutes, start_dt + timedelta(minutes=target_minutes)
+
+    # -------------------------------------------------------------------------
     # TAB 1: Tasks (Checklist)
     # -------------------------------------------------------------------------
     def _setup_tasks_tab(self) -> None:
         tab = self.tab_tasks
 
         # Scrollable container
-        self.tasks_scroll = ctk.CTkScrollableFrame(tab, fg_color=COLOR_TRANSPARENT)
+        self.tasks_scroll = self._list_container(tab)
         self.tasks_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
 
         # Add task input row at the bottom
@@ -587,7 +709,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.stage_dep_lbl.pack(fill="x", pady=PAD_TINY)
 
         # Scrollable departures table
-        self.transit_scroll = ctk.CTkScrollableFrame(tab, fg_color=COLOR_TRANSPARENT)
+        self.transit_scroll = self._list_container(tab)
         self.transit_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_XS))
 
     def refresh_transit_data(self, force: bool = False) -> None:
@@ -743,7 +865,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             no_dep_lbl.pack(pady=PAD_MD)
             return
 
-        for dep in self._transit_departures[:12]:
+        limit = CHECKOUT_TAB_MAX_DEPARTURES if self.is_floating else CHECKOUT_STACK_MAX_DEPARTURES
+        for dep in self._transit_departures[:limit]:
             dep_key = f"{dep.line}_{dep.planned_time_str}_{dep.destination}"
             is_selected = (self._selected_dep_key == dep_key)
 
@@ -913,8 +1036,12 @@ class CheckoutPanelWidget(ctk.CTkFrame):
     def _setup_note_tab(self) -> None:
         tab = self.tab_note
 
-        self.note_textbox = ctk.CTkTextbox(tab, font=ctk.CTkFont(size=FONT_SIZE_BODY))
-        self.note_textbox.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_SM))
+        if self.is_floating:
+            self.note_textbox = ctk.CTkTextbox(tab, font=ctk.CTkFont(size=FONT_SIZE_BODY))
+            self.note_textbox.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_SM))
+        else:
+            self.note_textbox = ctk.CTkTextbox(tab, font=ctk.CTkFont(size=FONT_SIZE_BODY), height=CHECKOUT_STACK_NOTE_HEIGHT)
+            self.note_textbox.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE))
         self.note_textbox.insert("1.0", self.settings.daily_note_text)
         self.note_textbox.bind("<KeyRelease>", self._on_note_key_release)
         from utils.smiley_utils import enable_smiley_shortcuts
@@ -956,6 +1083,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             if has_content
             else tr("checkout_panel.tab_note", "Tagesnotiz")
         )
+        section = getattr(self, "_sections", {}).get("note")
+        if section is not None:
+            section.set_title(title)
+            return
         # CTkTabview internal segmented button rename
         try:
             seg = getattr(self.tabview, "_segmented_button", None)
@@ -972,7 +1103,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
     # -------------------------------------------------------------------------
     def _setup_tomorrow_tab(self) -> None:
         tab = self.tab_tomorrow
-        self.tomorrow_scroll = ctk.CTkScrollableFrame(tab, fg_color=COLOR_TRANSPARENT)
+        self.tomorrow_scroll = self._list_container(tab)
         self.tomorrow_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=PAD_XS)
         self.render_tomorrow_preview()
 
@@ -1056,23 +1187,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         card = ctk.CTkFrame(tab, fg_color=COLOR_CARD_BG, corner_radius=CORNER_RADIUS_MD)
         card.pack(fill="x", padx=PAD_XS, pady=PAD_XS)
 
-        now = datetime.now()
-        start_parts = self.settings.work_start_time.split(":")
-        try:
-            start_dt = now.replace(
-                hour=int(start_parts[0]), minute=int(start_parts[1]), second=0, microsecond=0
-            )
-        except Exception:
-            start_dt = now.replace(hour=8, minute=0, second=0, microsecond=0)
-
-        # Net working time elapsed
-        elapsed_minutes = max(0, int((now - start_dt).total_seconds() / 60) - self.settings.work_break_minutes)
+        elapsed_minutes, projected_end = self._compute_worktime()
         elapsed_hours = elapsed_minutes // 60
         elapsed_mins_rem = elapsed_minutes % 60
-
-        # Projected end of day = start + target_hours + break_minutes
-        target_minutes = int(self.settings.work_target_hours * 60) + self.settings.work_break_minutes
-        projected_end = start_dt + timedelta(minutes=target_minutes)
 
         time_box = ctk.CTkLabel(
             card,

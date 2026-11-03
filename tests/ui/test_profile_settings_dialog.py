@@ -136,19 +136,24 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
 
     # Sidebar with one page per topic; old tab names stay as aliases onto the page bodies
     assert d._page_order == [
-        "profile", "appearance", "notifications", "push", "checkout",
-        "scoring", "shortcuts", "team", "wiki", "ai", "data", "backup",
+        "profile", "appearance", "notifications", "checkout", "work", "knowledge", "data", "backup",
     ]
     assert d.current_page == "profile"
-    assert d.tab_user is d._page_bodies["profile"] and d.tab_ui is d._page_bodies["appearance"]
-    assert d.tab_backup is d._page_bodies["backup"] and d.tab_wiki is d._page_bodies["wiki"]
+    assert d.tab_user.master is d._page_bodies["profile"] and d.tab_ui is d._page_bodies["appearance"]
+    assert d.tab_backup is d._page_bodies["backup"] and d.tab_wiki.master is d._page_bodies["knowledge"]
     # Backup has its own page instead of sitting below the storage paths
     assert d.retention_daily_entry.master.master.master is d._page_bodies["backup"]  # entry -> row -> card -> page
 
     # Profile data and appearance live on separate pages
-    assert d.user_name_entry.master is d._page_bodies["profile"]
+    assert d.user_name_entry.master.master is d._page_bodies["profile"]
     assert d.language_combo.master is d._page_bodies["appearance"]
-    assert d.btn_open_p2p.master is d._page_bodies["team"]
+    # Small topics share a page: team sync below the profile, PC and phone alerts together
+    assert d.btn_open_p2p.master.master is d._page_bodies["profile"]
+    assert d.btn_open_p2p.master is not d.user_name_entry.master
+    assert d.os_popup_switch.master.master is d._page_bodies["notifications"]
+    assert d.ntfy_switch.master.master is d._page_bodies["notifications"]
+    assert d.vip_bonus_entry.master.master.master is d._page_bodies["work"]
+    assert d.wiki_url_entry.master.master is d._page_bodies["knowledge"]
     widths = {
         d.user_name_entry: 185, d.user_dept_entry: 185, d.user_ext_entry: 185, d.user_mobile_entry: 185,
         d.user_email_entry: 380, d.language_combo: 380, d.theme_combo: 380, d.layout_combo: 380,
@@ -234,9 +239,9 @@ def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path)
         assert not d._pages["profile"].winfo_manager()
 
         d._step_page(1)
-        assert d.current_page == "scoring"
+        assert d.current_page == "work"
         d._step_page(-2)
-        assert d.current_page == "push"
+        assert d.current_page == "notifications"
         d.show_page("backup")
         d._step_page(1)  # wraps around
         assert d.current_page == "profile"

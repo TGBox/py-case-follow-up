@@ -24,12 +24,14 @@ from constants import (
     FONT_SIZE_BODY,
     FONT_SIZE_H2,
     FONT_SIZE_SM,
+    FONT_SIZE_SUBTITLE,
     FONT_SIZE_TITLE,
     HEIGHT_BOTTOM_BAR,
     PAD_LG,
     PAD_MD,
     PAD_NONE,
     PAD_SM,
+    PAD_2XL,
     PAD_TINY,
     PAD_XS,
     SETTINGS_NAV_ACCENT_WIDTH,
@@ -55,29 +57,21 @@ from ui.dialogs.profile_settings_wiki_tab import WikiSettingsTabMixin
 SETTINGS_PAGES: list[tuple[str, str, list[tuple[str, str, str, str, str, bool]]]] = [
     ("profile.nav_group_you", "Du", [
         ("profile", "profile.page_profile", "Profil",
-         "profile.page_profile_desc", "Wer du bist und wie du in Fällen und E-Mails auftrittst.", True),
+         "profile.page_profile_desc", "Wer du bist, wie du in Fällen und E-Mails auftrittst und wie du dich mit dem Team abgleichst.", True),
         ("appearance", "profile.page_appearance", "Darstellung",
          "profile.page_appearance_desc", "Sprache, Farben, Schriftgröße und Anordnung der App.", True),
     ]),
     ("profile.nav_group_notify", "Erinnern und benachrichtigen", [
         ("notifications", "profile.page_notifications", "Benachrichtigungen",
-         "profile.page_notifications_desc", "Hinweise auf diesem PC, wenn Wiedervorlagen fällig werden.", True),
-        ("push", "profile.page_push", "Smartphone-Push",
-         "profile.page_push_desc", "Meldungen aufs Handy, wenn du nicht am Platz bist. Läuft über ntfy.sh.", True),
+         "profile.page_notifications_desc", "Hinweise auf diesem PC und aufs Handy, wenn Wiedervorlagen fällig werden.", True),
         ("checkout", "profile.page_checkout", "Feierabend",
          "profile.page_checkout_desc", "Checkliste, Abfahrten und Geh-Wecker zum Dienstende.", True),
     ]),
     ("profile.nav_group_work", "Arbeit", [
-        ("scoring", "profile.page_scoring", "Priorisierung",
-         "profile.page_scoring_desc", "Wie stark Fälle in der Liste nach oben rücken.", True),
-        ("shortcuts", "profile.page_shortcuts", "Tastenkürzel",
-         "profile.page_shortcuts_desc", "Tastenkombinationen für Aktionen und Textbausteine.", True),
-        ("team", "profile.page_team", "Team-Sync",
-         "profile.page_team_desc", "Fälle mit Kolleginnen und Kollegen im Netzwerk abgleichen.", True),
-        ("wiki", "profile.page_wiki", "Wiki",
-         "profile.page_wiki_desc", "Verbindung zum BookStack-Wiki.", True),
-        ("ai", "profile.page_ai", "KI und Textanalyse",
-         "profile.page_ai_desc", "KI-Anbieter, lokale Modelle und Grundregeln für Antworten.", True),
+        ("work", "profile.page_work", "Arbeitsweise",
+         "profile.page_work_desc", "Wie Fälle priorisiert werden und welche Tastenkürzel gelten.", True),
+        ("knowledge", "profile.page_knowledge", "Wiki und KI",
+         "profile.page_knowledge_desc", "Verbindung zum BookStack-Wiki und KI-Unterstützung beim Schreiben.", True),
     ]),
     ("profile.nav_group_system", "System", [
         ("data", "profile.page_data", "Speicherort",
@@ -209,27 +203,38 @@ class ProfileSettingsDialog(
                 self._add_nav_item(page_id, title_key, title_default)
                 self._build_page(page_id, title_key, title_default, desc_key, desc_default, scrolls)
 
+        pb = self._page_bodies
+        # Pages that hold several topics get one frame per topic, so each
+        # section can use its own geometry manager (the profile form uses grid).
+        profile_sec = self._add_section(pb["profile"], None, None)
+        team_sec = self._add_section(pb["profile"], "profile.section_team", "Team-Sync")
+        pc_sec = self._add_section(pb["notifications"], "profile.section_notify_pc", "Auf diesem PC")
+        phone_sec = self._add_section(pb["notifications"], "profile.section_notify_phone", "Aufs Smartphone (ntfy.sh)")
+        scoring_sec = self._add_section(pb["work"], "profile.section_scoring", "Priorisierung")
+        shortcuts_sec = self._add_section(pb["work"], None, None)
+        wiki_sec = self._add_section(pb["knowledge"], "profile.section_wiki", "Wiki (BookStack)")
+        ai_sec = self._add_section(pb["knowledge"], "profile.section_ai", "KI und Textanalyse")
+
         # Backward compatibility: the mixins (and older callers) still address
         # their former tab frames by these names.
-        self.tab_user = self._page_bodies["profile"]
-        self.tab_ui = self._page_bodies["appearance"]
-        self.tab_paths = self._page_bodies["data"]
-        self.tab_backup = self._page_bodies["backup"]
-        self.tab_ai = self._page_bodies["ai"]
-        self.tab_scoring = self._page_bodies["scoring"]
-        self.tab_wiki = self._page_bodies["wiki"]
+        self.tab_user = profile_sec
+        self.tab_ui = pb["appearance"]
+        self.tab_paths = pb["data"]
+        self.tab_backup = pb["backup"]
+        self.tab_ai = ai_sec
+        self.tab_scoring = pb["work"]
+        self.tab_wiki = wiki_sec
 
-        pb = self._page_bodies
-        self.setup_user_section(pb["profile"])
+        self.setup_user_section(profile_sec)
+        self.setup_p2p_section(team_sec)
         self.setup_appearance_section(pb["appearance"])
         self.setup_column_widths_section(pb["appearance"])
-        self.setup_notifications_section(pb["notifications"])
-        self.setup_ntfy_section(pb["push"])
+        self.setup_notifications_section(pc_sec)
+        self.setup_ntfy_section(phone_sec)
         self.setup_checkout_section(pb["checkout"])
-        self.setup_scoring_section(pb["scoring"])
-        self.setup_shortcuts_section(pb["shortcuts"])
-        self.setup_p2p_section(pb["team"])
-        self.setup_wiki_section(pb["wiki"])
+        self.setup_scoring_section(scoring_sec)
+        self.setup_shortcuts_section(shortcuts_sec)
+        self.setup_wiki_section(wiki_sec)
         self.setup_ai_tab()
         self.setup_paths_tab()
         self.setup_backup_section(pb["backup"])
@@ -304,6 +309,19 @@ class ProfileSettingsDialog(
 
         self._pages[page_id] = page
         self._page_bodies[page_id] = body
+
+    def _add_section(self, page_body: Any, title_key: str | None, title_default: str | None) -> ctk.CTkFrame:
+        """Adds one topic block to a page, with a heading unless it is the page's first, untitled block."""
+        first = not page_body.winfo_children()
+        if title_key and title_default:
+            self.register_i18n(
+                ctk.CTkLabel(page_body, text=tr(title_key, title_default), font=ctk.CTkFont(size=FONT_SIZE_SUBTITLE, weight="bold"), anchor="w"),
+                title_key,
+                title_default,
+            ).pack(fill="x", padx=PAD_XS, pady=(PAD_NONE if first else PAD_2XL, PAD_SM))
+        frame = ctk.CTkFrame(page_body, fg_color="transparent")
+        frame.pack(fill="x", anchor="w")
+        return frame
 
     def show_page(self, page_id: str) -> None:
         """Brings one settings page to the front and marks it in the sidebar."""

@@ -1259,6 +1259,13 @@ TEXTBOX_DEFAULT_HEIGHT = 90
 TEXTBOX_DEFAULT_WIDTH = 520
 TEXTBOX_VISIBLE_THRESHOLD_TOP = 0.001
 TEXTBOX_VISIBLE_THRESHOLD_BOTTOM = 0.999
+# Lazy form build: fields that fit the visible part of the form are built at
+# once, the rest in idle chunks. Row heights are estimates in logical pixels
+# (label row + widget + paddings); they only decide where the eager part ends.
+FORM_ROW_HEIGHT_DEFAULT = 60
+FORM_ROW_HEIGHT_TEXTBOX_EXTRA = 40
+FORM_EAGER_OVERSCAN_PX = 120
+FORM_LAZY_CHUNK_SIZE = 6
 
 POPUP_TAG_PICKER_GEOMETRY = "450x440"
 POPUP_TAG_PICKER_WIDTH = 450

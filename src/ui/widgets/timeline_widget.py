@@ -2,7 +2,7 @@ import customtkinter as ctk
 from typing import Any
 from collections.abc import Callable
 from models.case import TimelineEntry
-from enums import Channel, get_channel_display, get_channel_val_from_display, CHANNEL_DISPLAY
+from enums import Channel, get_channel_display
 from constants import (
     BTN_HEIGHT_TIMELINE_EDIT,
     BTN_WIDTH_ACTION,
@@ -18,7 +18,6 @@ from constants import (
     COLOR_TEXT_BODY,
     COLOR_TIMELINE_EDIT_HOVER,
     COLOR_TIMELINE_LINK,
-    COMBO_WIDTH_SM,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_XS,
     DATE_PICKER_WIDTH_TIMELINE,
@@ -127,25 +126,16 @@ class TimelineWidget(ctk.CTkFrame):
         )
         self.snip_btn.pack(side="right")
 
-        channel_row = ctk.CTkFrame(input_frame, fg_color="transparent")
-        channel_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
-
-        self.channel_combo = ctk.CTkOptionMenu(channel_row, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=COMBO_WIDTH_SM)
-        self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
-        self.channel_combo.pack(side="left")
+        # Medium first, then direction: one long dropdown with 13 channel
+        # codes had become hard to scan (see ui/widgets/channel_picker.py).
+        from ui.widgets.channel_picker import ChannelPicker
+        self.channel_picker = ChannelPicker(input_frame, value=Channel.PHONE_INBOUND.value)
+        self.channel_picker.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
         # Rarely needed, so the time row stays folded away behind this toggle.
+        # It sits in the bottom row next to the add button: beside the channel
+        # chips it would take away the width they need to stay on two lines.
         self._time_expanded = False
-        self.time_toggle_btn = ctk.CTkButton(
-            channel_row,
-            text=self._time_toggle_text(),
-            width=0,
-            fg_color="transparent",
-            hover_color=COLOR_TIMELINE_EDIT_HOVER,
-            text_color=COLOR_ON_MUTED_TEXT,
-            command=self.toggle_time_row,
-        )
-        self.time_toggle_btn.pack(side="right")
 
         # Optional back-dating: empty means "now". The picker refuses the future,
         # a timeline documents what already happened.
@@ -187,6 +177,17 @@ class TimelineWidget(ctk.CTkFrame):
 
         self.add_btn = ctk.CTkButton(input_frame, text=tr("cockpit.add_note_btn", "+ Notiz Hinzufügen"), command=self.on_add_note, width=BTN_WIDTH_ACTION)
         self.add_btn.pack(side="right", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+
+        self.time_toggle_btn = ctk.CTkButton(
+            input_frame,
+            text=self._time_toggle_text(),
+            width=0,
+            fg_color="transparent",
+            hover_color=COLOR_TIMELINE_EDIT_HOVER,
+            text_color=COLOR_ON_MUTED_TEXT,
+            command=self.toggle_time_row,
+        )
+        self.time_toggle_btn.pack(side="left", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
 
     def _time_toggle_text(self) -> str:
         from services.i18n_service import tr
@@ -247,10 +248,8 @@ class TimelineWidget(ctk.CTkFrame):
             self.time_picker.refresh_ui_labels()
             if not self.time_picker.get():
                 self.time_picker.entry.configure(placeholder_text=tr("timeline.time_placeholder", "leer = jetzt"))
-        if hasattr(self, "channel_combo"):
-            curr_val = get_channel_val_from_display(self.channel_combo.get())
-            self.channel_combo.configure(values=[get_channel_display(c) for c in CHANNEL_DISPLAY])
-            self.channel_combo.set(get_channel_display(curr_val))
+        if hasattr(self, "channel_picker"):
+            self.channel_picker.refresh_labels()
         self.load_timeline(self.timeline_entries)
 
     def on_click_snippet(self):
@@ -570,7 +569,7 @@ class TimelineWidget(ctk.CTkFrame):
                 return
             timestamp = format_iso(picked)
 
-        channel_val = get_channel_val_from_display(self.channel_combo.get())
+        channel_val = self.channel_picker.get()
         new_entry = TimelineEntry(
             timestamp=timestamp,
             author=self.author_name,

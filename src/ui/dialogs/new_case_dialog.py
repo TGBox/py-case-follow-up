@@ -31,7 +31,6 @@ from constants import (
     COLOR_TAG_PILL_SELECTED,
     COLOR_TAG_PILL_SELECTED_HOVER,
     COMBO_DEFAULT_WIDTH,
-    COMBO_WIDTH_NEW_CASE_CHANNEL,
     DEFAULT_PRACTICE_DISPLAY,
     DEFAULT_PRACTICE_ID,
     DEFAULT_PRACTICE_NAME,
@@ -456,16 +455,9 @@ class NewCaseDialog(BaseDialog):
             "Initiale Notiz / Eingangskanal:",
         ).pack(side="left")
 
-        from enums import CHANNEL_DISPLAY, get_channel_display
-        channel_names = [get_channel_display(c) for c in CHANNEL_DISPLAY]
-        self.channel_combo = ctk.CTkOptionMenu(
-            note_hdr_row,
-            values=channel_names,
-            width=COMBO_WIDTH_NEW_CASE_CHANNEL,
-            font=ctk.CTkFont(size=FONT_SIZE_SM),
-        )
-        self.channel_combo.set(get_channel_display(Channel.PHONE_INBOUND.value))
-        self.channel_combo.pack(side="right")
+        from ui.widgets.channel_picker import ChannelPicker
+        self.channel_picker = ChannelPicker(form_scroll, value=Channel.PHONE_INBOUND.value)
+        self.channel_picker.pack(fill="x", pady=(PAD_NONE, PAD_SM))
 
         self.note_textbox = ctk.CTkTextbox(form_scroll, height=TEXTBOX_HEIGHT_INITIAL_NOTE)
         self.note_textbox.pack(fill="x", pady=(PAD_NONE, PAD_GAP))
@@ -737,9 +729,8 @@ class NewCaseDialog(BaseDialog):
         initial_note = self.note_textbox.get("1.0", "end-1c").strip()
         timeline = []
         if initial_note:
-            from enums import get_channel_val_from_display
-            selected_chan_disp = self.channel_combo.get() if hasattr(self, "channel_combo") else "Telefon (Eingang)"
-            selected_chan_val = get_channel_val_from_display(selected_chan_disp)
+            picker = getattr(self, "channel_picker", None)
+            selected_chan_val = picker.get() if picker is not None else Channel.PHONE_INBOUND.value
             timeline.append(TimelineEntry(
                 timestamp=created_at_iso,
                 author=self.created_by,

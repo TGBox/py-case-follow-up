@@ -334,3 +334,41 @@ def test_restore_from_tray_maps_maximized_window_without_relayout(config, seeded
         assert len(child_configures) < 20, f"{len(child_configures)} child relayouts: {child_configures[:10]}"
     finally:
         app.destroy()
+
+
+@windows_only
+def test_diag_restore_variants(config, seeded_storage, monkeypatch):
+    """DIAGNOSTIC (temporary): which way of showing a withdrawn maximized window avoids the relayout cascade?"""
+    _real_wm(monkeypatch)
+    seeded_storage.save_profile(seeded_storage.load_profile())
+    app = SupportCockpitApp(config)
+    results = []
+    try:
+        _pump(app, 300)
+        app.switch_to_cockpit_view_for_case(app.cases[0])
+        _pump(app, 300)
+        w = app._w
+        call = app.tk.call
+
+        def run(name, restore):
+            app.on_closing()
+            _pump(app, 200)
+            hidden = (call("wm", "state", w), app.winfo_viewable())
+            seen: list[str] = []
+            fid = app.bind_all("<Configure>", lambda e: seen.append(str(e.widget)) if e.widget is not app else None, add="+")
+            restore()
+            _pump(app, 600)
+            results.append((name, hidden, call("wm", "state", w), app.winfo_viewable(), app.winfo_width(), app.winfo_height(), len(seen)))
+            app.unbind_all("<Configure>")
+
+        run("deiconify_then_zoomed", lambda: (call("wm", "deiconify", w), call("wm", "state", w, "zoomed")))
+        run("zoomed_only", lambda: call("wm", "state", w, "zoomed"))
+        run("zoomed_then_deiconify", lambda: (call("wm", "state", w, "zoomed"), call("wm", "deiconify", w)))
+        run("zoomed_only_again", lambda: call("wm", "state", w, "zoomed"))
+        # after zoomed_only: does iconify/withdraw still behave?
+        call("wm", "iconify", w); _pump(app, 200); results.append(("iconify_after_zoomed_only", call("wm", "state", w), app.winfo_viewable()))
+        run("deiconify_from_iconic", lambda: call("wm", "deiconify", w))
+        run("zoomed_only_from_iconic", lambda: (call("wm", "iconify", w), _pump(app, 200), call("wm", "state", w, "zoomed")))
+    finally:
+        app.destroy()
+    assert False, results

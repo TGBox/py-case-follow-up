@@ -366,9 +366,13 @@ def test_diag_restore_variants(config, seeded_storage, monkeypatch):
         run("zoomed_then_deiconify", lambda: (call("wm", "state", w, "zoomed"), call("wm", "deiconify", w)))
         run("zoomed_only_again", lambda: call("wm", "state", w, "zoomed"))
         # after zoomed_only: does iconify/withdraw still behave?
-        call("wm", "iconify", w); _pump(app, 200); results.append(("iconify_after_zoomed_only", call("wm", "state", w), app.winfo_viewable()))
+        call("wm", "iconify", w)
+        _pump(app, 200)
+        results.append(("iconify_after_zoomed_only", call("wm", "state", w), app.winfo_viewable()))
         run("deiconify_from_iconic", lambda: call("wm", "deiconify", w))
         run("zoomed_only_from_iconic", lambda: (call("wm", "iconify", w), _pump(app, 200), call("wm", "state", w, "zoomed")))
     finally:
         app.destroy()
-    assert False, results
+    for r in results:
+        print("DIAG", r)
+    assert False, "diagnostic run - see captured stdout"

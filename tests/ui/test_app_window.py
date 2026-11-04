@@ -338,7 +338,7 @@ def test_restore_from_tray_maps_maximized_window_without_relayout(config, seeded
 
 @windows_only
 def test_diag_restore_variants(config, seeded_storage, monkeypatch):
-    """DIAGNOSTIC (temporary): which way of showing a withdrawn maximized window avoids the relayout cascade?"""
+    """DIAGNOSTIC (temporary): what happens to a maximized window's size while hidden, and what does showing cost?"""
     _real_wm(monkeypatch)
     seeded_storage.save_profile(seeded_storage.load_profile())
     app = SupportCockpitApp(config)
@@ -346,31 +346,49 @@ def test_diag_restore_variants(config, seeded_storage, monkeypatch):
     try:
         _pump(app, 300)
         app.switch_to_cockpit_view_for_case(app.cases[0])
+        app.cockpit_view.focus_timeline_note()
         _pump(app, 300)
         w = app._w
         call = app.tk.call
 
-        def run(name, restore):
-            app.on_closing()
-            _pump(app, 200)
-            hidden = (call("wm", "state", w), app.winfo_viewable())
-            seen: list[str] = []
-            fid = app.bind_all("<Configure>", lambda e: seen.append(str(e.widget)) if e.widget is not app else None, add="+")
-            restore()
-            _pump(app, 600)
-            results.append((name, hidden, call("wm", "state", w), app.winfo_viewable(), app.winfo_width(), app.winfo_height(), len(seen)))
-            app.unbind_all("<Configure>")
+        def size():
+            return (app.winfo_width(), app.winfo_height(), app.winfo_x(), app.winfo_y())
 
-        run("deiconify_then_zoomed", lambda: (call("wm", "deiconify", w), call("wm", "state", w, "zoomed")))
-        run("zoomed_only", lambda: call("wm", "state", w, "zoomed"))
-        run("zoomed_then_deiconify", lambda: (call("wm", "state", w, "zoomed"), call("wm", "deiconify", w)))
-        run("zoomed_only_again", lambda: call("wm", "state", w, "zoomed"))
-        # after zoomed_only: does iconify/withdraw still behave?
-        call("wm", "iconify", w)
-        _pump(app, 200)
-        results.append(("iconify_after_zoomed_only", call("wm", "state", w), app.winfo_viewable()))
-        run("deiconify_from_iconic", lambda: call("wm", "deiconify", w))
-        run("zoomed_only_from_iconic", lambda: (call("wm", "iconify", w), _pump(app, 200), call("wm", "state", w, "zoomed")))
+        def run(name, hide, restore):
+            hide_seen: list[str] = []
+            app.bind_all("<Configure>", lambda e: hide_seen.append(str(e.widget)) if e.widget is not app else None, add="+")
+            hide()
+            _pump(app, 300)
+            hidden = (call("wm", "state", w), app.winfo_viewable(), size(), len(hide_seen))
+            app.unbind_all("<Configure>")
+            seen: list[str] = []
+            app.bind_all("<Configure>", lambda e: seen.append(str(e.widget)) if e.widget is not app else None, add="+")
+            t0 = time.perf_counter()
+            restore()
+            app.update()
+            t_first = time.perf_counter() - t0
+            last = len(seen)
+            quiet = 0
+            while quiet < 10 and time.perf_counter() - t0 < 3:
+                app.update()
+                time.sleep(0.01)
+                if len(seen) == last:
+                    quiet += 1
+                else:
+                    quiet, last = 0, len(seen)
+            t_all = time.perf_counter() - t0 - 0.1
+            app.unbind_all("<Configure>")
+            results.append((name, "hidden:", hidden, "shown:", call("wm", "state", w), app.winfo_viewable(), size(),
+                            "child_configures:", len(seen), "first_update_ms:", round(t_first * 1000), "settled_ms:", round(t_all * 1000),
+                            "sample:", seen[:4]))
+
+        results.append(("before", call("wm", "state", w), size()))
+        run("withdraw/zoomed", lambda: call("wm", "withdraw", w), lambda: call("wm", "state", w, "zoomed"))
+        run("withdraw/deiconify+zoomed", lambda: call("wm", "withdraw", w), lambda: (call("wm", "deiconify", w), call("wm", "state", w, "zoomed")))
+        run("iconify/deiconify", lambda: call("wm", "iconify", w), lambda: call("wm", "deiconify", w))
+        run("iconify/zoomed", lambda: call("wm", "iconify", w), lambda: call("wm", "state", w, "zoomed"))
+        run("alpha0/alpha1", lambda: call("wm", "attributes", w, "-alpha", 0.0), lambda: call("wm", "attributes", w, "-alpha", 1.0))
+        run("withdraw/zoomed(2)", lambda: call("wm", "withdraw", w), lambda: call("wm", "state", w, "zoomed"))
     finally:
         app.destroy()
     for r in results:

@@ -8,6 +8,9 @@ def set_default_color_theme(color_string: str) -> None: ...
 def set_widget_scaling(scaling_value: float) -> None: ...
 def set_window_scaling(scaling_value: float) -> None: ...
 
+class ThemeManager:
+    theme: dict[str, dict[str, Any]]
+
 class ScalingTracker:
     widget_scaling: float
     window_scaling: float

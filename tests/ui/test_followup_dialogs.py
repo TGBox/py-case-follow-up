@@ -431,6 +431,41 @@ def test_restore_pins_side_column_widths(fake_paned):
     assert fake.sash_place.call_args_list[1].args == (1, 1243, 0)
 
 
+def _panes_already_pinned(view, fake, w_left: int, w_right: int) -> None:
+    """Makes panecget() report the given widths as the panes' current options."""
+    right_min = max(290, view._min_right_width())
+
+    def panecget(pane, option):
+        if pane is view.left_frame:
+            return {"width": w_left}.get(option, "")
+        return {"width": w_right, "minsize": right_min}.get(option, "")
+
+    fake.panecget.side_effect = panecget
+    view._min_right_width = lambda: right_min
+
+
+def test_save_does_not_repin_unchanged_widths(fake_paned):
+    """Regression: re-pinning the same widths relayouted the whole cockpit on every minimize to the tray."""
+    view, fake = fake_paned
+    fake.sash_coord.side_effect = lambda i: [(301, 0), (1273, 0)][i]  # left 300, right 1600 - 1273 - 7 = 320
+    _panes_already_pinned(view, fake, 300, 320)
+    view.storage_service = None
+    view.save_sash_widths()
+    assert fake.paneconfigure.call_count == 0
+
+
+def test_restore_repins_even_when_the_options_already_match(fake_paned):
+    """Tk can redistribute the panes from their requested widths while the -width options stay put
+    (seen at startup: right column at minsize 290 instead of 320). Restoring must re-apply them."""
+    view, fake = fake_paned
+    view.profile.ui_settings.column_widths["cockpit_left"] = 300
+    view.profile.ui_settings.column_widths["cockpit_right"] = 320
+    _panes_already_pinned(view, fake, 300, 320)
+    view.restore_sash_positions()
+    pinned = {c.args[0] for c in fake.paneconfigure.call_args_list}
+    assert {view.left_frame, view.right_tabview} <= pinned
+
+
 # Display scaling: tk.PanedWindow works in real pixels while CTk scales its content. Reported at 125 %
 # Windows scaling on Full HD: the right tabs were cut off ("eitleist", "nhäng", "Wiki / Wissensdatenban").
 

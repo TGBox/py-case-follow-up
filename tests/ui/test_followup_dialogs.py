@@ -425,9 +425,10 @@ def test_restore_pins_side_column_widths(fake_paned):
     assert pinned.get(view.left_frame) == 430
     assert pinned.get(view.right_tabview) == 350
     assert view.center_frame not in pinned
-    # Right sash sits sashwidth + 2*sashpad = 8px before its pane (1600 - 350 - 8), else it drifts 8px per restart.
-    assert fake.sash_place.call_args_list[0].args == (0, 430, 0)
-    assert fake.sash_place.call_args_list[1].args == (1, 1242, 0)
+    # A sash's left edge sits sashpad (1px) after the pane to its left, and the pane to its right
+    # starts sashwidth + sashpad (7px) after it: left sash at 430 + 1, right sash at 1600 - 350 - 7.
+    assert fake.sash_place.call_args_list[0].args == (0, 431, 0)
+    assert fake.sash_place.call_args_list[1].args == (1, 1243, 0)
 
 
 # Display scaling: tk.PanedWindow works in real pixels while CTk scales its content. Reported at 125 %
@@ -453,8 +454,8 @@ def test_saving_converts_back_to_logical_widths(fake_paned, monkeypatch):
     view, fake = fake_paned
     monkeypatch.setattr(view, "_ui_scale", lambda: 1.25)
     monkeypatch.setattr(view, "_min_right_width", lambda: 0)
-    # left 375 real px, right 1600 - 1192 - 8 = 400 real px
-    fake.sash_coord.side_effect = lambda i: [(375, 0), (1192, 0)][i]
+    # left 376 - 1 = 375 real px, right 1600 - 1193 - 7 = 400 real px
+    fake.sash_coord.side_effect = lambda i: [(376, 0), (1193, 0)][i]
     view.storage_service = None
 
     view.save_sash_widths()

@@ -618,7 +618,8 @@ def test_cockpit_sash_widths_survive_restart(storage):
             return {"sashwidth": 6, "sashpad": 1}[option]
 
         def sash_coord(self, index):
-            return (350, 0) if index == 0 else (680, 0)
+            # left pane 350 wide -> sash 1px (sashpad) behind it; right pane 1000 - 681 - 7 = 312 wide
+            return (351, 0) if index == 0 else (681, 0)
 
         def paneconfigure(self, pane, **kwargs):
             self.pinned[pane] = kwargs["width"]

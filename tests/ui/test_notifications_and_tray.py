@@ -655,6 +655,7 @@ class WindowStub:
 
     _remember_window_state: Any = SupportCockpitApp._remember_window_state
     _apply_remembered_window_state: Any = SupportCockpitApp._apply_remembered_window_state
+    _show_in_remembered_state: Any = SupportCockpitApp._show_in_remembered_state
     bring_to_foreground: Any = SupportCockpitApp.bring_to_foreground
     _hide_until_drawn: Any = SupportCockpitApp._hide_until_drawn
     _reveal_after_restore: Any = SupportCockpitApp._reveal_after_restore
@@ -740,6 +741,31 @@ def test_window_comes_back_from_the_tray_as_it_was(state, geometry, fullscreen, 
     assert expected_call in win.calls
     if not fullscreen:
         assert (win._state, win._geometry) == (state, geometry)
+
+
+@pytest.mark.parametrize("state, geometry, first_call", [
+    ("zoomed", "1200x800+40+30", ("state", "zoomed")),
+    ("normal", "1111x777+120+80", ("geometry", "1111x777+120+80")),
+])
+def test_window_is_shown_directly_in_its_old_state(state, geometry, first_call):
+    """The target state/size goes onto the still-hidden window, so Tk maps it at that size at once.
+
+    Showing it at the normal size first and maximizing afterwards was two
+    relayouts of every widget - the cards of a long timeline visibly appeared
+    one after another on every restore from the tray.
+    """
+    win = WindowStub(state=state, geometry=geometry)
+    win.hide_and_restore()
+    assert win.calls.index(first_call) < win.calls.index(("deiconify",))
+    assert (win._state, win._geometry) == (state, geometry)
+
+
+def test_zoomed_state_is_put_back_when_deiconify_drops_it():
+    """A Tk whose deiconify still lands on 'normal' (the stub does) gets the state set again afterwards."""
+    win = WindowStub(state="zoomed")
+    win.hide_and_restore()
+    assert win.calls.count(("state", "zoomed")) == 2
+    assert win._state == "zoomed"
 
 
 def test_restore_stays_transparent_until_drawn():

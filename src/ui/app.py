@@ -377,6 +377,13 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
         self._restore_checkout_panel()
 
     def _on_window_configure(self, event=None):
+        # A binding on the root fires for the <Configure> of every descendant
+        # as well. Only the window's own geometry matters here; running the
+        # state/geometry queries and the header measurement a few hundred
+        # times per relayout cascade (restore, maximize, sash drag) was pure
+        # overhead.
+        if event is not None and getattr(event, "widget", self) is not self:
+            return
         try:
             if self.state() != "iconic" and self.winfo_viewable():
                 x, y, w, h = self.winfo_x(), self.winfo_y(), self.winfo_width(), self.winfo_height()
@@ -1464,17 +1471,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                 if hasattr(self, "_update_team_presence_on_idle"):
                     self._update_team_presence_on_idle(is_idle=False)
                 if self.state() == WINDOW_STATE_ICONIC or not self.winfo_viewable():
-                    # Showing the window and putting back "maximized" are two
-                    # full relayouts of every widget. Keep the window
-                    # transparent until they are drawn instead of letting the
-                    # user watch half-painted cards and overlapping text.
+                    # Keep the window transparent until the restore is drawn
+                    # instead of letting the user watch half-painted cards.
                     self._hide_until_drawn()
-                    # Tk's deiconify always comes back as a plain "normal"
-                    # window - a maximized window loses its maximized state
-                    # and is shown at its (default) normal size. Put back what
-                    # was on screen before it was hidden.
-                    self.deiconify()
-                    self._apply_remembered_window_state()
+                    self._show_in_remembered_state()
                 self.lift()
                 self.focus_force()
                 self.attributes("-topmost", True)
@@ -1486,6 +1486,47 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.after(0, _restore)
         except Exception:
             pass
+
+    def _show_in_remembered_state(self) -> None:
+        """Maps the hidden window straight into the state it was hidden in.
+
+        Tk's deiconify always comes back as a plain "normal" window, so a
+        maximized window used to be shown at its normal size first and
+        maximized afterwards: two full relayouts of every widget, each one a
+        <Configure> cascade with a redraw of every CustomTkinter canvas. On a
+        cockpit with a long timeline that was the "cards appear one by one"
+        the user watched after a restore from the tray.
+
+        Setting the target state/geometry on the still-hidden window first
+        makes Tk map it directly at that size. The window then comes back at
+        exactly the size it had before it was hidden, and a child whose size
+        did not change gets no <Configure> and no redraw at all. deiconify()
+        still runs afterwards: it is what clears Tk's "withdrawn" bookkeeping
+        (state() would otherwise keep reporting withdrawn), and it is a no-op
+        for the geometry when the window is already shown in that state.
+        """
+        try:
+            if getattr(self, "_restore_fullscreen", False):
+                self.deiconify()
+                self._apply_remembered_window_state()
+                return
+            if getattr(self, "_restore_state", WINDOW_STATE_ZOOMED) == WINDOW_STATE_ZOOMED:
+                self.state(WINDOW_STATE_ZOOMED)
+                self.deiconify()
+                if self.state() != WINDOW_STATE_ZOOMED:
+                    self.state(WINDOW_STATE_ZOOMED)
+            else:
+                geom = getattr(self, "_restore_geometry", None)
+                if geom:
+                    self.geometry(geom)
+                self.deiconify()
+                self.state(WINDOW_STATE_NORMAL)
+        except Exception as e:
+            logger.warning(f"Could not restore window in its previous state: {e}")
+            try:
+                self.deiconify()
+            except Exception:
+                pass
 
     def _hide_until_drawn(self) -> None:
         """Makes the window transparent and schedules the reveal once Tk is idle.

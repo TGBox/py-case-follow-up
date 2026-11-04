@@ -104,17 +104,35 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         self.create_layout()
 
 
-    def _sash_extra(self) -> int:
-        """Pixel, die eine Sash zwischen zwei Panes belegt (sashwidth + 2*sashpad).
+    def _sash_pad(self) -> int:
+        """sashpad in Pixeln: der Abstand zwischen einem Pane und der Sash daneben."""
+        try:
+            return int(self.paned.cget("sashpad"))
+        except Exception:
+            return 1
 
-        sash_coord() liefert die linke Kante der Sash, nicht den Anfang des
-        rechten Panes. Ohne diesen Zuschlag ist die gespeicherte Breite der
-        rechten Spalte um genau diese Pixel zu gross.
+    def _sash_span(self) -> int:
+        """Pixel von der linken Sash-Kante bis zum Anfang des rechten Panes (sashwidth + sashpad).
+
+        Tk legt ein Pane bei x, dahinter sashpad, die Sash (sashwidth), wieder
+        sashpad, dann das naechste Pane. sash_coord() liefert die linke Kante
+        der Sash, also x + Breite + sashpad. Daraus folgt fuer beide Seiten:
+
+            w_left  = sash0 - sashpad
+            w_right = total - sash1 - sashwidth - sashpad
+
+        Frueher wurde links der sashpad nicht abgezogen und rechts beide pads:
+        jedes Speichern machte die linke Spalte 1 px breiter und die rechte
+        1 px schmaler, und weil on_closing() vor jedem Minimieren speichert,
+        wanderten die Spalten mit jedem Tray-Gang - und jedes Mal wurde das
+        ganze Cockpit neu gelayoutet (gemessen ~210 <Configure>-Events, die
+        beim Wiederherstellen als kartenweises Erscheinen der Timeline
+        sichtbar waren).
         """
         try:
-            return int(self.paned.cget("sashwidth")) + 2 * int(self.paned.cget("sashpad"))
+            return int(self.paned.cget("sashwidth")) + int(self.paned.cget("sashpad"))
         except Exception:
-            return 8
+            return 7
 
     def _pin_pane_widths(self, w_left: int, w_right: int):
         """Schreibt die Breiten als -width in die Pane-Optionen der Seitenspalten.
@@ -132,13 +150,25 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         die Option, damit der neue Wert der massgebliche bleibt.
         """
         try:
-            self.paned.paneconfigure(self.left_frame, width=w_left)
             # minsize mitziehen: sonst laesst sich die Spalte per Sash wieder so
             # schmal ziehen, dass die Reiterbeschriftungen abgeschnitten werden.
             right_min = max(COCKPIT_SIDEBAR_MIN_WIDTH, self._min_right_width())
-            self.paned.paneconfigure(self.right_tabview, width=w_right, minsize=right_min)
+            # Nur schreiben, was sich aendert: paneconfigure() mit demselben
+            # Wert laesst Tk trotzdem alle drei Spalten neu layouten.
+            if self._pane_option(self.left_frame, "width") != w_left:
+                self.paned.paneconfigure(self.left_frame, width=w_left)
+            if (self._pane_option(self.right_tabview, "width"), self._pane_option(self.right_tabview, "minsize")) != (w_right, right_min):
+                self.paned.paneconfigure(self.right_tabview, width=w_right, minsize=right_min)
         except Exception as e:
             logger.warning(f"Could not pin pane widths: {e}")
+
+    def _pane_option(self, pane: Any, option: str) -> int | None:
+        """Aktueller Wert einer Pane-Option (None, wenn nicht lesbar - dann wird geschrieben)."""
+        try:
+            raw = self.paned.panecget(pane, option)
+            return int(raw) if raw not in ("", None) else None
+        except Exception:
+            return None
 
     def _ui_scale(self) -> float:
         """Faktor zwischen logischen Pixeln (wie bei 100 %) und echten Bildschirmpixeln.
@@ -184,11 +214,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         return w_left, max(w_right, self._min_right_width())
 
     def _place_sashes(self, total_w: int, w_left: int, w_right: int):
-        extra = self._sash_extra()
-        self.paned.sash_place(0, w_left, 0)
+        pad, span = self._sash_pad(), self._sash_span()
+        self.paned.sash_place(0, w_left + pad, 0)
         self.paned.sash_place(
             1,
-            max(w_left + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right - extra),
+            max(w_left + pad + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right - span),
             0,
         )
         self._pin_pane_widths(w_left, w_right)
@@ -343,19 +373,19 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
 
             sash0 = self.paned.sash_coord(0)
             sash1 = self.paned.sash_coord(1)
-            extra = self._sash_extra()
+            pad, span = self._sash_pad(), self._sash_span()
 
             w_left = w_right = None
             scale = self._ui_scale()
             if sash0 and len(sash0) > 0 and sash0[0] > 0:
-                w_left = max(PANED_PANE_MIN_WIDTH, sash0[0])
+                w_left = max(PANED_PANE_MIN_WIDTH, sash0[0] - pad)
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_left"] = round(w_left / scale)
 
             if sash1 and len(sash1) > 0 and sash1[0] > 0:
-                # extra abziehen: sash_coord() gibt die linke Sash-Kante zurueck,
-                # der rechte Pane beginnt erst dahinter.
-                w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0] - extra)
+                # sash_coord() gibt die linke Sash-Kante zurueck, der rechte
+                # Pane beginnt erst sashwidth + sashpad dahinter (s. _sash_span).
+                w_right = max(PANED_PANE_MIN_WIDTH, total_w - sash1[0] - span)
                 if self.profile and hasattr(self.profile, "ui_settings"):
                     self.profile.ui_settings.column_widths["cockpit_right"] = round(w_right / scale)
 

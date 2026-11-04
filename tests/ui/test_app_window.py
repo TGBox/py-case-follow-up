@@ -268,3 +268,71 @@ def test_table_header_click_flips_the_sort_arrow(root, config):
     view.on_header_click("score")
     root.update()
     assert view.tree.heading("score", "text") != before
+
+
+# --- Restore from the tray: back in one step, no relayout cascade ---
+
+def _real_wm(monkeypatch):
+    """Puts Tk's real window-manager calls back for one test.
+
+    conftest keeps every window withdrawn by simulating state()/deiconify();
+    this test is about what Tk really does when a hidden window is shown.
+    """
+    def state(self, new=None):
+        return self.tk.call("wm", "state", self._w) if new is None else self.tk.call("wm", "state", self._w, new)
+
+    def deiconify(self):
+        self.tk.call("wm", "deiconify", self._w)
+
+    def withdraw(self):
+        self.tk.call("wm", "withdraw", self._w)
+
+    for name, fn in (("wm_state", state), ("state", state), ("wm_deiconify", deiconify), ("deiconify", deiconify),
+                     ("wm_withdraw", withdraw), ("withdraw", withdraw)):
+        monkeypatch.setattr(tk.Wm, name, fn)
+
+
+def _pump(app, ms: int) -> None:
+    end = time.monotonic() + ms / 1000
+    while time.monotonic() < end:
+        app.update()
+        time.sleep(0.01)
+
+
+@windows_only
+def test_restore_from_tray_maps_maximized_window_without_relayout(config, seeded_storage, monkeypatch):
+    """A maximized window hidden to the tray comes back maximized in one step.
+
+    Measured on the Windows runner: hiding and showing the window by itself
+    costs no child <Configure> at all; the ~210 that every restore used to
+    pay came from on_closing() -> save_sash_widths(), whose off-by-one sash
+    arithmetic re-pinned the pane widths 1px off and relayouted the whole
+    cockpit - the slow, card-by-card restore reported from the field.
+    """
+    _real_wm(monkeypatch)
+    seeded_storage.save_profile(seeded_storage.load_profile())
+    app = SupportCockpitApp(config)
+    try:
+        _pump(app, 300)
+        assert app.state() == "zoomed"
+        app.switch_to_cockpit_view_for_case(app.cases[0])
+        app.cockpit_view.focus_timeline_note()
+        _pump(app, 300)
+        size_before = (app.winfo_width(), app.winfo_height())
+
+        app.on_closing()
+        _pump(app, 200)
+        assert not app.winfo_viewable()
+
+        child_configures: list[str] = []
+        app.bind_all("<Configure>", lambda e: child_configures.append(str(e.widget)) if e.widget is not app else None, add="+")
+        app.bring_to_foreground()
+        _pump(app, 600)
+
+        assert app.state() == "zoomed"
+        assert app.winfo_viewable()
+        assert (app.winfo_width(), app.winfo_height()) == size_before
+        assert len(child_configures) < 10, f"{len(child_configures)} child relayouts: {child_configures[:10]}"
+    finally:
+        app.destroy()
+

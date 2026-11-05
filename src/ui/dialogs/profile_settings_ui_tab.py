@@ -889,6 +889,40 @@ class UiSettingsTabMixin:
         )
         self.checkout_stop_status_lbl.pack(side="left", fill="x", expand=True)
 
+        # Optional destination: with one the ÖPNV tab lists only connections that get there.
+        from ui.widgets.stop_search_field import StopSearchField, format_stop
+
+        self._checkout_dest_original = dict(cs.destination)
+        self._checkout_dest_picked: dict[str, str] = dict(cs.destination)
+        self.checkout_dest_lbl = self.register_i18n(
+            ctk.CTkLabel(commute, text=tr("settings_checkout.transit_destination", "Ziel der Heimfahrt (optional):")),
+            "settings_checkout.transit_destination",
+            "Ziel der Heimfahrt (optional):",
+        )
+        self.checkout_dest_lbl.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+        self.checkout_dest_field = StopSearchField(
+            commute,
+            on_pick=self._on_pick_destination,
+            on_status=self._on_destination_search_status,
+            placeholder_text=tr("settings_checkout.destination_placeholder", "z. B. Neu-Ulm Bahnhof"),
+            entry_width=PROFILE_TAB_FIELD_WIDTH + ENTRY_WIDTH_CHECKOUT_PLACE,
+            suggestion_height=SETTINGS_NAV_ITEM_HEIGHT,
+        )
+        self.checkout_dest_field.set_text(format_stop(cs.destination))
+        self.checkout_dest_field.pack(anchor="w", pady=(PAD_NONE, PAD_XS))
+        self.checkout_dest_status_lbl = ctk.CTkLabel(
+            commute,
+            text=tr(
+                "settings_checkout.destination_hint",
+                "Mit Ziel zeigt der ÖPNV-Tab nur Verbindungen dorthin (auch mit Umstieg) samt Ankunftszeit. Leer = alle Abfahrten.",
+            ),
+            text_color=COLOR_TIP_TEXT,
+            anchor="w",
+            justify="left",
+            wraplength=SETTINGS_STOP_STATUS_WRAP,
+        )
+        self.checkout_dest_status_lbl.pack(anchor="w", fill="x", pady=(PAD_NONE, PAD_MD))
+
         # Lead time before departure, in the order the steps happen:
         # shut down + pack up + walk + buffer = minutes before the bus leaves.
         self.checkout_lead_lbl = self.register_i18n(
@@ -1132,6 +1166,44 @@ class UiSettingsTabMixin:
                 tr("settings_checkout.stop_check_error", "Fahrplanauskunft nicht erreichbar. Prüfe die Internetverbindung."),
                 COLOR_TRANSIT_DELAY,
             )
+
+    def _on_pick_destination(self, stop: Any) -> None:
+        self._checkout_dest_picked = {"name": stop.name, "place": stop.place}
+        self._set_destination_status(
+            tr("settings_checkout.destination_picked", "Ziel übernommen: {stop}", stop=self.checkout_dest_field.get()),
+            COLOR_TRANSIT_ONTIME,
+        )
+
+    def _on_destination_search_status(self, status: str) -> None:
+        texts = {
+            "searching": (tr("settings_checkout.stop_searching", "Suche Haltestellen …"), COLOR_TIP_TEXT),
+            "results": (tr("settings_checkout.destination_pick_hint", "Wähle das Ziel aus der Liste."), COLOR_TIP_TEXT),
+            "none": (
+                tr("settings_checkout.stop_no_suggestions", "Keine passende Haltestelle gefunden. Prüfe die Schreibweise."),
+                COLOR_TRANSIT_COUNTDOWN_WARN,
+            ),
+            "error": (
+                tr("settings_checkout.stop_check_error", "Fahrplanauskunft nicht erreichbar. Prüfe die Internetverbindung."),
+                COLOR_TRANSIT_DELAY,
+            ),
+        }
+        if status in texts:
+            self._set_destination_status(*texts[status])
+
+    def _set_destination_status(self, text: str, color: Any = COLOR_TIP_TEXT) -> None:
+        if hasattr(self, "checkout_dest_status_lbl") and self.checkout_dest_status_lbl.winfo_exists():
+            self.checkout_dest_status_lbl.configure(text=text, text_color=color)
+
+    def _destination_from_field(self) -> dict[str, str]:
+        """The picked stop while the field still shows it; typed text becomes a name-only destination."""
+        from ui.widgets.stop_search_field import format_stop
+
+        text = self.checkout_dest_field.get()
+        if not text:
+            return {"name": "", "place": ""}
+        if text == format_stop(self._checkout_dest_picked):
+            return dict(self._checkout_dest_picked)
+        return {"name": text, "place": ""}
 
     def _update_checkout_lead_total(self) -> None:
         """Shows how many minutes before departure the leave-now alarm rings."""
@@ -1470,8 +1542,8 @@ class UiSettingsTabMixin:
             cs = self.profile.checkout_settings
             cs.enabled = self.checkout_enable_var.get()
             cs.auto_open = self.checkout_auto_open_var.get()
-            cs.remember_visibility = bool(self.checkout_remember_var.get())
-            cs.always_show = bool(self.checkout_always_var.get())
+            cs.remember_visibility = self.checkout_remember_var.get()
+            cs.always_show = self.checkout_always_var.get()
             idx = self.selected_choice_index(self.checkout_mode_combo)
             cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
                 min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)
@@ -1484,6 +1556,14 @@ class UiSettingsTabMixin:
             stop_place = self.checkout_stop_place_entry.get().strip() or "Ulm"
             cs.stops = [{"name": stop_name, "place": stop_place}]
             cs.weather_city = stop_place
+
+            if hasattr(self, "checkout_dest_field"):
+                destination = self._destination_from_field()
+                if destination != self._checkout_dest_original:
+                    # A new default applies right away, replacing a destination set in the panel for today.
+                    cs.destination = destination
+                    cs.destination_today_date = ""
+                    self._checkout_dest_original = dict(destination)
 
             try:
                 cs.walk_time_minutes = int(self.checkout_walk_entry.get().strip())

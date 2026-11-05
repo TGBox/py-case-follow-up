@@ -3,7 +3,7 @@
 Provides an integrated, collapsible or undockable right-hand companion
 with 6 dedicated tabs:
 1. Tasks (daily recurring & dated checkout checklist)
-2. ÖPNV (live departures for DING Ulm/Neu-Ulm & commute lead-time alarm)
+2. ÖPNV (live departures for DING Ulm/Neu-Ulm, or trips to a destination, & commute lead-time alarm)
 3. Daily Note (free-text scratchpad with badge indicator & midnight reset)
 4. Tomorrow (preview of upcoming follow-ups and deadlines)
 5. Work Time (working time tracking & end-of-day projection)
@@ -66,6 +66,7 @@ from constants import (
     FONT_SIZE_SM,
     FONT_WEIGHT_BOLD,
     ICON_DELETE_X,
+    ICON_RESET_DEFAULT,
     ICON_KEY_CHECKOUT,
     ICON_KEY_DOCK,
     ICON_KEY_SETTINGS,
@@ -88,10 +89,11 @@ from constants import (
 from models.case import Case
 from models.profile import UserProfile
 from services.checkout_task_service import CheckoutTaskService
-from services.ding_transit_service import DingTransitService, TransitDeparture
+from services.ding_transit_service import DingTransitService, TransitDeparture, TransitTrip
 from services.i18n_service import tr
 from services.weather_service import WeatherInfo, WeatherService
 from ui.widgets.collapsible_section import CollapsibleSection
+from ui.widgets.stop_search_field import StopSearchField, format_stop
 from utils.icon_utils import get_icon
 
 logger = logging.getLogger("SupportCockpit.checkout")
@@ -301,6 +303,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.on_open_settings = on_open_settings
 
         self._transit_departures: list[TransitDeparture] = []
+        # Trips to the destination; filled instead of plain departures while a destination is set
+        self._transit_trips: list[TransitTrip] = []
+        # Destination the current list was planned for ({"name": "", ...} = none, all departures)
+        self._applied_destination: dict[str, str] = self.settings.effective_destination()
         self._selected_dep_key: str | None = None
         self._selected_departure: TransitDeparture | None = None
         self._notified_stages: set[str] = set()
@@ -348,6 +354,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         if new_stop != old_stop:
             self._selected_dep_key = None
             self._selected_departure = None
+            self.refresh_transit_data(force=True)
+        elif self.settings.effective_destination() != self._applied_destination:
             self.refresh_transit_data(force=True)
 
     def _persist_settings(self) -> None:
@@ -798,6 +806,63 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             ),
         )
 
+        # Destination: with one the list holds only connections that get there, with arrival time.
+        dest_row = ctk.CTkFrame(self.transit_card, fg_color=COLOR_TRANSPARENT)
+        dest_row.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_NONE))
+        self.transit_dest_icon_lbl = ctk.CTkLabel(
+            dest_row, text="🏁", font=ctk.CTkFont(size=FONT_SIZE_BODY), width=BTN_WIDTH_CHECKOUT_TINY
+        )
+        self.transit_dest_icon_lbl.pack(side="left", anchor="n", padx=(PAD_NONE, PAD_XS))
+
+        self.transit_dest_reset_btn = ctk.CTkButton(
+            dest_row,
+            text=ICON_RESET_DEFAULT,
+            command=self._reset_destination_to_default,
+            width=BTN_WIDTH_CHECKOUT_TINY,
+            height=BTN_HEIGHT_CHECKOUT_ACTION,
+            fg_color=COLOR_THEME_BTN,
+        )
+        CTkTooltip(
+            self.transit_dest_reset_btn,
+            lambda: tr("checkout_panel.transit_destination_reset", "Zurück zum Standardziel: {stop}").format(
+                stop=format_stop(self.settings.destination)
+            ),
+        )
+        self.transit_dest_clear_btn = ctk.CTkButton(
+            dest_row,
+            text=ICON_DELETE_X,
+            command=self._clear_destination_today,
+            width=BTN_WIDTH_CHECKOUT_TINY,
+            height=BTN_HEIGHT_CHECKOUT_ACTION,
+            fg_color=COLOR_CANCEL_FG,
+            hover_color=COLOR_CANCEL_HOVER,
+        )
+        CTkTooltip(
+            self.transit_dest_clear_btn,
+            tr("checkout_panel.transit_destination_clear", "Heute ohne Ziel: alle Abfahrten zeigen"),
+        )
+
+        self.transit_dest_field = StopSearchField(
+            dest_row,
+            on_pick=self._on_destination_picked,
+            on_status=self._on_destination_search_status,
+            placeholder_text=tr("checkout_panel.transit_destination_placeholder", "Ziel (optional)"),
+            entry_height=BTN_HEIGHT_CHECKOUT_ACTION,
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+        )
+        self.transit_dest_field.pack(side="left", fill="x", expand=True)
+        self.transit_dest_field.entry.bind("<Return>", lambda _e: self._submit_destination_text(), add="+")
+        self.transit_dest_field.entry.bind("<KP_Enter>", lambda _e: self._submit_destination_text(), add="+")
+        CTkTooltip(
+            self.transit_dest_field.entry,
+            tr(
+                "checkout_panel.transit_destination_tooltip",
+                "Ziel eintippen und Vorschlag wählen (oder Enter): Es erscheinen nur Verbindungen dorthin, "
+                "auch mit Umstieg, samt Ankunftszeit. Gilt für heute; das Standardziel steht in den Einstellungen.",
+            ),
+        )
+        self._sync_destination_controls()
+
         info_row = ctk.CTkFrame(self.transit_card, fg_color=COLOR_TRANSPARENT)
         info_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
 
@@ -912,6 +977,15 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
         self.stage_dep_lbl.pack(fill="x", pady=PAD_TINY)
 
+        # Shown only for a trip to a destination
+        self.stage_arrival_lbl = ctk.CTkLabel(
+            milestones_box,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            text_color=COLOR_TRANSIT_SELECTED_TEXT,
+            anchor="w",
+        )
+
         # Scrollable departures table
         self.transit_scroll = self._list_container(tab)
         self.transit_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_XS))
@@ -930,12 +1004,118 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         stop_place = stop.get("place", "Ulm")
 
         departure_time = self._planned_request_time()
+        destination = self.settings.effective_destination()
+        if destination != self._applied_destination:
+            self._applied_destination = destination
+            self._sync_destination_controls()
+        dest_name = destination.get("name", "").strip()
+        if dest_name:
+            dest_place = destination.get("place", "").strip()
+            limit = CHECKOUT_TAB_MAX_DEPARTURES if self.is_floating else CHECKOUT_STACK_MAX_DEPARTURES
+            self._run_in_background(
+                lambda: DingTransitService.fetch_trips(
+                    stop_name,
+                    stop_place,
+                    dest_name,
+                    dest_place,
+                    limit=limit,
+                    force_refresh=force,
+                    departure_time=departure_time,
+                ),
+                lambda trips: self._on_transit_data_loaded([t.departure for t in trips], trips),
+            )
+            return
         self._run_in_background(
             lambda: DingTransitService.fetch_departures(
                 stop_name, stop_place, force_refresh=force, departure_time=departure_time
             ),
             self._on_transit_data_loaded,
         )
+
+    # -------------------------------------------------------------------------
+    # Destination (trip planning)
+    # -------------------------------------------------------------------------
+    def _has_destination(self) -> bool:
+        return bool(self._applied_destination.get("name", "").strip())
+
+    def _sync_destination_controls(self) -> None:
+        """Shows the applied destination in the field and the clear / back-to-default buttons that fit."""
+        if not hasattr(self, "transit_dest_field"):
+            return
+        self.transit_dest_field.set_text(format_stop(self._applied_destination))
+        default = dict(self.settings.destination)
+        has_default = bool(default.get("name", "").strip())
+        show_clear = self._has_destination()
+        show_reset = has_default and self._applied_destination != default
+        # pack order from the right: clear (outermost), then reset
+        for btn in (self.transit_dest_clear_btn, self.transit_dest_reset_btn):
+            if btn.winfo_manager():
+                btn.pack_forget()
+        self.transit_dest_field.pack_forget()
+        if show_clear:
+            self.transit_dest_clear_btn.pack(side="right", anchor="n", padx=(PAD_XS, PAD_NONE))
+        if show_reset:
+            self.transit_dest_reset_btn.pack(side="right", anchor="n", padx=(PAD_XS, PAD_NONE))
+        self.transit_dest_field.pack(side="left", fill="x", expand=True)
+
+    def _set_destination_today(self, destination: dict[str, str]) -> None:
+        """Applies a destination for the rest of today and plans the list again."""
+        self.settings.destination_today = {
+            "name": destination.get("name", "").strip(),
+            "place": destination.get("place", "").strip(),
+        }
+        self.settings.destination_today_date = date.today().isoformat()
+        self._persist_settings()
+        # Set here, not only in refresh: a fetch still running makes refresh return early (and refetch later).
+        self._applied_destination = self.settings.effective_destination()
+        self._sync_destination_controls()
+        self.refresh_transit_data(force=True)
+
+    def _on_destination_picked(self, stop: Any) -> None:
+        self._set_destination_today({"name": stop.name, "place": stop.place})
+
+    def _submit_destination_text(self) -> None:
+        """Enter in the field: typed text becomes the destination (EFA resolves the name), empty = none."""
+        text = self.transit_dest_field.get()
+        self.transit_dest_field.hide_suggestions()
+        if text == format_stop(self._applied_destination):
+            return
+        self._set_destination_today({"name": text, "place": ""})
+
+    def _clear_destination_today(self) -> None:
+        self._set_destination_today({"name": "", "place": ""})
+
+    def _reset_destination_to_default(self) -> None:
+        self._set_destination_today(dict(self.settings.destination))
+
+    def _on_destination_search_status(self, status: str) -> None:
+        texts = {
+            "searching": tr("checkout_panel.transit_destination_searching", "Suche Ziel …"),
+            "none": tr("checkout_panel.transit_destination_none", "Kein passendes Ziel gefunden."),
+            "error": tr("checkout_panel.transit_destination_error", "Fahrplanauskunft nicht erreichbar."),
+        }
+        if status in texts:
+            self.transit_status_lbl.configure(text=texts[status])
+
+    def _selected_trip(self) -> TransitTrip | None:
+        if not self._selected_dep_key or not self._has_destination():
+            return None
+        return next(
+            (t for t in self._transit_trips if self._dep_key(t.departure) == self._selected_dep_key),
+            None,
+        )
+
+    @staticmethod
+    def _dep_key(dep: TransitDeparture) -> str:
+        return f"{dep.line}_{dep.planned_time_str}_{dep.destination}"
+
+    @staticmethod
+    def _changes_text(count: int) -> str:
+        if count <= 0:
+            return tr("checkout_panel.transit_trip_direct", "Direkt")
+        if count == 1:
+            return tr("checkout_panel.transit_trip_one_change", "1 Umstieg")
+        return tr("checkout_panel.transit_trip_changes", "{count} Umstiege").format(count=count)
 
     # -------------------------------------------------------------------------
     # Planned departure time
@@ -985,14 +1165,17 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             self._planned_departure = None
             self.refresh_transit_data(force=True)
 
-    def _on_transit_data_loaded(self, deps: list[TransitDeparture]) -> None:
+    def _on_transit_data_loaded(
+        self, deps: list[TransitDeparture], trips: list[TransitTrip] | None = None
+    ) -> None:
         self._is_fetching_transit = False
         if self._transit_refetch_pending:
-            # The stop or planned time changed while this request ran: its result is stale.
+            # The stop, destination or planned time changed while this request ran: its result is stale.
             self._transit_refetch_pending = False
             self.refresh_transit_data(force=True)
             return
         self._transit_departures = deps
+        self._transit_trips = list(trips or [])
         now_str = datetime.now().strftime("%H:%M")
         status = f"Stand: {now_str} Uhr"
         if self._planned_departure is not None:
@@ -1066,14 +1249,21 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             buffer_min=self.settings.buffer_time_minutes,
         )
 
-        desc_text = tr(
-            "checkout_panel.transit_selected_desc",
-            "Linie {line} nach {dest} um {time} Uhr",
-        ).format(
-            line=dep.line,
-            dest=dep.destination,
-            time=dep.real_time_str,
-        )
+        trip = self._selected_trip()
+        if trip is not None:
+            desc_text = tr(
+                "checkout_panel.transit_selected_trip_desc",
+                "Linie {lines} um {time} Uhr · {changes}",
+            ).format(lines=" › ".join(trip.lines), time=dep.real_time_str, changes=self._changes_text(trip.interchanges))
+        else:
+            desc_text = tr(
+                "checkout_panel.transit_selected_desc",
+                "Linie {line} nach {dest} um {time} Uhr",
+            ).format(
+                line=dep.line,
+                dest=dep.destination,
+                time=dep.real_time_str,
+            )
         self.selected_transit_desc_lbl.configure(text=desc_text)
 
         pack_diff = info.get("minutes_until_pack", 0)
@@ -1100,6 +1290,18 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             text=f"🚏 Abfahrt: {dep.real_time_str} Uhr {dep_status}"
         )
 
+        if trip is not None and trip.arrival_real_str:
+            self.stage_arrival_lbl.configure(
+                text="🏁 "
+                + tr("checkout_panel.transit_stage_arrival", "Ankunft {stop}: {time} Uhr").format(
+                    stop=trip.arrival_stop or format_stop(self._applied_destination), time=trip.arrival_real_str
+                )
+            )
+            if not self.stage_arrival_lbl.winfo_manager():
+                self.stage_arrival_lbl.pack(fill="x", pady=PAD_TINY)
+        elif self.stage_arrival_lbl.winfo_manager():
+            self.stage_arrival_lbl.pack_forget()
+
         if self.transit_hint_lbl.winfo_manager():
             self.transit_hint_lbl.pack_forget()
         if not self.selected_transit_card.winfo_manager():
@@ -1121,9 +1323,17 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             widget.destroy()
 
         if not self._transit_departures:
+            if self._has_destination():
+                empty_text = tr(
+                    "checkout_panel.transit_no_trips",
+                    "Keine Verbindungen nach {dest} gefunden. Stimmt das Ziel?",
+                ).format(dest=format_stop(self._applied_destination))
+            else:
+                empty_text = tr("checkout_panel.transit_no_departures", "Aktuell keine Abfahrten gefunden.")
             no_dep_lbl = ctk.CTkLabel(
                 self.transit_scroll,
-                text=tr("checkout_panel.transit_no_departures", "Aktuell keine Abfahrten gefunden."),
+                text=empty_text,
+                wraplength=CHECKOUT_HINT_WRAPLENGTH,
                 font=ctk.CTkFont(size=FONT_SIZE_SM),
                 text_color=COLOR_MUTED_LABEL,
             )
@@ -1131,6 +1341,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             return
 
         limit = CHECKOUT_TAB_MAX_DEPARTURES if self.is_floating else CHECKOUT_STACK_MAX_DEPARTURES
+        trips_by_key = {self._dep_key(t.departure): t for t in self._transit_trips} if self._has_destination() else {}
         for dep in self._transit_departures[:limit]:
             dep_key = f"{dep.line}_{dep.planned_time_str}_{dep.destination}"
             is_selected = (self._selected_dep_key == dep_key)
@@ -1149,9 +1360,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             row.pack(fill="x", padx=PAD_XS, pady=PAD_XS)
 
             # Line badge
+            trip = trips_by_key.get(dep_key)
             badge = ctk.CTkLabel(
                 row,
-                text=f" {dep.line} ",
+                text=f" {' › '.join(trip.lines) if trip else dep.line} ",
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
                 fg_color=COLOR_THEME_BTN,
                 corner_radius=CORNER_RADIUS_SM,
@@ -1164,6 +1376,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             info_box.pack(side="left", fill="x", expand=True, padx=PAD_XS)
 
             dest_text = dep.destination
+            if trip is not None:
+                dest_text = tr("checkout_panel.transit_trip_times", "{dep} → {arr} Uhr · {minutes} Min.").format(
+                    dep=dep.real_time_str, arr=trip.arrival_real_str or "?", minutes=trip.duration_minutes
+                )
             if is_selected:
                 dest_text = f"{dest_text}  {tr('checkout_panel.transit_selected_badge', '🎯 Gewählt')}"
 
@@ -1176,7 +1392,23 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             dest_lbl.pack(fill="x")
 
             plat_str = f"{dep.platform}" if dep.platform else ""
-            if dep.delay_minutes > 0:
+            if trip is not None:
+                # Times are in the line above; here: punctuality, changes, direction of the first bus
+                punctual = (
+                    f"+{dep.delay_minutes} Min."
+                    if dep.delay_minutes > 0
+                    else tr("checkout_panel.transit_status_ontime", "Pünktlich")
+                )
+                parts = [punctual, self._changes_text(trip.interchanges)]
+                if dep.destination:
+                    parts.append(
+                        tr("checkout_panel.transit_trip_direction", "Ri. {dest}").format(dest=dep.destination)
+                    )
+                if plat_str:
+                    parts.append(plat_str)
+                time_str = " · ".join(parts)
+                time_color = COLOR_TRANSIT_DELAY if dep.delay_minutes > 0 else COLOR_TRANSIT_ONTIME
+            elif dep.delay_minutes > 0:
                 time_str = f"{dep.real_time_str} (+{dep.delay_minutes} Min.) {plat_str}".strip()
                 time_color = COLOR_TRANSIT_DELAY
             else:
@@ -1281,6 +1513,11 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 dest=dep.destination,
                 dep_time=dep.real_time_str,
             )
+            trip = self._selected_trip()
+            if trip is not None and trip.arrival_real_str:
+                msg = f"{msg} " + tr(
+                    "checkout_panel.transit_toast_arrival", "Ankunft {stop}: {time} Uhr."
+                ).format(stop=trip.arrival_stop or format_stop(self._applied_destination), time=trip.arrival_real_str)
             ToastNotification(self.winfo_toplevel(), title=title, message=msg)
 
     def _schedule_next_transit_refresh(self) -> None:

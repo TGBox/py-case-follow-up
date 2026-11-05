@@ -2236,7 +2236,23 @@
     "transit_toast_walk_msg": "Gå nu! Linje {line} mot {dest} avgår kl. {dep_time}.",
     "transit_selected_badge": "🎯 Vald",
     "summary_net": "Netto {hours}:{minutes:02d} h",
-    "summary_end": "Slutar ca. {time}"
+    "summary_end": "Slutar ca. {time}",
+    "transit_destination_placeholder": "Mål (valfritt)",
+    "transit_destination_tooltip": "Skriv ett mål och välj ett förslag (eller tryck Enter): bara förbindelser dit visas, även med byten, med ankomsttid. Gäller i dag; standardmålet anges i inställningarna.",
+    "transit_destination_clear": "Inget mål i dag: visa alla avgångar",
+    "transit_destination_reset": "Tillbaka till standardmålet: {stop}",
+    "transit_destination_searching": "Söker mål …",
+    "transit_destination_none": "Inget matchande mål hittades.",
+    "transit_destination_error": "Tidtabellstjänsten går inte att nå.",
+    "transit_trip_direct": "Direkt",
+    "transit_trip_one_change": "1 byte",
+    "transit_trip_changes": "{count} byten",
+    "transit_trip_times": "{dep} → {arr} · {minutes} min",
+    "transit_trip_direction": "mot {dest}",
+    "transit_no_trips": "Inga förbindelser till {dest} hittades. Stämmer målet?",
+    "transit_selected_trip_desc": "Linje {lines} kl. {time} · {changes}",
+    "transit_stage_arrival": "Ankomst {stop}: kl. {time}",
+    "transit_toast_arrival": "Ankomst {stop}: kl. {time}."
   },
   "settings_checkout": {
     "section_title": "Avslutnings- & Avreseguide",
@@ -2288,7 +2304,12 @@
     "remember_visibility": "Öppna igen efter omstart om panelen var öppen senast",
     "always_show": "Visa panelen hela tiden",
     "visibility_heading": "Visning",
-    "schedule_heading": "Vid arbetsdagens slut"
+    "schedule_heading": "Vid arbetsdagens slut",
+    "transit_destination": "Mål för hemresan (valfritt):",
+    "destination_placeholder": "t.ex. Neu-Ulm Bahnhof",
+    "destination_hint": "Med ett mål visar kollektivtrafikfliken bara förbindelser dit (även med byten) med ankomsttid. Tomt = alla avgångar.",
+    "destination_picked": "Mål valt: {stop}",
+    "destination_pick_hint": "Välj målet i listan."
   },
   "channel_picker": {
     "label_channel": "Kanal:",

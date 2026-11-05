@@ -2236,7 +2236,23 @@
     "transit_toast_walk_msg": "Jetzt losgehen! Linie {line} nach {dest} fährt um {dep_time} Uhr.",
     "transit_selected_badge": "🎯 Gewählt",
     "summary_net": "Netto {hours}:{minutes:02d} Std.",
-    "summary_end": "Feierabend ca. {time} Uhr"
+    "summary_end": "Feierabend ca. {time} Uhr",
+    "transit_destination_placeholder": "Ziel (optional)",
+    "transit_destination_tooltip": "Ziel eintippen und Vorschlag wählen (oder Enter): Es erscheinen nur Verbindungen dorthin, auch mit Umstieg, samt Ankunftszeit. Gilt für heute; das Standardziel steht in den Einstellungen.",
+    "transit_destination_clear": "Heute ohne Ziel: alle Abfahrten zeigen",
+    "transit_destination_reset": "Zurück zum Standardziel: {stop}",
+    "transit_destination_searching": "Suche Ziel …",
+    "transit_destination_none": "Kein passendes Ziel gefunden.",
+    "transit_destination_error": "Fahrplanauskunft nicht erreichbar.",
+    "transit_trip_direct": "Direkt",
+    "transit_trip_one_change": "1 Umstieg",
+    "transit_trip_changes": "{count} Umstiege",
+    "transit_trip_times": "{dep} → {arr} Uhr · {minutes} Min.",
+    "transit_trip_direction": "Ri. {dest}",
+    "transit_no_trips": "Keine Verbindungen nach {dest} gefunden. Stimmt das Ziel?",
+    "transit_selected_trip_desc": "Linie {lines} um {time} Uhr · {changes}",
+    "transit_stage_arrival": "Ankunft {stop}: {time} Uhr",
+    "transit_toast_arrival": "Ankunft {stop}: {time} Uhr."
   },
   "settings_checkout": {
     "section_title": "Feierabend- & Checkout-Begleiter",
@@ -2288,7 +2304,12 @@
     "remember_visibility": "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
     "always_show": "Panel dauerhaft anzeigen",
     "visibility_heading": "Anzeige",
-    "schedule_heading": "Zur Feierabendzeit"
+    "schedule_heading": "Zur Feierabendzeit",
+    "transit_destination": "Ziel der Heimfahrt (optional):",
+    "destination_placeholder": "z. B. Neu-Ulm Bahnhof",
+    "destination_hint": "Mit Ziel zeigt der ÖPNV-Tab nur Verbindungen dorthin (auch mit Umstieg) samt Ankunftszeit. Leer = alle Abfahrten.",
+    "destination_picked": "Ziel übernommen: {stop}",
+    "destination_pick_hint": "Wähle das Ziel aus der Liste."
   },
   "channel_picker": {
     "label_channel": "Kanal:",

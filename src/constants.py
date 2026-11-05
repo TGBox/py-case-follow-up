@@ -1657,6 +1657,8 @@ SCHEMA_LOCALE_SECTIONS = {
     "schema_zuzahlungsnachforderung": "zuzahlung",
 }
 ICON_DELETE_X = "✕"
+# Back to a saved default (e.g. the default trip destination in the checkout panel)
+ICON_RESET_DEFAULT = "↺"
 
 # New Case Dialog Design Tokens
 DIALOG_MIN_SIZE_NEW_CASE = (700, 780)
@@ -2006,6 +2008,9 @@ TRANSIT_DEFAULT_STOP_NAME = "Ulm Ehinger Tor"
 TRANSIT_DEFAULT_STOP_PLACE = "Ulm"
 TRANSIT_EFA_ENDPOINT = "https://www.bwegt.de/bwegt-efa/XML_DM_REQUEST"
 TRANSIT_EFA_STOPFINDER_ENDPOINT = "https://www.bwegt.de/bwegt-efa/XML_STOPFINDER_REQUEST"
+TRANSIT_EFA_TRIP_ENDPOINT = "https://www.bwegt.de/bwegt-efa/XML_TRIP_REQUEST2"
+# EFA "mode.type" codes of legs that are walked, not ridden (footpath, stay seated, guaranteed change)
+TRANSIT_FOOTPATH_MOT_TYPES = ("97", "98", "99", "100")
 TRANSIT_STOP_SUGGESTION_LIMIT = 6
 TRANSIT_STOP_SEARCH_MIN_CHARS = 3
 TRANSIT_STOP_SEARCH_DEBOUNCE_MS = 450

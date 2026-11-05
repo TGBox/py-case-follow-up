@@ -330,3 +330,21 @@ def test_departure_cache_is_per_planned_time(monkeypatch):
     DingTransitService.fetch_departures("Ehinger Tor", "Ulm", departure_time=datetime(2026, 11, 5, 17, 0))
     DingTransitService.fetch_departures("Ehinger Tor", "Ulm", departure_time=datetime(2026, 11, 5, 17, 0))  # cached
     assert calls == [None, "1700"]
+
+
+def test_countdown_counts_from_now_for_a_planned_request():
+    from datetime import timedelta
+
+    # EFA counts "countdown" from the requested time; for a planned request it must come from now.
+    dep_at = datetime.now().replace(second=0, microsecond=0) + timedelta(hours=4, minutes=1)
+    data = {
+        "departureList": [
+            dict(
+                _ONE_DEPARTURE,
+                countdown="3",
+                dateTime={"year": dep_at.year, "month": dep_at.month, "day": dep_at.day, "hour": dep_at.hour, "minute": dep_at.minute},
+            )
+        ]
+    }
+    assert DingTransitService._parse_efa_response(data)[0].countdown_minutes == 3
+    assert DingTransitService._parse_efa_response(data, trust_countdown=False)[0].countdown_minutes >= 240

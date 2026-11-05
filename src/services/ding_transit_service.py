@@ -315,7 +315,8 @@ class DingTransitService:
 
             ridden: list[dict[str, Any]] = []
             for leg in legs:
-                mode = leg.get("mode") if isinstance(leg.get("mode"), dict) else {}
+                raw_mode = leg.get("mode")
+                mode: dict[str, Any] = raw_mode if isinstance(raw_mode, dict) else {}
                 line = str(mode.get("number") or mode.get("symbol") or "").strip()
                 if line and str(mode.get("type") or "") not in TRANSIT_FOOTPATH_MOT_TYPES:
                     ridden.append(leg)

@@ -13,6 +13,7 @@ with 6 dedicated tabs:
 from __future__ import annotations
 
 import logging
+import sys
 import threading
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
@@ -91,8 +92,14 @@ logger = logging.getLogger(__name__)
 class CheckoutFloatingWindow(ctk.CTkToplevel):
     """Floating tool window for the Checkout panel on multi-monitor setups.
 
-    Marked as transient(master) and -topmost, so it does not clutter the Windows
-    taskbar while staying pinned on top across screens.
+    A Windows tool window (-toolwindow) and -topmost: no taskbar button of its
+    own, pinned on top across screens.
+
+    Deliberately *not* transient(master). Windows hides an owned window
+    together with its owner, so the undocked panel used to vanish whenever
+    the main window went to the tray (or was minimized) - exactly when the
+    panel is meant to stay on screen on its own. -toolwindow keeps it out of
+    the taskbar, which was the only reason for transient().
     """
 
     def __init__(
@@ -102,7 +109,11 @@ class CheckoutFloatingWindow(ctk.CTkToplevel):
         on_close_callback: Callable[[], None],
     ) -> None:
         super().__init__(master)
-        self.transient(master)
+        if sys.platform == "win32":
+            try:
+                self.attributes("-toolwindow", True)
+            except Exception:
+                pass
         self.attributes("-topmost", True)
         self.resizable(True, True)
         self.title(tr("checkout_panel.title", "Feierabend- & Checkout-Begleiter"))

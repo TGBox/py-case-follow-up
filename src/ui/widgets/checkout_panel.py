@@ -34,6 +34,7 @@ from constants import (
     CHECKOUT_BACKGROUND_POLL_MS,
     CHECKOUT_FLOATING_MIN_HEIGHT,
     CHECKOUT_FLOATING_MIN_WIDTH,
+    CHECKOUT_FLOATING_RESIZE_BORDER,
     CHECKOUT_HEADER_BTN_SIZE,
     CHECKOUT_HINT_WRAPLENGTH,
     COLOR_CANCEL_FG,
@@ -92,17 +93,35 @@ logger = logging.getLogger(__name__)
 
 
 class CheckoutFloatingWindow(ctk.CTkToplevel):
-    """Floating tool window for the Checkout panel on multi-monitor setups.
+    """Borderless floating window for the Checkout panel on multi-monitor setups.
 
-    A Windows tool window (-toolwindow) and -topmost: no taskbar button of its
-    own, pinned on top across screens.
+    The native title bar is removed (overrideredirect): the panel already has
+    its own header with title and close button, so the OS bar only duplicated
+    both. Moving works by dragging the panel header, resizing by dragging any
+    window edge or corner - both are handled here because Windows no longer
+    does it for a window without a frame.
+
+    -topmost keeps it pinned on top across screens; without a frame it has no
+    taskbar button of its own either.
 
     Deliberately *not* transient(master). Windows hides an owned window
     together with its owner, so the undocked panel used to vanish whenever
     the main window went to the tray (or was minimized) - exactly when the
-    panel is meant to stay on screen on its own. -toolwindow keeps it out of
-    the taskbar, which was the only reason for transient().
+    panel is meant to stay on screen on its own.
     """
+
+    # Edge flags -> cursor shown while hovering that edge (Tk cursor names that
+    # map to the native resize cursors on Windows, macOS and X11).
+    _EDGE_CURSORS: dict[tuple[bool, bool, bool, bool], str] = {
+        (True, False, True, False): "top_left_corner",
+        (False, True, False, True): "bottom_right_corner",
+        (False, True, True, False): "top_right_corner",
+        (True, False, False, True): "bottom_left_corner",
+        (True, False, False, False): "sb_h_double_arrow",
+        (False, True, False, False): "sb_h_double_arrow",
+        (False, False, True, False): "sb_v_double_arrow",
+        (False, False, False, True): "sb_v_double_arrow",
+    }
 
     def __init__(
         self,
@@ -111,7 +130,12 @@ class CheckoutFloatingWindow(ctk.CTkToplevel):
         on_close_callback: Callable[[], None],
     ) -> None:
         super().__init__(master)
-        if sys.platform == "win32":
+        # macOS gives an overrideredirect window no keyboard focus at all, so
+        # the native frame stays there.
+        self._frameless = sys.platform != "darwin"
+        if self._frameless:
+            self.overrideredirect(True)
+        elif sys.platform == "win32":
             try:
                 self.attributes("-toolwindow", True)
             except Exception:
@@ -124,6 +148,120 @@ class CheckoutFloatingWindow(ctk.CTkToplevel):
         self.protocol("WM_DELETE_WINDOW", on_close_callback)
         self.on_dock_callback = on_dock_callback
         self.on_close_callback = on_close_callback
+
+        self._drag_areas: set[Any] = set()
+        self._drag_excludes: set[Any] = set()
+        self._edge: tuple[bool, bool, bool, bool] | None = None  # left, right, top, bottom
+        self._mode: str | None = None  # "move" | "resize" while the mouse button is held
+        self._press: tuple[int, int, int, int, int, int] = (0, 0, 0, 0, 0, 0)
+        self._cursor = ""
+
+        if self._frameless:
+            # Bound on the toplevel's bindtag, which every child widget carries,
+            # so the handlers see clicks anywhere in the window.
+            self.bind("<Motion>", self._on_motion, add="+")
+            self.bind("<ButtonPress-1>", self._on_press, add="+")
+            self.bind("<B1-Motion>", self._on_drag, add="+")
+            self.bind("<ButtonRelease-1>", self._on_release, add="+")
+
+    def register_drag_area(self, area: Any, exclude: tuple[Any, ...] = ()) -> None:
+        """Lets the user move the window by dragging *area* (minus *exclude*, e.g. its buttons)."""
+        self._drag_areas.add(area)
+        self._drag_excludes.update(exclude)
+
+    def _is_drag_handle(self, widget: Any) -> bool:
+        # Walk up from the clicked tk widget (CTk widgets are built from inner
+        # canvases and labels) until we hit a registered area or an exclusion.
+        w = widget
+        while w is not None and w is not self:
+            if w in self._drag_excludes:
+                return False
+            if w in self._drag_areas:
+                return True
+            w = getattr(w, "master", None)
+        return False
+
+    def _edge_at(self, x_root: int, y_root: int) -> tuple[bool, bool, bool, bool] | None:
+        x = x_root - self.winfo_rootx()
+        y = y_root - self.winfo_rooty()
+        w, h, b = self.winfo_width(), self.winfo_height(), CHECKOUT_FLOATING_RESIZE_BORDER
+        edge = (x < b, x >= w - b, y < b, y >= h - b)
+        return edge if any(edge) else None
+
+    def _set_cursor(self, cursor: str) -> None:
+        if cursor != self._cursor:
+            self._cursor = cursor
+            try:
+                self.configure(cursor=cursor)
+            except Exception:
+                pass
+
+    def _on_motion(self, event: Any) -> None:
+        if self._mode is None:
+            edge = self._edge_at(event.x_root, event.y_root)
+            self._set_cursor(self._EDGE_CURSORS.get(edge, "") if edge else "")
+
+    def _on_press(self, event: Any) -> None:
+        # A frameless window is not activated by Windows reliably, so claim the
+        # keyboard ourselves - otherwise typing into the task entry goes to the
+        # window underneath.
+        try:
+            focused = self.focus_get()
+            if focused is None or focused.winfo_toplevel() is not self:
+                target = event.widget
+                if target.winfo_class() in ("Entry", "Text"):
+                    target.focus_force()
+                else:
+                    self.focus_force()
+        except Exception:
+            pass
+
+        self._edge = self._edge_at(event.x_root, event.y_root)
+        if self._edge:
+            self._mode = "resize"
+        elif self._is_drag_handle(event.widget):
+            self._mode = "move"
+        else:
+            self._mode = None
+            return
+        self._press = (
+            event.x_root, event.y_root,
+            self.winfo_x(), self.winfo_y(),
+            self.winfo_width(), self.winfo_height(),
+        )
+
+    def _on_drag(self, event: Any) -> None:
+        if self._mode is None:
+            return
+        px, py, x, y, w, h = self._press
+        dx, dy = event.x_root - px, event.y_root - py
+        # wm_geometry, not geometry(): CTk's geometry() rescales by the DPI
+        # factor, while winfo_* above already returns physical pixels.
+        if self._mode == "move":
+            self.wm_geometry(f"+{x + dx}+{y + dy}")
+            return
+
+        scale = float(ctk.ScalingTracker.get_window_scaling(self))
+        min_w = round(CHECKOUT_FLOATING_MIN_WIDTH * scale)
+        min_h = round(CHECKOUT_FLOATING_MIN_HEIGHT * scale)
+        left, right, top, bottom = self._edge or (False, False, False, False)
+        if right:
+            w = max(min_w, w + dx)
+        if bottom:
+            h = max(min_h, h + dy)
+        if left:
+            new_w = max(min_w, w - dx)
+            x += w - new_w
+            w = new_w
+        if top:
+            new_h = max(min_h, h - dy)
+            y += h - new_h
+            h = new_h
+        self.wm_geometry(f"{w}x{h}+{x}+{y}")
+
+    def _on_release(self, event: Any) -> None:
+        self._mode = None
+        self._on_motion(event)
 
 
 class CheckoutPanelWidget(ctk.CTkFrame):
@@ -173,6 +311,11 @@ class CheckoutPanelWidget(ctk.CTkFrame):
 
         self._build_header()
         self._build_tabs()
+
+        # Undocked, the header doubles as the title bar of the frameless window.
+        top = self.winfo_toplevel()
+        if isinstance(top, CheckoutFloatingWindow):
+            top.register_drag_area(self.header_frame, exclude=(self.header_btn_box,))
 
         # Initial background fetches
         self.refresh_transit_data(force=True)
@@ -252,6 +395,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         # Right control buttons
         btn_box = ctk.CTkFrame(self.header_frame, fg_color=COLOR_TRANSPARENT)
         btn_box.pack(side="right")
+        self.header_btn_box = btn_box
 
         from ui.widgets.ctk_tooltip import CTkTooltip
 

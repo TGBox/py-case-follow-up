@@ -122,7 +122,10 @@ def test_floating_panel_is_not_owned_by_the_main_window(root):
         assert floating.transient() == ""
         if sys.platform == "win32":  # X11 without a window manager does not report these back
             assert floating.attributes("-topmost")
-            assert floating.attributes("-toolwindow"), "no own taskbar button"
+            if floating._frameless:
+                assert floating.overrideredirect(), "no own taskbar button and no OS frame"
+            else:
+                assert floating.attributes("-toolwindow"), "no own taskbar button"
     finally:
         floating.destroy()
 

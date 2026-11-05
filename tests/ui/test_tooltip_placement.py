@@ -119,10 +119,10 @@ def test_floating_panel_is_not_owned_by_the_main_window(root):
 
     floating = CheckoutFloatingWindow(master=root, on_dock_callback=lambda: None, on_close_callback=lambda: None)
     try:
-        assert str(floating.tk.call("wm", "transient", floating._w)) == ""
+        assert floating.transient() == ""
         if sys.platform == "win32":  # X11 without a window manager does not report these back
-            assert bool(floating.attributes("-topmost"))
-            assert bool(floating.attributes("-toolwindow")), "no own taskbar button"
+            assert floating.attributes("-topmost")
+            assert floating.attributes("-toolwindow"), "no own taskbar button"
     finally:
         floating.destroy()
 
@@ -142,7 +142,7 @@ def test_minimizing_to_tray_leaves_the_undocked_panel_alone(config):
         app.show_checkout_panel()
         floating = app.checkout_floating_window
         assert floating is not None and floating.winfo_exists()
-        assert str(floating.tk.call("wm", "transient", floating._w)) == ""
+        assert floating.transient() == ""
 
         calls: list[str] = []
         floating.withdraw = lambda: calls.append("withdraw")

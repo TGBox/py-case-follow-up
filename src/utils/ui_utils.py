@@ -457,7 +457,7 @@ def patch_ctk_toplevel_titlebar() -> None:
     def themed_titlebar(self, color_mode: str) -> None:
         if not sys.platform.startswith("win") or getattr(self, "_deactivate_windows_window_header_manipulation", False):
             return
-        dark = str(color_mode).lower() == "dark"
+        dark = color_mode.lower() == "dark"
         set_windows_titlebar_dark(self, dark)
         # The outer frame window may only exist once Tk has mapped the dialog.
         try:
@@ -503,7 +503,7 @@ def get_monitor_work_area(widget: Any, x: int, y: int) -> tuple[int, int, int, i
             user32 = ctypes.windll.user32
             user32.MonitorFromPoint.restype = wintypes.HMONITOR
             user32.MonitorFromPoint.argtypes = [wintypes.POINT, wintypes.DWORD]
-            monitor = user32.MonitorFromPoint(wintypes.POINT(int(x), int(y)), 2)  # MONITOR_DEFAULTTONEAREST
+            monitor = user32.MonitorFromPoint(wintypes.POINT(x, y), 2)  # MONITOR_DEFAULTTONEAREST
             info = _MonitorInfo()
             info.cbSize = ctypes.sizeof(_MonitorInfo)
             if monitor and user32.GetMonitorInfoW(monitor, ctypes.byref(info)):

@@ -300,3 +300,33 @@ def test_departure_cache_is_per_stop(monkeypatch):
     assert DingTransitService.fetch_departures("Ehinger Tor", "Ulm")[0].stop_name == "Ehinger Tor"  # cached
     assert DingTransitService.fetch_departures("Edisonallee", "Neu-Ulm")[0].stop_name == "Edisonallee"
     assert calls == ["Ehinger Tor", "Edisonallee"]
+
+
+def test_departure_params_with_planned_time():
+    from datetime import datetime
+
+    params = DingTransitService._departure_params("Wiley Süd", "Neu-Ulm", 15, datetime(2026, 11, 5, 16, 50))
+    assert params["itdDate"] == "20261105"
+    assert params["itdTime"] == "1650"
+    assert params["itdDateTimeDepArr"] == "dep"
+    assert "itdTime" not in DingTransitService._departure_params("Wiley Süd", "Neu-Ulm", 15)
+
+
+def test_departure_cache_is_per_planned_time(monkeypatch):
+    from datetime import datetime
+
+    calls = []
+
+    def fake(_endpoint, params):
+        calls.append(params.get("itdTime"))
+        return {"departureList": [dict(_ONE_DEPARTURE)]}
+
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(fake))
+    monkeypatch.setattr(DingTransitService, "_cached_departures", [])
+    monkeypatch.setattr(DingTransitService, "_last_fetch_time", None)
+    monkeypatch.setattr(DingTransitService, "_cached_stop_key", None)
+
+    DingTransitService.fetch_departures("Ehinger Tor", "Ulm")
+    DingTransitService.fetch_departures("Ehinger Tor", "Ulm", departure_time=datetime(2026, 11, 5, 17, 0))
+    DingTransitService.fetch_departures("Ehinger Tor", "Ulm", departure_time=datetime(2026, 11, 5, 17, 0))  # cached
+    assert calls == [None, "1700"]

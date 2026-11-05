@@ -139,7 +139,7 @@ class DingTransitService:
             data = cls._request_json(
                 TRANSIT_EFA_ENDPOINT, cls._departure_params(stop_name, place, limit, departure_time)
             )
-            parsed = cls._parse_efa_response(data)
+            parsed = cls._parse_efa_response(data, trust_countdown=departure_time is None)
             cls._cached_departures = parsed
             cls._last_fetch_time = now
             cls._cached_stop_key = stop_key
@@ -241,8 +241,15 @@ class DingTransitService:
         return stops
 
     @classmethod
-    def _parse_efa_response(cls, data: dict[str, Any]) -> list[TransitDeparture]:
-        """Parse raw EFA JSON dictionary into a list of TransitDeparture objects."""
+    def _parse_efa_response(
+        cls, data: dict[str, Any], trust_countdown: bool = True
+    ) -> list[TransitDeparture]:
+        """Parse raw EFA JSON dictionary into a list of TransitDeparture objects.
+
+        trust_countdown: EFA counts its "countdown" from the *requested* time, so
+        for a request with itdTime it is wrong (a 16:13 bus queried for 16:10
+        shows "3 Min." at noon). Pass False then to count from now instead.
+        """
         results: list[TransitDeparture] = []
         raw_list = data.get("departureList")
         if not raw_list:
@@ -291,7 +298,7 @@ class DingTransitService:
             real_str = f"{hour:02d}:{minute:02d}"
 
             # Countdown
-            raw_countdown = item.get("countdown")
+            raw_countdown = item.get("countdown") if trust_countdown else None
             if raw_countdown is not None:
                 try:
                     countdown = int(raw_countdown)

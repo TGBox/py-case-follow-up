@@ -477,6 +477,74 @@ patch_ctk_toplevel_titlebar()
 
 
 
+def get_monitor_work_area(widget: Any, x: int, y: int) -> tuple[int, int, int, int]:
+    """(left, top, right, bottom) of the usable area of the monitor that contains (x, y).
+
+    On Windows this is the monitor's work area - the screen minus the taskbar -
+    of whichever monitor the point is on, so it also holds on a second screen
+    left of or above the primary one. winfo_screenwidth() only knows the
+    primary monitor. CustomTkinter makes the process per-monitor DPI aware, so
+    Tk's pointer coordinates and Win32's are the same physical pixels.
+    Elsewhere (and if the Win32 call fails) the Tk virtual root is used.
+    """
+    if sys.platform == "win32":
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            class _MonitorInfo(ctypes.Structure):
+                _fields_ = [
+                    ("cbSize", wintypes.DWORD),
+                    ("rcMonitor", wintypes.RECT),
+                    ("rcWork", wintypes.RECT),
+                    ("dwFlags", wintypes.DWORD),
+                ]
+
+            user32 = ctypes.windll.user32
+            user32.MonitorFromPoint.restype = wintypes.HMONITOR
+            user32.MonitorFromPoint.argtypes = [wintypes.POINT, wintypes.DWORD]
+            monitor = user32.MonitorFromPoint(wintypes.POINT(int(x), int(y)), 2)  # MONITOR_DEFAULTTONEAREST
+            info = _MonitorInfo()
+            info.cbSize = ctypes.sizeof(_MonitorInfo)
+            if monitor and user32.GetMonitorInfoW(monitor, ctypes.byref(info)):
+                r = info.rcWork
+                return int(r.left), int(r.top), int(r.right), int(r.bottom)
+        except Exception:
+            pass
+    try:
+        left, top = int(widget.winfo_vrootx()), int(widget.winfo_vrooty())
+        width = int(widget.winfo_vrootwidth()) or int(widget.winfo_screenwidth())
+        height = int(widget.winfo_vrootheight()) or int(widget.winfo_screenheight())
+        # vrootx/y are the root's offset inside the virtual root; the visible
+        # area starts at the negated offset.
+        return -left, -top, -left + width, -top + height
+    except Exception:
+        return 0, 0, 1920, 1080
+
+
+def place_beside_pointer(
+    pointer_x: int, pointer_y: int, width: int, height: int, offset_x: int, offset_y: int,
+    area: tuple[int, int, int, int],
+) -> tuple[int, int]:
+    """Top-left corner for a popup of width x height next to the pointer, kept inside area.
+
+    Preferred spot is right of and below the pointer. Where that would leave
+    the area the popup flips to the other side of the pointer (rather than
+    just being pushed back), so it does not end up under the pointer and
+    cover what is being hovered; if it fits on neither side it is clamped.
+    """
+    left, top, right, bottom = area
+    x = pointer_x + offset_x
+    if x + width > right:
+        x = pointer_x - offset_x - width
+    y = pointer_y + offset_y
+    if y + height > bottom:
+        y = pointer_y - offset_y - height
+    x = max(left, min(x, right - width))
+    y = max(top, min(y, bottom - height))
+    return x, y
+
+
 def get_main_app_window(window: ctk.CTk | ctk.CTkToplevel) -> ctk.CTk | ctk.CTkToplevel:
     """Finds the root main application window (SupportCockpitApp) by walking up the master chain."""
     curr = window

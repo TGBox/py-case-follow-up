@@ -85,6 +85,10 @@ DISPLAY_CHANNEL_NAMES = LocalizedDict("channels", {
     "PHONE_OUTBOUND": "Telefon (Ausgang)",
     "EMAIL_IN": "E-Mail (Eingang)",
     "EMAIL_OUT": "E-Mail (Ausgang)",
+    "SLACK_IN": "Eingehende Slack-Nachricht",
+    "SLACK_OUT": "Ausgehende Slack-Nachricht",
+    "WHATSAPP_IN": "Eingehende WhatsApp-Nachricht",
+    "WHATSAPP_OUT": "Ausgehende WhatsApp-Nachricht",
     "GITLAB_TICKET_CREATED": "GitLab-Ticket erstellt",
     "GITLAB_TICKET_UPDATED": "GitLab-Ticket geupdated",
     "GITLAB_TICKET_CLOSED": "GitLab-Ticket geschlossen",
@@ -131,6 +135,42 @@ CHANNEL_KEY_MAP = {
     "EMAIL": "channels.email",
     "INTERNAL_NOTE": "channels.internal_note",
 }
+
+# Channel picker: the stored codes above, grouped by medium. The picker shows
+# one button per group and, for groups with more than one code, a second row
+# for the variant (direction, or the ticket event for GitLab). The codes stay
+# exactly what is stored on a timeline entry - grouping is display only.
+CHANNEL_PICKER_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("phone", ("PHONE_INBOUND", "PHONE_OUTBOUND")),
+    ("email", ("EMAIL_IN", "EMAIL_OUT")),
+    ("slack", ("SLACK_IN", "SLACK_OUT")),
+    ("whatsapp", ("WHATSAPP_IN", "WHATSAPP_OUT")),
+    ("gitlab", ("GITLAB_TICKET_CREATED", "GITLAB_TICKET_UPDATED", "GITLAB_TICKET_CLOSED")),
+    ("note", ("INTERNAL_NOTE",)),
+    ("other", ("OTHER",)),
+)
+# Which label the variant row shows for a code (key under "channel_picker.variant_*").
+CHANNEL_PICKER_VARIANTS: dict[str, str] = {
+    "PHONE_INBOUND": "in", "PHONE_OUTBOUND": "out",
+    "EMAIL_IN": "in", "EMAIL_OUT": "out",
+    "SLACK_IN": "in", "SLACK_OUT": "out",
+    "WHATSAPP_IN": "in", "WHATSAPP_OUT": "out",
+    "GITLAB_TICKET_CREATED": "created", "GITLAB_TICKET_UPDATED": "updated", "GITLAB_TICKET_CLOSED": "closed",
+}
+# Older entries carry codes without a direction (or from earlier versions).
+# The picker shows their medium but keeps the code until the user picks a
+# variant, so editing an old entry never rewrites its channel by accident.
+CHANNEL_PICKER_LEGACY_GROUPS: dict[str, str] = {
+    "PHONE": "phone",
+    "EMAIL": "email",
+    "SLACK_CHAT": "slack",
+    "DEV_TICKET": "gitlab",
+    "IN_PERSON": "other",
+}
+CHANNEL_PICKER_DEFAULT = "PHONE_INBOUND"
+CHANNEL_CHIP_HEIGHT = 24
+CHANNEL_CHIP_GAP = 4
+CHANNEL_PICKER_HINT_WRAP = 260
 
 ACTOR_KEY_MAP = {
     "SUPPORT": "actors.support_team",
@@ -1650,7 +1690,6 @@ INITIAL_STATUS_CHANGE_NOTE = "NEW -> ACTION_REQUIRED (SUPPORT)"
 DEFAULT_PRACTICE_DISPLAY = "Standard Praxis (K-10000)"
 DEFAULT_PRACTICE_ID = "K-10000"
 DEFAULT_PRACTICE_NAME = "Standard Praxis"
-COMBO_WIDTH_NEW_CASE_CHANNEL = 175
 
 # Followup Dialog Design Tokens
 DIALOG_SIZE_FOLLOWUP = (500, 425)

@@ -25,7 +25,7 @@ from constants import (
     TRANSIT_REQUEST_TIMEOUT_SECONDS,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("SupportCockpit.transit")
 
 
 @dataclass

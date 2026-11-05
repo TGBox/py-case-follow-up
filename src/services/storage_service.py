@@ -53,7 +53,13 @@ PROFILE_PATH_OVERRIDES: tuple[str, ...] = (
 
 
 def setup_logging(log_path: Path) -> None:
-    """Sets up rotating file logging."""
+    """Sets up rotating file logging.
+
+    The handler sits on the "SupportCockpit" logger. Modules log either to it
+    directly or to a child such as "SupportCockpit.transit", which propagates
+    here and keeps its own name in the log line. A logger outside that tree
+    (e.g. getLogger(__name__)) never reaches app.log.
+    """
     log_path.parent.mkdir(parents=True, exist_ok=True)
     logger.setLevel(logging.INFO)
     if not logger.handlers:

@@ -89,7 +89,7 @@ from services.weather_service import WeatherInfo, WeatherService
 from ui.widgets.collapsible_section import CollapsibleSection
 from utils.icon_utils import get_icon
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("SupportCockpit.checkout")
 
 
 class CheckoutFloatingWindow(ctk.CTkToplevel):

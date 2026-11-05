@@ -30,7 +30,7 @@ from constants import (
     OLLAMA_TIMEOUT_UNLOAD,
 )
 
-logger = logging.getLogger("AiService")
+logger = logging.getLogger("SupportCockpit.ai")
 
 
 class AiService:

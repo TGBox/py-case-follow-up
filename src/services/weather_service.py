@@ -20,7 +20,7 @@ from constants import (
     WEATHER_REQUEST_TIMEOUT_SECONDS,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("SupportCockpit.weather")
 
 # WMO Weather interpretation codes (WW) to German description
 WMO_WEATHER_CODES: dict[int, str] = {

@@ -2236,7 +2236,23 @@
     "transit_toast_walk_msg": "Leave now! Line {line} to {dest} departs at {dep_time}.",
     "transit_selected_badge": "🎯 Selected",
     "summary_net": "Net {hours}:{minutes:02d} h",
-    "summary_end": "Done at about {time}"
+    "summary_end": "Done at about {time}",
+    "transit_destination_placeholder": "Destination (optional)",
+    "transit_destination_tooltip": "Type a destination and pick a suggestion (or press Enter): only connections that get there are listed, including changes, with their arrival time. Applies to today; the default destination is set in the settings.",
+    "transit_destination_clear": "No destination today: show all departures",
+    "transit_destination_reset": "Back to the default destination: {stop}",
+    "transit_destination_searching": "Searching destination …",
+    "transit_destination_none": "No matching destination found.",
+    "transit_destination_error": "Timetable service not reachable.",
+    "transit_trip_direct": "Direct",
+    "transit_trip_one_change": "1 change",
+    "transit_trip_changes": "{count} changes",
+    "transit_trip_times": "{dep} → {arr} · {minutes} min",
+    "transit_trip_direction": "towards {dest}",
+    "transit_no_trips": "No connections to {dest} found. Is the destination right?",
+    "transit_selected_trip_desc": "Line {lines} at {time} · {changes}",
+    "transit_stage_arrival": "Arrival {stop}: {time}",
+    "transit_toast_arrival": "Arrival {stop}: {time}."
   },
   "settings_checkout": {
     "section_title": "Departure & Checkout Companion",
@@ -2288,7 +2304,12 @@
     "remember_visibility": "Reopen after a restart if the panel was open last time",
     "always_show": "Always show the panel",
     "visibility_heading": "Display",
-    "schedule_heading": "At the end of the day"
+    "schedule_heading": "At the end of the day",
+    "transit_destination": "Destination of the trip home (optional):",
+    "destination_placeholder": "e.g. Neu-Ulm Bahnhof",
+    "destination_hint": "With a destination the public transport tab lists only connections that get there (including changes) with their arrival time. Empty = all departures.",
+    "destination_picked": "Destination set: {stop}",
+    "destination_pick_hint": "Pick the destination from the list."
   },
   "channel_picker": {
     "label_channel": "Channel:",

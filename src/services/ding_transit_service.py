@@ -1,4 +1,4 @@
-"""DING transit service for live departures and departure alarms in the Ulm / Neu-Ulm region.
+"""DING transit service for live departures, trips to a destination and departure alarms in the Ulm / Neu-Ulm region.
 
 Uses the standardized bwegt / EFA-BW JSON endpoint covering the DING network.
 Provides error-resilient fetching, parsing, caching, and commute alarm calculations.
@@ -21,6 +21,8 @@ from constants import (
     TRANSIT_DEFAULT_STOP_PLACE,
     TRANSIT_EFA_ENDPOINT,
     TRANSIT_EFA_STOPFINDER_ENDPOINT,
+    TRANSIT_EFA_TRIP_ENDPOINT,
+    TRANSIT_FOOTPATH_MOT_TYPES,
     TRANSIT_STOP_SUGGESTION_LIMIT,
     TRANSIT_REQUEST_TIMEOUT_SECONDS,
 )
@@ -53,6 +55,27 @@ class TransitStop:
 
 
 @dataclass
+class TransitTrip:
+    """A connection from the configured stop to the destination, possibly with changes.
+
+    departure carries the start of the trip at the origin stop in the shape the
+    departure list uses, so selection, lead-time alarms and countdowns work for
+    trips unchanged. Its line is the first line ridden and its destination the
+    direction shown on that bus.
+    """
+
+    departure: TransitDeparture
+    arrival_stop: str
+    arrival_planned_str: str
+    arrival_real_str: str
+    arrival_delay_minutes: int
+    arrival_datetime: datetime | None
+    duration_minutes: int
+    interchanges: int
+    lines: list[str] = field(default_factory=list)
+
+
+@dataclass
 class StopCheckResult:
     """Outcome of looking up departures for a configured stop.
 
@@ -75,6 +98,9 @@ class DingTransitService:
     _last_fetch_time: datetime | None = None
     _cached_stop_key: tuple[str, str, str] | None = None
     _cache_ttl_seconds: float = 30.0
+    _cached_trips: list[TransitTrip] = []
+    _last_trip_fetch_time: datetime | None = None
+    _cached_trip_key: tuple[str, ...] | None = None
 
     @staticmethod
     def _request_json(endpoint: str, params: dict[str, str]) -> dict[str, Any]:
@@ -147,6 +173,209 @@ class DingTransitService:
         except Exception as e:
             logger.warning("Failed to fetch DING live departures: %s", e)
             return list(cls._cached_departures)
+
+    @staticmethod
+    def _trip_params(
+        origin_name: str,
+        origin_place: str,
+        dest_name: str,
+        dest_place: str,
+        limit: int,
+        departure_time: datetime | None = None,
+    ) -> dict[str, str]:
+        when = departure_time or datetime.now()
+        return {
+            "outputFormat": "JSON",
+            "locationServerActive": "1",
+            "type_origin": "stop",
+            "name_origin": origin_name,
+            "place_origin": origin_place,
+            "type_destination": "stop",
+            "name_destination": dest_name,
+            "place_destination": dest_place,
+            "itdDate": when.strftime("%Y%m%d"),
+            "itdTime": when.strftime("%H%M"),
+            "itdTripDateTimeDepArr": "dep",
+            "useRealtime": "1",
+            "calcNumberOfTrips": str(limit),
+        }
+
+    @classmethod
+    def fetch_trips(
+        cls,
+        origin_name: str,
+        origin_place: str,
+        dest_name: str,
+        dest_place: str = "",
+        limit: int = 6,
+        force_refresh: bool = False,
+        departure_time: datetime | None = None,
+    ) -> list[TransitTrip]:
+        """Connections from the origin stop to the destination, earliest first.
+
+        Only trips that start at the origin in a useful direction come back,
+        since EFA plans the route to the destination. Changes are allowed.
+        departure_time: plan from this moment on instead of from now.
+        """
+        now = datetime.now()
+        planned_key = departure_time.strftime("%Y%m%d%H%M") if departure_time else ""
+        key = tuple(
+            v.strip().lower() for v in (origin_name, origin_place, dest_name, dest_place)
+        ) + (planned_key,)
+        if cls._cached_trip_key != key:
+            cls._cached_trips = []
+            cls._last_trip_fetch_time = None
+        if (
+            not force_refresh
+            and cls._last_trip_fetch_time is not None
+            and (now - cls._last_trip_fetch_time).total_seconds() < cls._cache_ttl_seconds
+            and cls._cached_trips
+        ):
+            return list(cls._cached_trips)
+
+        try:
+            data = cls._request_json(
+                TRANSIT_EFA_TRIP_ENDPOINT,
+                cls._trip_params(origin_name, origin_place, dest_name, dest_place, limit, departure_time),
+            )
+            # Without a planned time EFA may start a little before now; drop what has already left.
+            earliest = departure_time or (now - timedelta(minutes=1))
+            parsed = [
+                t
+                for t in cls._parse_trip_response(data)
+                if t.departure.raw_datetime is None or t.departure.raw_datetime >= earliest
+            ]
+            parsed.sort(key=lambda t: (t.departure.raw_datetime or now, t.arrival_datetime or now))
+            # The same first bus can come back with several onward connections: keep the earliest arrival,
+            # so every row (and the selection key line_time_direction) stands for one bus.
+            seen: set[tuple[str, str, str]] = set()
+            unique: list[TransitTrip] = []
+            for t in parsed:
+                dep_key = (t.departure.line, t.departure.planned_time_str, t.departure.destination)
+                if dep_key not in seen:
+                    seen.add(dep_key)
+                    unique.append(t)
+            parsed = unique
+            cls._cached_trips = parsed
+            cls._last_trip_fetch_time = now
+            cls._cached_trip_key = key
+            return parsed
+        except Exception as e:
+            logger.warning("Failed to fetch DING trips: %s", e)
+            return list(cls._cached_trips)
+
+    @staticmethod
+    def _as_list(raw: Any, inner_key: str) -> list[Any]:
+        """EFA wraps lists as a list, as {inner_key: [...]}, as {inner_key: {...}} or as null."""
+        if isinstance(raw, dict):
+            raw = raw.get(inner_key)
+        if isinstance(raw, dict):
+            return [raw]
+        return raw if isinstance(raw, list) else []
+
+    @staticmethod
+    def _parse_point_time(dt_dict: Any, realtime: bool) -> datetime | None:
+        """Reads a trip point time: {"date": "05.11.2026", "time": "16:58", "rtDate", "rtTime"}
+        or the departure-monitor shape {"year", "month", "day", "hour", "minute"}."""
+        if not isinstance(dt_dict, dict):
+            return None
+        if "hour" in dt_dict:
+            try:
+                return datetime(
+                    int(dt_dict["year"]), int(dt_dict["month"]), int(dt_dict["day"]),
+                    int(dt_dict["hour"]), int(dt_dict["minute"]),
+                )
+            except (KeyError, TypeError, ValueError):
+                return None
+        date_str = str((dt_dict.get("rtDate") if realtime else None) or dt_dict.get("date") or "").strip()
+        time_str = str((dt_dict.get("rtTime") if realtime else None) or dt_dict.get("time") or "").strip()
+        if not date_str or not time_str:
+            return None
+        for fmt in ("%d.%m.%Y %H:%M", "%Y%m%d %H:%M", "%Y-%m-%d %H:%M"):
+            try:
+                return datetime.strptime(f"{date_str} {time_str}", fmt)
+            except ValueError:
+                continue
+        return None
+
+    @classmethod
+    def _parse_trip_response(cls, data: dict[str, Any]) -> list[TransitTrip]:
+        """Parse an EFA XML_TRIP_REQUEST2 JSON answer into TransitTrip objects.
+
+        Trips without a single ridden leg (pure footpaths) are skipped.
+        """
+        now = datetime.now()
+        trips: list[TransitTrip] = []
+        for trip in cls._as_list(data.get("trips"), "trip"):
+            if not isinstance(trip, dict):
+                continue
+            legs = [leg for leg in cls._as_list(trip.get("legs"), "leg") if isinstance(leg, dict)]
+            if not legs:
+                continue
+
+            ridden: list[dict[str, Any]] = []
+            for leg in legs:
+                raw_mode = leg.get("mode")
+                mode: dict[str, Any] = raw_mode if isinstance(raw_mode, dict) else {}
+                line = str(mode.get("number") or mode.get("symbol") or "").strip()
+                if line and str(mode.get("type") or "") not in TRANSIT_FOOTPATH_MOT_TYPES:
+                    ridden.append(leg)
+            if not ridden:
+                continue
+
+            def endpoint(leg: dict[str, Any], usage: str) -> dict[str, Any]:
+                points = [p for p in cls._as_list(leg.get("points"), "point") if isinstance(p, dict)]
+                for p in points:
+                    if str(p.get("usage") or "").lower() == usage:
+                        return p
+                if not points:
+                    return {}
+                return points[0] if usage == "departure" else points[-1]
+
+            start = endpoint(legs[0], "departure")
+            end = endpoint(legs[-1], "arrival")
+            first_mode = ridden[0].get("mode") or {}
+
+            dep_planned = cls._parse_point_time(start.get("dateTime"), realtime=False)
+            dep_real = cls._parse_point_time(start.get("dateTime"), realtime=True) or dep_planned
+            arr_planned = cls._parse_point_time(end.get("dateTime"), realtime=False)
+            arr_real = cls._parse_point_time(end.get("dateTime"), realtime=True) or arr_planned
+            if dep_real is None:
+                continue
+
+            def minutes_between(later: datetime | None, earlier: datetime | None) -> int:
+                if later is None or earlier is None:
+                    return 0
+                return int((later - earlier).total_seconds() // 60)
+
+            lines = [str((leg.get("mode") or {}).get("number") or (leg.get("mode") or {}).get("symbol")) for leg in ridden]
+            departure = TransitDeparture(
+                stop_id=str((start.get("ref") or {}).get("id") or "") if isinstance(start.get("ref"), dict) else "",
+                stop_name=str(start.get("name") or ""),
+                line=lines[0],
+                destination=str(first_mode.get("destination") or ""),
+                mot_type=str(first_mode.get("name") or ""),
+                planned_time_str=(dep_planned or dep_real).strftime("%H:%M"),
+                real_time_str=dep_real.strftime("%H:%M"),
+                delay_minutes=max(0, minutes_between(dep_real, dep_planned)),
+                platform=str(start.get("platformName") or start.get("platform") or ""),
+                countdown_minutes=max(0, int((dep_real - now).total_seconds() / 60)),
+                raw_datetime=dep_real,
+            )
+            trips.append(
+                TransitTrip(
+                    departure=departure,
+                    arrival_stop=str(end.get("name") or ""),
+                    arrival_planned_str=arr_planned.strftime("%H:%M") if arr_planned else "",
+                    arrival_real_str=arr_real.strftime("%H:%M") if arr_real else "",
+                    arrival_delay_minutes=max(0, minutes_between(arr_real, arr_planned)),
+                    arrival_datetime=arr_real,
+                    duration_minutes=max(0, minutes_between(arr_real, dep_real)),
+                    interchanges=len(ridden) - 1,
+                    lines=lines,
+                )
+            )
+        return trips
 
     @classmethod
     def find_stops(cls, query: str, limit: int = TRANSIT_STOP_SUGGESTION_LIMIT) -> list[TransitStop] | None:

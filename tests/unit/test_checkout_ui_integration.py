@@ -509,3 +509,56 @@ def test_parse_planned_time_rejects_invalid(text):
 
 def test_parse_planned_time_empty_means_now():
     assert CheckoutPanelWidget._parse_planned_time("  ") is None
+
+
+def test_checkout_panel_destination_lists_trips_and_shows_arrival(root):
+    from datetime import date, datetime, timedelta
+    from services.ding_transit_service import TransitDeparture, TransitTrip
+
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+    profile.checkout_settings.destination = {"name": "Wiley Süd", "place": "Neu-Ulm"}
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data") as refresh, \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"):
+        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        try:
+            assert panel.transit_dest_field.get() == "Wiley Süd, Neu-Ulm"
+            assert panel.transit_dest_clear_btn.winfo_manager() == "pack"
+            assert not panel.transit_dest_reset_btn.winfo_manager()  # default is applied
+
+            dep_dt = datetime.now() + timedelta(minutes=20)
+            dep = TransitDeparture(
+                stop_id="", stop_name="Ulm, Ehinger Tor", line="4", destination="Kuhberg", mot_type="Bus",
+                planned_time_str=dep_dt.strftime("%H:%M"), real_time_str=dep_dt.strftime("%H:%M"),
+                delay_minutes=0, platform="Bstg. D", countdown_minutes=20, raw_datetime=dep_dt,
+            )
+            arr_dt = dep_dt + timedelta(minutes=26)
+            trip = TransitTrip(
+                departure=dep, arrival_stop="Neu-Ulm, Wiley Süd", arrival_planned_str=arr_dt.strftime("%H:%M"),
+                arrival_real_str=arr_dt.strftime("%H:%M"), arrival_delay_minutes=0, arrival_datetime=arr_dt,
+                duration_minutes=26, interchanges=1, lines=["4", "2"],
+            )
+            panel._on_transit_data_loaded([dep], [trip])
+            panel._on_departure_double_clicked(dep)
+            assert panel._selected_trip() is trip
+            assert arr_dt.strftime("%H:%M") in panel.stage_arrival_lbl.cget("text")
+            assert panel.stage_arrival_lbl.winfo_manager() == "pack"
+
+            # "No destination today": back to all departures, reset button offers the default again
+            refresh.reset_mock()
+            panel._clear_destination_today()
+            assert profile.checkout_settings.effective_destination()["name"] == ""
+            assert panel.transit_dest_field.get() == ""
+            assert panel.transit_dest_reset_btn.winfo_manager() == "pack"
+            assert refresh.called
+            panel._on_transit_data_loaded([dep])
+            assert panel._selected_trip() is None
+            assert not panel.stage_arrival_lbl.winfo_manager()
+
+            panel._reset_destination_to_default()
+            assert profile.checkout_settings.effective_destination()["name"] == "Wiley Süd"
+            assert not panel.transit_dest_reset_btn.winfo_manager()
+        finally:
+            panel.destroy()

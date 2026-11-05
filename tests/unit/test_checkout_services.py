@@ -4,7 +4,8 @@
 - CheckoutTaskService (midnight reset, tasks CRUD, toggle, date filtering)
 """
 
-from datetime import datetime
+import json
+from datetime import datetime, timedelta
 
 
 from models.profile import CheckoutSettings
@@ -348,3 +349,156 @@ def test_countdown_counts_from_now_for_a_planned_request():
     }
     assert DingTransitService._parse_efa_response(data)[0].countdown_minutes == 3
     assert DingTransitService._parse_efa_response(data, trust_countdown=False)[0].countdown_minutes >= 240
+
+
+# --- Trips to a destination (XML_TRIP_REQUEST2) ---
+
+def _trip_point(name, usage, date_str, time_str, rt_time=None, platform=""):
+    dt = {"date": date_str, "time": time_str}
+    if rt_time:
+        dt.update(rtDate=date_str, rtTime=rt_time)
+    return {"name": name, "usage": usage, "dateTime": dt, "platformName": platform}
+
+
+def _sample_trip_response(day):
+    d = day.strftime("%d.%m.%Y")
+    return {
+        "trips": [
+            {   # one change, first bus 2 min late, leading footpath before it
+                "legs": [
+                    {
+                        "mode": {"type": "99", "name": "Fussweg"},
+                        "points": [
+                            _trip_point("Ulm, Ehinger Tor", "departure", d, "16:55"),
+                            _trip_point("Ulm, Ehinger Tor Bstg. D", "arrival", d, "16:57"),
+                        ],
+                    },
+                    {
+                        "mode": {"type": "5", "name": "Bus 4", "number": "4", "destination": "Kuhberg"},
+                        "points": [
+                            _trip_point("Ulm, Ehinger Tor", "departure", d, "16:58", "17:00", "Bstg. D"),
+                            _trip_point("Ulm, Hauptbahnhof", "arrival", d, "17:03", "17:05"),
+                        ],
+                    },
+                    {
+                        "mode": {"type": "4", "name": "Straßenbahn 2", "number": "2", "destination": "Wiley"},
+                        "points": {"point": [
+                            _trip_point("Ulm, Hauptbahnhof", "departure", d, "17:10"),
+                            _trip_point("Neu-Ulm, Wiley Süd", "arrival", d, "17:24", "17:26"),
+                        ]},
+                    },
+                ]
+            },
+            {   # pure footpath: no bus, must be skipped
+                "legs": [{"mode": {"type": "100", "name": "Fussweg"}, "points": [
+                    _trip_point("Ulm, Ehinger Tor", "departure", d, "17:00"),
+                    _trip_point("Neu-Ulm, Wiley Süd", "arrival", d, "17:40"),
+                ]}]
+            },
+        ]
+    }
+
+
+def test_trip_response_parses_lines_times_changes_and_skips_footpaths():
+    day = datetime.now() + timedelta(days=1)
+    trips = DingTransitService._parse_trip_response(_sample_trip_response(day))
+    assert len(trips) == 1
+    trip = trips[0]
+    assert trip.lines == ["4", "2"]
+    assert trip.interchanges == 1
+    # The trip starts at the origin with the footpath; the alarm counts back from there.
+    assert trip.departure.real_time_str == "16:55"
+    assert trip.departure.line == "4"
+    assert trip.departure.destination == "Kuhberg"
+    assert trip.arrival_stop == "Neu-Ulm, Wiley Süd"
+    assert (trip.arrival_planned_str, trip.arrival_real_str, trip.arrival_delay_minutes) == ("17:24", "17:26", 2)
+    assert trip.duration_minutes == 31
+
+
+def test_trip_response_handles_single_trip_dict_and_departure_monitor_times():
+    day = datetime.now() + timedelta(days=1)
+    stamp = {"year": day.year, "month": day.month, "day": day.day}
+    data = {"trips": {"trip": {"legs": {"leg": {
+        "mode": {"type": "5", "number": "5", "destination": "Wiblingen"},
+        "points": [
+            {"name": "Ehinger Tor", "usage": "departure", "dateTime": dict(stamp, hour=18, minute=1)},
+            {"name": "Wiblingen", "usage": "arrival", "dateTime": dict(stamp, hour=18, minute=20)},
+        ],
+    }}}}}
+    trips = DingTransitService._parse_trip_response(data)
+    assert [(t.departure.real_time_str, t.arrival_real_str, t.interchanges) for t in trips] == [("18:01", "18:20", 0)]
+
+
+def test_trip_response_without_trips_is_empty():
+    # e.g. an ambiguous or unknown destination: EFA answers without "trips"
+    assert DingTransitService._parse_trip_response({"destination": {"points": []}}) == []
+    assert DingTransitService._parse_trip_response({"trips": None}) == []
+
+
+def test_trip_params_name_origin_destination_and_time():
+    params = DingTransitService._trip_params("Ehinger Tor", "Ulm", "Wiley Süd", "Neu-Ulm", 6, datetime(2026, 11, 5, 16, 50))
+    assert (params["name_origin"], params["place_origin"]) == ("Ehinger Tor", "Ulm")
+    assert (params["name_destination"], params["place_destination"]) == ("Wiley Süd", "Neu-Ulm")
+    assert (params["itdDate"], params["itdTime"], params["itdTripDateTimeDepArr"]) == ("20261105", "1650", "dep")
+    assert params["calcNumberOfTrips"] == "6"
+
+
+def test_trip_cache_is_per_destination_and_errors_keep_last_result(monkeypatch):
+    day = datetime.now() + timedelta(days=1)
+    calls = []
+
+    def fake(_endpoint, params):
+        calls.append(params["name_destination"])
+        if params["name_destination"] == "kaputt":
+            raise TimeoutError
+        return _sample_trip_response(day)
+
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(fake))
+    monkeypatch.setattr(DingTransitService, "_cached_trips", [])
+    monkeypatch.setattr(DingTransitService, "_last_trip_fetch_time", None)
+    monkeypatch.setattr(DingTransitService, "_cached_trip_key", None)
+
+    assert len(DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Wiley Süd", "Neu-Ulm")) == 1
+    assert len(DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Wiley Süd", "Neu-Ulm")) == 1  # cached
+    DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Hauptbahnhof", "Ulm")
+    assert calls == ["Wiley Süd", "Hauptbahnhof"]
+    # a different destination never reuses another destination's trips
+    assert DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "kaputt") == []
+
+
+def test_trips_that_already_left_are_dropped(monkeypatch):
+    # The sample trip leaves at 16:55 yesterday, so it is gone for sure.
+    yesterday = datetime.now() - timedelta(days=1)
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(lambda *_a: _sample_trip_response(yesterday)))
+    monkeypatch.setattr(DingTransitService, "_cached_trip_key", None)
+    assert DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Wiley Süd", force_refresh=True) == []
+
+
+def test_destination_defaults_overrides_for_today_and_round_trips():
+    cs = CheckoutSettings()
+    assert cs.effective_destination() == {"name": "", "place": ""}
+    cs.destination = {"name": "Wiley Süd", "place": "Neu-Ulm"}
+    assert cs.effective_destination()["name"] == "Wiley Süd"
+
+    cs.destination_today = {"name": "", "place": ""}
+    cs.destination_today_date = "2026-11-05"
+    assert cs.effective_destination(today="2026-11-05")["name"] == ""  # no destination today
+    assert cs.effective_destination(today="2026-11-06")["name"] == "Wiley Süd"  # next day: default again
+
+    restored = CheckoutSettings.from_dict(cs.to_dict())
+    assert restored.destination == {"name": "Wiley Süd", "place": "Neu-Ulm"}
+    assert restored.destination_today_date == "2026-11-05"
+    # old profiles without the fields
+    assert CheckoutSettings.from_dict({}).destination == {"name": "", "place": ""}
+
+
+def test_same_first_bus_with_two_onward_connections_is_listed_once(monkeypatch):
+    day = datetime.now() + timedelta(days=1)
+    data = _sample_trip_response(day)
+    slower = json.loads(json.dumps(data["trips"][0]))
+    slower["legs"][-1]["points"]["point"][-1]["dateTime"]["rtTime"] = "17:40"
+    data["trips"].insert(0, slower)
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(lambda *_a: data))
+    monkeypatch.setattr(DingTransitService, "_cached_trip_key", None)
+    trips = DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Wiley Süd", force_refresh=True)
+    assert [t.arrival_real_str for t in trips] == ["17:26"]

@@ -479,6 +479,11 @@ class CheckoutSettings:
             {"name": TRANSIT_DEFAULT_STOP_NAME, "place": TRANSIT_DEFAULT_STOP_PLACE}
         ]
     )
+    # Where the trip home goes; empty name = no destination, the ÖPNV tab lists all departures
+    destination: dict[str, str] = field(default_factory=lambda: {"name": "", "place": ""})
+    # Destination set in the panel for one day only; applies while destination_today_date is today
+    destination_today: dict[str, str] = field(default_factory=lambda: {"name": "", "place": ""})
+    destination_today_date: str = ""
     walk_time_minutes: int = CHECKOUT_DEFAULT_WALK_MINUTES
     logout_time_minutes: int = CHECKOUT_DEFAULT_LOGOUT_MINUTES
     pack_time_minutes: int = CHECKOUT_DEFAULT_PACK_MINUTES
@@ -501,6 +506,15 @@ class CheckoutSettings:
     dated_tasks: list[dict[str, Any]] = field(default_factory=list)
     last_tasks_date: str = ""
 
+    def effective_destination(self, today: str | None = None) -> dict[str, str]:
+        """The destination the ÖPNV tab plans to: today's override from the panel, else the default."""
+        from datetime import date
+
+        today = today or date.today().isoformat()
+        if self.destination_today_date == today:
+            return dict(self.destination_today)
+        return dict(self.destination)
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "enabled": self.enabled,
@@ -516,6 +530,9 @@ class CheckoutSettings:
             "collapsed_sections": list(self.collapsed_sections),
             "panel_width": self.panel_width,
             "stops": [dict(s) for s in self.stops],
+            "destination": dict(self.destination),
+            "destination_today": dict(self.destination_today),
+            "destination_today_date": self.destination_today_date,
             "walk_time_minutes": self.walk_time_minutes,
             "logout_time_minutes": self.logout_time_minutes,
             "pack_time_minutes": self.pack_time_minutes,
@@ -559,6 +576,11 @@ class CheckoutSettings:
         else:
             stops = [{"name": TRANSIT_DEFAULT_STOP_NAME, "place": TRANSIT_DEFAULT_STOP_PLACE}]
 
+        def read_place(raw: Any) -> dict[str, str]:
+            if not isinstance(raw, dict):
+                return {"name": "", "place": ""}
+            return {"name": str(raw.get("name", "")).strip(), "place": str(raw.get("place", "")).strip()}
+
         rec_tasks_raw = data.get("recurring_tasks")
         if isinstance(rec_tasks_raw, list):
             rec_tasks = [dict(t) for t in rec_tasks_raw if isinstance(t, dict)]
@@ -586,11 +608,14 @@ class CheckoutSettings:
             remember_visibility=bool(data.get("remember_visibility", False)),
             was_open=bool(data.get("was_open", False)),
             floating_geometry=str(data.get("floating_geometry", "")),
-            collapsed_sections=[str(x) for x in data.get("collapsed_sections", []) if isinstance(x, str)]
+            collapsed_sections=[x for x in data.get("collapsed_sections", []) if isinstance(x, str)]
             if isinstance(data.get("collapsed_sections"), list)
             else [],
             panel_width=int(data.get("panel_width", CHECKOUT_DEFAULT_WIDTH)),
             stops=stops,
+            destination=read_place(data.get("destination")),
+            destination_today=read_place(data.get("destination_today")),
+            destination_today_date=str(data.get("destination_today_date", "")),
             walk_time_minutes=int(data.get("walk_time_minutes", CHECKOUT_DEFAULT_WALK_MINUTES)),
             logout_time_minutes=int(data.get("logout_time_minutes", CHECKOUT_DEFAULT_LOGOUT_MINUTES)),
             pack_time_minutes=int(data.get("pack_time_minutes", CHECKOUT_DEFAULT_PACK_MINUTES)),

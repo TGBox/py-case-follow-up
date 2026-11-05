@@ -212,7 +212,8 @@ def test_ntfy_listener_empty_topic():
 
 @patch("services.ntfy_service.urlopen")
 def test_ntfy_listener_stream_receives_command(mock_urlopen):
-    import time
+    import threading
+
     mock_resp = MagicMock()
     mock_resp.__enter__.return_value = mock_resp
     lines = [
@@ -224,13 +225,19 @@ def test_ntfy_listener_stream_receives_command(mock_urlopen):
     mock_urlopen.return_value = mock_resp
 
     received = []
-    listener = NtfyListener(
-        topic="test-cmd-topic",
-        on_command=lambda cmd: received.append(cmd),
-    )
+    command_seen = threading.Event()
+
+    def on_command(cmd):
+        received.append(cmd)
+        command_seen.set()
+
+    listener = NtfyListener(topic="test-cmd-topic", on_command=on_command)
     listener.start()
     assert listener.is_running
-    time.sleep(0.1)
+    # Wait for the callback instead of a fixed sleep: under xdist on a busy
+    # Windows runner the thread may need far longer than 100 ms, and stop()
+    # before the message line is read means the command is never delivered.
+    assert command_seen.wait(timeout=5.0), "listener did not deliver the command in time"
     listener.stop()
     assert not listener.is_running
     assert "snooze:1042:30" in received

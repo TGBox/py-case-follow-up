@@ -150,10 +150,11 @@ def test_label_column_does_not_change_width_with_the_second_row(root):
     p = ChannelPicker(root)
     p.pack()
     root.update_idletasks()
-    with_row = p.grid_columnconfigure(0)["minsize"]
+    with_row = int(p.grid_columnconfigure(0).get("minsize") or 0)
     _click(p, "group_row", "note")
     root.update_idletasks()
-    assert p.grid_columnconfigure(0)["minsize"] == with_row > 0
+    assert int(p.grid_columnconfigure(0).get("minsize") or 0) == with_row
+    assert with_row > 0
 
 
 def test_language_switch_relabels_chips_and_keeps_the_selection(root):
@@ -245,3 +246,66 @@ def test_chip_size_change_reflows_the_row(root):
     row._schedule_reflow()  # several chips at once -> still one reflow
     root.update()
     assert row.line_count() > 1
+
+
+def test_destroying_a_row_that_once_wrapped_leaves_nothing_behind_for_font_zoom(root):
+    """Regression: lines a ChipRow stopped using stayed registered in CustomTkinter's scaling
+    tracker after the row was destroyed, and the next font zoom raised 'invalid command name'.
+    In the app: timeline ChipRow in the cockpit, layout switch, then Ctrl+Plus.
+    """
+    import customtkinter as ctk
+
+    holder = ctk.CTkFrame(root)
+    holder.pack()
+    row = ChipRow(holder, on_select=lambda _k: None)
+    row.pack()
+    row.set_items([(f"k{i}", f"Kanal {i}") for i in range(7)])
+    root.update_idletasks()
+    row._available_width = lambda: row.buttons()["k0"].winfo_reqwidth()
+    row._breaks = None
+    row._reflow()
+    assert row.line_count() == 7
+    row._available_width = lambda: 10_000
+    row._reflow()
+    assert row.line_count() == 1
+    stale = [line for line in row._lines[1:]]
+    assert stale and all(not line.winfo_manager() for line in stale), "unused lines are unpacked"
+
+    holder.destroy()
+    root.update_idletasks()
+    assert all(not line.winfo_exists() for line in stale)
+    dead = [cb.__self__ for cb in getattr(ctk.ScalingTracker, "window_widgets_dict", {}).get(root, [])
+            if getattr(cb, "__self__", None) in stale]
+    assert dead == [], "destroyed lines still registered in the ScalingTracker"
+    ctk.set_widget_scaling(1.0)  # must not raise
+
+
+@pytest.mark.parametrize("packed,click_note,layout", [
+    (True, True, True),    # what test_label_column... does
+    (True, False, True),   # packed and laid out only
+    (True, True, False),   # no idle pass between the steps
+    (False, True, False),  # never laid out
+])
+def test_destroying_a_picker_leaves_nothing_behind_for_font_zoom(root, packed, click_note, layout):
+    """Same regression for the whole picker: nothing of it may stay in the scaling tracker."""
+    import customtkinter as ctk
+
+    p = ChannelPicker(root)
+    if packed:
+        p.pack()
+    if layout:
+        root.update_idletasks()
+    if click_note:
+        _click(p, "group_row", "note")
+    if layout:
+        root.update_idletasks()
+    group_lines = list(p.group_row._lines)
+    registered_before = [cb.__self__ for cb in getattr(ctk.ScalingTracker, "window_widgets_dict", {}).get(root, [])
+                         if getattr(cb, "__self__", None) is not root]
+
+    p.destroy()
+    root.update_idletasks()
+    dead = sorted({str(cb.__self__) for cb in getattr(ctk.ScalingTracker, "window_widgets_dict", {}).get(root, [])
+                   if getattr(cb, "__self__", None) is not root and not cb.__self__.winfo_exists()})
+    assert dead == [], f"group row had {len(group_lines)} lines, {len(registered_before)} widgets registered; dead: {dead}"
+    ctk.set_widget_scaling(1.0)

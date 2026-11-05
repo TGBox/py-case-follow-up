@@ -18,6 +18,7 @@ dependencies = [
 dev = [
     "pytest==9.1.1",
     "pytest-cov==7.1.0",
+    "pytest-xdist>=3.8.0",
     "ruff==0.16.0",
 ]
 
@@ -32,7 +33,9 @@ dev = [
 
 [tool.pytest.ini_options]
 addopts = "--cov=src --cov-report=term-missing --cov-report=html"
-faulthandler_timeout = 25
+# 60, not 25: under xdist the long E2E flows take 3-4x longer than serially
+# (the Windows window manager serialises the workers), and the dump is only noise.
+faulthandler_timeout = 60
 
 [tool.coverage.run]
 branch = true

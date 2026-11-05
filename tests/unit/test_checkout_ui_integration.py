@@ -437,3 +437,55 @@ def test_docked_column_shows_fewer_departures_than_the_tab(root):
         finally:
             docked.destroy()
             floating.destroy()
+
+
+def _bare_panel(root):
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"):
+        return CheckoutPanelWidget(master=root, profile=UserProfile(), on_dock_toggle=lambda: None, on_close=lambda: None)
+
+
+def _pump_until(root, condition, timeout_s: float = 2.0) -> None:
+    import time
+    end = time.monotonic() + timeout_s
+    while not condition() and time.monotonic() < end:
+        root.update()
+        time.sleep(0.01)
+
+
+def test_background_fetch_delivers_on_the_tk_thread_without_a_mainloop(root):
+    """The worker thread must not touch Tk: without a mainloop that raised 'main thread is not in main loop'."""
+    import threading
+
+    panel = _bare_panel(root)
+    worker_threads: list[threading.Thread] = []
+    delivered: list[tuple[int, threading.Thread]] = []
+
+    def work():
+        worker_threads.append(threading.current_thread())
+        return 42
+
+    panel._run_in_background(work, lambda value: delivered.append((value, threading.current_thread())))
+    _pump_until(root, lambda: bool(delivered))
+
+    assert delivered == [(42, threading.main_thread())]
+    assert worker_threads and worker_threads[0] is not threading.main_thread()
+    assert panel._background_polls == set()
+    panel.destroy()
+
+
+def test_destroy_cancels_a_pending_background_fetch(root):
+    import threading
+
+    panel = _bare_panel(root)
+    release = threading.Event()
+    delivered: list[object] = []
+    panel._run_in_background(lambda: release.wait(2) or "late", delivered.append)
+    assert panel._background_polls
+
+    panel.destroy()
+    release.set()
+    _pump_until(root, lambda: False, timeout_s=0.2)
+
+    assert delivered == []

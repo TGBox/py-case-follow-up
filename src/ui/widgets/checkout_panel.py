@@ -13,6 +13,7 @@ with 6 dedicated tabs:
 from __future__ import annotations
 
 import logging
+import queue
 import sys
 import threading
 from collections.abc import Callable
@@ -30,6 +31,7 @@ from constants import (
     BTN_WIDTH_CHECKOUT_ACTION,
     BTN_WIDTH_CHECKOUT_TINY,
     BTN_WIDTH_CHECKOUT_UNSELECT,
+    CHECKOUT_BACKGROUND_POLL_MS,
     CHECKOUT_FLOATING_MIN_HEIGHT,
     CHECKOUT_FLOATING_MIN_WIDTH,
     CHECKOUT_HEADER_BTN_SIZE,
@@ -163,6 +165,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._is_fetching_transit = False
         self._note_debounce_timer: Any = None
         self._transit_refresh_job: Any = None
+        self._background_polls: set[str] = set()
 
         # Perform midnight reset check
         if CheckoutTaskService.check_and_perform_midnight_reset(self.settings):
@@ -734,12 +737,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         stop_name = stop.get("name", "Ulm Ehinger Tor")
         stop_place = stop.get("place", "Ulm")
 
-        def worker():
-            deps = DingTransitService.fetch_departures(stop_name, stop_place, force_refresh=force)
-            if self.winfo_exists():
-                self.after(0, lambda: self._on_transit_data_loaded(deps))
-
-        threading.Thread(target=worker, daemon=True).start()
+        self._run_in_background(
+            lambda: DingTransitService.fetch_departures(stop_name, stop_place, force_refresh=force),
+            self._on_transit_data_loaded,
+        )
 
     def _on_transit_data_loaded(self, deps: list[TransitDeparture]) -> None:
         self._is_fetching_transit = False
@@ -1281,12 +1282,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.weather_umbrella_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_SM))
 
     def refresh_weather_data(self, force: bool = False) -> None:
-        def worker():
-            w = WeatherService.fetch_weather(force_refresh=force)
-            if self.winfo_exists():
-                self.after(0, lambda: self._on_weather_data_loaded(w))
-
-        threading.Thread(target=worker, daemon=True).start()
+        self._run_in_background(lambda: WeatherService.fetch_weather(force_refresh=force), self._on_weather_data_loaded)
 
     def _on_weather_data_loaded(self, weather: WeatherInfo) -> None:
         self._weather_info = weather
@@ -1305,8 +1301,46 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 text_color=COLOR_SUCCESS,
             )
 
+    def _run_in_background(self, work: Callable[[], Any], on_done: Callable[[Any], None]) -> None:
+        """Runs work() in a daemon thread and hands its result to on_done on the Tk thread.
+
+        The worker never touches Tk: tkinter may only be called from the main
+        thread. The old workers called winfo_exists()/after() themselves, which
+        raised "main thread is not in main loop" whenever no mainloop was running
+        (tests, shutdown). The main thread polls the result instead.
+        """
+        results: queue.SimpleQueue[tuple[bool, Any]] = queue.SimpleQueue()
+
+        def worker() -> None:
+            try:
+                results.put((True, work()))
+            except Exception as e:  # never leave the poll loop waiting forever
+                logger.warning("Background fetch failed: %s", e)
+                results.put((False, None))
+
+        def poll() -> None:
+            self._background_polls.discard(poll_id[0])
+            try:
+                ok, value = results.get_nowait()
+            except queue.Empty:
+                poll_id[0] = self.after(CHECKOUT_BACKGROUND_POLL_MS, poll)
+                self._background_polls.add(poll_id[0])
+                return
+            if ok:
+                on_done(value)
+
+        threading.Thread(target=worker, daemon=True).start()
+        poll_id = [self.after(CHECKOUT_BACKGROUND_POLL_MS, poll)]
+        self._background_polls.add(poll_id[0])
+
     def destroy(self) -> None:
         """Cancel background scheduled timers on destruction."""
+        for job in list(getattr(self, "_background_polls", ())):
+            try:
+                self.after_cancel(job)
+            except Exception:
+                pass
+        self._background_polls = set()
         if self._transit_refresh_job is not None:
             try:
                 self.after_cancel(self._transit_refresh_job)

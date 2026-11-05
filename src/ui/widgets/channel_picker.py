@@ -107,6 +107,7 @@ class ChipRow(ctk.CTkFrame):
         self._breaks: tuple[int, ...] | None = None
         self._selected: str | None = None
         self._reflow_job: str | None = None
+        self._destroying = False
         self._font = ctk.CTkFont(size=FONT_SIZE_SM)
         self._requested: tuple[int, int] | None = None
         # The row must take the width it is given, not ask for the width of
@@ -186,7 +187,7 @@ class ChipRow(ctk.CTkFrame):
         # Not laid out yet: the parent's width is the best guess, and 0 means
         # "unknown" (everything on one line until the first <Configure>).
         try:
-            return max(0, int(self.master.winfo_width()))
+            return max(0, self.master.winfo_width())
         except Exception:
             return 0
 
@@ -231,7 +232,36 @@ class ChipRow(ctk.CTkFrame):
         # CTkFrame takes logical sizes and applies the scaling itself.
         ctk.CTkFrame.configure(self, width=max(1, round(width / scale)), height=max(1, round(height / scale)))
 
+    def destroy(self) -> None:
+        """No reflow once the row is going down.
+
+        On Windows, Tk services pending events while it destroys a window:
+        destroying the chips fires their <Configure> and the scheduled
+        reflow before the row itself is gone. That reflow then measured the
+        half-destroyed chips, wrapped them onto new line frames, and those
+        frames - created after tkinter had listed the children to destroy -
+        were killed by Tk only, never by Python. They stayed registered in
+        CustomTkinter's scaling tracker, and the next font zoom raised
+        "invalid command name".
+        """
+        self._destroying = True
+        if self._reflow_job is not None:
+            try:
+                self.after_cancel(self._reflow_job)
+            except Exception:
+                pass
+            self._reflow_job = None
+        for line in self._lines:
+            try:
+                line.destroy()
+            except Exception:
+                pass
+        self._lines.clear()
+        super().destroy()
+
     def _reflow(self) -> None:
+        if self._destroying:
+            return
         breaks = self._compute_breaks(self._available_width())
         if breaks == self._breaks:
             self._apply_requested_size()
@@ -265,7 +295,7 @@ class ChipRow(ctk.CTkFrame):
 
     def _schedule_reflow(self, _event: Any = None) -> None:
         # Several chips resize at once (zoom); one reflow after them is enough.
-        if self._reflow_job is not None:
+        if self._reflow_job is not None or self._destroying:
             return
         try:
             self._reflow_job = self.after_idle(self._run_scheduled_reflow)

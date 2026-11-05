@@ -16,7 +16,6 @@ from constants import (
     COLOR_PANED_PANE_BG,
     COLOR_SASH_DARK,
     COLOR_SASH_LIGHT,
-    COMBO_WIDTH_SM,
     DEFAULT_COLUMN_WIDTHS,
     DEFAULT_SIDEBAR_TAB_ATTACHMENTS,
     DEFAULT_SIDEBAR_TAB_TIMELINE,
@@ -134,7 +133,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         except Exception:
             return 7
 
-    def _pin_pane_widths(self, w_left: int, w_right: int):
+    def _pin_pane_widths(self, w_left: int, w_right: int, force: bool = False):
         """Schreibt die Breiten als -width in die Pane-Optionen der Seitenspalten.
 
         Der entscheidende Punkt gegen das Zurueckspringen: sash_place() setzt nur
@@ -153,11 +152,19 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             # minsize mitziehen: sonst laesst sich die Spalte per Sash wieder so
             # schmal ziehen, dass die Reiterbeschriftungen abgeschnitten werden.
             right_min = max(COCKPIT_SIDEBAR_MIN_WIDTH, self._min_right_width())
-            # Nur schreiben, was sich aendert: paneconfigure() mit demselben
-            # Wert laesst Tk trotzdem alle drei Spalten neu layouten.
-            if self._pane_option(self.left_frame, "width") != w_left:
+            # Beim Speichern nur schreiben, was sich aendert: paneconfigure()
+            # mit demselben Wert laesst Tk trotzdem alle drei Spalten neu
+            # layouten (das war die Kaskade bei jedem Minimieren in den Tray).
+            # Beim Wiederherstellen dagegen (force) immer: stimmt die
+            # Ist-Breite nicht, obwohl die Option schon passt, hat Tk die
+            # Spalten aus den Wunschbreiten neu verteilt - erst ein erneutes
+            # paneconfigure() bringt es dazu, die Option wieder anzuwenden.
+            # sash_place() allein hielt dann nicht: beim Start landete die
+            # rechte Spalte ab und zu auf minsize (290 statt 320 px), wenn
+            # gleichzeitig mit dem Maximieren etwas rechts seine Hoehe aenderte.
+            if force or self._pane_option(self.left_frame, "width") != w_left:
                 self.paned.paneconfigure(self.left_frame, width=w_left)
-            if (self._pane_option(self.right_tabview, "width"), self._pane_option(self.right_tabview, "minsize")) != (w_right, right_min):
+            if force or (self._pane_option(self.right_tabview, "width"), self._pane_option(self.right_tabview, "minsize")) != (w_right, right_min):
                 self.paned.paneconfigure(self.right_tabview, width=w_right, minsize=right_min)
         except Exception as e:
             logger.warning(f"Could not pin pane widths: {e}")
@@ -221,7 +228,7 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
             max(w_left + pad + COCKPIT_CENTER_MIN_WIDTH, total_w - w_right - span),
             0,
         )
-        self._pin_pane_widths(w_left, w_right)
+        self._pin_pane_widths(w_left, w_right, force=True)
 
     def restore_sash_positions(self):
         try:
@@ -297,18 +304,11 @@ class CockpitView(CockpitLayoutBuilderMixin, ctk.CTkFrame):
         """Erzwingt einen sauberen Neuaufbau der CTk-Zeichnungen rechts.
 
         CustomTkinter zeichnet auf interne Canvas-Flaechen und raeumt die beim
-        Groessenwechsel des Panes nicht immer vollstaendig ab - sichtbar als
-        blauer Rest neben dem Kanal-Dropdown der Zeitleiste. configure() mit dem
-        unveraenderten Wert loest ein vollstaendiges _draw() aus und ist dabei
-        oeffentliche API, im Gegensatz zu einem Griff in die Interna.
+        Groessenwechsel des Panes nicht immer vollstaendig ab. (Frueher wurde
+        hier zusaetzlich das Kanal-Dropdown der Zeitleiste neu gezeichnet, an
+        dem der blaue Rest sichtbar war; die Kanal-Chips, die es ersetzt
+        haben, brechen bei jeder Breitenaenderung ohnehin neu um.)
         """
-        combo = getattr(getattr(self, "timeline_widget", None), "channel_combo", None)
-        try:
-            if combo is not None and combo.winfo_exists():
-                combo.configure(width=COMBO_WIDTH_SM)
-        except Exception as e:
-            # Reines Neuzeichnen - nie ein Grund, das Speichern zu stoeren.
-            logger.debug(f"Could not redraw channel combo: {e}")
         try:
             self.right_tabview.update_idletasks()
         except Exception as e:

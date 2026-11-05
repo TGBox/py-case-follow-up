@@ -15,7 +15,6 @@ from constants import (
     COLOR_DARKRED,
     COLOR_SUCCESS,
     COLOR_TRANSPARENT,
-    COMBO_WIDTH_SM,
     DATE_PICKER_WIDTH_FOLLOWUP,
     DIALOG_DIMENSIONS,
     DIALOG_MIN_DIMENSIONS,
@@ -30,7 +29,6 @@ from constants import (
     PAD_XS,
     TEXTBOX_HEIGHT_TIMELINE_EDIT,
 )
-from enums import CHANNEL_DISPLAY, get_channel_display, get_channel_val_from_display
 from models.case import TimelineEntry
 from services.i18n_service import tr
 from ui.dialogs.base_dialog import BaseDialog
@@ -78,18 +76,11 @@ class TimelineEntryDialog(BaseDialog):
             "timeline.edit_author_info", "Verfasst von: {author}", author=self.entry.author or "-",
         ).pack(fill="x", padx=PAD_LG, pady=(PAD_MD, PAD_SM))
 
-        # Channel
-        self.register_i18n(ctk.CTkLabel(
-            main_frame,
-            text=tr("timeline.edit_channel_lbl", "Kanal:"),
-            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
-            anchor=ANCHOR_WEST,
-        ), "timeline.edit_channel_lbl", "Kanal:").pack(fill="x", padx=PAD_LG, pady=(PAD_SM, PAD_XS))
-        self.channel_combo = ctk.CTkOptionMenu(
-            main_frame, values=[get_channel_display(c) for c in CHANNEL_DISPLAY], width=COMBO_WIDTH_SM
-        )
-        self.channel_combo.set(get_channel_display(self.entry.channel))
-        self.channel_combo.pack(anchor="w", padx=PAD_LG, pady=(PAD_NONE, PAD_SM))
+        # Channel: medium + direction, with its own "Kanal:" / "Richtung:"
+        # labels. An old entry keeps its code until a direction is picked.
+        from ui.widgets.channel_picker import ChannelPicker
+        self.channel_picker = ChannelPicker(main_frame, value=self.entry.channel)
+        self.channel_picker.pack(fill="x", padx=PAD_LG, pady=(PAD_SM, PAD_SM))
 
         # Date & time - never in the future, a timeline documents what happened.
         self.register_i18n(ctk.CTkLabel(
@@ -170,7 +161,7 @@ class TimelineEntryDialog(BaseDialog):
         if dt is None:
             self._show_error(tr("timeline.edit_error_time", "Bitte ein gültiges Datum mit Uhrzeit eingeben (TT.MM.JJJJ HH:MM)."))
             return
-        channel_val = get_channel_val_from_display(self.channel_combo.get())
+        channel_val = self.channel_picker.get()
         self.close_dialog()
         self.on_save(dt, channel_val, note)
 

@@ -311,12 +311,16 @@ def test_labels_follow_language_switch(root):
     widget = _widget(root, author="Tester")
     assert "Hinzufügen" in widget.add_btn.cget("text")
     assert "Textbaustein" in widget.snip_btn.cget("text")
-    assert any("Telefon" in c for c in widget.channel_combo.cget("values"))
+    chips = widget.channel_picker.group_row.buttons()
+    assert chips["phone"].cget("text") == "Tel."
+    assert widget.channel_picker.channel_lbl.cget("text") == "Kanal:"
 
     get_i18n().current_language = "en"
     widget.refresh_ui_labels()
     assert "Add Note" in widget.add_btn.cget("text")
-    assert any("Phone" in c for c in widget.channel_combo.cget("values"))
+    assert chips["phone"].cget("text") == "Phone"
+    assert widget.channel_picker.channel_lbl.cget("text") == "Channel:"
+    assert widget.channel_picker.variant_row.buttons()["PHONE_INBOUND"].cget("text") == "Inbound"
 
     get_i18n().current_language = "sv"
     widget.refresh_ui_labels()

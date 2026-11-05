@@ -2009,6 +2009,8 @@ TRANSIT_EFA_STOPFINDER_ENDPOINT = "https://www.bwegt.de/bwegt-efa/XML_STOPFINDER
 TRANSIT_STOP_SUGGESTION_LIMIT = 6
 TRANSIT_STOP_SEARCH_MIN_CHARS = 3
 TRANSIT_STOP_SEARCH_DEBOUNCE_MS = 450
+# With a planned departure time the list starts this many minutes earlier, so it shows the buses around that time
+TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES = 15
 WEATHER_OPEN_METEO_ENDPOINT = "https://api.open-meteo.com/v1/forecast"
 WEATHER_DEFAULT_LATITUDE = 48.3984
 WEATHER_DEFAULT_LONGITUDE = 9.9916

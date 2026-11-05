@@ -73,7 +73,7 @@ class DingTransitService:
 
     _cached_departures: list[TransitDeparture] = []
     _last_fetch_time: datetime | None = None
-    _cached_stop_key: tuple[str, str] | None = None
+    _cached_stop_key: tuple[str, str, str] | None = None
     _cache_ttl_seconds: float = 30.0
 
     @staticmethod
@@ -88,8 +88,10 @@ class DingTransitService:
         return data if isinstance(data, dict) else {}
 
     @staticmethod
-    def _departure_params(stop_name: str, place: str, limit: int) -> dict[str, str]:
-        return {
+    def _departure_params(
+        stop_name: str, place: str, limit: int, departure_time: datetime | None = None
+    ) -> dict[str, str]:
+        params = {
             "outputFormat": "JSON",
             "type_dm": "stop",
             "name_dm": stop_name,
@@ -98,6 +100,12 @@ class DingTransitService:
             "mode": "direct",
             "limit": str(limit),
         }
+        if departure_time is not None:
+            # Without these EFA answers with the next departures from now.
+            params["itdDate"] = departure_time.strftime("%Y%m%d")
+            params["itdTime"] = departure_time.strftime("%H%M")
+            params["itdDateTimeDepArr"] = "dep"
+        return params
 
     @classmethod
     def fetch_departures(
@@ -106,11 +114,16 @@ class DingTransitService:
         place: str = TRANSIT_DEFAULT_STOP_PLACE,
         limit: int = 15,
         force_refresh: bool = False,
+        departure_time: datetime | None = None,
     ) -> list[TransitDeparture]:
-        """Fetch live departures from the EFA endpoint for the given stop and place."""
+        """Fetch live departures from the EFA endpoint for the given stop and place.
+
+        departure_time: list departures from this moment on instead of from now.
+        """
         now = datetime.now()
-        stop_key = (stop_name.strip().lower(), place.strip().lower())
-        # A different stop must never be answered from the previous stop's cache.
+        planned_key = departure_time.strftime("%Y%m%d%H%M") if departure_time else ""
+        stop_key = (stop_name.strip().lower(), place.strip().lower(), planned_key)
+        # A different stop (or planned time) must never be answered from the previous cache.
         if cls._cached_stop_key != stop_key:
             cls._cached_departures = []
             cls._last_fetch_time = None
@@ -123,7 +136,9 @@ class DingTransitService:
             return list(cls._cached_departures)
 
         try:
-            data = cls._request_json(TRANSIT_EFA_ENDPOINT, cls._departure_params(stop_name, place, limit))
+            data = cls._request_json(
+                TRANSIT_EFA_ENDPOINT, cls._departure_params(stop_name, place, limit, departure_time)
+            )
             parsed = cls._parse_efa_response(data)
             cls._cached_departures = parsed
             cls._last_fetch_time = now

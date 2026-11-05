@@ -14,10 +14,12 @@ from __future__ import annotations
 
 import logging
 import queue
+import re
 import sys
 import threading
 from collections.abc import Callable
 from datetime import date, datetime, timedelta
+from datetime import time as dt_time
 from typing import Any
 
 import customtkinter as ctk
@@ -42,6 +44,7 @@ from constants import (
     COLOR_CARD_BG,
     COLOR_CHECKOUT_BORDER,
     COLOR_CHECKOUT_CARD_BG,
+    COLOR_DANGER,
     COLOR_MUTED_LABEL,
     COLOR_SUCCESS,
     COLOR_SUCCESS_HOVER,
@@ -74,7 +77,9 @@ from constants import (
     PAD_SM,
     PAD_TINY,
     PAD_XS,
+    TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES,
     TRANSIT_REFRESH_INTERVAL_MS,
+    ENTRY_WIDTH_CHECKOUT_LEAD,
     FONT_SIZE_TITLE,
     CHECKOUT_TAB_MAX_DEPARTURES,
     CHECKOUT_STACK_MAX_DEPARTURES,
@@ -301,6 +306,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._notified_stages: set[str] = set()
         self._weather_info: WeatherInfo | None = None
         self._is_fetching_transit = False
+        self._transit_refetch_pending = False
+        # Planned departure time for the ÖPNV list; None = next departures from now
+        self._planned_departure: dt_time | None = None
         self._note_debounce_timer: Any = None
         self._transit_refresh_job: Any = None
         self._background_polls: set[str] = set()
@@ -752,6 +760,44 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
         self.transit_refresh_btn.pack(side="right")
 
+        from ui.widgets.ctk_tooltip import CTkTooltip
+
+        # Planned departure: show the buses around this time instead of the next ones
+        self.transit_time_reset_btn = ctk.CTkButton(
+            top_row,
+            text=ICON_DELETE_X,
+            command=self._clear_planned_departure,
+            width=BTN_WIDTH_CHECKOUT_TINY,
+            height=BTN_HEIGHT_CHECKOUT_TINY,
+            fg_color=COLOR_CANCEL_FG,
+            hover_color=COLOR_CANCEL_HOVER,
+        )
+        CTkTooltip(
+            self.transit_time_reset_btn,
+            tr("checkout_panel.transit_planned_reset", "Zurück zu den nächsten Abfahrten"),
+        )
+
+        self.transit_time_entry = ctk.CTkEntry(
+            top_row,
+            width=ENTRY_WIDTH_CHECKOUT_LEAD,
+            height=BTN_HEIGHT_CHECKOUT_ACTION,
+            placeholder_text=tr("checkout_panel.transit_planned_placeholder", "hh:mm"),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            justify="center",
+        )
+        self.transit_time_entry.pack(side="right", padx=(PAD_XS, PAD_XS))
+        self.transit_time_entry.bind("<Return>", lambda _e: self._apply_planned_departure())
+        self.transit_time_entry.bind("<KP_Enter>", lambda _e: self._apply_planned_departure())
+        self.transit_time_entry.bind("<Escape>", lambda _e: self._clear_planned_departure())
+        self._transit_time_border = self.transit_time_entry.cget("border_color")
+        CTkTooltip(
+            self.transit_time_entry,
+            tr(
+                "checkout_panel.transit_planned_tooltip",
+                "Geplante Abfahrt (z. B. 17:05) + Enter zeigt die Fahrten um diese Uhrzeit. Leer + Enter = nächste Abfahrten.",
+            ),
+        )
+
         info_row = ctk.CTkFrame(self.transit_card, fg_color=COLOR_TRANSPARENT)
         info_row.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
 
@@ -873,6 +919,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
     def refresh_transit_data(self, force: bool = False) -> None:
         """Fetch departures in a background thread and update UI."""
         if self._is_fetching_transit:
+            # A changed stop or planned time must not be dropped: fetch again once this one is back.
+            self._transit_refetch_pending = self._transit_refetch_pending or force
             return
         self._is_fetching_transit = True
         self.transit_status_lbl.configure(text=tr("checkout_panel.transit_refreshing", "Aktualisiere Abfahrten..."))
@@ -881,16 +929,77 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         stop_name = stop.get("name", "Ulm Ehinger Tor")
         stop_place = stop.get("place", "Ulm")
 
+        departure_time = self._planned_request_time()
         self._run_in_background(
-            lambda: DingTransitService.fetch_departures(stop_name, stop_place, force_refresh=force),
+            lambda: DingTransitService.fetch_departures(
+                stop_name, stop_place, force_refresh=force, departure_time=departure_time
+            ),
             self._on_transit_data_loaded,
         )
 
+    # -------------------------------------------------------------------------
+    # Planned departure time
+    # -------------------------------------------------------------------------
+    @staticmethod
+    def _parse_planned_time(text: str) -> dt_time | None:
+        """Parses "17", "1705", "17:05" or "17.05". Empty -> None; anything else raises ValueError."""
+        text = text.strip()
+        if not text:
+            return None
+        m = re.fullmatch(r"(\d{1,2})(?:[:.]?(\d{2}))?", text)
+        if not m:
+            raise ValueError(text)
+        return dt_time(int(m.group(1)), int(m.group(2) or 0))  # ValueError for 25:00 / 17:70
+
+    def _planned_request_time(self) -> datetime | None:
+        """Start of the requested window: a little before the planned time, so earlier buses show too."""
+        if self._planned_departure is None:
+            return None
+        planned = datetime.combine(date.today(), self._planned_departure)
+        return planned - timedelta(minutes=TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES)
+
+    def _apply_planned_departure(self) -> None:
+        try:
+            planned = self._parse_planned_time(self.transit_time_entry.get())
+        except ValueError:
+            self.transit_time_entry.configure(border_color=COLOR_DANGER)
+            return
+        self.transit_time_entry.configure(border_color=self._transit_time_border)
+        if planned is None:
+            self._clear_planned_departure()
+            return
+        self.transit_time_entry.delete(0, "end")
+        self.transit_time_entry.insert(0, planned.strftime("%H:%M"))
+        self._planned_departure = planned
+        if not self.transit_time_reset_btn.winfo_manager():
+            self.transit_time_reset_btn.pack(side="right", before=self.transit_time_entry)
+        self.refresh_transit_data(force=True)
+
+    def _clear_planned_departure(self) -> None:
+        self.transit_time_entry.configure(border_color=self._transit_time_border)
+        self.transit_time_entry.delete(0, "end")
+        self.focus_set()  # brings the placeholder back
+        if self.transit_time_reset_btn.winfo_manager():
+            self.transit_time_reset_btn.pack_forget()
+        if self._planned_departure is not None:
+            self._planned_departure = None
+            self.refresh_transit_data(force=True)
+
     def _on_transit_data_loaded(self, deps: list[TransitDeparture]) -> None:
         self._is_fetching_transit = False
+        if self._transit_refetch_pending:
+            # The stop or planned time changed while this request ran: its result is stale.
+            self._transit_refetch_pending = False
+            self.refresh_transit_data(force=True)
+            return
         self._transit_departures = deps
         now_str = datetime.now().strftime("%H:%M")
-        self.transit_status_lbl.configure(text=f"Stand: {now_str} Uhr")
+        status = f"Stand: {now_str} Uhr"
+        if self._planned_departure is not None:
+            status = tr("checkout_panel.transit_planned_status", "🕒 {time} · {status}").format(
+                time=self._planned_departure.strftime("%H:%M"), status=status
+            )
+        self.transit_status_lbl.configure(text=status)
 
         if self._selected_dep_key:
             matched = next(

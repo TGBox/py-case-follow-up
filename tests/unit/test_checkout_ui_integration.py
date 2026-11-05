@@ -7,6 +7,7 @@
 from unittest.mock import patch
 
 import customtkinter as ctk
+import pytest
 
 
 from models.profile import UserProfile
@@ -489,3 +490,22 @@ def test_destroy_cancels_a_pending_background_fetch(root):
     _pump_until(root, lambda: False, timeout_s=0.2)
 
     assert delivered == []
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [("17:05", (17, 5)), ("17.05", (17, 5)), ("1705", (17, 5)), ("705", (7, 5)), ("17", (17, 0)), (" 8:30 ", (8, 30))],
+)
+def test_parse_planned_time_accepts_common_formats(text, expected):
+    parsed = CheckoutPanelWidget._parse_planned_time(text)
+    assert parsed is not None and (parsed.hour, parsed.minute) == expected
+
+
+@pytest.mark.parametrize("text", ["25:00", "17:70", "abc", "17:5x", "1:2:3"])
+def test_parse_planned_time_rejects_invalid(text):
+    with pytest.raises(ValueError):
+        CheckoutPanelWidget._parse_planned_time(text)
+
+
+def test_parse_planned_time_empty_means_now():
+    assert CheckoutPanelWidget._parse_planned_time("  ") is None

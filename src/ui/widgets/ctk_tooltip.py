@@ -26,6 +26,7 @@ from constants import (
     TOOLTIP_DEFAULT_DELAY_MS,
     TOOLTIP_POINTER_OFFSET_X,
     TOOLTIP_POINTER_OFFSET_Y,
+    TOOLTIP_SCREEN_MARGIN,
     TOOLTIP_WATCHDOG_MS,
     WINDOW_ATTR_TOPMOST,
 )
@@ -225,8 +226,8 @@ class CTkTooltip:
             if not self._pointer_inside_widget():
                 return
 
-            x = self.widget.winfo_pointerx() + TOOLTIP_POINTER_OFFSET_X
-            y = self.widget.winfo_pointery() + TOOLTIP_POINTER_OFFSET_Y
+            pointer_x = self.widget.winfo_pointerx()
+            pointer_y = self.widget.winfo_pointery()
 
             toplevel = self.widget.winfo_toplevel()
             CTkTooltip._hook_toplevel(toplevel)
@@ -239,7 +240,6 @@ class CTkTooltip:
 
             window.wm_overrideredirect(True)
             window.attributes(WINDOW_ATTR_TOPMOST, True)
-            window.geometry(f"+{x}+{y}")
             window.configure(bg=_mode_color(COLOR_TOOLTIP_BG))
 
             try:
@@ -263,6 +263,25 @@ class CTkTooltip:
                 highlightcolor=_mode_color(COLOR_TOOLTIP_BORDER),
             )
             lbl.pack(fill="both", expand=True)
+
+            # Placed only now that its size is known: always right of and below
+            # the pointer ran off the screen for anything near the right or
+            # bottom edge - e.g. the buttons of the end-of-day panel docked to
+            # the right of a maximized window. The label's requested size is
+            # computed synchronously by Tk, no update_idletasks() needed.
+            from utils.ui_utils import get_monitor_work_area, place_beside_pointer
+
+            area = get_monitor_work_area(self.widget, pointer_x, pointer_y)
+            max_width = max(1, area[2] - area[0] - 2 * TOOLTIP_SCREEN_MARGIN)
+            if lbl.winfo_reqwidth() > max_width:
+                lbl.configure(wraplength=max_width - 2 * round(PAD_10 * scaling))
+            x, y = place_beside_pointer(
+                pointer_x, pointer_y, lbl.winfo_reqwidth(), lbl.winfo_reqheight(),
+                TOOLTIP_POINTER_OFFSET_X, TOOLTIP_POINTER_OFFSET_Y,
+                (area[0] + TOOLTIP_SCREEN_MARGIN, area[1] + TOOLTIP_SCREEN_MARGIN,
+                 area[2] - TOOLTIP_SCREEN_MARGIN, area[3] - TOOLTIP_SCREEN_MARGIN),
+            )
+            window.geometry(f"+{x}+{y}")
             # Hovering or clicking the overlay itself closes it.
             lbl.bind(EVENT_BUTTON_PRESS, lambda e: CTkTooltip.dismiss_all())
 

@@ -7,6 +7,7 @@ import customtkinter as ctk
 from PIL import Image  # type: ignore
 
 from constants import (
+    ATTACHMENT_LABEL_TEXT_MARGIN_PX,
     BORDER_WIDTH_PANEL,
     BTN_WIDTH_ADD_FILE,
     BTN_WIDTH_ICON_DELETE,
@@ -50,7 +51,8 @@ from constants import (
 from models.case import Case
 from services.attachment_service import AttachmentService
 from services.i18n_service import tr
-from utils.ui_utils import bind_mouse_wheel_to_canvas
+from ui.widgets.ctk_tooltip import CTkTooltip
+from utils.ui_utils import bind_mouse_wheel_to_canvas, truncate_text_to_width
 
 
 class AttachmentWidget(ctk.CTkFrame):
@@ -139,17 +141,8 @@ class AttachmentWidget(ctk.CTkFrame):
             size_kb = f.stat().st_size / BYTES_PER_KB
             lbl_str = f"{icon} {f.name} ({size_kb:.1f} KB)"
 
-            btn_lbl = ctk.CTkButton(
-                f_frame,
-                text=lbl_str,
-                anchor="w",
-                font=ctk.CTkFont(size=FONT_SIZE_SM),
-                fg_color=COLOR_TRANSPARENT,
-                hover_color=COLOR_PRESET_BTN,
-                command=lambda filepath=f: self.show_file_preview(filepath),
-            )
-            btn_lbl.pack(side="left", fill="x", expand=True, padx=PAD_SM, pady=PAD_XS)
-
+            # Action buttons are packed first so they always get their full width;
+            # the file label only takes what is left and is shortened with "..." to fit.
             btn_open = ctk.CTkButton(
                 f_frame,
                 text=tr("common.open", "📂 Öffnen"),
@@ -170,7 +163,35 @@ class AttachmentWidget(ctk.CTkFrame):
             )
             btn_del.pack(side="right", padx=PAD_XS)
 
+            btn_lbl = ctk.CTkButton(
+                f_frame,
+                text=lbl_str,
+                width=1,
+                anchor="w",
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                fg_color=COLOR_TRANSPARENT,
+                hover_color=COLOR_PRESET_BTN,
+                command=lambda filepath=f: self.show_file_preview(filepath),
+            )
+            btn_lbl.pack(side="left", fill="x", expand=True, padx=PAD_SM, pady=PAD_XS)
+            # tk.Misc.bind: CTkButton.bind would forward to the inner text label, whose width shrinks with the text.
+            tk.Misc.bind(btn_lbl, "<Configure>", lambda e, b=btn_lbl, full=lbl_str: self._fit_label_text(b, full, e.width), add="+")
+            CTkTooltip.attach_lazy(btn_lbl, lambda b=btn_lbl, full=lbl_str: full if b.cget("text") != full else "")
+
         bind_mouse_wheel_to_canvas(self.scroll_frame)
+
+    @staticmethod
+    def _fit_label_text(btn: ctk.CTkButton, full_text: str, width: int) -> None:
+        """Shortens the label text with "..." so it fits into the width the layout gave the button."""
+        try:
+            inner = getattr(btn, "_text_label", None)
+            font = inner.cget("font") if inner is not None else btn.cget("font")
+            margin = ATTACHMENT_LABEL_TEXT_MARGIN_PX * ctk.ScalingTracker.get_widget_scaling(btn)
+            fitted = truncate_text_to_width(full_text, font, max(0, int(width - margin)))
+            if btn.cget("text") != fitted:
+                btn.configure(text=fitted)
+        except Exception:
+            pass
 
     def show_file_preview(self, filepath: Path):
         self.clear_preview()

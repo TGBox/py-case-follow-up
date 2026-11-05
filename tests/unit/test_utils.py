@@ -17,7 +17,7 @@ from models.profile import UISettings
 from services.anonymizer_service import PiiAnonymizer
 from utils.icon_utils import clear_icon_cache, get_icon
 from utils.security import load_env_file, normalize_url, resolve_secret
-from utils.ui_utils import enable_textbox_cursor_autoscroll, get_app_monitor_bounds
+from utils.ui_utils import enable_textbox_cursor_autoscroll, get_app_monitor_bounds, truncate_text_to_width
 
 ICON_KEYS = [ICON_KEY_USER, ICON_KEY_BELL, ICON_KEY_HELP, ICON_KEY_THEME, ICON_KEY_QUIT, ICON_KEY_COPY]
 
@@ -254,3 +254,24 @@ def test_switching_to_the_active_layout_does_not_hide_it(config, storage):
         assert hidden == []
     finally:
         app.destroy()
+
+
+class _FixedWidthFont:
+    """Fake font: every character is 10 px wide."""
+
+    def measure(self, text: str) -> int:
+        return len(text) * 10
+
+
+def test_truncate_text_to_width_keeps_fitting_text_and_ellipsizes_long_text():
+    font = _FixedWidthFont()
+    assert truncate_text_to_width("kurz.docx", font, 200) == "kurz.docx"
+    # 100 px = 10 chars -> 7 chars + "..."
+    assert truncate_text_to_width("Behandlungsvertrag.docx", font, 100) == "Behandl..."
+    # Trailing whitespace before the ellipsis is dropped.
+    assert truncate_text_to_width("abc defghijkl", font, 70) == "abc..."
+    assert truncate_text_to_width("abcdef", font, 0) == "..."
+    for width in range(0, 300, 7):
+        out = truncate_text_to_width("Patient_Behandlungsvertrag Osteopathie.fr3", font, width)
+        assert font.measure(out) <= max(width, font.measure("..."))
+

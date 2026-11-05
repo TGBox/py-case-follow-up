@@ -1773,6 +1773,8 @@ TEXT_PREVIEW_EXTENSIONS = {".txt", ".log", ".json", ".csv", ".md", ".py"}
 BTN_WIDTH_ADD_FILE = 150
 BTN_WIDTH_OPEN_EXPLORER = 120
 BTN_WIDTH_ICON_DELETE = 30
+# Horizontal space inside a CTkButton not usable for text (corner radius + inner padding), unscaled px.
+ATTACHMENT_LABEL_TEXT_MARGIN_PX = 20
 CMD_XDG_OPEN = "xdg-open"
 STATE_DISABLED = "disabled"
 STATE_NORMAL = "normal"

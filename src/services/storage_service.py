@@ -85,6 +85,24 @@ def _replace_with_retry(source: Path, target: Path) -> None:
             time.sleep(ATOMIC_REPLACE_RETRY_DELAY_SECONDS)
 
 
+def _read_json_with_retry(path: Path) -> Any:
+    """json.load that survives the file being replaced at that very moment.
+
+    The mirror image of _replace_with_retry: while atomic_save_json swaps the
+    file in, Windows answers a concurrent open() with PermissionError. Without
+    the retry that transient error was taken for a corrupted file, and an
+    intact app_profile.json was renamed away as .corrupted_*.
+    """
+    for attempt in range(ATOMIC_REPLACE_RETRIES):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except PermissionError:
+            if attempt == ATOMIC_REPLACE_RETRIES - 1:
+                raise
+            time.sleep(ATOMIC_REPLACE_RETRY_DELAY_SECONDS)
+
+
 def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
     """Atomic JSON save using temporary file and atomic replace.
 
@@ -136,8 +154,7 @@ def safe_read_json(
             return default_val
 
     try:
-        with open(target_path, encoding="utf-8") as f:
-            return json.load(f)
+        return _read_json_with_retry(target_path)
     except Exception as e:
         logger.error(f"Corrupted or unreadable JSON file {target_path}: {e}")
         # Backup corrupted file

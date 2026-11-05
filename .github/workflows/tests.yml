@@ -26,7 +26,10 @@ jobs:
         run: uv sync --locked
 
       - name: Run test suite
-        run: uv run pytest -q
+        run: uv run pytest -q -n 4 --dist worksteal
+        # pytest-xdist: 4 workers (more only contend for the Windows window
+        # manager, see .githooks/pre-push). pytest-cov merges the coverage of
+        # all workers, so the report stays complete.
         # --cov=src --cov-report=term-missing --cov-report=html now live in
         # pyproject.toml's [tool.pytest.ini_options] addopts, so every run
         # (including this one) already measures coverage - no extra flags

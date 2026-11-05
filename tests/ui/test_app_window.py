@@ -182,7 +182,7 @@ def test_fullscreen_round_trip_restores_previous_state_and_tooltip(app, start_st
 
     app.toggle_fullscreen()
     app.update()
-    assert app._is_fullscreen is False
+    assert not app._is_fullscreen
     assert app.state() == start_state
     assert app.fullscreen_tooltip.text == enter_text
 
@@ -277,18 +277,42 @@ def _real_wm(monkeypatch):
 
     conftest keeps every window withdrawn by simulating state()/deiconify();
     this test is about what Tk really does when a hidden window is shown.
+
+    The window is really mapped (viewable, zoomed, <Configure> events) but
+    stays fully transparent: -alpha is pinned to 0 before every map, and the
+    app's own reveal after a restore (-alpha 1.0) is held at 0 as well, so
+    nothing flashes on the developer's screen during the run.
     """
+    orig_attributes = tk.Wm.wm_attributes
+
+    def attributes(self, *args, **kwargs):
+        if len(args) >= 2 and args[0] == "-alpha":
+            args = ("-alpha", 0.0, *args[2:])
+        if "alpha" in kwargs:
+            kwargs["alpha"] = 0.0
+        return orig_attributes(self, *args, **kwargs)
+
+    def invisible(self):
+        orig_attributes(self, "-alpha", 0.0)
+        # A mapped window keeps its taskbar button even at alpha 0; a tool window has none.
+        orig_attributes(self, "-toolwindow", True)
+
     def state(self, new=None):
-        return self.tk.call("wm", "state", self._w) if new is None else self.tk.call("wm", "state", self._w, new)
+        if new is None:
+            return self.tk.call("wm", "state", self._w)
+        invisible(self)
+        return self.tk.call("wm", "state", self._w, new)
 
     def deiconify(self):
+        invisible(self)
         self.tk.call("wm", "deiconify", self._w)
 
     def withdraw(self):
         self.tk.call("wm", "withdraw", self._w)
 
     for name, fn in (("wm_state", state), ("state", state), ("wm_deiconify", deiconify), ("deiconify", deiconify),
-                     ("wm_withdraw", withdraw), ("withdraw", withdraw)):
+                     ("wm_withdraw", withdraw), ("withdraw", withdraw),
+                     ("wm_attributes", attributes), ("attributes", attributes)):
         monkeypatch.setattr(tk.Wm, name, fn)
 
 

@@ -424,6 +424,8 @@ def test_tray_service_start_is_idempotent_and_stop_cleans_up(monkeypatch):
     import services.tray_service as tray_module
 
     monkeypatch.setattr(tray_module.pystray, "Icon", _BlockingIcon)
+    # conftest stubs start() for every test; this one is about the real thing (with a fake icon).
+    monkeypatch.setattr(TrayService, "start", TrayService.real_start)  # type: ignore[attr-defined]
     service = TrayService()
     service.start(on_restore=MagicMock(), on_quit=MagicMock())
     first_thread = service._thread

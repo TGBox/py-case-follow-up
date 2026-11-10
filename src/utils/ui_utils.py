@@ -21,6 +21,7 @@ from constants import (
     CURSOR_ARROW,
     CURSOR_HAND,
     DEFAULT_FONT_FAMILY_FALLBACK,
+    DEFAULT_ELLIPSIS,
     DEFAULT_FONT_SIZE_FALLBACK,
     DEFAULT_POPUP_DISPLAY_TARGET,
     FALLBACK_CHAR_PIXEL_WIDTH,
@@ -780,6 +781,21 @@ def _get_measure_func(font: Any) -> Callable:
         return tk_f.measure
     except Exception:
         return lambda s: len(s) * FALLBACK_CHAR_PIXEL_WIDTH
+
+
+def truncate_text_to_width(text: str, font: Any, max_width: int, ellipsis: str = DEFAULT_ELLIPSIS) -> str:
+    """Returns text unchanged if it fits into max_width pixels, otherwise the longest prefix + ellipsis that does."""
+    measure = _get_measure_func(font)
+    if measure(text) <= max_width:
+        return text
+    lo, hi = 0, len(text)
+    while lo < hi:
+        mid = (lo + hi + 1) // 2
+        if measure(text[:mid].rstrip() + ellipsis) <= max_width:
+            lo = mid
+        else:
+            hi = mid - 1
+    return text[:lo].rstrip() + ellipsis
 
 
 def enable_textbox_cursor_autoscroll(textbox: ctk.CTkTextbox) -> None:

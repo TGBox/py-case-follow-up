@@ -562,3 +562,62 @@ def test_checkout_panel_destination_lists_trips_and_shows_arrival(root):
             assert not panel.transit_dest_reset_btn.winfo_manager()
         finally:
             panel.destroy()
+
+
+def test_transit_notices_show_badge_and_expandable_box(root):
+    from datetime import date, datetime, timedelta
+    from services.ding_transit_service import TransitDeparture
+    from services.transit_alert_service import SCOPE_STOP, TransitAlert
+
+    profile = UserProfile()
+    profile.checkout_settings.last_tasks_date = date.today().isoformat()
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"):
+        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        try:
+            dep_dt = datetime.now() + timedelta(minutes=12, seconds=18)
+            line_alert = TransitAlert("ems-11123", "ding", "Linie 4: Umleitung", text="Über den Kuhberg.", lines=frozenset({"4"}), line_ids=frozenset({"87004"}))
+            stop_alert = TransitAlert("ems-1", "ding", "Ehinger Tor: Einschränkungen", scope=SCOPE_STOP, valid_from=date(2026, 8, 1))
+            dep = TransitDeparture(
+                stop_id="9001350", stop_name="Ulm Ehinger Tor", line="4", destination="Wiblingen", mot_type="Bus",
+                planned_time_str=(dep_dt - timedelta(minutes=4)).strftime("%H:%M"), real_time_str=dep_dt.strftime("%H:%M"),
+                delay_minutes=4, platform="D", countdown_minutes=12, raw_datetime=dep_dt,
+                line_id="87004", operator="SWU", delay_seconds=258, realtime_source="swu", alerts=[line_alert],
+            )
+            plain = TransitDeparture(
+                stop_id="9001350", stop_name="Ulm Ehinger Tor", line="2", destination="Kuhberg", mot_type="Tram",
+                planned_time_str=dep_dt.strftime("%H:%M"), real_time_str=dep_dt.strftime("%H:%M"),
+                delay_minutes=0, platform="C", countdown_minutes=12, raw_datetime=dep_dt,
+            )
+            panel._on_transit_data_loaded([dep, plain], alerts=[stop_alert, line_alert])
+
+            assert panel.transit_alerts_frame.winfo_manager() == "pack"
+            assert "2" in panel.transit_alerts_toggle_btn.cget("text")
+            assert not panel._transit_alerts_body_shown  # collapsed by default
+
+            def texts(widget):
+                found = []
+                for child in widget.winfo_children():
+                    try:
+                        found.append(str(child.cget("text")))
+                    except Exception:
+                        pass
+                    found.extend(texts(child))
+                return found
+
+            rows = panel.transit_scroll.winfo_children()
+            assert "⚠" in texts(rows[0]) and "⚠" not in texts(rows[1])
+
+            panel._toggle_transit_alerts()
+            assert panel._transit_alerts_expanded and panel._transit_alerts_body_shown
+            shown = texts(panel.transit_alerts_frame)
+            assert "Ehinger Tor: Einschränkungen" in shown and "Über den Kuhberg." in shown
+
+            assert "SWU" in CheckoutPanelWidget._realtime_source_text(dep) and "+4:18" in CheckoutPanelWidget._realtime_source_text(dep)
+
+            panel._on_transit_data_loaded([plain])
+            assert not panel.transit_alerts_frame.winfo_manager()
+        finally:
+            panel.destroy()

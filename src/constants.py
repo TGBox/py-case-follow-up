@@ -2018,6 +2018,23 @@ TRANSIT_STOP_SEARCH_MIN_CHARS = 3
 TRANSIT_STOP_SEARCH_DEBOUNCE_MS = 450
 # With a planned departure time the list starts this many minutes earlier, so it shows the buses around that time
 TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES = 15
+# SWU (Stadtwerke Ulm/Neu-Ulm) live data: second-accurate departures for SWU lines, updated every 15 s.
+# EFA lags behind and truncates to minutes, so SWU corrects the times of SWU buses and trams.
+TRANSIT_SWU_DEPARTURES_ENDPOINT = "https://api.swu.de/mobility/v1/stop/passage/Departures"
+TRANSIT_SWU_UNPLANNED_ALERT_ENDPOINT = "https://api.swu.de/mobility/v1/passenger/alert/UnplannedAlert"
+TRANSIT_SWU_STOP_ALERT_ENDPOINT = "https://echtzeit.swu.de/api/TDI/PassengerAlert"
+TRANSIT_SWU_REQUEST_TIMEOUT_SECONDS = 5.0
+TRANSIT_SWU_DEPARTURE_LIMIT = 40
+TRANSIT_SWU_CACHE_TTL_SECONDS = 15.0
+# EFA (DING) stop ids of SWU stops are 900 + the four-digit SWU stop number, e.g. 9001350 = Ehinger Tor 1350
+TRANSIT_SWU_EFA_STOP_ID_PREFIX = "900"
+# DING traffic notices (server-rendered page, parsed from its data attributes)
+TRANSIT_DING_NOTICES_URL = "https://www.ding.eu/Verkehrsmeldungen"
+TRANSIT_ALERT_CACHE_TTL_SECONDS = 600.0
+TRANSIT_SWU_ALERT_CACHE_TTL_SECONDS = 120.0
+TRANSIT_ALERT_TEXT_MAX_CHARS = 600
+# Height of the expanded notice box in the ÖPNV tab (it scrolls inside)
+TRANSIT_ALERTS_BODY_HEIGHT = 170
 WEATHER_OPEN_METEO_ENDPOINT = "https://api.open-meteo.com/v1/forecast"
 WEATHER_DEFAULT_LATITUDE = 48.3984
 WEATHER_DEFAULT_LONGITUDE = 9.9916
@@ -2071,6 +2088,8 @@ COLOR_TRANSIT_COUNTDOWN_WARN = ("#d97706", "#fbbf24")
 COLOR_TRANSIT_COUNTDOWN_URGENT = ("#dc2626", "#f87171")
 COLOR_TRANSIT_DELAY = ("#b91c1c", "#fca5a5")
 COLOR_TRANSIT_ONTIME = ("#047857", "#6ee7b7")
+COLOR_TRANSIT_ALERT = ("#b45309", "#fbbf24")
+COLOR_TRANSIT_ALERT_BG = ("#FFFBEB", "#422006")
 
 # --- Board Column Accent Tokens ---
 COLOR_BOARD_COL_HOTLINE = ("#eff6ff", "#172554")

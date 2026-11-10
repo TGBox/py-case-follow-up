@@ -564,7 +564,8 @@ def test_checkout_panel_destination_lists_trips_and_shows_arrival(root):
             panel.destroy()
 
 
-def test_transit_notices_show_badge_and_expandable_box(root):
+@pytest.mark.parametrize("is_floating", [False, True])
+def test_transit_notices_show_badge_and_expandable_box(root, is_floating):
     from datetime import date, datetime, timedelta
     from services.ding_transit_service import TransitDeparture
     from services.transit_alert_service import SCOPE_STOP, TransitAlert
@@ -575,7 +576,9 @@ def test_transit_notices_show_badge_and_expandable_box(root):
     with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
          patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
          patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"):
-        panel = CheckoutPanelWidget(master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None)
+        panel = CheckoutPanelWidget(
+            master=root, profile=profile, on_dock_toggle=lambda: None, on_close=lambda: None, is_floating=is_floating
+        )
         try:
             dep_dt = datetime.now() + timedelta(minutes=12, seconds=18)
             line_alert = TransitAlert("ems-11123", "ding", "Linie 4: Umleitung", text="Über den Kuhberg.", lines=frozenset({"4"}), line_ids=frozenset({"87004"}))

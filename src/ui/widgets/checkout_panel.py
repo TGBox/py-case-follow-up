@@ -1240,8 +1240,12 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 self._selected_departure = matched
 
         self._update_selected_card()
-        self._render_transit_alerts()
         self._render_departures()
+        try:
+            self._render_transit_alerts()
+        except Exception:
+            # Notices are extra: a layout problem there must never cost the departure list
+            logger.exception("Rendering traffic notices failed")
         self._check_commute_alarms()
 
     def _bind_double_click_recursive(self, widget: Any, callback: Callable[[], None]) -> None:
@@ -1534,7 +1538,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 self.transit_alerts_frame.pack_forget()
             return
         if not self.transit_alerts_frame.winfo_manager():
-            self.transit_alerts_frame.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), before=self.transit_scroll)
+            # In the floating window the list is a CTkScrollableFrame: what is packed is its wrapper
+            list_widget = getattr(self.transit_scroll, "_parent_frame", self.transit_scroll)
+            self.transit_alerts_frame.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), before=list_widget)
 
         arrow = "▾" if self._transit_alerts_expanded else "▸"
         if len(alerts) == 1:

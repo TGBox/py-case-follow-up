@@ -2,6 +2,8 @@
 
 Uses the standardized bwegt / EFA-BW JSON endpoint covering the DING network.
 Provides error-resilient fetching, parsing, caching, and commute alarm calculations.
+Times of SWU buses and trams are corrected from SWU's own live data (see
+swu_realtime_service), since EFA lags behind and truncates to minutes.
 """
 
 from __future__ import annotations
@@ -26,6 +28,7 @@ from constants import (
     TRANSIT_STOP_SUGGESTION_LIMIT,
     TRANSIT_REQUEST_TIMEOUT_SECONDS,
 )
+from services.transit_alert_service import TransitAlert, parse_efa_infos
 
 logger = logging.getLogger("SupportCockpit.transit")
 
@@ -43,6 +46,14 @@ class TransitDeparture:
     platform: str
     countdown_minutes: int
     raw_datetime: datetime | None = None
+    # DING line id ("87004" = SWU line 4); line numbers alone repeat across the network
+    line_id: str = ""
+    operator: str = ""
+    # Exact delay when SWU knows it; delay_minutes is the whole minutes of it
+    delay_seconds: int | None = None
+    # Where real_time_str comes from: "swu" (SWU live), "efa" (EFA live) or "" (timetable only)
+    realtime_source: str = ""
+    alerts: list[TransitAlert] = field(default_factory=list)
 
 
 @dataclass
@@ -110,7 +121,7 @@ class DingTransitService:
             headers={"User-Agent": "SupportCockpit/1.0 (DingTransitService)"},
         )
         with urllib.request.urlopen(req, timeout=TRANSIT_REQUEST_TIMEOUT_SECONDS) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
+            data = json.loads(resp.read().decode("utf-8"), strict=False)
         return data if isinstance(data, dict) else {}
 
     @staticmethod
@@ -159,7 +170,7 @@ class DingTransitService:
             and (now - cls._last_fetch_time).total_seconds() < cls._cache_ttl_seconds
             and cls._cached_departures
         ):
-            return list(cls._cached_departures)
+            return cls._with_swu_departures(list(cls._cached_departures), force_refresh)
 
         try:
             data = cls._request_json(
@@ -169,10 +180,35 @@ class DingTransitService:
             cls._cached_departures = parsed
             cls._last_fetch_time = now
             cls._cached_stop_key = stop_key
-            return parsed
+            return cls._with_swu_departures(list(parsed), force_refresh)
         except Exception as e:
             logger.warning("Failed to fetch DING live departures: %s", e)
-            return list(cls._cached_departures)
+            return cls._with_swu_departures(list(cls._cached_departures), force_refresh)
+
+    @staticmethod
+    def _with_swu_departures(deps: list[TransitDeparture], force_refresh: bool) -> list[TransitDeparture]:
+        """deps with SWU's live times for SWU buses; unchanged if SWU fails."""
+        if not deps:
+            return deps
+        try:
+            from services.swu_realtime_service import SwuRealtimeService
+
+            return SwuRealtimeService.apply_to_departures(deps, force_refresh=force_refresh)
+        except Exception as e:
+            logger.warning("SWU live correction failed, keeping EFA times: %s", e)
+            return deps
+
+    @staticmethod
+    def _with_swu_trips(trips: list[TransitTrip], force_refresh: bool) -> list[TransitTrip]:
+        if not trips:
+            return trips
+        try:
+            from services.swu_realtime_service import SwuRealtimeService
+
+            return SwuRealtimeService.apply_to_trips(trips, force_refresh=force_refresh)
+        except Exception as e:
+            logger.warning("SWU live correction failed, keeping EFA times: %s", e)
+            return trips
 
     @staticmethod
     def _trip_params(
@@ -231,7 +267,7 @@ class DingTransitService:
             and (now - cls._last_trip_fetch_time).total_seconds() < cls._cache_ttl_seconds
             and cls._cached_trips
         ):
-            return list(cls._cached_trips)
+            return cls._with_swu_trips(list(cls._cached_trips), force_refresh)
 
         try:
             data = cls._request_json(
@@ -259,10 +295,10 @@ class DingTransitService:
             cls._cached_trips = parsed
             cls._last_trip_fetch_time = now
             cls._cached_trip_key = key
-            return parsed
+            return cls._with_swu_trips(list(parsed), force_refresh)
         except Exception as e:
             logger.warning("Failed to fetch DING trips: %s", e)
-            return list(cls._cached_trips)
+            return cls._with_swu_trips(list(cls._cached_trips), force_refresh)
 
     @staticmethod
     def _as_list(raw: Any, inner_key: str) -> list[Any]:
@@ -349,6 +385,15 @@ class DingTransitService:
                 return int((later - earlier).total_seconds() // 60)
 
             lines = [str((leg.get("mode") or {}).get("number") or (leg.get("mode") or {}).get("symbol")) for leg in ridden]
+            raw_diva = first_mode.get("diva") if isinstance(first_mode, dict) else None
+            diva: dict[str, Any] = raw_diva if isinstance(raw_diva, dict) else {}
+            alerts: list[TransitAlert] = []
+            for leg, leg_line in zip(ridden, lines, strict=True):
+                raw_leg_mode = leg.get("mode")
+                leg_mode: dict[str, Any] = raw_leg_mode if isinstance(raw_leg_mode, dict) else {}
+                raw_leg_diva = leg_mode.get("diva")
+                leg_diva: dict[str, Any] = raw_leg_diva if isinstance(raw_leg_diva, dict) else {}
+                alerts.extend(parse_efa_infos(leg.get("infos"), line=leg_line, line_id=str(leg_diva.get("line") or "")))
             departure = TransitDeparture(
                 stop_id=str((start.get("ref") or {}).get("id") or "") if isinstance(start.get("ref"), dict) else "",
                 stop_name=str(start.get("name") or ""),
@@ -361,6 +406,10 @@ class DingTransitService:
                 platform=str(start.get("platformName") or start.get("platform") or ""),
                 countdown_minutes=max(0, int((dep_real - now).total_seconds() / 60)),
                 raw_datetime=dep_real,
+                line_id=str(diva.get("line") or ""),
+                operator=str(diva.get("operator") or ""),
+                realtime_source="efa" if str(first_mode.get("realtime") or "") == "1" else "",
+                alerts=alerts,
             )
             trips.append(
                 TransitTrip(
@@ -498,8 +547,12 @@ class DingTransitService:
         for item in entries:
             if not isinstance(item, dict):
                 continue
-            serving_line = item.get("servingLine", {})
+            serving_line = item.get("servingLine") or {}
             line_number = str(serving_line.get("number") or serving_line.get("symbol") or "")
+            raw_ids = serving_line.get("liErgRiProj")
+            line_id = str(raw_ids.get("line") or "") if isinstance(raw_ids, dict) else ""
+            raw_operator = item.get("operator")
+            operator = str(raw_operator.get("name") or "") if isinstance(raw_operator, dict) else ""
             destination = str(serving_line.get("direction") or "")
             mot_type = str(serving_line.get("name") or "")
             delay = int(serving_line.get("delay") or 0)
@@ -549,6 +602,12 @@ class DingTransitService:
                     platform=platform,
                     countdown_minutes=countdown,
                     raw_datetime=dep_dt,
+                    line_id=line_id,
+                    operator=operator,
+                    realtime_source="efa" if str(serving_line.get("realtime") or "") == "1" and item.get("realDateTime") else "",
+                    alerts=parse_efa_infos(item.get("lineInfos"), line=line_number, line_id=line_id)
+                    + parse_efa_infos(item.get("tripInfos"), line=line_number, line_id=line_id)
+                    + parse_efa_infos(item.get("stopInfos"), stop_name=stop_name),
                 )
             )
         return results

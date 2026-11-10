@@ -12,6 +12,7 @@ with 6 dedicated tabs:
 
 from __future__ import annotations
 
+import dataclasses
 import logging
 import queue
 import re
@@ -49,6 +50,8 @@ from constants import (
     COLOR_SUCCESS,
     COLOR_SUCCESS_HOVER,
     COLOR_THEME_BTN,
+    COLOR_TRANSIT_ALERT,
+    COLOR_TRANSIT_ALERT_BG,
     COLOR_TRANSIT_COUNTDOWN_OK,
     COLOR_TRANSIT_COUNTDOWN_URGENT,
     COLOR_TRANSIT_COUNTDOWN_WARN,
@@ -78,6 +81,7 @@ from constants import (
     PAD_SM,
     PAD_TINY,
     PAD_XS,
+    TRANSIT_ALERTS_BODY_HEIGHT,
     TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES,
     TRANSIT_REFRESH_INTERVAL_MS,
     ENTRY_WIDTH_CHECKOUT_LEAD,
@@ -90,6 +94,7 @@ from models.case import Case
 from models.profile import UserProfile
 from services.checkout_task_service import CheckoutTaskService
 from services.ding_transit_service import DingTransitService, TransitDeparture, TransitTrip
+from services.transit_alert_service import TransitAlert, TransitAlertService
 from services.i18n_service import tr
 from services.weather_service import WeatherInfo, WeatherService
 from ui.widgets.collapsible_section import CollapsibleSection
@@ -305,6 +310,11 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._transit_departures: list[TransitDeparture] = []
         # Trips to the destination; filled instead of plain departures while a destination is set
         self._transit_trips: list[TransitTrip] = []
+        # Traffic notices for the shown departures and the stop (DING / SWU)
+        self._transit_alerts: list[TransitAlert] = []
+        self._transit_alerts_expanded = False
+        # CTkScrollableFrame packs a wrapper, so winfo_manager() does not tell whether the body is shown
+        self._transit_alerts_body_shown = False
         # Destination the current list was planned for ({"name": "", ...} = none, all departures)
         self._applied_destination: dict[str, str] = self.settings.effective_destination()
         self._selected_dep_key: str | None = None
@@ -990,6 +1000,25 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self.transit_scroll = self._list_container(tab)
         self.transit_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_XS))
 
+        # Traffic notices (packed above the list only while there are some)
+        self.transit_alerts_frame = ctk.CTkFrame(tab, fg_color=COLOR_TRANSIT_ALERT_BG, corner_radius=CORNER_RADIUS_SM)
+        self.transit_alerts_toggle_btn = ctk.CTkButton(
+            self.transit_alerts_frame,
+            text="",
+            command=self._toggle_transit_alerts,
+            fg_color=COLOR_TRANSPARENT,
+            hover_color=COLOR_TRANSIT_ALERT_BG,
+            text_color=COLOR_TRANSIT_ALERT,
+            font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+            anchor="w",
+            height=BTN_HEIGHT_CHECKOUT_TINY,
+        )
+        self.transit_alerts_toggle_btn.pack(fill="x", padx=PAD_XS, pady=PAD_TINY)
+        # Scrolls on its own, so long notices never push the departure list out of the panel
+        self.transit_alerts_body = ctk.CTkScrollableFrame(
+            self.transit_alerts_frame, fg_color=COLOR_TRANSPARENT, height=TRANSIT_ALERTS_BODY_HEIGHT
+        )
+
     def refresh_transit_data(self, force: bool = False) -> None:
         """Fetch departures in a background thread and update UI."""
         if self._is_fetching_transit:
@@ -1012,8 +1041,9 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         if dest_name:
             dest_place = destination.get("place", "").strip()
             limit = CHECKOUT_TAB_MAX_DEPARTURES if self.is_floating else CHECKOUT_STACK_MAX_DEPARTURES
-            self._run_in_background(
-                lambda: DingTransitService.fetch_trips(
+
+            def load_trips() -> tuple[list[TransitTrip], list[TransitAlert]]:
+                trips = DingTransitService.fetch_trips(
                     stop_name,
                     stop_place,
                     dest_name,
@@ -1021,15 +1051,24 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                     limit=limit,
                     force_refresh=force,
                     departure_time=departure_time,
-                ),
-                lambda trips: self._on_transit_data_loaded([t.departure for t in trips], trips),
+                )
+                # Notices go on each trip's first bus; collect() never raises
+                deps, alerts = TransitAlertService.collect([t.departure for t in trips], stop_name, stop_place)
+                return [dataclasses.replace(t, departure=d) for t, d in zip(trips, deps, strict=True)], alerts
+
+            self._run_in_background(
+                load_trips,
+                lambda result: self._on_transit_data_loaded([t.departure for t in result[0]], result[0], alerts=result[1]),
             )
             return
+
+        def load_departures() -> tuple[list[TransitDeparture], list[TransitAlert]]:
+            deps = DingTransitService.fetch_departures(stop_name, stop_place, force_refresh=force, departure_time=departure_time)
+            return TransitAlertService.collect(deps, stop_name, stop_place)
+
         self._run_in_background(
-            lambda: DingTransitService.fetch_departures(
-                stop_name, stop_place, force_refresh=force, departure_time=departure_time
-            ),
-            self._on_transit_data_loaded,
+            load_departures,
+            lambda result: self._on_transit_data_loaded(result[0], alerts=result[1]),
         )
 
     # -------------------------------------------------------------------------
@@ -1166,7 +1205,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             self.refresh_transit_data(force=True)
 
     def _on_transit_data_loaded(
-        self, deps: list[TransitDeparture], trips: list[TransitTrip] | None = None
+        self,
+        deps: list[TransitDeparture],
+        trips: list[TransitTrip] | None = None,
+        alerts: list[TransitAlert] | None = None,
     ) -> None:
         self._is_fetching_transit = False
         if self._transit_refetch_pending:
@@ -1176,6 +1218,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             return
         self._transit_departures = deps
         self._transit_trips = list(trips or [])
+        self._transit_alerts = list(alerts or [])
         now_str = datetime.now().strftime("%H:%M")
         status = f"Stand: {now_str} Uhr"
         if self._planned_departure is not None:
@@ -1197,6 +1240,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 self._selected_departure = matched
 
         self._update_selected_card()
+        self._render_transit_alerts()
         self._render_departures()
         self._check_commute_alarms()
 
@@ -1371,6 +1415,18 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             )
             badge.pack(side="left", padx=(PAD_SM, PAD_XS), pady=PAD_SM)
 
+            if dep.alerts:
+                alert_lbl = ctk.CTkLabel(
+                    row,
+                    text="⚠",
+                    font=ctk.CTkFont(size=FONT_SIZE_BODY, weight=FONT_WEIGHT_BOLD),
+                    text_color=COLOR_TRANSIT_ALERT,
+                    cursor="hand2",
+                )
+                alert_lbl.pack(side="left", padx=(PAD_NONE, PAD_XS))
+                alert_lbl.bind("<Button-1>", lambda _e: self._toggle_transit_alerts(expand=True))
+                CTkTooltip(alert_lbl, "\n".join(f"• {a.title}" for a in dep.alerts))
+
             # Destination & Platform
             info_box = ctk.CTkFrame(row, fg_color=COLOR_TRANSPARENT)
             info_box.pack(side="left", fill="x", expand=True, padx=PAD_XS)
@@ -1440,11 +1496,105 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             )
             cd_lbl.pack(side="right", padx=(PAD_XS, PAD_SM))
 
-            CTkTooltip(row, tr("checkout_panel.transit_row_tooltip", "Doppelklick zum Auswählen dieser Fahrt für Wecker"))
+            CTkTooltip(
+                row,
+                f"{self._realtime_source_text(dep)}\n"
+                + tr("checkout_panel.transit_row_tooltip", "Doppelklick zum Auswählen dieser Fahrt für Wecker"),
+            )
             self._bind_double_click_recursive(
                 row,
                 lambda d=dep: self._on_departure_double_clicked(d),
             )
+
+    @staticmethod
+    def _realtime_source_text(dep: TransitDeparture) -> str:
+        """Where the shown time comes from, for the row tooltip."""
+        if dep.realtime_source == "swu":
+            seconds = dep.delay_seconds or 0
+            sign = "+" if seconds >= 0 else "−"
+            return tr("checkout_panel.transit_source_swu", "⏱ Echtzeit SWU: {delay} ({time} Uhr)").format(
+                delay=f"{sign}{abs(seconds) // 60}:{abs(seconds) % 60:02d} Min.",
+                time=dep.raw_datetime.strftime("%H:%M:%S") if dep.raw_datetime else dep.real_time_str,
+            )
+        if dep.realtime_source == "efa":
+            return tr("checkout_panel.transit_source_efa", "⏱ Echtzeit DING (auf Minuten gerundet)")
+        return tr("checkout_panel.transit_source_timetable", "🗓 Fahrplanzeit – keine Echtzeit verfügbar")
+
+    def _toggle_transit_alerts(self, expand: bool | None = None) -> None:
+        self._transit_alerts_expanded = (not self._transit_alerts_expanded) if expand is None else expand
+        self._render_transit_alerts()
+
+    def _render_transit_alerts(self) -> None:
+        """Shows the notice box above the list: one line collapsed, every notice expanded."""
+        if not hasattr(self, "transit_alerts_frame"):
+            return
+        alerts = self._transit_alerts
+        if not alerts:
+            if self.transit_alerts_frame.winfo_manager():
+                self.transit_alerts_frame.pack_forget()
+            return
+        if not self.transit_alerts_frame.winfo_manager():
+            self.transit_alerts_frame.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), before=self.transit_scroll)
+
+        arrow = "▾" if self._transit_alerts_expanded else "▸"
+        if len(alerts) == 1:
+            label = tr("checkout_panel.transit_alerts_one", "⚠ 1 Verkehrsmeldung: {title}").format(title=alerts[0].title)
+        else:
+            label = tr("checkout_panel.transit_alerts_many", "⚠ {count} Verkehrsmeldungen").format(count=len(alerts))
+        if len(label) > 90:
+            label = label[:89] + "…"
+        self.transit_alerts_toggle_btn.configure(text=f"{arrow} {label}")
+
+        for widget in self.transit_alerts_body.winfo_children():
+            widget.destroy()
+        if not self._transit_alerts_expanded:
+            if self._transit_alerts_body_shown:
+                self.transit_alerts_body.pack_forget()
+                self._transit_alerts_body_shown = False
+            return
+        if not self._transit_alerts_body_shown:
+            self.transit_alerts_body.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+            self._transit_alerts_body_shown = True
+
+        for alert in alerts:
+            meta = ["SWU" if alert.source == "swu" else "DING"]
+            if alert.valid_from or alert.valid_until:
+                meta.append(
+                    tr("checkout_panel.transit_alert_valid", "gültig {start} – {end}").format(
+                        start=alert.valid_from.strftime("%d.%m.") if alert.valid_from else "…",
+                        end=alert.valid_until.strftime("%d.%m.%Y")
+                        if alert.valid_until
+                        else tr("checkout_panel.transit_alert_open_end", "auf Weiteres"),
+                    )
+                )
+            lines = sorted(alert.lines, key=lambda x: (len(x), x))
+            if lines:
+                shown = ", ".join(lines[:8]) + (" …" if len(lines) > 8 else "")
+                meta.append(tr("checkout_panel.transit_alert_lines", "Linien {lines}").format(lines=shown))
+            ctk.CTkLabel(
+                self.transit_alerts_body,
+                text=alert.title,
+                font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
+                anchor="w",
+                justify="left",
+                wraplength=CHECKOUT_HINT_WRAPLENGTH,
+            ).pack(fill="x", pady=(PAD_XS, PAD_NONE))
+            ctk.CTkLabel(
+                self.transit_alerts_body,
+                text=" · ".join(meta),
+                font=ctk.CTkFont(size=FONT_SIZE_SM),
+                text_color=COLOR_MUTED_LABEL,
+                anchor="w",
+            ).pack(fill="x")
+            if alert.text and alert.text != alert.title:
+                ctk.CTkLabel(
+                    self.transit_alerts_body,
+                    text=alert.text,
+                    font=ctk.CTkFont(size=FONT_SIZE_SM),
+                    anchor="w",
+                    justify="left",
+                    wraplength=CHECKOUT_HINT_WRAPLENGTH,
+                ).pack(fill="x", pady=(PAD_NONE, PAD_XS))
 
     def _check_commute_alarms(self) -> None:
         """Raises the pack / log-out / leave toasts for the departure the user selected."""

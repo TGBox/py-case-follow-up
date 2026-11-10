@@ -389,8 +389,10 @@ class DingTransitService:
             diva: dict[str, Any] = raw_diva if isinstance(raw_diva, dict) else {}
             alerts: list[TransitAlert] = []
             for leg, leg_line in zip(ridden, lines, strict=True):
-                leg_mode = leg.get("mode") if isinstance(leg.get("mode"), dict) else {}
-                leg_diva = leg_mode.get("diva") if isinstance(leg_mode.get("diva"), dict) else {}
+                raw_leg_mode = leg.get("mode")
+                leg_mode: dict[str, Any] = raw_leg_mode if isinstance(raw_leg_mode, dict) else {}
+                raw_leg_diva = leg_mode.get("diva")
+                leg_diva: dict[str, Any] = raw_leg_diva if isinstance(raw_leg_diva, dict) else {}
                 alerts.extend(parse_efa_infos(leg.get("infos"), line=leg_line, line_id=str(leg_diva.get("line") or "")))
             departure = TransitDeparture(
                 stop_id=str((start.get("ref") or {}).get("id") or "") if isinstance(start.get("ref"), dict) else "",

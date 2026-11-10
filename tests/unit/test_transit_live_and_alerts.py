@@ -28,6 +28,16 @@ def _local(iso: str) -> datetime:
     return datetime.fromisoformat(iso).astimezone().replace(tzinfo=None)
 
 
+def _swu_time(hour: int, minute: int, second: int = 0) -> str:
+    """An SWU timestamp for this wall-clock time in the machine's zone.
+
+    SWU sends times with an offset (+01:00), EFA naive local times; the service
+    converts SWU to local time. With a fixed "+01:00" the test would only match
+    EFA on machines in Europe/Berlin, not on the UTC CI runner.
+    """
+    return datetime(2026, 11, 10, hour, minute, second).astimezone().isoformat()
+
+
 def _dep(line="4", planned="08:04", real: tuple[int, int] = (8, 7), delay=3, destination="Wiblingen", stop_id="9001350", line_id="87004", operator="SWU") -> TransitDeparture:
     return TransitDeparture(
         stop_id=stop_id,
@@ -76,8 +86,8 @@ SWU_DEPARTURES = {
                 "RouteName": "4",
                 "Status": 1,
                 "DepartureDirectionText": "Wiblingen",
-                "DepartureTimeScheduled": "2026-11-10T08:04:00+01:00",
-                "DepartureTimeActual": "2026-11-10T08:08:18+01:00",
+                "DepartureTimeScheduled": _swu_time(8, 4),
+                "DepartureTimeActual": _swu_time(8, 8, 18),
                 "DepartureCountdown": 321,
                 "DepartureDeviation": 258,
             },
@@ -87,8 +97,8 @@ SWU_DEPARTURES = {
                 "VehicleNumber": None,
                 "RouteName": "1",
                 "DepartureDirectionText": "Böfingen",
-                "DepartureTimeScheduled": "2026-11-10T08:15:00+01:00",
-                "DepartureTimeActual": "2026-11-10T08:15:00+01:00",
+                "DepartureTimeScheduled": _swu_time(8, 15),
+                "DepartureTimeActual": _swu_time(8, 15),
                 "DepartureDeviation": 0,
             },
         ],
@@ -104,12 +114,19 @@ def test_swu_departures_parse_to_local_naive_times():
     assert len(passages) == 2
     first = passages[0]
     assert (first.stop_number, first.line, first.direction, first.platform) == (1350, "4", "Wiblingen", "D")
-    assert first.scheduled == _local("2026-11-10T08:04:00+01:00")
-    assert first.actual == _local("2026-11-10T08:08:18+01:00")
+    assert first.scheduled == datetime(2026, 11, 10, 8, 4)
+    assert first.actual == datetime(2026, 11, 10, 8, 8, 18)
     assert first.actual.tzinfo is None
     assert first.deviation_seconds == 258
     assert first.vehicle_number == 608
     assert passages[1].vehicle_number is None
+
+
+def test_swu_offset_times_are_converted_to_local_time():
+    # A foreign offset ends up as the same instant in local time
+    assert SwuRealtimeService._to_local_naive("2026-11-10T08:04:00+01:00") == _local("2026-11-10T08:04:00+01:00")
+    assert SwuRealtimeService._to_local_naive("2026-11-10T08:04:00") == datetime(2026, 11, 10, 8, 4)
+    assert SwuRealtimeService._to_local_naive("") is None
 
 
 def test_swu_answer_without_data_is_empty():
@@ -263,7 +280,7 @@ def test_fetch_departures_applies_swu(monkeypatch):
     [dep] = DingTransitService.fetch_departures("Ulm Ehinger Tor", "Ulm", force_refresh=True)
     assert asked == ["1350"]
     assert dep.realtime_source == "swu"
-    assert dep.raw_datetime == _local("2026-11-10T08:08:18+01:00")
+    assert dep.raw_datetime == datetime(2026, 11, 10, 8, 8, 18)
     assert dep.delay_seconds == 258
 
 

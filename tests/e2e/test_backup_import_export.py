@@ -17,13 +17,22 @@ from e2e_helpers import (
 )
 
 
+class _TextCollector(HTMLParser):
+    """Collects the text nodes of an HTML document."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        self.parts.append(data)
+
+
 def _rendered_text(html_doc: str) -> str:
     """The text a browser shows for an HTML document (tags dropped, entities resolved)."""
-    parts: list[str] = []
-    parser = HTMLParser(convert_charrefs=True)
-    parser.handle_data = parts.append
+    parser = _TextCollector()
     parser.feed(html_doc)
-    return " ".join(parts)
+    return " ".join(parser.parts)
 
 
 def _open_profile_settings(app) -> ProfileSettingsDialog:

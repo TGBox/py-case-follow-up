@@ -1494,6 +1494,7 @@
     "no_snippets": "Keine Textbausteine vorhanden.",
     "widths_summary": "• Cockpit: Links {left}px | Mitte {center}px | Rechts {right}px\n• Kanban-Board: Mindestspaltenbreite {board}px\n• Tabelle: ID {id}px | Praxis {prac}px | Titel {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP-Backup erfolgreich erstellt: {file_count} Dateien ({mb_size:.2f} MB)",
+    "zip_import_failed": "❌ Import abgebrochen: {error}",
     "zip_import_success": "✅ Import abgeschlossen! {data_files} Datendateien & {attachment_files} Anhänge entpackt.",
     "shortcut_conflict": "⚠ Shortcut-Konflikt: Folgende Hotkeys sind mehrfach zugewiesen: {dup_str}",
     "shortcut_conflict_generic": "⚠ Shortcut-Konflikt: Hotkeys dürfen nicht mehrfach zugewiesen werden!",

@@ -3,6 +3,7 @@
 import tkinter as tk
 from datetime import datetime, timedelta
 from types import SimpleNamespace
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import customtkinter as ctk
@@ -42,9 +43,28 @@ def _label_texts(parent) -> list[str]:
     return [c.cget("text") for c in _walk(parent) if isinstance(c, ctk.CTkLabel)]
 
 
-def _widget(root, received=None, author="Daniel", **kw) -> TimelineWidget:
+def _widget(root, received=None, author="Dana", **kw) -> TimelineWidget:
     sink = received if received is not None else []
     return TimelineWidget(root, author_name=author, on_timeline_updated=lambda e: sink.append(list(e)), **kw)
+
+
+def _parsed(value: str) -> datetime:
+    """parse_followup_datetime for a value the test expects to be readable."""
+    parsed = parse_followup_datetime(value)
+    assert parsed is not None, f"unreadable date: {value!r}"
+    return parsed
+
+
+def _older_button(widget: TimelineWidget) -> Any:
+    """The "show older entries" button, which only exists while there are older entries."""
+    button = widget._older_btn
+    assert button is not None
+    return button
+
+
+def _link_handler(text_widget: tk.Text) -> Any:
+    """The click handler linkify_text_widget attaches to the widget (not part of tk.Text's type)."""
+    return cast(Any, text_widget).link_click_handler
 
 
 def _cards(widget: TimelineWidget) -> list:
@@ -87,17 +107,17 @@ def test_date_picker_time_bounds(root):
     future_text = (get_local_now() + timedelta(days=3)).strftime("%d.%m.%Y 09:00")
 
     initial = DatePickerWidget(root, include_time=True, initial_value="2020-01-01T08:00:00", time_bound="future")
-    assert parse_followup_datetime(initial.get()) >= floor
+    assert _parsed(initial.get()) >= floor
 
     fut = DatePickerWidget(root, include_time=True, time_bound="future")
     fut.set_date("01.01.2020 16:30")
-    assert parse_followup_datetime(fut.get()) >= floor
+    assert _parsed(fut.get()) >= floor
     fut.set_date(future_text)
     assert fut.get() == future_text
 
     past = DatePickerWidget(root, include_time=True, time_bound="past")
     past.set_date(future_text)
-    assert parse_followup_datetime(past.get()) <= get_local_now()
+    assert _parsed(past.get()) <= get_local_now()
 
     unbounded = DatePickerWidget(root, include_time=True)
     unbounded.set_date("01.01.2020 16:30")
@@ -111,7 +131,7 @@ def test_flyout_bump_uses_now_instead_of_past_value(root):
     picker.entry.insert(0, "01.01.2020 08:00")
     before = get_local_now().replace(second=0, microsecond=0)
     FollowupFlyoutDialog.bump_hours(None, picker, 1)  # type: ignore[arg-type]
-    assert parse_followup_datetime(picker.get()) >= before + timedelta(minutes=59)
+    assert _parsed(picker.get()) >= before + timedelta(minutes=59)
 
 
 # --- adding, editing, deleting entries --------------------------------------
@@ -129,7 +149,7 @@ def test_add_note_with_past_time_is_sorted_in(root):
 
     assert [e.note for e in received[-1]] == ["alt", "nachgetragen", "neu"]
     added = received[-1][1]
-    assert (added.timestamp, added.author) == ("2026-09-05T11:30:00", "Daniel")
+    assert (added.timestamp, added.author) == ("2026-09-05T11:30:00", "Dana")
     assert w.time_picker.get() == ""
 
 
@@ -162,8 +182,8 @@ def test_add_note_with_unreadable_time_keeps_text(root):
 def test_edit_entry_marks_it_and_resorts(root):
     received = []
     w = _widget(root, received, author="Felipe")
-    first = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Daniel", channel="EMAIL", note="eins")
-    second = TimelineEntry(timestamp="2026-09-10T10:00:00", author="Daniel", note="zwei")
+    first = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Dana", channel="EMAIL", note="eins")
+    second = TimelineEntry(timestamp="2026-09-10T10:00:00", author="Dana", note="zwei")
     w.load_timeline([first, second])
 
     w.apply_entry_edit(first, datetime(2026, 9, 12, 9, 15).astimezone(), "PHONE_INBOUND", "eins korrigiert")
@@ -173,7 +193,7 @@ def test_edit_entry_marks_it_and_resorts(root):
     edited = entries[1]
     assert edited.timestamp == "2026-09-12T09:15:00"
     assert edited.channel == "PHONE_INBOUND"
-    assert edited.author == "Daniel", "original author stays"
+    assert edited.author == "Dana", "original author stays"
     assert edited.edited_by == "Felipe" and edited.edited_at
     assert any("bearbeitet" in t and "Felipe" in t for t in _label_texts(w.scroll_frame))
 
@@ -181,7 +201,7 @@ def test_edit_entry_marks_it_and_resorts(root):
 def test_edit_without_changes_does_not_mark_and_delete_removes(root):
     received = []
     w = _widget(root, received)
-    entry = TimelineEntry(timestamp="2026-09-01T10:00:37", author="Daniel", channel="EMAIL", note="eins")
+    entry = TimelineEntry(timestamp="2026-09-01T10:00:37", author="Dana", channel="EMAIL", note="eins")
     other = TimelineEntry(timestamp="2026-09-02T10:00:00", author="A", note="b")
     w.load_timeline([entry, other])
     w.apply_entry_edit(entry, parse_iso("2026-09-01T10:00:00"), "EMAIL", "eins")
@@ -204,11 +224,13 @@ def test_edit_dialog_save_delete_and_empty_note(root, monkeypatch):
     from ui.dialogs import confirm_dialog
     from ui.dialogs.timeline_entry_dialog import TimelineEntryDialog
 
-    entry = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Daniel", channel="EMAIL", note="alt")
+    entry = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Dana", channel="EMAIL", note="alt")
     saved, deleted = [], []
     dlg = TimelineEntryDialog(root, entry, on_save=lambda dt, ch, note: saved.append((dt, ch, note)), on_delete=lambda: deleted.append(True))
     dlg.update_idletasks()
-    assert (dlg.date_picker.entry.get(), dlg.date_picker.time_entry.get()) == ("01.09.2026", "10:00")
+    time_entry = dlg.date_picker.time_entry
+    assert time_entry is not None
+    assert (dlg.date_picker.entry.get(), time_entry.get()) == ("01.09.2026", "10:00")
     assert dlg.date_picker.get_iso() == "2026-09-01T10:00:00"
     dlg.note_textbox.delete("1.0", "end")
     dlg.note_textbox.insert("1.0", "neu")
@@ -239,12 +261,12 @@ def test_edit_dialog_save_delete_and_empty_note(root, monkeypatch):
 def _two_authors():
     return [
         TimelineEntry(timestamp="2026-08-25T11:18:59", author="Felipe", channel="INTERNAL_NOTE", note="Von Felipe"),
-        TimelineEntry(timestamp="2026-08-25T14:44:26", author="Daniel Rösch", channel="EMAIL", note="Doku: https://wiki.carasent.de/seite"),
+        TimelineEntry(timestamp="2026-08-25T14:44:26", author="Dana Röder", channel="EMAIL", note="Doku: https://wiki.carasent.de/seite"),
     ]
 
 
 def test_own_card_is_tinted_with_chip_and_rail(root):
-    widget = _widget(root, author="Daniel Rösch", user_color="#10b981", color_marker_enabled=True)
+    widget = _widget(root, author="Dana Röder", user_color="#10b981", color_marker_enabled=True)
     widget.load_timeline(_two_authors())
     own_card, other_card = widget.scroll_frame.winfo_children()
 
@@ -255,7 +277,7 @@ def test_own_card_is_tinted_with_chip_and_rail(root):
     assert other_card.cget("fg_color") == COLOR_CARD_BG
     assert len(rails(own_card)) == 1 and not rails(other_card)
 
-    chips = [c for c in _walk(own_card) if isinstance(c, ctk.CTkLabel) and c.cget("text") == "Daniel Rösch"]
+    chips = [c for c in _walk(own_card) if isinstance(c, ctk.CTkLabel) and c.cget("text") == "Dana Röder"]
     assert chips
     assert not any("👤" in t for t in _label_texts(own_card)), "person icon was removed from the card"
     # Borderless chip with a lightly tinted fill and readable name colour.
@@ -279,14 +301,14 @@ def test_own_card_is_tinted_with_chip_and_rail(root):
 
 
 def test_invalid_user_color_falls_back_to_neutral(root):
-    widget = _widget(root, author="Daniel Rösch", user_color="keine-farbe", color_marker_enabled=True)
+    widget = _widget(root, author="Dana Röder", user_color="keine-farbe", color_marker_enabled=True)
     widget.load_timeline(_two_authors())
     assert widget.scroll_frame.winfo_children()[0].cget("fg_color") == COLOR_CARD_BG
 
 
 def test_status_line_is_not_shown_and_edit_button_is_flat(root):
-    widget = _widget(root, author="Daniel Rösch", user_color="#eab308", color_marker_enabled=True)
-    widget.load_timeline([TimelineEntry(timestamp="2026-10-07T10:24:00", author="Daniel Rösch", channel="EMAIL",
+    widget = _widget(root, author="Dana Röder", user_color="#eab308", color_marker_enabled=True)
+    widget.load_timeline([TimelineEntry(timestamp="2026-10-07T10:24:00", author="Dana Röder", channel="EMAIL",
                                         note="Text", status_change="NEW -> ACTION_REQUIRED (SUPPORT)")])
     card = widget.scroll_frame.winfo_children()[0]
     assert not any("ACTION_REQUIRED" in t or t.startswith("Status") for t in _label_texts(card))
@@ -370,10 +392,11 @@ def test_links_are_tagged_and_bound(root):
     assert txt.get(r0[0], r0[1]) == "www.carasent.de"
     assert txt.get(r1[0], r1[1]) == "https://x.de/a"
     assert txt.tag_cget("link", "underline") in ("1", 1, True)
+    path = str(txt)  # the widget's Tk path name
     for tag in ("link-0", "link-1"):
-        assert txt.tk.call(txt._w, "tag", "bind", tag, "<ButtonPress-1>")
-        assert txt.tk.call(txt._w, "tag", "bind", tag, "<ButtonRelease-1>")
-    assert txt.tk.call(txt._w, "tag", "bind", "link", "<Enter>")
+        assert txt.tk.call(path, "tag", "bind", tag, "<ButtonPress-1>")
+        assert txt.tk.call(path, "tag", "bind", tag, "<ButtonRelease-1>")
+    assert txt.tk.call(path, "tag", "bind", "link", "<Enter>")
 
     plain = _text_widget(root, "nur Text")
     assert linkify_text_widget(plain, "#1d4ed8") == []
@@ -384,7 +407,7 @@ def test_link_click_opens_only_on_plain_click(root):
     opened = []
     txt = _text_widget(root, "https://x.de/a")
     linkify_text_widget(txt, "#1d4ed8", opener=opened.append)
-    handler = txt.link_click_handler
+    handler = _link_handler(txt)
 
     handler.press(_ev(10, 5))
     assert handler.release(_ev(60, 5), "https://x.de/a") is False  # drag
@@ -405,8 +428,8 @@ def test_link_opener_failure_is_swallowed(root):
         raise OSError("no browser")
     txt = _text_widget(root, "https://x.de")
     linkify_text_widget(txt, "#1d4ed8", opener=boom)
-    txt.link_click_handler.press(_ev(1, 1))
-    assert txt.link_click_handler.release(_ev(1, 1), "https://x.de") is False
+    _link_handler(txt).press(_ev(1, 1))
+    assert _link_handler(txt).release(_ev(1, 1), "https://x.de") is False
 
 
 # --- paging -----------------------------------------------------------------
@@ -425,13 +448,13 @@ def test_long_timeline_pages_in_older_entries(root):
     w.load_timeline(_many(n))
     assert len(_cards(w)) == TIMELINE_PAGE_SIZE
     assert _note_texts(w)[0] == f"Notiz {n - 1}"  # newest first
-    assert f"({n - TIMELINE_PAGE_SIZE})" in w._older_btn.cget("text")
+    assert f"({n - TIMELINE_PAGE_SIZE})" in _older_button(w).cget("text")
     assert w.scroll_frame.winfo_children()[-1] is w._older_btn
 
-    w._older_btn.invoke()
+    _older_button(w).invoke()
     assert len(_cards(w)) == TIMELINE_PAGE_SIZE * 2
-    assert "(3)" in w._older_btn.cget("text")
-    w._older_btn.invoke()
+    assert "(3)" in _older_button(w).cget("text")
+    _older_button(w).invoke()
     assert w._older_btn is None
     assert _note_texts(w) == [f"Notiz {i}" for i in reversed(range(n))]
 

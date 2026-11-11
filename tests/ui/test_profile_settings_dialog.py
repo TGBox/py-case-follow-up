@@ -4,6 +4,7 @@ import json
 import threading
 import time
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import customtkinter as ctk
@@ -105,6 +106,13 @@ class _ImmediateThread:
             self._target(*self._args, **self._kwargs)
 
 
+def _ancestor(widget: Any, levels: int) -> Any:
+    """widget.master, `levels` times - tkinter types every .master as optional."""
+    for _ in range(levels):
+        widget = widget.master
+    return widget
+
+
 def _is_shown(widget) -> bool:
     # winfo_ismapped() is always False under a withdrawn root; the geometry manager reflects pack()/pack_forget().
     return bool(widget.winfo_manager())
@@ -128,10 +136,10 @@ def _pump(app, predicate, timeout=3.0):
 def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
     initial_sig = "Mit freundlichen Grüßen\nSupport Team\nTel: 12345"
     profile = UserProfile(
-        user=UserInfo(name="Daniel Rösch", email_signature=initial_sig, user_color="#10b981"),
+        user=UserInfo(name="Dana Röder", email_signature=initial_sig, user_color="#10b981"),
         ui_settings=UISettings(font_scale=1.1),
     )
-    storage = _mock_storage(tmp_path, ["Daniel Rösch"])
+    storage = _mock_storage(tmp_path, ["Dana Röder"])
     d = ProfileSettingsDialog(root, profile=profile, storage_service=storage)
 
     # Sidebar with one page per topic; old tab names stay as aliases onto the page bodies
@@ -142,7 +150,7 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
     assert d.tab_user.master is d._page_bodies["profile"] and d.tab_ui is d._page_bodies["appearance"]
     assert d.tab_backup is d._page_bodies["backup"] and d.tab_wiki.master is d._page_bodies["knowledge"]
     # Backup has its own page instead of sitting below the storage paths
-    assert d.retention_daily_entry.master.master.master is d._page_bodies["backup"]  # entry -> row -> card -> page
+    assert _ancestor(d.retention_daily_entry, 3) is d._page_bodies["backup"]  # entry -> row -> card -> page
 
     # Profile data and appearance live on separate pages
     assert d.user_name_entry.master.master is d._page_bodies["profile"]
@@ -152,7 +160,7 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
     assert d.btn_open_p2p.master is not d.user_name_entry.master
     assert d.os_popup_switch.master.master is d._page_bodies["notifications"]
     assert d.ntfy_switch.master.master is d._page_bodies["notifications"]
-    assert d.vip_bonus_entry.master.master.master is d._page_bodies["work"]
+    assert _ancestor(d.vip_bonus_entry, 3) is d._page_bodies["work"]
     assert d.wiki_url_entry.master.master is d._page_bodies["knowledge"]
     widths = {
         d.user_name_entry: 185, d.user_dept_entry: 185, d.user_ext_entry: 185, d.user_mobile_entry: 185,
@@ -164,7 +172,7 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
 
     # Colour marker preview sits in its own row and names the user
     assert int(d.preview_lbl.master.grid_info()["row"]) == 17
-    assert "Daniel Rösch" in d.preview_sample_lbl.cget("text")
+    assert "Dana Röder" in d.preview_sample_lbl.cget("text")
 
     # Shortcuts tab: record buttons and entries are right-aligned
     assert len(d.rec_buttons) >= 12
@@ -231,7 +239,7 @@ def test_dialog_tabs_layout_signature_paths_and_font_preview(root, tmp_path):
 
 
 def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path):
-    storage = _mock_storage(tmp_path, ["Daniel"])
+    storage = _mock_storage(tmp_path, ["Dana"])
     d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=storage, initial_page="checkout")
     try:
         assert d.current_page == "checkout"
@@ -253,7 +261,7 @@ def test_sidebar_opens_on_requested_page_and_steps_with_keyboard(root, tmp_path)
 
 
 def test_unknown_initial_page_falls_back_to_profile(root, tmp_path):
-    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]), initial_page="nope")
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Dana"]), initial_page="nope")
     try:
         assert d.current_page == "profile"
     finally:
@@ -263,7 +271,7 @@ def test_unknown_initial_page_falls_back_to_profile(root, tmp_path):
 def test_push_details_only_shown_while_push_is_on(root, tmp_path):
     profile = UserProfile()
     profile.reminder_settings.mobile_ntfy_enabled = False
-    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         assert not d.ntfy_details_frame.winfo_manager()
         d.ntfy_switch.select()
@@ -282,7 +290,7 @@ def test_push_advanced_section_opens_when_an_advanced_option_is_in_use(root, tmp
     profile = UserProfile()
     profile.reminder_settings.mobile_ntfy_digest_enabled = False
     profile.reminder_settings.mobile_ntfy_remote_control = False
-    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         assert not d.ntfy_advanced_section.expanded
         d.ntfy_advanced_section.toggle()
@@ -292,7 +300,7 @@ def test_push_advanced_section_opens_when_an_advanced_option_is_in_use(root, tmp
         d.destroy()
 
     profile.reminder_settings.mobile_ntfy_remote_control = True
-    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         assert d.ntfy_advanced_section.expanded
     finally:
@@ -304,7 +312,7 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
     cs = profile.checkout_settings
     cs.enabled = False
     cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes = 3, 2, 6, 2
-    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=profile, storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         # Schedule hidden while the panel is off; reopen-on-start and commute stay reachable
         assert not d.checkout_schedule_frame.winfo_manager()
@@ -379,7 +387,7 @@ def test_stop_search_suggests_fills_fields_and_reports_check_result(root, tmp_pa
 
     monkeypatch.setattr(DingTransitService, "check_stop", classmethod(fake_check))
 
-    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]), initial_page="checkout")
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Dana"]), initial_page="checkout")
     try:
         d.checkout_stop_name_entry.delete(0, "end")
         d.checkout_stop_name_entry.insert(0, "Edis")
@@ -425,7 +433,7 @@ def test_stop_check_explains_problems(root, tmp_path, monkeypatch, result, expec
         "check_stop",
         classmethod(lambda cls, n, p: StopCheckResult(status=result, resolved_name="Bahnhof", candidates=candidates)),
     )
-    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         d.on_check_stop()
         _drain(d)
@@ -438,7 +446,7 @@ def test_stop_check_explains_problems(root, tmp_path, monkeypatch, result, expec
 def test_stop_search_ignores_stale_and_offline_results(root, tmp_path, monkeypatch):
     from services.ding_transit_service import TransitStop
 
-    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Daniel"]))
+    d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=_mock_storage(tmp_path, ["Dana"]))
     try:
         d._stop_request_id = 5
         d._on_stop_suggestions(4, [TransitStop("Alt", "Ulm")])  # an older request answers late
@@ -692,7 +700,9 @@ def test_ai_tab_async_actions_report_service_results(ai_dialog):
     d.profile.ai_settings.enable_ai = True
     d.ai_enable_chk.deselect()
     d.on_toggle_global_ai()
-    assert d.profile.ai_settings.enable_ai is False
+    # `not`, not `is False`: the checker only sees the `= True` three lines up,
+    # not that on_toggle_global_ai() rewrites the setting.
+    assert not d.profile.ai_settings.enable_ai
     assert _pump(app, lambda: lbl() == AI_STATUS_UNLOADED)
 
     d.ai_enable_chk.select()
@@ -893,7 +903,7 @@ def test_toggle_defaults_keeps_custom_entries_and_writes_backup(example_storage,
 
 def test_tab_traversal_skips_widgets_on_covered_pages(root, tmp_path):
     """Pages stay mapped under the shown one, so Tab must not wander into them."""
-    storage = _mock_storage(tmp_path, ["Daniel"])
+    storage = _mock_storage(tmp_path, ["Dana"])
     d = ProfileSettingsDialog(root, profile=UserProfile(), storage_service=storage, initial_page="checkout")
     try:
         on_checkout = ctk.CTkEntry(d._page_bodies["checkout"])

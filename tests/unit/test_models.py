@@ -127,7 +127,7 @@ def test_case_handover_changes_actor_and_logs_timeline():
     c.workflow_status.current_actor = Actor.DEVELOPMENT
     c.timeline.append(TimelineEntry(
         timestamp="2026-08-23T10:00:00",
-        author="Daniel Rösch",
+        author="Dana Röder",
         note="Fall an Hr. Becker übergeben (Kanal: GitLab Issue).",
         status_change="ZUSTÄNDIGKEIT: Support -> Entwicklung",
     ))

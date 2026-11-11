@@ -1494,6 +1494,7 @@
     "no_snippets": "No text snippets available.",
     "widths_summary": "• Cockpit: Left {left}px | Center {center}px | Right {right}px\n• Kanban Board: Min column width {board}px\n• Table: ID {id}px | Practice {prac}px | Title {title}px | Score {score}px",
     "zip_backup_success": "✅ ZIP backup created successfully: {file_count} files ({mb_size:.2f} MB)",
+    "zip_import_failed": "❌ Import cancelled: {error}",
     "zip_import_success": "✅ Import complete! {data_files} data files & {attachment_files} attachments extracted.",
     "shortcut_conflict": "⚠ Shortcut conflict: The following hotkeys are assigned multiple times: {dup_str}",
     "shortcut_conflict_generic": "⚠ Shortcut conflict: Hotkeys cannot be assigned multiple times!",

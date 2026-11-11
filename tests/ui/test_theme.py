@@ -134,13 +134,13 @@ def test_profile_settings_dialog_follows_appearance_switch(root, tmp_path):
     from ui.dialogs.profile_settings_dialog import ProfileSettingsDialog
 
     storage = MagicMock(spec=StorageService)
-    storage.list_profiles.return_value = ["Daniel Rösch"]
+    storage.list_profiles.return_value = ["Dana Röder"]
     storage.config = MagicMock()
     storage.config.workspace_dir = tmp_path / "workspace"
     storage.config.custom_cases_path = storage.config.custom_customers_path = storage.config.custom_wiki_db_path = None
 
     ctk.set_appearance_mode("Light")
-    d = ProfileSettingsDialog(root, profile=UserProfile(user=UserInfo(name="Daniel Rösch")), storage_service=storage)
+    d = ProfileSettingsDialog(root, profile=UserProfile(user=UserInfo(name="Dana Röder")), storage_service=storage)
     root.update_idletasks()
 
     ctk.set_appearance_mode("Dark")
@@ -148,9 +148,12 @@ def test_profile_settings_dialog_follows_appearance_switch(root, tmp_path):
     # Settings pages sit directly on the dialog background next to the sidebar
     assert _label_colors(d.user_tab_hdr_lbl) == DARK_PAGE
     assert _label_colors(d.app_shortcuts_hdr_lbl) == DARK_PAGE
-    assert d.tab_paths._fg_color == "transparent"
+    # CustomTkinter keeps the configured colour in a private attribute its stubs do not declare.
+    tab_paths: Any = d.tab_paths
+    nav_frame: Any = d.nav_frame
+    assert tab_paths._fg_color == "transparent"
     assert d.paths_scroll._parent_canvas.cget("bg") == DARK_PAGE[0]
-    assert d.nav_frame._fg_color == COLOR_SETTINGS_NAV_BG
+    assert nav_frame._fg_color == COLOR_SETTINGS_NAV_BG
 
     # Retention and export/import cards on the backup page are bordered panels
     cards = [f for f in _frames(d.tab_backup) if f.cget("corner_radius") == 8]
@@ -271,7 +274,8 @@ def test_toplevel_titlebar_follows_theme_via_patched_helper(monkeypatch):
         def winfo_exists(self):
             return True
 
-    patched = ctk.CTkToplevel._windows_set_titlebar_color
+    toplevel_class: Any = ctk.CTkToplevel  # the patched method is private and not in the stubs
+    patched = toplevel_class._windows_set_titlebar_color
     assert getattr(ctk.CTkToplevel, "_titlebar_patch_applied", False)
 
     patched(FakeToplevel(), "dark")

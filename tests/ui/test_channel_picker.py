@@ -173,7 +173,7 @@ def test_timeline_note_is_saved_with_the_picked_channel(root):
     from ui.widgets.timeline_widget import TimelineWidget
 
     received = []
-    w = TimelineWidget(root, author_name="Daniel", on_timeline_updated=received.append)
+    w = TimelineWidget(root, author_name="Dana", on_timeline_updated=received.append)
     w.load_timeline([])
     _click(w.channel_picker, "group_row", "slack")
     _click(w.channel_picker, "variant_row", "SLACK_OUT")
@@ -186,7 +186,7 @@ def test_edit_dialog_keeps_an_old_channel_unless_changed(root):
     from ui.dialogs.timeline_entry_dialog import TimelineEntryDialog
 
     saved = []
-    entry = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Daniel", channel="EMAIL", note="alt")
+    entry = TimelineEntry(timestamp="2026-09-01T10:00:00", author="Dana", channel="EMAIL", note="alt")
     d = TimelineEntryDialog(root, entry, on_save=lambda dt, ch, note: saved.append(ch), on_delete=lambda: None)
     try:
         assert d.channel_picker.get() == "EMAIL"
@@ -206,7 +206,7 @@ def test_new_case_initial_note_gets_the_picked_channel(root):
         root,
         customers=[Customer(customer_id="K-1", practice_name="Praxis Test", contacts=[Contact(name="Frau Test")])],
         schemas=[],
-        created_by="Daniel",
+        created_by="Dana",
         on_case_created=created.append,
     )
     try:

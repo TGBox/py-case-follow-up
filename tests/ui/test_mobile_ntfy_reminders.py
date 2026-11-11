@@ -252,7 +252,7 @@ def test_app_check_mobile_ntfy_reminders_handover_filter():
 
     app = MagicMock(spec=SupportCockpitApp)
     app.profile = UserProfile()
-    app.profile.user.name = "Daniel Rösch"
+    app.profile.user.name = "Dana Röder"
     app.profile.reminder_settings = ReminderSettings(
         mobile_ntfy_enabled=True,
         mobile_ntfy_topic="handover-topic",
@@ -267,7 +267,7 @@ def test_app_check_mobile_ntfy_reminders_handover_filter():
 
     assigned_case = Case(
         case_id="777",
-        assigned_to="Daniel Rösch",
+        assigned_to="Dana Röder",
         classification=Classification(title="Client handover"),
         workflow_status=WorkflowStatus(followup_at=""),
     )
@@ -570,13 +570,13 @@ def test_app_update_team_presence_on_idle_activates_and_restores():
 
     app = MagicMock(spec=SupportCockpitApp)
     app.profile = UserProfile()
-    app.profile.user.name = "Daniel Rösch"
+    app.profile.user.name = "Dana Röder"
     app.profile.reminder_settings = ReminderSettings(
         mobile_ntfy_enabled=True,
         mobile_ntfy_auto_presence=True,
         mobile_ntfy_idle_minutes=5,
     )
-    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=False, absence_reason="")
+    colleague = Colleague(username="dana.roeder", name="Dana Röder", is_absent=False, absence_reason="")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
     app._auto_absence_set = False
@@ -603,13 +603,13 @@ def test_app_update_team_presence_preserves_manual_absence():
 
     app = MagicMock(spec=SupportCockpitApp)
     app.profile = UserProfile()
-    app.profile.user.name = "Daniel Rösch"
+    app.profile.user.name = "Dana Röder"
     app.profile.reminder_settings = ReminderSettings(
         mobile_ntfy_enabled=True,
         mobile_ntfy_auto_presence=True,
     )
     # Colleague is ALREADY manually marked absent for vacation
-    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Urlaub bis Freitag")
+    colleague = Colleague(username="dana.roeder", name="Dana Röder", is_absent=True, absence_reason="Urlaub bis Freitag")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
     app._auto_absence_set = False
@@ -633,12 +633,12 @@ def test_app_update_team_presence_restores_when_feature_disabled():
 
     app = MagicMock(spec=SupportCockpitApp)
     app.profile = UserProfile()
-    app.profile.user.name = "Daniel Rösch"
+    app.profile.user.name = "Dana Röder"
     app.profile.reminder_settings = ReminderSettings(
         mobile_ntfy_enabled=True,
         mobile_ntfy_auto_presence=False,  # Disabled!
     )
-    colleague = Colleague(username="daniel.roesch", name="Daniel Rösch", is_absent=True, absence_reason="Automatisch abwesend")
+    colleague = Colleague(username="dana.roeder", name="Dana Röder", is_absent=True, absence_reason="Automatisch abwesend")
     app.storage_service = MagicMock()
     app.storage_service.load_colleagues.return_value = [colleague]
     app._auto_absence_set = True
@@ -737,7 +737,7 @@ def test_app_remote_command_take():
 
     app = MagicMock(spec=SupportCockpitApp)
     app.profile = UserProfile()
-    app.profile.user.name = "Daniel Rösch"
+    app.profile.user.name = "Dana Röder"
     c1 = Case(
         case_id="1042",
         classification=Classification(title="Test Case"),
@@ -748,7 +748,7 @@ def test_app_remote_command_take():
 
     with patch("ui.widgets.toast_notification.ToastNotification") as mock_toast:
         SupportCockpitApp._handle_remote_control_command(app, "take:1042")
-        assert c1.assigned_to == "Daniel Rösch"
+        assert c1.assigned_to == "Dana Röder"
         assert app.storage_service.save_cases.called
         assert app.refresh_views.called
         assert mock_toast.called

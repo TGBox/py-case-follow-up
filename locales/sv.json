@@ -1494,6 +1494,7 @@
     "no_snippets": "Inga textavsnitt tillgängliga.",
     "widths_summary": "• Cockpit: Vänster {left}px | Mitten {center}px | Höger {right}px\n• Kanban-tavla: Min. kolumnbredd {board}px\n• Tabell: ID {id}px | Mottagning {prac}px | Titel {title}px | Poäng {score}px",
     "zip_backup_success": "✅ ZIP-säkerhetskopia skapad: {file_count} filer ({mb_size:.2f} MB)",
+    "zip_import_failed": "❌ Importen avbröts: {error}",
     "zip_import_success": "✅ Importen klar! {data_files} datafiler och {attachment_files} bilagor uppackade.",
     "shortcut_conflict": "⚠ Genvägskonflikt: Följande snabbtangenter är tilldelade flera gånger: {dup_str}",
     "shortcut_conflict_generic": "⚠ Genvägskonflikt: Snabbtangenter får inte tilldelas flera gånger!",

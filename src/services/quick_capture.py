@@ -26,7 +26,7 @@ from constants import (
 from enums import Actor, BoardColumn, Channel
 from models.case import Case, CaseCustomer, Classification, TimelineEntry, WorkflowStatus
 from services.i18n_service import tr
-from utils.datetime_utils import format_german_datetime
+from utils.datetime_utils import format_iso
 
 INTERNAL_TASK_SCHEMA_ID = "schema_internal_task"
 
@@ -112,7 +112,9 @@ def build_quick_case(
             current_actor=Actor.SUPPORT,
             actor_since=now_str,
             is_data_complete=True,
-            followup_at=format_german_datetime(reminder) if reminder else "",
+            # ISO like every other writer of followup_at - never the localized
+            # display form, which depends on the UI language of the moment.
+            followup_at=format_iso(reminder) if reminder else "",
         ),
         form_data={
             "internal_category": tr(f"internal_task_categories.{category}", default=category),

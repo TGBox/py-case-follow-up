@@ -193,6 +193,15 @@ Erzeugt die Seed-Datenbank und startet die Anwendung direkt im interaktiven GUI-
 uv run main.py --demo
 ```
 
+> **Schutz echter Daten:** `--seed` und `--demo` ersetzen Fälle, Kunden, Profil und Kollegen im Workspace.
+> Enthält der Workspace eigene (nicht als Demo markierte) Daten, brechen beide mit einem Hinweis ab.
+> Mit `--force` wird trotzdem überschrieben; vorher landet eine Kopie aller Datendateien unter
+> `data/backups/pre_seed_<Zeitstempel>/`. Für Demos am besten einen eigenen Ordner verwenden:
+>
+> ```bash
+> uv run main.py --demo --workspace C:\Temp\cockpit-demo
+> ```
+
 ### 3. Benutzerdefinierter Arbeitsbereich (`--workspace` / `-w`)
 
 Gibt das Netzlaufwerk- oder Benutzerverzeichnis an:

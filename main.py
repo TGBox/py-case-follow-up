@@ -1,4 +1,5 @@
 import argparse
+import logging
 import os
 import sys
 from pathlib import Path
@@ -16,7 +17,7 @@ from utils.ui_utils import patch_ctk_scrollable_frame, patch_ctk_rendering  # no
 patch_ctk_scrollable_frame()
 patch_ctk_rendering()
 
-
+logger = logging.getLogger("SupportCockpit")
 
 _seen_exceptions: set[str] = set()
 _crash_log_dir_override: Path | None = None
@@ -118,12 +119,20 @@ def parse_args():
     parser.add_argument(
         "--seed",
         action="store_true",
-        help="Generates seed test data (5 customers, 8 cases, schemas, templates, wiki DB) and exits."
+        help="Generates seed test data (5 customers, 8 cases, schemas, templates, wiki DB) and exits. "
+             "Refuses if the workspace holds real data, unless --force is given."
     )
     parser.add_argument(
         "--demo",
         action="store_true",
-        help="Generates seed test data and launches the GUI in demo mode."
+        help="Generates seed test data and launches the GUI in demo mode. "
+             "Refuses if the workspace holds real data, unless --force is given."
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="With --seed/--demo: overwrite real data anyway. Every data file is first "
+             "copied to data/backups/pre_seed_<timestamp>/."
     )
     parser.add_argument(
         "--open-case",
@@ -137,10 +146,64 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
+EXIT_STARTUP_ERROR = 1
+EXIT_SEED_REFUSED = 2
+
+
+def _seed_workspace(storage: StorageService, force: bool) -> dict[str, int]:
+    """Runs the seed, or tells the user why not and exits.
+
+    --seed and --demo replace cases, customers, profile and colleagues. Pointed
+    at the real workspace (the default without --workspace) that used to wipe
+    it without a question.
+    """
+    from services.i18n_service import tr
+    from services.seed_service import SeedRefusedError
+    from utils import startup_dialogs
+
+    try:
+        return SeedService(storage).run_seed(force=force)
+    except SeedRefusedError as refused:
+        found = ", ".join(f"{count} {kind}" for kind, count in refused.user_data.items())
+        startup_dialogs.show_error(
+            tr("startup.seed_refused_title", "Demo-Daten nicht erzeugt"),
+            tr(
+                "startup.seed_refused_message",
+                "Der Workspace enthält echte Daten ({found}):\n{workspace}\n\n"
+                "--seed und --demo würden sie überschreiben. Bitte mit --workspace einen "
+                "anderen Ordner angeben, oder mit --force bestätigen (dann wird vorher "
+                "eine Sicherung unter data/backups/pre_seed_... angelegt).",
+                found=found,
+                workspace=refused.workspace_dir,
+            ),
+        )
+        sys.exit(EXIT_SEED_REFUSED)
+
+
+def _run(args: argparse.Namespace) -> None:
+    from services.i18n_service import tr
+    from utils import startup_dialogs
 
     config = AppConfig.load_user_config(cli_workspace=args.workspace)
+
+    # The configured workspace is gone (network drive not connected, folder
+    # moved). Quietly starting on the default folder shows an empty app - which
+    # looks like data loss - and the next save makes that folder permanent.
+    if config.missing_workspace_dir is not None:
+        go_on = startup_dialogs.ask_yes_no(
+            tr("startup.workspace_missing_title", "Workspace nicht erreichbar"),
+            tr(
+                "startup.workspace_missing_message",
+                "Der eingestellte Workspace ist nicht erreichbar:\n{missing}\n\n"
+                "Stattdessen mit dem Standard-Workspace starten?\n{fallback}\n\n"
+                "Bei „Nein“ wird die Anwendung beendet und die Einstellung bleibt unverändert.",
+                missing=config.missing_workspace_dir,
+                fallback=config.workspace_dir,
+            ),
+        )
+        if not go_on:
+            sys.exit(EXIT_STARTUP_ERROR)
+
     set_crash_log_dir(config.workspace_dir / "logs")
 
     # A clicked Windows notification starts a *second* process with the toast's
@@ -152,48 +215,93 @@ def main():
     if instance.handoff_or_claim(requested_case):
         print(f"[*] Case {requested_case} handed to the running instance.")
         sys.exit(0)
-    register_uri_scheme()
 
-    storage = StorageService(config)
+    # Nothing was handed over and the lock belongs to a live instance: a second
+    # window on the same workspace would overwrite the first one's saves (and
+    # the other way round), so this start ends here - before anything is read,
+    # seeded, backed up or archived.
+    if instance.is_blocked_by_other_instance():
+        startup_dialogs.show_error(
+            tr("startup.already_running_title", "Support Cockpit läuft bereits"),
+            tr(
+                "startup.already_running_message",
+                "Support Cockpit ist mit diesem Workspace bereits geöffnet:\n{workspace}\n\n"
+                "Bitte das laufende Fenster verwenden (ggf. über das Symbol im Infobereich).",
+                workspace=config.workspace_dir,
+            ),
+        )
+        sys.exit(EXIT_STARTUP_ERROR)
 
-    if args.seed:
-        print(f"[*] Seeding test data in workspace: {config.workspace_dir}")
-        seed_service = SeedService(storage)
-        summary = seed_service.run_seed(force=True)
-        print(f"[+] Seeding complete! Created: {summary}")
-        sys.exit(0)
-
-    if args.demo:
-        print("[*] Starting Support Cockpit in DEMO mode...")
-        seed_service = SeedService(storage)
-        seed_service.run_seed(force=True)
-
-    # Perform daily backup and auto-archiving
-    storage.perform_daily_backup()
-    archived_count = storage.auto_archive_completed_cases(threshold_days=30)
-    if archived_count > 0:
-        print(f"[*] Auto-archived {archived_count} completed cases (>= 30 days).")
-
-    # Import UI app and run
     try:
+        register_uri_scheme()
+
+        storage = StorageService(config)
+
+        if args.seed:
+            print(f"[*] Seeding test data in workspace: {config.workspace_dir}")
+            summary = _seed_workspace(storage, force=args.force)
+            print(f"[+] Seeding complete! Created: {summary}")
+            sys.exit(0)
+
+        if args.demo:
+            print("[*] Starting Support Cockpit in DEMO mode...")
+            _seed_workspace(storage, force=args.force)
+
+        # Daily backup and auto-archiving are housekeeping: if one of them
+        # fails, the app still starts - the failure is in the log.
+        try:
+            storage.perform_daily_backup()
+        except Exception as err:
+            logger.error(f"Daily backup failed: {err}", exc_info=True)
+        try:
+            archived_count = storage.auto_archive_completed_cases(threshold_days=30)
+            if archived_count > 0:
+                print(f"[*] Auto-archived {archived_count} completed cases (>= 30 days).")
+        except Exception as err:
+            logger.error(f"Auto-archiving failed: {err}", exc_info=True)
+
+        # Import UI app and run
         from ui.app import SupportCockpitApp
         app = SupportCockpitApp(config)
         app.instance_service = instance
         if requested_case:
             app.request_open_case(requested_case)
         app.mainloop()
+    finally:
+        instance.release()
+
+
+def main():
+    args = parse_args()
+    try:
+        _run(args)
     except KeyboardInterrupt:
         print("[*] Application interrupted by user.")
     except Exception as e:
-        # Ein Absturz beim Aufbau des Fensters landete bisher nirgends: der
-        # Tk-Fehlerbericht greift nur fuer Callbacks im laufenden Programm, und
-        # in der gepackten .exe ist stdout None. Fuer den Nutzer sah das aus wie
-        # "die App startet einfach nicht" - ohne eine einzige Spur im Log.
+        # Everything up to and including the window build used to fail without
+        # a trace: the Tk error hook only covers callbacks of the running
+        # program, and in the packaged .exe stdout is None. An unreadable data
+        # file, a failed directory or a crash in the window build all looked
+        # like "the app just does not start". Now it is in the crash log and
+        # in front of the user.
         _report_tkinter_exception(*sys.exc_info())
         print(f"[-] Application execution error: {e}")
-        sys.exit(1)
-    finally:
-        instance.release()
+        try:
+            from services.i18n_service import tr
+            from utils import startup_dialogs
+
+            startup_dialogs.show_error(
+                tr("startup.error_title", "Support Cockpit konnte nicht gestartet werden"),
+                tr(
+                    "startup.error_message",
+                    "Beim Start ist ein Fehler aufgetreten:\n\n{error}\n\nDetails stehen in:\n{log}",
+                    error=f"{type(e).__name__}: {e}",
+                    log=_crash_log_dir() / "tkinter_error.log",
+                ),
+            )
+        except Exception:
+            pass
+        sys.exit(EXIT_STARTUP_ERROR)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import getpass
 import json
 import logging
 import os
@@ -62,10 +63,27 @@ def get_default_workspace_dir() -> Path:
     return Path.cwd()
 
 
+def get_os_username() -> str:
+    """Login name of the current user, without ever raising.
+
+    os.getlogin() needs a controlling terminal and raises OSError without one
+    (a windowed .exe started by a service or scheduler, some remote sessions) -
+    as the default of AppConfig.username that took the whole start down.
+    """
+    try:
+        return os.getlogin()
+    except (OSError, AttributeError):
+        pass
+    try:
+        return getpass.getuser() or DEFAULT_USER_NAME
+    except Exception:
+        return DEFAULT_USER_NAME
+
+
 @dataclass
 class AppConfig:
     workspace_dir: Path = field(default_factory=get_default_workspace_dir)
-    username: str = field(default_factory=lambda: os.getlogin() if hasattr(os, "getlogin") else DEFAULT_USER_NAME)
+    username: str = field(default_factory=lambda: get_os_username())
 
     # Optional individual file path overrides
     active_profile_name: str | None = None
@@ -81,6 +99,10 @@ class AppConfig:
     # this one start was invoked, and it keeps the profile's stored workspace
     # from overriding what the user asked for on the command line.
     workspace_from_cli: bool = False
+    # Set when the configured workspace was not reachable at load time and the
+    # default one was used instead. Not persisted: main() asks the user before
+    # going on, because starting on another folder looks exactly like data loss.
+    missing_workspace_dir: Path | None = None
     column_widths: dict[str, int] = field(
         default_factory=lambda: dict(DEFAULT_COLUMN_WIDTHS)
     )
@@ -222,8 +244,10 @@ class AppConfig:
 
                 ws_path_str = data.get("workspace_dir")
                 ws_dir = Path(ws_path_str) if ws_path_str else get_default_workspace_dir()
+                missing_ws: Path | None = None
                 if not ws_dir.exists():
                     logger.warning(f"Configured workspace_dir '{ws_dir}' does not exist. Falling back to default workspace.")
+                    missing_ws = ws_dir
                     ws_dir = get_default_workspace_dir()
 
                 col_widths = data.get("column_widths", {})
@@ -244,6 +268,7 @@ class AppConfig:
                     custom_export_templates_path=Path(data["custom_export_templates_path"]) if data.get("custom_export_templates_path") else None,
                     custom_wiki_db_path=Path(data["custom_wiki_db_path"]) if data.get("custom_wiki_db_path") else None,
                     column_widths=default_widths,
+                    missing_workspace_dir=missing_ws,
                 )
             except Exception as e:
                 logger.error(f"Error loading global user config: {e}")

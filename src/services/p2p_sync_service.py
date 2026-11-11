@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from models.case import Case
 from models.profile import Colleague
-from services.storage_service import StorageService, safe_read_json
+from services.storage_service import StorageService, read_json_readonly
 from utils.datetime_utils import parse_iso
 
 logger = logging.getLogger("SupportCockpit")
@@ -33,7 +33,14 @@ class P2PSyncService:
             return False, f"Colleague cases file does not exist at: {cases_path}", []
 
         try:
-            data = safe_read_json(cases_path, default_factory=list)
+            # Strictly read-only: this is the colleague's file, not ours. An
+            # unreadable or half-synced file is reported, never renamed or
+            # replaced (safe_read_json would do both to it).
+            try:
+                data = read_json_readonly(cases_path)
+            except ValueError as json_err:
+                logger.warning(f"Colleague cases file {cases_path} is not valid JSON (left untouched): {json_err}")
+                return False, f"Colleague cases file is not readable JSON (possibly still syncing): {cases_path}", []
             if not isinstance(data, list):
                 return False, "Invalid cases data format in colleague file.", []
 

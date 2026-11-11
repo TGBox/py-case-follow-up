@@ -239,6 +239,28 @@ def block_real_network(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
+def startup_dialog_log(monkeypatch: pytest.MonkeyPatch):
+    """No test opens a real message box; what main() would have shown is recorded instead.
+
+    Yields the list of (kind, title, message) tuples. Questions are answered
+    with "no" unless a test sets ``startup_dialog_log.answer = True``.
+    """
+    from utils import startup_dialogs
+
+    class _Log(list):
+        answer = False
+
+    shown = _Log()
+
+    def record(title: str, message: str, kind: str) -> bool:
+        shown.append((kind, title, message))
+        return shown.answer
+
+    monkeypatch.setattr(startup_dialogs, "_show_native", record)
+    return shown
+
+
+@pytest.fixture(autouse=True)
 def reset_default_locale():
     """Ensures each test starts and finishes with the default German locale."""
     from services.i18n_service import get_i18n

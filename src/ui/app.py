@@ -2061,10 +2061,10 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
                     break
 
             if target_case:
-                from utils.datetime_utils import format_german_datetime, get_local_now
+                from utils.datetime_utils import format_iso, get_local_now
                 from datetime import timedelta
                 new_dt = get_local_now() + timedelta(minutes=mins)
-                target_case.workflow_status.followup_at = format_german_datetime(new_dt)
+                target_case.workflow_status.followup_at = format_iso(new_dt)
                 if hasattr(self, "storage_service") and self.storage_service:
                     self.storage_service.save_cases(self.cases)
                 if hasattr(self, "refresh_views"):

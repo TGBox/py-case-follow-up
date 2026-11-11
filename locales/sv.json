@@ -1765,6 +1765,16 @@
     "loading": "⏳ Läser in applikationsdata och layouter...",
     "title": "🩺 Support-Cockpit"
   },
+  "startup": {
+    "already_running_message": "Support Cockpit är redan öppet med den här arbetsytan:\n{workspace}\n\nAnvänd det öppna fönstret (det kan ligga bakom ikonen i meddelandefältet).",
+    "already_running_title": "Support Cockpit körs redan",
+    "error_message": "Ett fel inträffade vid start:\n\n{error}\n\nDetaljer finns i:\n{log}",
+    "error_title": "Support Cockpit kunde inte startas",
+    "seed_refused_message": "Arbetsytan innehåller riktiga data ({found}):\n{workspace}\n\n--seed och --demo skulle skriva över dem. Ange en annan mapp med --workspace, eller bekräfta med --force (då sparas först en kopia under data/backups/pre_seed_...).",
+    "seed_refused_title": "Demodata skapades inte",
+    "workspace_missing_message": "Den inställda arbetsytan kan inte nås:\n{missing}\n\nStarta med standardarbetsytan i stället?\n{fallback}\n\nVid ”Nej” avslutas programmet och inställningen lämnas oförändrad.",
+    "workspace_missing_title": "Arbetsytan kan inte nås"
+  },
   "status_messages": {
     "ai_draft_generated": "✓ E-postutkast genererades framgångsrikt.",
     "ai_ollama_offline": "⚡ Regelbaserat NLP-läge (Ollama offline)",

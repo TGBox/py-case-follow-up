@@ -74,11 +74,33 @@ def test_read_diff_and_import_colleague_cases(storage, tmp_path: Path):
     assert local["T-400"].created_by == "Colleague"
 
 
-def test_corrupted_colleague_file_reads_as_empty(storage, tmp_path: Path):
+def test_unreadable_colleague_file_is_reported_and_left_untouched(storage, tmp_path: Path):
+    """The file belongs to the colleague: a half-synced one must not be renamed away and replaced by []."""
     colleague = _colleague_with_cases(tmp_path, "CORRUPTED_JSON_CONTENT")
-    ok, _msg, remote = P2PSyncService(storage).read_colleague_cases(colleague)
-    assert ok is True  # safe_read_json renames the corrupted file and returns []
+    share = Path(colleague.cases_path).parent
+    ok, msg, remote = P2PSyncService(storage).read_colleague_cases(colleague)
+    assert ok is False and msg
     assert remote == []
+    assert Path(colleague.cases_path).read_text(encoding="utf-8") == "CORRUPTED_JSON_CONTENT"
+    assert [f.name for f in share.iterdir()] == ["cases.json"]
+
+
+def test_locked_colleague_file_is_reported_and_left_untouched(storage, tmp_path: Path, monkeypatch):
+    import services.storage_service as storage_service
+
+    colleague = _colleague_with_cases(tmp_path, json.dumps([Case(case_id="T-1").to_dict()]))
+    share = Path(colleague.cases_path).parent
+    before = Path(colleague.cases_path).read_bytes()
+
+    def locked(path):
+        raise PermissionError(13, "Permission denied")
+
+    monkeypatch.setattr(storage_service, "_read_json_with_retry", locked)
+    ok, msg, remote = P2PSyncService(storage).read_colleague_cases(colleague)
+    assert ok is False and msg
+    assert remote == []
+    assert Path(colleague.cases_path).read_bytes() == before
+    assert [f.name for f in share.iterdir()] == ["cases.json"]
 
 
 def test_p2p_diff_dialog_imports_selected(root, storage, tmp_path: Path):

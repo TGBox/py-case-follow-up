@@ -4,7 +4,6 @@ import zipfile
 from html.parser import HTMLParser
 from tkinter import filedialog
 
-import pytest
 
 from services.i18n_service import tr
 from services.seed_service import SeedService
@@ -16,10 +15,6 @@ from ui.dialogs.zip_import_dialog import ZipImportPathDialog
 from e2e_helpers import (
     choose, click, dialog_closed, find_button, find_dialog, fresh_storage, quit_via_menu, type_into,
 )
-
-
-class KnownBug(AssertionError):
-    """Raised only for the known import bug, so any other failure of this flow still fails the test."""
 
 
 def _rendered_text(html_doc: str) -> str:
@@ -49,17 +44,6 @@ def _import_zip(app, workspace) -> None:
     dialog_closed(app, dlg)
 
 
-@pytest.mark.xfail(
-    raises=KnownBug,
-    strict=True,
-    reason=(
-        "BUG: ZIP import via profile settings unpacks the files, but the running app keeps StorageService's "
-        "cached (empty) cases/customers - on_profile_updated() reloads from cache. The imported cases only "
-        "appear after a restart, and creating a case before that overwrites the imported cases.json "
-        "(9 imported cases -> 1). Repro: empty workspace -> import ZIP -> app.cases == [] -> new case -> "
-        "cases.json holds only the new case."
-    ),
-)
 def test_backup_import_export(tmp_path, start_app, monkeypatch):
     ws_a, ws_b = tmp_path / "ws_a", tmp_path / "ws_b"
     zip_path = tmp_path / "Komplett_Backup.zip"
@@ -107,11 +91,11 @@ def test_backup_import_export(tmp_path, start_app, monkeypatch):
     assert {c.case_id for c in on_disk.load_archive()} == archived_ids
     assert {c.customer_id for c in on_disk.load_customers()} == customer_ids
 
-    # Known bug (collected here, raised at the very end): the running app keeps its
-    # stale, empty case list, and a case created now overwrites the imported cases.json.
-    known_bugs: list[str] = []
-    if {c.case_id for c in app_b.cases} != active_ids:
-        known_bugs.append(f"app shows {len(app_b.cases)} cases right after the import instead of {len(active_ids)}")
+    # The running app picks the imported data up at once (it used to keep its
+    # stale, empty list until a restart) ...
+    assert {c.case_id for c in app_b.cases} == active_ids
+    # ... and a case created now is added to the imported ones instead of
+    # overwriting cases.json with the stale list (9 imported cases -> 1).
     find_button(app_b.menu_frame, tr("menu.new_case", "+ Neuer Fall (Strg+N)")).invoke()
     new_dlg = find_dialog(app_b, NewCaseDialog)
     type_into(new_dlg.title_entry, "Neuer Fall nach dem Import")
@@ -119,13 +103,9 @@ def test_backup_import_export(tmp_path, start_app, monkeypatch):
     dialog_closed(app_b, new_dlg)
     new_id = next(c.case_id for c in app_b.cases if c.classification.title == "Neuer Fall nach dem Import")
     quit_via_menu(app_b)
-    after_new_case = {c.case_id for c in fresh_storage(ws_b).load_cases()}
-    assert new_id in after_new_case
-    if after_new_case != active_ids | {new_id}:
-        known_bugs.append(f"creating a case after the import left {len(after_new_case)} cases in cases.json "
-                          f"instead of {len(active_ids) + 1} - the imported cases were overwritten")
+    assert {c.case_id for c in fresh_storage(ws_b).load_cases()} == active_ids | {new_id}
 
-    # Recover like a user would: import the backup once more (it overwrites cases.json).
+    # Importing the backup once more puts the workspace back to the backup's state (the new case is gone).
     app_r = start_app(ws_b)
     _import_zip(app_r, ws_b)
     quit_via_menu(app_r)
@@ -158,6 +138,3 @@ def test_backup_import_export(tmp_path, start_app, monkeypatch):
     assert case.customer.practice_name in preview and case.customer.customer_id in preview
     find_button(exp, tr("export_dialog.save_file_btn", "In Datei speichern...")).invoke()
     assert (tmp_path / "export.md").read_text(encoding="utf-8") == preview
-
-    if known_bugs:
-        raise KnownBug("; ".join(known_bugs))

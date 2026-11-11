@@ -4,6 +4,7 @@ import importlib
 import json
 import os
 import sys
+import time
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -107,6 +108,57 @@ def test_storage_error_on_load_reaches_the_caller(storage, config, monkeypatch):
         storage.load_cases()
     monkeypatch.undo()
     assert [c.case_id for c in StorageService(config).load_cases()] == ["T-2026-0001"]
+
+
+# --- data replaced on disk underneath the running app (ZIP import) -----------------
+
+
+def test_reload_from_disk_rereads_replaced_files_and_drops_stale_saves(storage, config):
+    """The ZIP-import bug at its root: the cache kept the old list, and the next save wrote it over the imported file."""
+    assert storage.load_cases() == [] or all(c.is_demo_data for c in storage.load_cases())
+    stale = [_real_case("T-STALE")]
+    storage.save_cases(stale)  # debounced: still waiting to be written
+    profile = storage.load_profile()
+    before = storage.reload_generation
+
+    imported = [_real_case("T-IMPORT-1").to_dict(), _real_case("T-IMPORT-2").to_dict()]
+    config.cases_path.write_text(json.dumps(imported), encoding="utf-8")
+    config.customers_path.write_text(json.dumps([Customer(customer_id="K-IMPORT", practice_name="Importiert").to_dict()]), encoding="utf-8")
+
+    storage.reload_from_disk()
+
+    assert [c.case_id for c in storage.load_cases()] == ["T-IMPORT-1", "T-IMPORT-2"]
+    assert [c.customer_id for c in storage.load_customers()] == ["K-IMPORT"]
+    assert storage.reload_generation == before + 1
+    assert storage.load_profile() is profile, "the profile object is shared with the open settings dialog"
+
+    # The save that was waiting must never reach the disk - not later, and not on exit.
+    time.sleep(storage_service.DEBOUNCE_DELAY_STORAGE_SAVE * 3)
+    storage.flush_all_saves()
+    on_disk = json.loads(config.cases_path.read_text(encoding="utf-8"))
+    assert [c["case_id"] for c in on_disk] == ["T-IMPORT-1", "T-IMPORT-2"]
+
+    # And the next ordinary save builds on the imported list.
+    storage.update_single_case(_real_case("T-NEW"))
+    storage.flush_all_saves()
+    on_disk = json.loads(config.cases_path.read_text(encoding="utf-8"))
+    assert [c["case_id"] for c in on_disk] == ["T-IMPORT-1", "T-IMPORT-2", "T-NEW"]
+
+
+def test_discard_pending_drops_waiting_saves_only(tmp_path: Path):
+    from services.storage_service import DebouncedSaver
+
+    saver = DebouncedSaver()
+    target = tmp_path / "ablage" / "x.json"
+    saver.save_debounced(target, {"v": 1}, delay_seconds=30)
+    assert saver.discard_pending() == 1
+    assert saver.discard_pending() == 0
+    saver.flush_all()
+    assert not target.exists()
+
+    saver.save_debounced(target, {"v": 2}, delay_seconds=30)
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == {"v": 2}
 
 
 # --- seeding --------------------------------------------------------------------

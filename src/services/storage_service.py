@@ -266,6 +266,22 @@ class DebouncedSaver:
             self._timers[target_path] = timer
             timer.start()
 
+    def discard_pending(self) -> int:
+        """Drops every save that is still waiting for its debounce timer, without writing it.
+
+        For the moment the files on disk were replaced from outside (a ZIP
+        import): a waiting save still holds the data from before and would
+        write it right over the new files. Returns how many were dropped. A
+        write that is already running is not interrupted.
+        """
+        with self._lock:
+            dropped = len(self._data)
+            for timer in self._timers.values():
+                timer.cancel()
+            self._timers.clear()
+            self._data.clear()
+        return dropped
+
     def flush_all(self, timeout: float = TIMEOUT_STORAGE_FLUSH_ALL):
         """Immediately flushes all pending debounced saves synchronously (used on app exit).
 
@@ -325,6 +341,9 @@ class StorageService:
         self._templates_cache: list[ExportTemplate] | None = None
         self._colleagues_cache: list[Colleague] | None = None
         self.saver = DebouncedSaver()
+        #: Counts reload_from_disk() calls, so the UI can tell "the data was
+        #: replaced" from an ordinary settings save and close what it has open.
+        self.reload_generation = 0
         self.migrate_legacy_attachments()
 
     def flush_all_saves(self) -> None:
@@ -341,6 +360,31 @@ class StorageService:
         self._schemas_cache = None
         self._templates_cache = None
         self._colleagues_cache = None
+
+    def reload_from_disk(self) -> None:
+        """Forgets the cached data lists after the files were replaced from outside.
+
+        A ZIP import unpacks new cases.json, customers.json, ... underneath
+        the running app. The caches still held the old lists, so the app kept
+        showing them - and its next save wrote them over the imported files
+        (import nine cases into an empty workspace, create one case, and
+        cases.json held exactly that one).
+
+        Unlike invalidate_cache() this does NOT flush first: a pending save
+        carries the pre-import data and is dropped instead of written. The
+        profile cache stays, because the profile object is shared with the
+        open settings dialog and is not something an import swaps mid-session.
+        """
+        dropped = self.saver.discard_pending()
+        if dropped:
+            logger.warning(f"Dropped {dropped} pending save(s) that predate the reload from disk")
+        self._cases_cache = None
+        self._archive_cache = None
+        self._customers_cache = None
+        self._schemas_cache = None
+        self._templates_cache = None
+        self._colleagues_cache = None
+        self.reload_generation += 1
 
     def migrate_legacy_attachments(self) -> None:
         """Migrates legacy attachments folder (workspace_dir/attachments) into data/attachments.

@@ -497,6 +497,11 @@ class PathsSettingsTabMixin:
             self.storage_service.config.custom_customers_path = target_data / FILENAME_CUSTOMERS
             self.storage_service.config.ensure_directories()
             self.storage_service.config.save_user_config()
+            # The files were swapped underneath the running app: drop the
+            # cached lists so on_profile_updated() below rereads them. Without
+            # this the app kept its old cases and its next save overwrote the
+            # imported ones.
+            self.storage_service.reload_from_disk()
 
             self.status_lbl.configure(
                 text=tr(

@@ -184,6 +184,78 @@ def test_zip_import_overwrites_existing_files(tmp_path: Path):
     assert '{"version": 2}' in (target / "config.json").read_text(encoding="utf-8")
 
 
+def test_zip_export_leaves_out_backups_logs_and_temp_files(storage, config, tmp_path: Path):
+    """They are not needed for a restore and only multiplied the size of the archive."""
+    config.ensure_directories()
+    (config.data_dir / "cases.json").write_text("[]", encoding="utf-8")
+    (config.data_dir / "snippets.json").write_text("[]", encoding="utf-8")
+    (config.data_dir / "profiles").mkdir(exist_ok=True)
+    (config.data_dir / "profiles" / "profile_A.json").write_text("{}", encoding="utf-8")
+    (config.data_dir / "app.log").write_text("log", encoding="utf-8")
+    (config.data_dir / "app.log.1").write_text("old log", encoding="utf-8")
+    (config.data_dir / "cases.json.tmp.json").write_text("[", encoding="utf-8")
+    (config.backups_dir / "cases_2026-09-11.json").write_text("[]", encoding="utf-8")
+    (config.backups_dir / "pre_seed_20260911_080000").mkdir()
+    (config.backups_dir / "pre_seed_20260911_080000" / "cases.json").write_text("[]", encoding="utf-8")
+    (config.attachments_dir / "c1").mkdir(parents=True)
+    (config.attachments_dir / "c1" / "note.txt").write_text("x", encoding="utf-8")
+
+    zip_out = tmp_path / "backup.zip"
+    res = ZipBackupService.export_backup_zip(storage, zip_out)
+    with zipfile.ZipFile(zip_out) as zf:
+        names = sorted(n.replace("\\", "/") for n in zf.namelist())
+
+    assert "data/cases.json" in names and "data/snippets.json" in names and "data/profiles/profile_A.json" in names
+    assert "attachments/c1/note.txt" in names
+    assert not [n for n in names if n.startswith(("data/attachments/", "data/backups/"))]
+    assert not [n for n in names if "app.log" in n or n.endswith(".tmp.json")]
+    assert res["file_count"] == len(names)
+
+
+@pytest.mark.parametrize("entry", [
+    "data/../../evil.txt",
+    "attachments/../../evil.txt",
+    "../evil.txt",
+    "data/sub/../../../evil.txt",
+    "data//abs/evil.txt",
+    "/abs/evil.txt",
+    "data\\..\\..\\evil.txt",
+    "data/C:/evil.txt",
+])
+def test_zip_import_rejects_entries_that_leave_the_target_folders(tmp_path: Path, entry):
+    """Entry names come from the archive: without the check an import could write anywhere the user can ("Zip Slip")."""
+    from services.zip_backup_service import UnsafeZipEntryError
+
+    zip_out = tmp_path / "evil.zip"
+    with zipfile.ZipFile(zip_out, "w") as zf:
+        zf.writestr("data/cases.json", "[]")
+        zf.writestr(entry, "gotcha")
+    sandbox = tmp_path / "sandbox"
+    target_data, target_att = sandbox / "ws" / "data", sandbox / "ws" / "data" / "attachments"
+
+    with pytest.raises(UnsafeZipEntryError):
+        ZipBackupService.import_backup_zip(zip_out, target_data, target_att)
+
+    assert not sandbox.exists(), "rejected as a whole: not even the harmless entries were written"
+    assert not list(tmp_path.rglob("evil.txt"))
+
+
+def test_zip_import_still_reads_archives_of_the_old_layout(tmp_path: Path):
+    """Older exports carry the attachments twice (also below data/attachments) plus backups; they must stay importable."""
+    zip_out = tmp_path / "old.zip"
+    with zipfile.ZipFile(zip_out, "w") as zf:
+        zf.writestr("data/cases.json", "[]")
+        zf.writestr("data/attachments/c1/note.txt", "x")
+        zf.writestr("data/backups/cases_2026-01-01.json", "[]")
+        zf.writestr("attachments/c1/note.txt", "x")
+        zf.writestr("root_file.json", "{}")
+    data, att = tmp_path / "ws" / "data", tmp_path / "ws" / "data" / "attachments"
+    res = ZipBackupService.import_backup_zip(zip_out, data, att)
+    assert (res["extracted_data_files"], res["extracted_attachment_files"]) == (4, 1)
+    assert (att / "c1" / "note.txt").read_text(encoding="utf-8") == "x"
+    assert (data / "root_file.json").exists() and (data / "backups" / "cases_2026-01-01.json").exists()
+
+
 def test_corrupted_zip_is_rejected(tmp_path: Path):
     fake = tmp_path / "broken.zip"
     fake.write_text("This is not a zip file", encoding="utf-8")

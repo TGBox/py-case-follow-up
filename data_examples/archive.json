@@ -3,8 +3,8 @@
     "case_id": "T-2026-0007",
     "created_at": "2026-07-01T09:00:00",
     "updated_at": "2026-07-05T12:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10890",
       "practice_name": "Praxisklinik am Stadtgarten",
@@ -42,7 +42,7 @@
     "timeline": [
       {
         "timestamp": "2026-07-05T12:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Geklärt",
         "status_change": ""

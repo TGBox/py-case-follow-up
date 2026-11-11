@@ -175,9 +175,9 @@ def test_sync_stores_a_stable_absolute_page_link(tmp_path, wiki_tokens, monkeypa
 
 
 def test_mock_client_links_point_at_the_short_link(tmp_path):
-    service = _service(tmp_path, api_url="https://wiki.data-al.de", sync_mode=SyncMode.METADATA_ONLY)
+    service = _service(tmp_path, api_url="https://wiki.example.com", sync_mode=SyncMode.METADATA_ONLY)
     service.sync_from_bookstack(mock_client=_RecordingMockClient([_page(1, "Abrechnung FAQ", "http://wiki/pages/1")]))
-    assert "https://wiki.data-al.de/link/1" in service.search("Abrechnung")[0]["url"]
+    assert "https://wiki.example.com/link/1" in service.search("Abrechnung")[0]["url"]
 
 
 # --- failure handling ---------------------------------------------------------

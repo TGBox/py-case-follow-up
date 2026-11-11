@@ -100,15 +100,15 @@ def test_case_list_marks_own_cases_with_user_color(root):
         parent=root,
         on_case_selected=MagicMock(),
         on_search_changed=MagicMock(),
-        current_user_name="Daniel Rösch",
+        current_user_name="Dana Röder",
         user_color="#8b5cf6",
         color_marker_enabled=True,
     )
-    widget.set_cases([_case("FALL-001", "Daniel Rösch"), _case("FALL-002", "Robert")])
+    widget.set_cases([_case("FALL-001", "Dana Röder"), _case("FALL-002", "Robert")])
     assert len(_colored_frames(widget.scroll_frame, "#8b5cf6")) >= 1
 
 
-@pytest.mark.parametrize(("assigned_to", "tiles"), [("Daniel Rösch", 1), ("Other Person", 0)])
+@pytest.mark.parametrize(("assigned_to", "tiles"), [("Dana Röder", 1), ("Other Person", 0)])
 def test_kanban_card_marks_only_own_cases(root, assigned_to, tiles):
     card = KanbanCardWidget(
         parent=root,
@@ -118,7 +118,7 @@ def test_kanban_card_marks_only_own_cases(root, assigned_to, tiles):
         on_open_followup=MagicMock(),
         on_toggle_complete=MagicMock(),
         on_change_actor=MagicMock(),
-        current_user_name="Daniel Rösch",
+        current_user_name="Dana Röder",
         user_color="#f59e0b",
         color_marker_enabled=True,
     )
@@ -126,8 +126,8 @@ def test_kanban_card_marks_only_own_cases(root, assigned_to, tiles):
 
 
 def test_user_color_settings_roundtrip():
-    loaded = UserInfo.from_dict(UserInfo(name="Daniel", user_color="#10b981", color_marker_enabled=True).to_dict())
-    assert (loaded.name, loaded.user_color, loaded.color_marker_enabled) == ("Daniel", "#10b981", True)
+    loaded = UserInfo.from_dict(UserInfo(name="Dana", user_color="#10b981", color_marker_enabled=True).to_dict())
+    assert (loaded.name, loaded.user_color, loaded.color_marker_enabled) == ("Dana", "#10b981", True)
 
     defaults = UserInfo.from_dict({"name": "Anna"})
     assert (defaults.user_color, defaults.color_marker_enabled) == ("#3b82f6", False)
@@ -146,7 +146,7 @@ def test_profile_settings_color_marker_section(root, tmp_path):
     svc.config.custom_wiki_db_path = None
     svc.list_profiles.return_value = ["Test User", "Second User"]
 
-    profile = UserProfile(user=UserInfo(name="Daniel Rösch", user_color="#ef4444", color_marker_enabled=True))
+    profile = UserProfile(user=UserInfo(name="Dana Röder", user_color="#ef4444", color_marker_enabled=True))
     dialog = ProfileSettingsDialog(root, profile=profile, storage_service=svc)
     assert dialog.color_marker_switch.get() == 1
     assert dialog.preview_tile.cget("fg_color") == "#ef4444"

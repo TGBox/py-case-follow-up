@@ -444,7 +444,7 @@ def test_picking_a_recipient_does_not_reopen_the_suggestion_list(root, config, t
         workflow_status=WorkflowStatus(current_actor=Actor.SUPPORT),
     )
     dialog = edd.EmailDraftDialog(root, case=fall, calendar_email_service=CalendarEmailService(config),
-                                  user_name="Daniel", snippet_service=SnippetService(tmp_path))
+                                  user_name="Dana", snippet_service=SnippetService(tmp_path))
     try:
         dialog.all_contacts = [{"name": "Frau Weber", "email": "weber@sonnenberg.de", "practice": "Praxis Sonnenberg",
                                 "search_key": "frau weber weber@sonnenberg.de praxis sonnenberg"}]

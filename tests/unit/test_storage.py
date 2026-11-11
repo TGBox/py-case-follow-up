@@ -4,9 +4,9 @@ import json
 import sqlite3
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, tzinfo
 from pathlib import Path
-from typing import Any
+from typing import Any, Self
 
 import pytest
 
@@ -21,7 +21,7 @@ from services.storage_service import DebouncedSaver, StorageService, atomic_save
 from utils.datetime_utils import format_iso
 
 
-def _case(case_id: str, title: str = "Fall", followup: str | None = None) -> Case:
+def _case(case_id: str, title: str = "Fall", followup: str = "") -> Case:
     return Case(
         case_id=case_id,
         customer=CaseCustomer(customer_id="K-1", practice_name="Praxis"),
@@ -145,15 +145,15 @@ def test_cases_roundtrip(storage):
         case_id="T-2026-0001",
         created_at="2026-08-23T09:15:00",
         updated_at="2026-08-23T14:30:00",
-        created_by="Daniel Rösch",
-        assigned_to="Daniel Rösch",
+        created_by="Dana Röder",
+        assigned_to="Dana Röder",
         customer=CaseCustomer(customer_id="K-10482", practice_name="Praxis A", is_vip=True),
         classification=Classification(schema_id="s1", title="Test Case", urgency_level=UrgencyLevel.RED),
         workflow_status=WorkflowStatus(board_column=BoardColumn.ACTION_REQUIRED, current_actor=Actor.DEVELOPMENT),
         form_data={"field1": "val1"},
         missing_required_fields=["field2"],
         attachment_directory="data/attachments/T-2026-0001_Praxis_A",
-        timeline=[TimelineEntry(timestamp="2026-08-23T09:15:00", author="Daniel", note="Initial note")],
+        timeline=[TimelineEntry(timestamp="2026-08-23T09:15:00", author="Dana", note="Initial note")],
         is_demo_data=True,
     )
     case.workflow_status.followup_at = "2026-08-25T09:00:00"
@@ -391,8 +391,8 @@ def test_generate_case_id_avoids_taken_ids(monkeypatch):
 
     class FixedDT(mod.datetime):  # type: ignore[misc, valid-type]
         @classmethod
-        def now(cls, tz=None):
-            return mod.datetime(2026, 10, 7, 11, 26, 27)
+        def now(cls, tz: tzinfo | None = None) -> Self:
+            return cls(2026, 10, 7, 11, 26, 27)
 
     monkeypatch.setattr(mod, "datetime", FixedDT)
     d = _bare_new_case_dialog({"T-2026-2627", "T-2026-2627-2"}, [])

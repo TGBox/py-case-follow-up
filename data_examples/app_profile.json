@@ -1,10 +1,10 @@
 {
   "user": {
-    "name": "Daniel Rösch",
+    "name": "Dana Röder",
     "department": "Support",
-    "extension": "64",
-    "email": "droesch@data-al.de",
-    "mobile": "015737773742"
+    "extension": "244",
+    "email": "d.roeder@softwarehersteller.de",
+    "mobile": ""
   },
   "ui_settings": {
     "theme": "Dark",
@@ -72,7 +72,7 @@
     "threshold_red": 100
   },
   "wiki_settings": {
-    "api_url": "https://wiki.data-al.de",
+    "api_url": "",
     "token_id": "ENV_BOOKSTACK_TOKEN_ID",
     "token_secret": "ENV_BOOKSTACK_TOKEN_SECRET",
     "sync_mode": "METADATA_ONLY",

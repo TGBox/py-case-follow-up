@@ -139,7 +139,7 @@ def _new_case_dialog(customers, schemas, on_case_created, existing_ids=lambda: s
     dialog: Any = NewCaseDialog.__new__(NewCaseDialog)
     dialog.customers = customers
     dialog.schemas = schemas
-    dialog.created_by = "Daniel Rösch"
+    dialog.created_by = "Dana Röder"
     dialog.on_case_created = on_case_created
     dialog.existing_case_ids = existing_ids
     dialog.destroy = lambda: None
@@ -340,7 +340,7 @@ def test_zip_backup_restores_complete_workspace_elsewhere(seeded_storage, tmp_pa
     restored_profile = restored.load_profile()
     assert restored_profile.ui_settings.column_widths["cockpit_left"] == 380
     assert "Backup-Tag" in restored_profile.available_tags
-    assert restored_profile.user.name == "Daniel Rösch"
+    assert restored_profile.user.name == "Dana Röder"
     restored_snippets = SnippetService(target_ws)
     assert len(restored_snippets.get_all_snippets()) == len(snippets.get_all_snippets())
     assert [s.title for s in restored_snippets.search_snippets("kartenleser")] == ["Rückruf Kartenleser"]
@@ -350,26 +350,23 @@ def test_zip_backup_restores_complete_workspace_elsewhere(seeded_storage, tmp_pa
     assert hits["T-2026-0001"]["attachment_matches"][0]["file_name"] == "zuzahlung.csv"
 
 
-@pytest.mark.xfail(strict=True, raises=KnownBug, reason="export_backup_zip walks data_dir and attachments_dir, but attachments_dir "
-                   "is data/attachments, so every attachment is written into the ZIP twice")
 def test_zip_backup_stores_each_attachment_once(seeded_storage, tmp_path: Path):
+    """attachments_dir is data/attachments: walking data_dir as well used to put every attachment into the ZIP twice."""
     att_dir = seeded_storage.config.attachments_dir / "T-2026-0001_Gemeinschaftspraxis_Dr_Mueller"
     att_dir.mkdir(parents=True, exist_ok=True)
     (att_dir / "sample_log.txt").write_text("Log content", encoding="utf-8")
     zip_path = tmp_path / "SupportBackup.zip"
     ZipBackupService.export_backup_zip(seeded_storage, zip_path)
     with zipfile.ZipFile(zip_path) as zf:
-        copies = [n for n in zf.namelist() if n.replace("\\", "/").endswith("/sample_log.txt")]
-    assert copies, "attachment missing from the backup"
-    if len(copies) != 1:
-        raise KnownBug(f"attachment stored {len(copies)}x in the ZIP: {copies}")
+        copies = [n.replace("\\", "/") for n in zf.namelist() if n.replace("\\", "/").endswith("/sample_log.txt")]
+    assert copies == ["attachments/T-2026-0001_Gemeinschaftspraxis_Dr_Mueller/sample_log.txt"]
 
 
 # --- two colleagues -> P2P sync -> local rescoring ----------------------------
 
 def test_p2p_import_from_colleague_workspace_is_rescored_with_local_matrix(tmp_path: Path):
     """Colleague edits and adds cases in her workspace -> diff/import -> restart rescoring uses the local matrix."""
-    mine = _seeded(tmp_path / "daniel")
+    mine = _seeded(tmp_path / "dana")
     theirs = _seeded(tmp_path / "max")
 
     remote_cases = theirs.load_cases()
@@ -467,7 +464,7 @@ def test_quick_case_converted_filled_in_cockpit_and_exported(seeded_storage):
     quick_schema = next(s for s in app.schemas if s.schema_id == "schema_quick")
     bug_schema = next(s for s in app.schemas if s.schema_id == "schema_bug_report")
     template = next(t for t in app.templates if t.template_id == "gitlab_dev_bug")
-    quick = Case(case_id="T-2026-8888", created_at=now_iso(), updated_at=now_iso(), created_by="Daniel Rösch",
+    quick = Case(case_id="T-2026-8888", created_at=now_iso(), updated_at=now_iso(), created_by="Dana Röder",
                  customer=CaseCustomer(customer_id="K-10777", practice_name="Hausarztpraxis Dipl.-Med. Fischer"),
                  classification=Classification(schema_id="schema_quick", title="Rezeptdruck-Störung"),
                  attachment_directory="data/attachments/T-2026-8888_Fischer",
@@ -483,7 +480,7 @@ def test_quick_case_converted_filled_in_cockpit_and_exported(seeded_storage):
 
     dialog: Any = ConvertSchemaDialog.__new__(ConvertSchemaDialog)
     dialog.case, dialog.schemas, dialog.current_schema = quick, app.schemas, quick_schema
-    dialog.author_name = "Daniel Rösch"
+    dialog.author_name = "Dana Röder"
     dialog.on_schema_converted = cockpit.on_schema_converted
     dialog.destroy = lambda: None
     dialog.error_label = _Field()
@@ -579,7 +576,7 @@ def test_followup_reminder_bell_flyout_toast_and_handover(seeded_storage):
     due.workflow_status.current_actor = Actor.DEVELOPMENT.value
     due.workflow_status.actor_since = now_iso()
     due.timeline.append(TimelineEntry(
-        timestamp=now_iso(), author="Daniel Rösch", channel=Channel.INTERNAL_NOTE.value, note="Bugfix nötig",
+        timestamp=now_iso(), author="Dana Röder", channel=Channel.INTERNAL_NOTE.value, note="Bugfix nötig",
         status_change=f"ZUSTÄNDIGKEIT: {get_actor_display(previous_actor)} -> {get_actor_display(Actor.DEVELOPMENT.value)}"))
     due.workflow_status.followup_at = _iso(get_local_now() + timedelta(days=3))
     app.on_case_updated(due)

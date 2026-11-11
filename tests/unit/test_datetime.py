@@ -122,7 +122,7 @@ def _case() -> Case:
                                        followup_at="2026-08-25T14:30:00", followup_note="Test"),
         created_at="2026-08-24T08:00:00",
         updated_at="2026-08-24T12:00:00",
-        created_by="Daniel Rösch",
+        created_by="Dana Röder",
         timeline=[TimelineEntry(timestamp="2026-08-24T08:30:00", author="Tester", note="Notiz 1")],
     )
 
@@ -135,12 +135,12 @@ def test_case_formatted_properties_and_email_draft_use_german_format():
     assert case.formatted_created_at == "24.08.2026 08:00 Uhr"
     assert case.formatted_updated_at == "24.08.2026 12:00 Uhr"
 
-    body = CalendarEmailService().generate_email_draft(case, user_name="Daniel Rösch")["body"]
+    body = CalendarEmailService().generate_email_draft(case, user_name="Dana Röder")["body"]
     assert "Geplante Rückruf-Deadline: 25.08.2026 10:00 Uhr" in body
     assert "Aktueller Status: Aktion erforderlich" in body
     assert not ISO_PATTERN.search(body)
 
     # without a contact person the salutation falls back to the practice
     case.customer.contact_person = ""
-    body = CalendarEmailService().generate_email_draft(case, user_name="Daniel Rösch")["body"]
+    body = CalendarEmailService().generate_email_draft(case, user_name="Dana Röder")["body"]
     assert "Sehr geehrte Damen und Herren (Praxis Wolf)," in body

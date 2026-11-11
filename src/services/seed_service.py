@@ -422,7 +422,7 @@ class SeedService:
 
         # Profile & Colleagues
         profile = UserProfile(
-            user=UserInfo(name="Daniel Rösch", extension="244", email="d.roesch@softwarehersteller.de"),
+            user=UserInfo(name="Dana Röder", extension="244", email="d.roeder@softwarehersteller.de"),
             ui_settings=UISettings(theme="SYSTEM", default_layout=LayoutMode.COCKPIT),
             wiki_settings=WikiSettings(api_url="https://wiki.intern.software.de", sync_mode=SyncMode.METADATA_ONLY),
         )

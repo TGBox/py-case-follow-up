@@ -26,7 +26,7 @@ SCHEMA = QuestionSchema(schema_id="schema_1", display_name="Test Schema", fields
 
 
 def _case(form_data):
-    return Case(case_id="T-100", created_by="Daniel Rösch",
+    return Case(case_id="T-100", created_by="Dana Röder",
                 customer=CaseCustomer(customer_id="K-100", practice_name="Praxis Ulm"),
                 classification=Classification(schema_id="schema_1"), form_data=dict(form_data))
 
@@ -40,7 +40,7 @@ def test_render_complete_case(export_service):
     ok, missing, text = export_service.render_template(
         _case({"billing_quarter": "2026-Q2", "error_code": "ERR_01"}), TEMPLATE, SCHEMA)
     assert ok is True and missing == []
-    for part in ("Praxis Ulm", "K-100", "2026-Q2", "ERR_01", "Daniel Rösch"):
+    for part in ("Praxis Ulm", "K-100", "2026-Q2", "ERR_01", "Dana Röder"):
         assert part in text
 
 
@@ -66,7 +66,7 @@ def test_case_namespace_placeholders(export_service):
                           target_type=TargetType.CLIPBOARD_TEXT, required_schema_fields=[],
                           template_string="TICKET: {{ case.case_id }}\nKUNDE: {{ case.customer.practice_name }}")
     c = Case(case_id="T-2026-888", customer=CaseCustomer(customer_id="K-555", practice_name="Radiologie Nord", is_vip=True),
-             timeline=[TimelineEntry(timestamp="2026-08-23T10:00:00", author="Daniel Rösch", note="Bild nicht geladen")])
+             timeline=[TimelineEntry(timestamp="2026-08-23T10:00:00", author="Dana Röder", note="Bild nicht geladen")])
     ok, missing, text = export_service.render_template(c, tmpl)
     assert ok is True and missing == []
     assert "TICKET: T-2026-888" in text and "KUNDE: Radiologie Nord" in text

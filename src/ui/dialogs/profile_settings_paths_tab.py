@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Any, cast
 from collections.abc import Callable
 from pathlib import Path
 import tkinter as tk
+import zipfile
 from tkinter import filedialog
 import customtkinter as ctk
 
@@ -9,6 +10,7 @@ from constants import (
     BTN_WIDTH_XS,
     BTN_WIDTH_MD,
     BTN_WIDTH_WIDE,
+    COLOR_DANGER,
     COLOR_INFO,
     COLOR_LABEL_GRAY70,
     COLOR_MUTED_BODY,
@@ -475,7 +477,20 @@ class PathsSettingsTabMixin:
         default_att = self.storage_service.config.attachments_dir
 
         def on_confirmed(target_data: Path, target_att: Path):
-            res = ZipBackupService.import_backup_zip(zip_p, target_data, target_att)
+            try:
+                # The import overwrites the data files in place. Whatever is
+                # there now goes to backups/pre_zip_import_<timestamp>/ first
+                # (this also writes out pending saves before they are replaced).
+                self.storage_service.create_safety_snapshot("pre_zip_import")
+                res = ZipBackupService.import_backup_zip(zip_p, target_data, target_att)
+            except (OSError, ValueError, zipfile.BadZipFile) as err:
+                # An archive with unsafe entry names (UnsafeZipEntryError) is
+                # rejected as a whole, before anything is written.
+                self.status_lbl.configure(
+                    text=tr("profile.zip_import_failed", "❌ Import abgebrochen: {error}", error=err),
+                    text_color=COLOR_DANGER,
+                )
+                return
 
             # Update paths in config
             self.storage_service.config.custom_cases_path = target_data / FILENAME_CASES

@@ -3,8 +3,8 @@
     "case_id": "T-2026-0001",
     "created_at": "2026-08-23T09:15:00",
     "updated_at": "2026-08-23T14:30:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10482",
       "practice_name": "Gemeinschaftspraxis Dr. Müller & Partner",
@@ -47,14 +47,14 @@
     "timeline": [
       {
         "timestamp": "2026-08-23T09:15:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "PHONE_INBOUND",
         "note": "Praxis meldet Abbruch beim Erzeugen der Zuzahlungsdatei. Rückruf bis 16:00 versprochen.",
         "status_change": "NEW -> ACTION_REQUIRED (SUPPORT)"
       },
       {
         "timestamp": "2026-08-23T10:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "DEV_TICKET",
         "note": "Ticket via GitLab-Template an Dev übergeben. Warte auf Prüfung der Abrechnungs-Engine.",
         "status_change": "ACTION_REQUIRED (SUPPORT) -> ACTION_REQUIRED (DEVELOPMENT)"
@@ -66,8 +66,8 @@
     "case_id": "T-2026-0002",
     "created_at": "2026-08-20T11:00:00",
     "updated_at": "2026-08-20T11:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10890",
       "practice_name": "Praxisklinik am Stadtgarten",
@@ -107,7 +107,7 @@
     "timeline": [
       {
         "timestamp": "2026-08-20T11:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Rezeptdruck stürzt ab",
         "status_change": ""
@@ -120,7 +120,7 @@
     "created_at": "2026-08-23T12:00:00",
     "updated_at": "2026-08-23T12:00:00",
     "created_by": "Max Müller",
-    "assigned_to": "Daniel Rösch",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10211",
       "practice_name": "Zahnarztpraxis Dr. Schmidt",
@@ -170,8 +170,8 @@
     "case_id": "T-2026-0004",
     "created_at": "2026-08-22T15:00:00",
     "updated_at": "2026-08-22T15:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10554",
       "practice_name": "MVZ Kardiologie Rhein-Neckar",
@@ -211,7 +211,7 @@
     "timeline": [
       {
         "timestamp": "2026-08-22T15:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Warten auf DB-Dump der Praxis",
         "status_change": ""
@@ -223,8 +223,8 @@
     "case_id": "T-2026-0005",
     "created_at": "2026-08-23T13:00:00",
     "updated_at": "2026-08-23T13:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10777",
       "practice_name": "Hausarztpraxis Dipl.-Med. Fischer",
@@ -262,7 +262,7 @@
     "timeline": [
       {
         "timestamp": "2026-08-23T13:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Feedback erfasst",
         "status_change": ""
@@ -274,8 +274,8 @@
     "case_id": "T-2026-0006",
     "created_at": "2026-08-15T08:00:00",
     "updated_at": "2026-08-16T10:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10482",
       "practice_name": "Gemeinschaftspraxis Dr. Müller & Partner",
@@ -313,7 +313,7 @@
     "timeline": [
       {
         "timestamp": "2026-08-16T10:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Erfolgreich abgeschlossen",
         "status_change": ""
@@ -325,8 +325,8 @@
     "case_id": "T-2026-0008",
     "created_at": "2026-08-23T14:00:00",
     "updated_at": "2026-08-23T14:00:00",
-    "created_by": "Daniel Rösch",
-    "assigned_to": "Daniel Rösch",
+    "created_by": "Dana Röder",
+    "assigned_to": "Dana Röder",
     "customer": {
       "customer_id": "K-10211",
       "practice_name": "Zahnarztpraxis Dr. Schmidt",
@@ -366,7 +366,7 @@
     "timeline": [
       {
         "timestamp": "2026-08-23T14:00:00",
-        "author": "Daniel Rösch",
+        "author": "Dana Röder",
         "channel": "INTERNAL_NOTE",
         "note": "Neu erfasst",
         "status_change": ""

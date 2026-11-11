@@ -287,7 +287,7 @@ def main_mod(monkeypatch):
             pass
 
     monkeypatch.setattr("ui.app.SupportCockpitApp", _App)
-    module.started_apps = started
+    setattr(module, "started_apps", started)  # a plain attribute assignment on a module is a type error
     return module
 
 
@@ -425,9 +425,9 @@ def test_os_username_never_raises(monkeypatch):
         raise OSError(25, "Inappropriate ioctl for device")
 
     monkeypatch.setattr(os, "getlogin", no_tty)
-    monkeypatch.setattr("getpass.getuser", lambda: "droesch")
-    assert get_os_username() == "droesch"
-    assert AppConfig(workspace_dir=Path(".")).username == "droesch"
+    monkeypatch.setattr("getpass.getuser", lambda: "testuser")
+    assert get_os_username() == "testuser"
+    assert AppConfig(workspace_dir=Path(".")).username == "testuser"
 
     def nothing():
         raise KeyError("no user")
@@ -465,7 +465,8 @@ def test_quick_capture_stores_the_reminder_as_iso_in_every_language(lang):
     case = build_quick_case(text="Rückruf", person="", reminder=datetime(2026, 10, 29, 16, 30), created_by="Ich",
                             taken_ids=set(), now=datetime(2026, 10, 29, 9, 0))
     assert case.workflow_status.followup_at == "2026-10-29T16:30:00"
-    assert parse_followup_datetime(case.workflow_status.followup_at).replace(tzinfo=None) == datetime(2026, 10, 29, 16, 30)
+    parsed = parse_followup_datetime(case.workflow_status.followup_at)
+    assert parsed is not None and parsed.replace(tzinfo=None) == datetime(2026, 10, 29, 16, 30)
 
 
 @pytest.mark.parametrize("stored", [

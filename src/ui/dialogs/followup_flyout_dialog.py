@@ -64,6 +64,7 @@ from ui.widgets.date_picker import DatePickerWidget
 from utils.datetime_utils import (
     format_german_date,
     format_german_datetime,
+    format_iso,
     get_local_now,
 )
 
@@ -315,7 +316,9 @@ class FollowupFlyoutDialog(BaseDialog):
         dt = picker.get_datetime()
         if not dt:
             return
-        case.workflow_status.followup_at = format_german_datetime(dt)
+        # Stored as ISO, shown localized: the display form ("... Uhr" /
+        # "... o'clock") depends on the UI language and is not data.
+        case.workflow_status.followup_at = format_iso(dt)
         self._on_action_completed(case)
 
     def complete_followup(self, case: Case):

@@ -36,7 +36,7 @@ from constants import (
     TRUTHY_SEARCH_VALUES,
 )
 from models.case import Case
-from utils.datetime_utils import get_local_now, hours_until_deadline, parse_iso
+from utils.datetime_utils import get_local_now, hours_until_deadline, parse_followup_datetime
 
 
 @dataclass
@@ -165,12 +165,15 @@ class SearchService:
                 if not case.workflow_status.followup_at:
                     return False
                 if query.reminder == REMINDER_SEARCH_DUE:
-                    try:
-                        fw_dt = parse_iso(case.workflow_status.followup_at)
-                        if fw_dt > ref_now:
-                            return False
-                    except Exception:
-                        pass
+                    # parse_followup_datetime, not parse_iso: follow-ups saved
+                    # in the display form ("25.08.2026 09:00 Uhr") made
+                    # parse_iso raise, and the swallowed error counted every
+                    # such case as due. A value nothing can read still counts
+                    # as due, so it shows up instead of disappearing.
+                    fw_dt = parse_followup_datetime(case.workflow_status.followup_at)
+                    due_ref = ref_now if ref_now.tzinfo is not None else ref_now.replace(tzinfo=get_local_now().tzinfo)
+                    if fw_dt is not None and fw_dt > due_ref:
+                        return False
             elif query.reminder in FALSY_SEARCH_VALUES:
                 if case.workflow_status.followup_at:
                     return False

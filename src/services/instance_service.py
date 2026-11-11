@@ -8,10 +8,17 @@ exit again, otherwise every click would open a second copy of the app.
 The hand-off runs over two small files in the workspace directory:
 
   instance.lock          the running app rewrites it about twice a minute, so a
-                         recent mtime means "an instance is alive". A lock left
-                         behind by a crash simply ages out; no PID is consulted,
-                         because os.kill(pid, 0) on Windows does not probe a
-                         process - it terminates it.
+                         recent mtime means "an instance is alive". It holds the
+                         owner's PID: if that process is gone, a lock left
+                         behind by a crash is ignored at once instead of ageing
+                         out, so a restart after a crash is never refused. The
+                         PID is probed without os.kill on Windows, where
+                         os.kill(pid, 0) does not probe a process - it
+                         terminates it.
+
+A second start on a workspace whose lock is alive is refused by main(): two
+instances each keep the whole data set in memory and write it back in full, so
+whichever saves last silently discards the other one's changes.
   open_case_request.json what the second process leaves behind. The running app
                          polls for it, opens the case and deletes the file.
 
@@ -53,9 +60,56 @@ __all__ = [
     "URI_SCHEME",
     "build_case_uri",
     "parse_case_uri",
+    "pid_is_alive",
     "register_uri_scheme",
     "should_register",
 ]
+
+
+_PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+_STILL_ACTIVE = 259
+_ERROR_ACCESS_DENIED = 5
+
+
+def pid_is_alive(pid: int) -> bool | None:
+    """Whether a process with this id exists. None when it cannot be determined."""
+    if pid <= 0:
+        return False
+    if pid == os.getpid():
+        return True
+    try:
+        if sys.platform.startswith("win"):
+            import ctypes
+            from ctypes import wintypes
+
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32.OpenProcess.restype = wintypes.HANDLE
+            kernel32.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+            kernel32.GetExitCodeProcess.argtypes = [wintypes.HANDLE, ctypes.POINTER(wintypes.DWORD)]
+            kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+
+            handle = kernel32.OpenProcess(_PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+            if not handle:
+                # Access denied means it exists but belongs to someone else.
+                return ctypes.get_last_error() == _ERROR_ACCESS_DENIED
+            try:
+                exit_code = wintypes.DWORD()
+                if not kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                    return None
+                return exit_code.value == _STILL_ACTIVE
+            finally:
+                kernel32.CloseHandle(handle)
+
+        try:
+            os.kill(pid, 0)
+        except ProcessLookupError:
+            return False
+        except PermissionError:
+            return True
+        return True
+    except Exception as err:
+        logger.debug(f"Could not probe process {pid}: {err}")
+        return None
 
 
 def build_case_uri(case_id: str) -> str:
@@ -103,12 +157,28 @@ class InstanceService:
     # --- lock ---
 
     def is_running(self) -> bool:
-        """True when another instance has refreshed the lock recently."""
+        """True when an instance has refreshed the lock recently and its process still exists."""
         try:
             age = time.time() - self.lock_path.stat().st_mtime
         except OSError:
             return False
-        return age < LOCK_STALE_SECONDS
+        if age >= LOCK_STALE_SECONDS:
+            return False
+        # A fresh lock whose owner is gone is what a crash leaves behind.
+        try:
+            owner_pid = int(self.lock_path.read_text(encoding="utf-8").strip())
+        except (OSError, ValueError):
+            return True  # unreadable or old-format lock: the mtime alone decides
+        return pid_is_alive(owner_pid) is not False
+
+    def is_blocked_by_other_instance(self) -> bool:
+        """True when a live instance holds this workspace and it is not this one.
+
+        Checked by main() after handoff_or_claim(): a start that could neither
+        hand a case over nor claim the lock must not open a second window on
+        the same data.
+        """
+        return not self._owns_lock and self.is_running()
 
     @property
     def owns_lock(self) -> bool:

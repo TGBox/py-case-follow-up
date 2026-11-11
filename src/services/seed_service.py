@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from pathlib import Path
 from enums import FieldType, TargetType, SyncMode, LayoutMode
@@ -6,15 +7,59 @@ from models.customer import Customer, Contact
 from models.schema import QuestionSchema, SchemaField
 from models.export_template import ExportTemplate
 from models.profile import UserProfile, UserInfo, UISettings, WikiSettings, Colleague
-from services.storage_service import StorageService
+from services.storage_service import StorageService, read_json_readonly
 from services.scoring_service import ScoringService
 from services.seed_case_data import build_seed_cases
+
+
+logger = logging.getLogger("SupportCockpit")
+
+
+class SeedRefusedError(RuntimeError):
+    """Seeding would overwrite real data and was not explicitly forced."""
+
+    def __init__(self, user_data: dict[str, int], workspace_dir: Path):
+        self.user_data = user_data
+        self.workspace_dir = workspace_dir
+        found = ", ".join(f"{count} {kind}" for kind, count in user_data.items())
+        super().__init__(f"Workspace {workspace_dir} contains real data ({found}); seeding would overwrite it.")
 
 
 class SeedService:
     def __init__(self, storage_service: StorageService):
         self.storage = storage_service
         self.config = storage_service.config
+
+    def find_user_data(self) -> dict[str, int]:
+        """What in this workspace is the user's own and would be lost by seeding.
+
+        Cases carry an is_demo_data flag. Customers do not, so a customer counts
+        as the user's own when its id is neither a seed customer nor one from
+        the bundled example file. Empty dict: nothing but demo data.
+        """
+        found: dict[str, int] = {}
+
+        own_cases = sum(1 for c in self.storage.load_cases() if not c.is_demo_data)
+        if own_cases:
+            found["cases"] = own_cases
+        own_archived = sum(1 for c in self.storage.load_archive() if not c.is_demo_data)
+        if own_archived:
+            found["archived cases"] = own_archived
+
+        demo_customer_ids = {c.customer_id for c in self.create_seed_customers()}
+        try:
+            example_customers = read_json_readonly(self.config.get_example_path("customers.json"))
+            if isinstance(example_customers, list):
+                demo_customer_ids.update(
+                    str(item.get("customer_id", "")) for item in example_customers if isinstance(item, dict)
+                )
+        except (OSError, ValueError):
+            pass  # no example file: the seed customers alone define "demo"
+        own_customers = sum(1 for c in self.storage.load_customers() if c.customer_id not in demo_customer_ids)
+        if own_customers:
+            found["customers"] = own_customers
+
+        return found
 
     def create_seed_customers(self) -> list[Customer]:
         return [
@@ -349,8 +394,21 @@ class SeedService:
         return db_path
 
     def run_seed(self, force: bool = False) -> dict[str, int]:
-        """Runs complete seeding process."""
+        """Runs complete seeding process.
+
+        Seeding replaces cases, customers, schemas, templates, profile and
+        colleagues. If the workspace holds anything that is not demo data it
+        refuses with SeedRefusedError unless force is set - and with force it
+        first copies every data file into backups/pre_seed_<timestamp>/.
+        """
         self.config.ensure_directories()
+
+        user_data = self.find_user_data()
+        if user_data:
+            if not force:
+                raise SeedRefusedError(user_data, self.config.workspace_dir)
+            snapshot = self.storage.create_safety_snapshot("pre_seed")
+            logger.warning(f"Seeding over real data ({user_data}); previous state saved to {snapshot}")
 
         customers = self.create_seed_customers()
         schemas = self.create_seed_schemas()

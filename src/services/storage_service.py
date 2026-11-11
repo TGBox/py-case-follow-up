@@ -16,6 +16,7 @@ from constants import (
     ATOMIC_REPLACE_RETRIES,
     ATOMIC_REPLACE_RETRY_DELAY_SECONDS,
     ATTACHMENTS_DIRNAME,
+    BACKUP_SERIES_CASES,
     DAYS_PER_MONTH,
     DAYS_PER_WEEK,
     DEBOUNCE_DELAY_STORAGE_SAVE,
@@ -23,7 +24,9 @@ from constants import (
     JSON_INDENT,
     LOG_BACKUP_COUNT,
     LOG_MAX_BYTES,
-    REGEX_CASES_BACKUP,
+    REGEX_DATA_BACKUP,
+    SAFETY_SNAPSHOT_TIMESTAMP_FORMAT,
+    SNIPPETS_BACKUP_SOURCE_FILENAME,
     REL_ATTACHMENTS_DIR,
     TIMEOUT_STORAGE_FLUSH_ALL,
     TIMEOUT_STORAGE_WRITE_COND,
@@ -133,6 +136,26 @@ def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
         raise e
 
 
+class StorageReadError(OSError):
+    """A data file exists but could not be read (or safely set aside).
+
+    Raised instead of quietly replacing the file: an unreachable network
+    share, a lock that outlasts the retries or a failed rename say nothing
+    about the content, and treating them as corruption overwrote intact data
+    with the example template or an empty list.
+    """
+
+
+def read_json_readonly(path: Path) -> Any:
+    """Reads a JSON file without ever creating, renaming or rewriting it.
+
+    For files this app does not own - above all a colleague's cases.json on a
+    share. Raises OSError if the file cannot be read and ValueError if it is
+    not valid JSON; the file is left exactly as it was either way.
+    """
+    return _read_json_with_retry(path)
+
+
 def safe_read_json(
     target_path: Path,
     default_factory: Callable[[], Any] | None = None,
@@ -143,7 +166,11 @@ def safe_read_json(
     2. If target_path is missing:
        a. Copy example_path if available.
        b. Otherwise save and return default_factory() value.
-    3. If corrupted: backup corrupted file and try example_path or default.
+    3. If the content is not valid JSON: set the file aside as .corrupted_*
+       and try example_path or default. If it cannot be set aside, nothing is
+       overwritten and StorageReadError is raised.
+    4. If the file cannot be read at all (I/O error): StorageReadError, the
+       file stays untouched.
     """
     if not target_path.exists():
         if example_path and example_path.exists():
@@ -161,16 +188,25 @@ def safe_read_json(
 
     try:
         return _read_json_with_retry(target_path)
-    except Exception as e:
-        logger.error(f"Corrupted or unreadable JSON file {target_path}: {e}")
-        # Backup corrupted file
+    except OSError as e:
+        # Not a statement about the content: the file may be perfectly fine.
+        logger.error(f"Could not read {target_path} (left untouched): {e}")
+        raise StorageReadError(f"Could not read {target_path}: {e}") from e
+    except ValueError as e:
+        # json.JSONDecodeError and UnicodeDecodeError: the content itself is broken.
+        logger.error(f"Corrupted JSON file {target_path}: {e}")
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         corrupted_path = target_path.with_suffix(f".corrupted_{timestamp}.json")
         try:
             target_path.rename(corrupted_path)
             logger.info(f"Renamed corrupted file to {corrupted_path}")
-        except Exception as rename_err:
-            logger.error(f"Could not rename corrupted file: {rename_err}")
+        except OSError as rename_err:
+            # Without the rename the fallback below would overwrite the only
+            # copy of whatever is still recoverable from the file.
+            logger.error(f"Could not set corrupted file {target_path} aside: {rename_err}")
+            raise StorageReadError(
+                f"{target_path} is corrupted and could not be set aside: {rename_err}"
+            ) from rename_err
 
         if example_path and example_path.exists():
             try:
@@ -569,7 +605,13 @@ class StorageService:
 
         for c in cases:
             if c.workflow_status.is_completed:
-                idle_days = calculate_idle_days(c.updated_at)
+                try:
+                    idle_days = calculate_idle_days(c.updated_at)
+                except ValueError as e:
+                    # Runs on every start: one unreadable timestamp must not
+                    # keep the whole app from opening. The case simply stays.
+                    logger.warning(f"Auto-archive skipped case {c.case_id}: unreadable updated_at {c.updated_at!r} ({e})")
+                    idle_days = 0.0
                 if idle_days >= threshold_days:
                     c.workflow_status.is_archived = True
                     if c.case_id not in archive_by_id:
@@ -593,9 +635,9 @@ class StorageService:
     ) -> list[Path]:
         """Prunes old backup files in backups/ according to grandfather-father-son retention rules.
 
-        Rules:
-        - Only files matching 'cases_YYYY-MM-DD.json' are evaluated.
-        - The newest backup file is never deleted under any circumstances (safety guard).
+        Rules, applied to each backup series (cases, archive, customers, ...) on its own:
+        - Only files matching '<series>_YYYY-MM-DD.json' are evaluated.
+        - The newest backup file of a series is never deleted under any circumstances (safety guard).
         - Files within 'daily_days' are all kept.
         - Files between 'daily_days' and weekly cutoff keep the latest backup per ISO calendar week.
         - Files between weekly cutoff and monthly cutoff keep the latest backup per calendar month.
@@ -613,8 +655,8 @@ class StorageService:
                 logger.warning(f"Could not load backup settings, using defaults: {e}")
                 settings = BackupSettings()
 
-        pattern = re.compile(REGEX_CASES_BACKUP)
-        backup_files: list[tuple[Path, date]] = []
+        pattern = re.compile(REGEX_DATA_BACKUP)
+        series_files: dict[str, list[tuple[Path, date]]] = {}
 
         for p in backups_dir.iterdir():
             if not p.is_file():
@@ -622,20 +664,40 @@ class StorageService:
             m = pattern.match(p.name)
             if not m:
                 continue
-            date_str = m.group(1)
             try:
-                d = date.fromisoformat(date_str)
-                backup_files.append((p, d))
+                d = date.fromisoformat(m.group(2))
             except ValueError:
                 continue
+            series_files.setdefault(m.group(1), []).append((p, d))
 
-        if not backup_files:
+        if not series_files:
             return []
 
-        # Sort ascending by date
-        backup_files.sort(key=lambda item: item[1])
-
         ref_date = reference_date if reference_date is not None else datetime.now().date()
+
+        deleted_files: list[Path] = []
+        # Cases first, so the returned list starts with the series callers know.
+        for series in sorted(series_files, key=lambda name: (name != BACKUP_SERIES_CASES, name)):
+            backup_files = sorted(series_files[series], key=lambda item: item[1])
+            keep_paths = self._backups_to_keep(backup_files, ref_date, settings)
+            for path, _ in backup_files:
+                if path not in keep_paths:
+                    try:
+                        path.unlink()
+                        deleted_files.append(path)
+                        logger.info(f"Pruned old backup: {path.name}")
+                    except Exception as e:
+                        logger.warning(f"Failed to prune backup file {path}: {e}")
+
+        return deleted_files
+
+    @staticmethod
+    def _backups_to_keep(
+        backup_files: list[tuple[Path, date]],
+        ref_date: date,
+        settings: BackupSettings,
+    ) -> set[Path]:
+        """Retention decision for one backup series, given ascending (path, date) pairs."""
         daily_days = max(1, settings.daily_days)
         weekly_weeks = max(0, settings.weekly_weeks)
         monthly_months = max(0, settings.monthly_months)
@@ -666,30 +728,51 @@ class StorageService:
                 month_key = (d.year, d.month)
                 if month_key not in monthly_buckets or d > monthly_buckets[month_key][1]:
                     monthly_buckets[month_key] = (path, d)
-            else:
-                # Older than monthly retention cutoff: eligible for deletion
-                pass
+            # Older than the monthly cutoff: eligible for deletion
 
-        for p, _ in weekly_buckets.values():
-            keep_paths.add(p)
+        keep_paths.update(p for p, _ in weekly_buckets.values())
+        keep_paths.update(p for p, _ in monthly_buckets.values())
+        return keep_paths
 
-        for p, _ in monthly_buckets.values():
-            keep_paths.add(p)
+    def _backup_sources(self) -> dict[str, Path]:
+        """The data files besides cases.json that belong in a backup, by series name."""
+        return {
+            "archive": self.config.archive_path,
+            "customers": self.config.customers_path,
+            "app_profile": self.config.app_profile_path,
+            "colleagues": self.config.colleagues_path,
+            "question_schemas": self.config.question_schemas_path,
+            "export_templates": self.config.export_templates_path,
+            "snippets": self.config.data_dir / SNIPPETS_BACKUP_SOURCE_FILENAME,
+        }
 
-        deleted_files: list[Path] = []
-        for path, _ in backup_files:
-            if path not in keep_paths:
-                try:
-                    path.unlink()
-                    deleted_files.append(path)
-                    logger.info(f"Pruned old backup: {path.name}")
-                except Exception as e:
-                    logger.warning(f"Failed to prune backup file {path}: {e}")
+    def create_safety_snapshot(self, label: str) -> Path | None:
+        """Copies every data file into backups/<label>_<timestamp>/ before a destructive operation.
 
-        return deleted_files
+        Returns the snapshot folder, or None if there was nothing to copy. A
+        file that cannot be copied raises: the caller is about to overwrite it,
+        so going ahead without the copy would defeat the purpose.
+        """
+        self.flush_all_saves()
+        sources = {BACKUP_SERIES_CASES: self.config.cases_path, **self._backup_sources()}
+        existing = {name: path for name, path in sources.items() if path.exists()}
+        if not existing:
+            return None
+
+        stamp = datetime.now().strftime(SAFETY_SNAPSHOT_TIMESTAMP_FORMAT)
+        snapshot_dir = self.config.backups_dir / f"{label}_{stamp}"
+        counter = 2
+        while snapshot_dir.exists():
+            snapshot_dir = self.config.backups_dir / f"{label}_{stamp}_{counter}"
+            counter += 1
+        snapshot_dir.mkdir(parents=True)
+        for name, path in existing.items():
+            shutil.copy2(path, snapshot_dir / f"{name}.json")
+        logger.info(f"Created safety snapshot of {len(existing)} data files in {snapshot_dir}")
+        return snapshot_dir
 
     def perform_daily_backup(self, date_str: str | None = None, settings: BackupSettings | None = None) -> Path | None:
-        """Performs daily backup of cases.json to backups/cases_YYYY-MM-DD.json and prunes old backups."""
+        """Performs the daily backup of cases.json and the other data files to backups/<series>_YYYY-MM-DD.json and prunes old backups."""
         if not date_str:
             date_str = datetime.now().strftime("%Y-%m-%d")
 
@@ -711,6 +794,18 @@ class StorageService:
                 atomic_save_json(backup_path, [c.to_dict() for c in cases])
                 logger.info(f"Created daily backup: {backup_path}")
                 created_or_existing = backup_path
+
+        # The other data files are just as hard to recreate as the cases
+        # (customers, archive, profile, schemas, templates, snippets). They are
+        # copied as they are on disk, once per day like the cases.
+        for series, source in self._backup_sources().items():
+            series_backup = self.config.backups_dir / f"{series}_{date_str}.json"
+            if series_backup.exists() or not source.exists():
+                continue
+            try:
+                shutil.copy2(source, series_backup)
+            except OSError as e:
+                logger.warning(f"Could not back up {source} to {series_backup}: {e}")
 
         try:
             self.prune_old_backups(reference_date=ref_date, settings=settings)

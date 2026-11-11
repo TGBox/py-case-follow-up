@@ -6,6 +6,13 @@ from constants import ISO_DATETIME_FORMAT
 from services.i18n_service import tr
 
 
+# The localized word after a time ("14:30 Uhr", "14:30 o'clock", "14:30 kl.").
+# It has to cover every shipped language: display strings in all of them were
+# stored as follow-up dates at times, and a suffix this pattern does not know
+# makes the value unparseable - the reminder then silently never fires.
+_CLOCK_SUFFIX_RE = re.compile(r"\s*(Uhr|kl\.?|o['’]clock)\s*$", re.IGNORECASE)
+
+
 def get_local_now() -> datetime:
     """Returns the current timezone-aware local datetime."""
     return datetime.now().astimezone()
@@ -100,7 +107,7 @@ def get_relative_date_text(val: str | datetime | None, ref_date: date | datetime
                 return ""
             target_dt = parse_iso(val_str)
     except Exception:
-        clean = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", val, flags=re.IGNORECASE).strip() if isinstance(val, str) else ""
+        clean = _CLOCK_SUFFIX_RE.sub("", val).strip() if isinstance(val, str) else ""
         if re.match(r"^\d{2}\.\d{2}\.\d{4}", clean):
             try:
                 target_dt = datetime.strptime(clean[:10], "%d.%m.%Y")
@@ -176,7 +183,7 @@ def format_german_time(val: str | datetime | None, include_seconds: bool = False
         dt = parse_iso(val_str)
         return dt.strftime(fmt)
     except Exception:
-        clean = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", val_str, flags=re.IGNORECASE).strip()
+        clean = _CLOCK_SUFFIX_RE.sub("", val_str).strip()
         if re.match(r"^\d{1,2}:\d{2}", clean):
             return f"{clean[:5]}{suffix}"
         return val_str
@@ -202,7 +209,7 @@ def format_german_datetime(
         dt = parse_iso(val_str)
         return dt.strftime(fmt)
     except Exception:
-        clean = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", val_str, flags=re.IGNORECASE).strip()
+        clean = _CLOCK_SUFFIX_RE.sub("", val_str).strip()
         if re.match(r"^\d{2}\.\d{2}\.\d{4}\s+\d{1,2}:\d{2}", clean):
             return f"{clean}{suffix}"
         return val_str
@@ -213,7 +220,7 @@ def parse_german_date(german_str: str) -> str:
     if not german_str or not german_str.strip():
         return ""
     cleaned = re.sub(r"\s*\(.*?\)", "", german_str).strip()
-    cleaned = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", cleaned, flags=re.IGNORECASE).strip()
+    cleaned = _CLOCK_SUFFIX_RE.sub("", cleaned).strip()
     for fmt, iso_fmt in [
         ("%d.%m.%Y %H:%M:%S", "%Y-%m-%dT%H:%M:%S"),
         ("%d.%m.%Y %H:%M", "%Y-%m-%dT%H:%M:00"),
@@ -246,7 +253,7 @@ def parse_followup_datetime(val: str | datetime | None) -> datetime | None:
         return None
 
     s = re.sub(r"\s*\(.*?\)", "", s).strip()
-    s = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", s, flags=re.IGNORECASE).strip()
+    s = _CLOCK_SUFFIX_RE.sub("", s).strip()
 
     try:
         return parse_iso(s)
@@ -282,7 +289,7 @@ def parse_flexible_followup_input(input_str: str) -> datetime | None:
 
     s = input_str.strip()
     s = re.sub(r"\s*\(.*?\)", "", s).strip()
-    s = re.sub(r"\s*(Uhr|kl\.?)\s*$", "", s, flags=re.IGNORECASE).strip()
+    s = _CLOCK_SUFFIX_RE.sub("", s).strip()
 
     now = get_local_now()
 

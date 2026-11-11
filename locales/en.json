@@ -1765,6 +1765,16 @@
     "loading": "⏳ Loading application data and layouts...",
     "title": "🩺 Support Cockpit"
   },
+  "startup": {
+    "already_running_message": "Support Cockpit is already open with this workspace:\n{workspace}\n\nPlease use the running window (it may be behind the icon in the notification area).",
+    "already_running_title": "Support Cockpit is already running",
+    "error_message": "An error occurred during startup:\n\n{error}\n\nDetails can be found in:\n{log}",
+    "error_title": "Support Cockpit could not be started",
+    "seed_refused_message": "The workspace contains real data ({found}):\n{workspace}\n\n--seed and --demo would overwrite it. Please name another folder with --workspace, or confirm with --force (a copy is then saved under data/backups/pre_seed_... first).",
+    "seed_refused_title": "Demo data not created",
+    "workspace_missing_message": "The configured workspace cannot be reached:\n{missing}\n\nStart with the default workspace instead?\n{fallback}\n\nChoosing “No” closes the application and leaves the setting unchanged.",
+    "workspace_missing_title": "Workspace not reachable"
+  },
   "status_messages": {
     "ai_draft_generated": "✓ Email draft reply generated.",
     "ai_ollama_offline": "⚡ Rule-based NLP Mode (Ollama offline)",

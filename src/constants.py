@@ -1531,6 +1531,23 @@ DEFAULT_AUTO_ARCHIVE_THRESHOLD_DAYS = 30
 DAYS_PER_WEEK = 7
 DAYS_PER_MONTH = 30
 REGEX_CASES_BACKUP = r"^cases_(\d{4}-\d{2}-\d{2})\.json$"
+# Every data file the daily backup covers, each as "<series>_YYYY-MM-DD.json".
+# Retention is applied per series, so the newest copy of each one always stays.
+BACKUP_SERIES_CASES = "cases"
+BACKUP_EXTRA_SERIES = (
+    "archive",
+    "customers",
+    "app_profile",
+    "colleagues",
+    "question_schemas",
+    "export_templates",
+    "snippets",
+)
+REGEX_DATA_BACKUP = (
+    r"^(" + "|".join((BACKUP_SERIES_CASES, *BACKUP_EXTRA_SERIES)) + r")_(\d{4}-\d{2}-\d{2})\.json$"
+)
+SNIPPETS_BACKUP_SOURCE_FILENAME = "snippets.json"
+SAFETY_SNAPSHOT_TIMESTAMP_FORMAT = "%Y%m%d_%H%M%S"
 
 # Instance Service & Protocol Handler Constants
 URI_SCHEME = "supportcockpit"

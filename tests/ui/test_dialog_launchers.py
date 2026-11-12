@@ -312,3 +312,71 @@ def test_app_builds_only_the_active_layout_and_caches_views(config):
             app.destroy()
         except Exception:
             pass
+
+
+# --- data replaced on disk (ZIP import) --------------------------------------------------
+
+class _ClearableCockpit:
+    def __init__(self, open_case: Case | None):
+        self.current_case: Case | None = open_case
+        self.cleared = 0
+
+    def clear_current_case(self) -> None:
+        self.cleared += 1
+        self.current_case = None
+
+
+class _ReplacedDataHost:
+    """Only what _drop_open_case_if_replaced touches - no window needed."""
+
+    def __init__(self, storage, cases: list[Case], open_case: Case | None):
+        self.storage_service = storage
+        self.cases = cases
+        self.active_case: Case | None = open_case
+        self.cockpit_view = _ClearableCockpit(open_case)
+
+    @property
+    def cleared(self) -> int:
+        return self.cockpit_view.cleared
+
+    def is_view_built(self, key: str) -> bool:
+        return key == LayoutMode.COCKPIT.value
+
+
+def test_open_case_survives_an_ordinary_settings_save(storage):
+    """Saving the settings rereads the lists too (new objects), but from the open case's own data - it must stay open."""
+    open_case = _make_case()
+    host = _ReplacedDataHost(storage, cases=[_make_case()], open_case=open_case)
+    DialogLaunchersMixin._drop_open_case_if_replaced(host)  # type: ignore[arg-type]
+    assert host.cleared == 0
+    assert host.active_case is open_case and host.cockpit_view.current_case is open_case
+
+
+def test_open_case_is_closed_once_the_data_was_replaced_on_disk(storage):
+    """After a ZIP import the pane holds a case from before; saving it would put the old state over the imported one."""
+    open_case = _make_case()
+    host = _ReplacedDataHost(storage, cases=[open_case], open_case=open_case)
+    storage.reload_from_disk()
+    host.cases = [_make_case()]  # what load_all_data() reread: same id, another object
+
+    DialogLaunchersMixin._drop_open_case_if_replaced(host)  # type: ignore[arg-type]
+    assert host.cleared == 1
+    assert host.active_case is None and host.cockpit_view.current_case is None
+
+    # Handled once: the next ordinary settings save leaves a newly opened case alone.
+    reopened = host.cases[0]
+    host.active_case = host.cockpit_view.current_case = reopened
+    DialogLaunchersMixin._drop_open_case_if_replaced(host)  # type: ignore[arg-type]
+    assert host.cleared == 1 and host.cockpit_view.current_case is reopened
+
+
+def test_a_case_that_is_still_loaded_stays_open_after_a_reload(storage):
+    """Archived cases can be open as well; one the reload still knows is not closed."""
+    archived = _make_case("T-APPD-ARCH", is_archived=True, is_completed=True)
+    storage.save_archive([archived], sync=True)
+    storage.reload_from_disk()
+    still_loaded = storage.load_archive()[0]
+    host = _ReplacedDataHost(storage, cases=[], open_case=still_loaded)
+
+    DialogLaunchersMixin._drop_open_case_if_replaced(host)  # type: ignore[arg-type]
+    assert host.cleared == 0 and host.cockpit_view.current_case is still_loaded

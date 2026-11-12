@@ -5,6 +5,7 @@ import time
 import tkinter as tk
 from collections.abc import Callable, Iterator
 from pathlib import Path
+from typing import cast
 
 import customtkinter as ctk
 
@@ -53,14 +54,14 @@ def find_button(root, text: str) -> ctk.CTkButton:
     return hits[0]
 
 
-def find_dialog(app, cls, timeout: float = 2.0):
+def find_dialog[T](app, cls: type[T], timeout: float = 2.0) -> T:
     """Waits for an open dialog of the given class anywhere in the app's widget tree."""
-    def _find():
+    def _find() -> T | None:
         for w in walk(app):
-            if isinstance(w, cls) and w.winfo_exists():
+            if w.winfo_exists() and isinstance(w, cls):
                 return w
         return None
-    return wait_until(app, _find, timeout, what=f"dialog {cls.__name__}")
+    return cast(T, wait_until(app, _find, timeout, what=f"dialog {cls.__name__}"))
 
 
 def dialog_closed(app, dialog) -> None:

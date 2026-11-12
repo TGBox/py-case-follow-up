@@ -4,5 +4,5 @@
   "venv": ".venv",
   "pythonVersion": "3.14",
   "pythonPlatform": "Windows",
-  "extraPaths": ["src"]
+  "extraPaths": ["src", "tests/e2e"]
 }

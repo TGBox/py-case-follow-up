@@ -418,6 +418,46 @@ class DialogLaunchersMixin:
             initial_page=initial_page,
         )
 
+    def _drop_open_case_if_replaced(self) -> None:
+        """Closes the open case when it is no longer one of the loaded case objects.
+
+        After the data was replaced on disk (ZIP import) the detail pane
+        still holds the object from before. Saving it would put the old state
+        back over the imported case - or bring back a case the import does not
+        contain. Only acts when StorageService.reload_from_disk() ran since the
+        last call: an ordinary settings save also rereads the lists, but from
+        the very data the open case belongs to, and must not close it.
+        """
+        generation = getattr(self.storage_service, "reload_generation", 0)
+        if not isinstance(generation, int) or generation == getattr(self, "_seen_reload_generation", 0):
+            return
+        self._seen_reload_generation = generation
+
+        # Archived cases can be open as well, so they count as loaded too.
+        loaded = list(getattr(self, "cases", None) or [])
+        try:
+            loaded += self.storage_service.load_archive()
+        except Exception:
+            pass
+
+        def is_loaded(case: Any) -> bool:
+            return any(c is case for c in loaded)
+
+        active = getattr(self, "active_case", None)
+        if active is not None and not is_loaded(active):
+            self.active_case = None
+        if not self.is_view_built(LayoutMode.COCKPIT.value):
+            return
+        current = getattr(self.cockpit_view, "current_case", None)
+        if current is None or is_loaded(current):
+            return
+        try:
+            self.cockpit_view.clear_current_case()
+        except Exception:
+            logging.getLogger("SupportCockpit").warning(
+                "Could not clear the cockpit detail pane after the case list was reloaded", exc_info=True
+            )
+
     def on_profile_updated(self):
         from services.i18n_service import get_i18n
         self.profile = self.storage_service.load_profile()
@@ -435,6 +475,7 @@ class DialogLaunchersMixin:
             from services.deep_search_service import DeepSearchService
             self.deep_search_service = DeepSearchService(self.storage_service.config.workspace_dir)
         self.load_all_data()
+        self._drop_open_case_if_replaced()
         if hasattr(self, "user_btn") and self.user_btn and self.user_btn.winfo_exists():
             self.user_btn.configure(text=f"{self.profile.user.name}")
         update_fn = getattr(self, "_update_on_call_ui_state", None)

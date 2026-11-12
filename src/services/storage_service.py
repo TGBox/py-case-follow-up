@@ -1,6 +1,7 @@
 import filecmp
 import json
 import logging
+import os
 import re
 import shutil
 import threading
@@ -27,6 +28,8 @@ from constants import (
     REGEX_DATA_BACKUP,
     SAFETY_SNAPSHOT_TIMESTAMP_FORMAT,
     SNIPPETS_BACKUP_SOURCE_FILENAME,
+    STALE_TEMP_FILE_MAX_AGE_SECONDS,
+    TEMP_JSON_GLOB,
     REL_ATTACHMENTS_DIR,
     TIMEOUT_STORAGE_FLUSH_ALL,
     TIMEOUT_STORAGE_WRITE_COND,
@@ -112,20 +115,44 @@ def _read_json_with_retry(path: Path) -> Any:
             time.sleep(ATOMIC_REPLACE_RETRY_DELAY_SECONDS)
 
 
-def atomic_save_json(target_path: Path, data: Any, temp_tag: str = "") -> None:
-    """Atomic JSON save using temporary file and atomic replace.
+#: Serialises the final "move the temp file over the target" step of every
+#: writer in this process, so the order of commits is well defined.
+_COMMIT_LOCK = threading.Lock()
 
-    temp_tag gives the temporary file its own name, for a write that must not
-    share the temp file with a background write of the same target that is
-    still in progress.
+
+def atomic_save_json(
+    target_path: Path,
+    data: Any,
+    temp_tag: str = "",
+    should_commit: Callable[[], bool] | None = None,
+) -> bool:
+    """Atomic JSON save using a temporary file and an atomic replace.
+
+    Every writer gets a temp file of its own (process id + thread id, plus the
+    optional temp_tag). They used to share "<name>.tmp.json": when a debounced
+    background save and a flush on the main thread hit the same target at the
+    same moment, both wrote into that one file. The result was interleaved
+    JSON moved into place by whoever finished first - a corrupted cases.json -
+    and a "file not found" for the other one.
+
+    should_commit is asked under the commit lock, immediately before the
+    replace. Returning False drops this write (the temp file is removed) - that
+    is how a save that was overtaken by a newer one is kept from landing last.
+    Returns True if the target was replaced.
     """
     target_path.parent.mkdir(parents=True, exist_ok=True)
+    writer = f"{os.getpid()}-{threading.get_ident()}"
     tag = f".{temp_tag}" if temp_tag else ""
-    temp_path = target_path.with_name(f"{target_path.name}{tag}.tmp.json")
+    temp_path = target_path.with_name(f"{target_path.name}.{writer}{tag}.tmp.json")
     try:
         with open(temp_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=JSON_INDENT, ensure_ascii=False)
-        _replace_with_retry(temp_path, target_path)
+        with _COMMIT_LOCK:
+            if should_commit is not None and not should_commit():
+                temp_path.unlink(missing_ok=True)
+                return False
+            _replace_with_retry(temp_path, target_path)
+        return True
     except Exception as e:
         logger.error(f"Failed atomic save to {target_path}: {e}")
         if temp_path.exists():
@@ -225,40 +252,70 @@ def safe_read_json(
 
 
 class DebouncedSaver:
-    """Buffers and debounces background disk save operations per target file path."""
+    """Buffers and debounces background disk save operations per target file path.
+
+    Every save gets a generation number when it is handed in. Whatever thread
+    ends up writing it - the debounce timer, flush_all() or save_now() - the
+    write is only moved into place if no newer generation of that file is on
+    disk already. Writers can therefore overlap freely: the newest data wins,
+    never the writer that happened to finish last.
+    """
     def __init__(self):
         self._timers: dict[Path, threading.Timer] = {}
-        self._data: dict[Path, Any] = {}
+        #: Saves waiting for their debounce timer: path -> (generation, data or producer).
+        self._data: dict[Path, tuple[int, Any]] = {}
         self._lock = threading.Lock()
-        self._active_writes: set[Path] = set()
-        #: What each running background write is saving, so flush_all can
-        #: write it itself if that write never finishes.
-        self._active_values: dict[Path, Any] = {}
+        #: Background writes that are running right now: path -> {generation: data or producer},
+        #: so flush_all can write them itself if one never finishes.
+        self._active: dict[Path, dict[int, Any]] = {}
         self._write_cond = threading.Condition(self._lock)
+        self._next_generation = 0
+        #: Newest generation that reached the disk, per path.
+        self._committed: dict[Path, int] = {}
+        #: Saves older than this were discarded (discard_pending) and must not land any more.
+        self._discard_floor = 0
+
+    def _new_generation(self) -> int:
+        """Call with self._lock held."""
+        self._next_generation += 1
+        return self._next_generation
+
+    def _write(self, target_path: Path, generation: int, val: Any, temp_tag: str = "") -> bool:
+        """Serialises and saves one generation; False if a newer one made it obsolete."""
+        def still_newest() -> bool:
+            with self._lock:
+                if generation < self._discard_floor or generation < self._committed.get(target_path, 0):
+                    return False
+                self._committed[target_path] = generation
+                return True
+
+        data = val() if callable(val) else val
+        return atomic_save_json(target_path, data, temp_tag=temp_tag, should_commit=still_newest)
 
     def save_debounced(self, target_path: Path, data_or_producer: Any, delay_seconds: float = DEBOUNCE_DELAY_STORAGE_SAVE):
         with self._lock:
-            self._data[target_path] = data_or_producer
+            self._data[target_path] = (self._new_generation(), data_or_producer)
             if target_path in self._timers:
                 self._timers[target_path].cancel()
 
             def flush():
                 with self._lock:
-                    val = self._data.pop(target_path, None)
+                    pending = self._data.pop(target_path, None)
                     self._timers.pop(target_path, None)
-                    if val is None:
+                    if pending is None:
                         return
-                    self._active_writes.add(target_path)
-                    self._active_values[target_path] = val
+                    generation, val = pending
+                    self._active.setdefault(target_path, {})[generation] = val
                 try:
-                    data = val() if callable(val) else val
-                    atomic_save_json(target_path, data)
+                    self._write(target_path, generation, val)
                 except Exception as e:
                     logger.error(f"Debounced background save failed for {target_path}: {e}")
                 finally:
                     with self._lock:
-                        self._active_writes.discard(target_path)
-                        self._active_values.pop(target_path, None)
+                        running = self._active.get(target_path, {})
+                        running.pop(generation, None)
+                        if not running:
+                            self._active.pop(target_path, None)
                         self._write_cond.notify_all()
 
             timer = threading.Timer(delay_seconds, flush)
@@ -266,13 +323,30 @@ class DebouncedSaver:
             self._timers[target_path] = timer
             timer.start()
 
+    def save_now(self, target_path: Path, data: Any) -> None:
+        """Writes synchronously and makes every earlier save of this file obsolete.
+
+        A synchronous save used to bypass the debouncer altogether: an older
+        save still waiting for its timer (or just being written) then landed
+        afterwards and put the previous state back - a permanently deleted
+        case could reappear on disk that way. Raises if the write fails.
+        """
+        with self._lock:
+            generation = self._new_generation()
+            self._data.pop(target_path, None)
+            timer = self._timers.pop(target_path, None)
+            if timer is not None:
+                timer.cancel()
+        self._write(target_path, generation, data)
+
     def discard_pending(self) -> int:
         """Drops every save that is still waiting for its debounce timer, without writing it.
 
         For the moment the files on disk were replaced from outside (a ZIP
         import): a waiting save still holds the data from before and would
         write it right over the new files. Returns how many were dropped. A
-        write that is already running is not interrupted.
+        write that is already running is not interrupted, but it will not be
+        moved into place any more.
         """
         with self._lock:
             dropped = len(self._data)
@@ -280,6 +354,7 @@ class DebouncedSaver:
                 timer.cancel()
             self._timers.clear()
             self._data.clear()
+            self._discard_floor = self._new_generation()
         return dropped
 
     def flush_all(self, timeout: float = TIMEOUT_STORAGE_FLUSH_ALL):
@@ -291,8 +366,7 @@ class DebouncedSaver:
         __del__ calls into Tcl), Tcl hands that call to the main thread and
         waits - while the main thread sits here waiting for the write. Without
         the deadline the app hung on exit. A write still running at the
-        deadline is done here on the main thread instead, under its own temp
-        file name, so nothing is lost.
+        deadline is done here on the main thread instead, so nothing is lost.
         """
         with self._lock:
             pending_data = dict(self._data)
@@ -301,28 +375,26 @@ class DebouncedSaver:
             self._timers.clear()
             self._data.clear()
 
-        for path, val in pending_data.items():
+        for path, (generation, val) in pending_data.items():
             try:
-                data = val() if callable(val) else val
-                atomic_save_json(path, data)
+                self._write(path, generation, val)
             except Exception as e:
                 logger.error(f"Flush save failed for {path}: {e}")
 
         deadline = time.monotonic() + timeout
-        stuck: dict[Path, Any] = {}
+        stuck: list[tuple[Path, int, Any]] = []
         with self._lock:
-            while self._active_writes:
+            while self._active:
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
-                    stuck = {p: self._active_values[p] for p in self._active_writes if p in self._active_values}
+                    stuck = [(p, g, v) for p, running in self._active.items() for g, v in running.items()]
                     break
                 self._write_cond.wait(timeout=min(remaining, TIMEOUT_STORAGE_WRITE_COND))
 
-        for path, val in stuck.items():
+        for path, generation, val in sorted(stuck, key=lambda item: item[1]):
             logger.warning(f"Background save for {path} did not finish in {timeout}s - writing it from the main thread.")
             try:
-                data = val() if callable(val) else val
-                atomic_save_json(path, data, temp_tag="flush")
+                self._write(path, generation, val, temp_tag="flush")
             except Exception as e:
                 logger.error(f"Flush save failed for {path}: {e}")
 
@@ -344,7 +416,34 @@ class StorageService:
         #: Counts reload_from_disk() calls, so the UI can tell "the data was
         #: replaced" from an ordinary settings save and close what it has open.
         self.reload_generation = 0
+        self._remove_stale_temp_files()
         self.migrate_legacy_attachments()
+
+    def _remove_stale_temp_files(self) -> None:
+        """Removes temp files that an interrupted save (crash, power loss) left next to the data files.
+
+        Each writer has a temp file name of its own, so unlike the single
+        shared name before, a leftover is no longer overwritten by the next
+        save. Only files older than an hour are touched - nothing that a save
+        of this very moment could still be working on.
+        """
+        folders = {self.config.data_dir, self.config.data_dir / "profiles"}
+        for attr in PROFILE_PATH_OVERRIDES:
+            custom = getattr(self.config, attr, None)
+            if isinstance(custom, Path):
+                folders.add(custom.parent)
+        cutoff = time.time() - STALE_TEMP_FILE_MAX_AGE_SECONDS
+        for folder in folders:
+            try:
+                leftovers = [f for f in folder.glob(TEMP_JSON_GLOB) if f.is_file() and f.stat().st_mtime < cutoff]
+            except OSError:
+                continue
+            for leftover in leftovers:
+                try:
+                    leftover.unlink()
+                    logger.info(f"Removed stale temp file {leftover}")
+                except OSError as e:
+                    logger.warning(f"Could not remove stale temp file {leftover}: {e}")
 
     def flush_all_saves(self) -> None:
         """Flushes all pending background saves to disk synchronously."""
@@ -508,7 +607,7 @@ class StorageService:
         self._cases_cache = cases
         if sync:
             data = [case.to_dict() for case in cases]
-            atomic_save_json(self.config.cases_path, data)
+            self.saver.save_now(self.config.cases_path, data)
         else:
             cases_snapshot = list(cases)
             self.saver.save_debounced(
@@ -568,7 +667,7 @@ class StorageService:
         self._archive_cache = cases
         if sync:
             data = [case.to_dict() for case in cases]
-            atomic_save_json(self.config.archive_path, data)
+            self.saver.save_now(self.config.archive_path, data)
         else:
             cases_snapshot = list(cases)
             self.saver.save_debounced(
@@ -878,7 +977,7 @@ class StorageService:
         self._customers_cache = customers
         if sync:
             data = [c.to_dict() for c in customers]
-            atomic_save_json(self.config.customers_path, data)
+            self.saver.save_now(self.config.customers_path, data)
         else:
             customers_snapshot = list(customers)
             self.saver.save_debounced(
@@ -979,7 +1078,7 @@ class StorageService:
         p_dict: dict[str, Any] | None = None
         if sync:
             p_dict = profile.to_dict()
-            atomic_save_json(self.config.app_profile_path, p_dict)
+            self.saver.save_now(self.config.app_profile_path, p_dict)
         else:
             self.saver.save_debounced(self.config.app_profile_path, lambda: profile.to_dict())
 
@@ -990,7 +1089,7 @@ class StorageService:
                 if sync:
                     if p_dict is None:
                         p_dict = profile.to_dict()
-                    atomic_save_json(target_path, p_dict)
+                    self.saver.save_now(target_path, p_dict)
                 else:
                     self.saver.save_debounced(target_path, lambda: profile.to_dict())
 
@@ -1129,7 +1228,7 @@ class StorageService:
         self._schemas_cache = schemas
         if sync:
             data = {"schemas": [s.to_dict() for s in schemas]}
-            atomic_save_json(self.config.question_schemas_path, data)
+            self.saver.save_now(self.config.question_schemas_path, data)
         else:
             schemas_snapshot = list(schemas)
             self.saver.save_debounced(
@@ -1212,7 +1311,7 @@ class StorageService:
         self._templates_cache = templates
         data = {"templates": [t.to_dict() for t in templates]}
         if sync:
-            atomic_save_json(self.config.export_templates_path, data)
+            self.saver.save_now(self.config.export_templates_path, data)
         else:
             self.saver.save_debounced(self.config.export_templates_path, data)
 
@@ -1246,6 +1345,6 @@ class StorageService:
         self._colleagues_cache = colleagues
         data = [c.to_dict() for c in colleagues]
         if sync:
-            atomic_save_json(self.config.colleagues_path, data)
+            self.saver.save_now(self.config.colleagues_path, data)
         else:
             self.saver.save_debounced(self.config.colleagues_path, data)

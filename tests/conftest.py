@@ -239,6 +239,38 @@ def block_real_network(monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.fixture(autouse=True)
+def no_stray_default_root():
+    """Fails a test that left an implicit Tk root behind.
+
+    A widget built without a master (None) makes tkinter create a plain
+    tkinter.Tk() on its own and keep it as the default root. It is a second
+    Tcl interpreter next to the worker's shared root, and everything that is
+    created without a master afterwards - CTkInputDialog cannot take one -
+    lands in it. Those dialogs then fail with "grab failed: another application
+    has grab" in whatever test happens to run later in the same process, so
+    the failure moves around with the test order (and with xdist's split).
+    Catching it here names the test that caused it.
+    """
+    yield
+    import tkinter
+
+    stray = getattr(tkinter, "_default_root", None)
+    # CustomTkinter roots and the app are subclasses; a bare tkinter.Tk that is
+    # still the default root after the test (and its fixtures) is the implicit one.
+    if stray is None or type(stray) is not tkinter.Tk:
+        return
+    try:
+        stray.destroy()
+    except Exception:
+        pass
+    pytest.fail(
+        "The test left an implicit tkinter root behind (a widget was created without a master). "
+        "Pass the `root` fixture or another real parent instead of None.",
+        pytrace=False,
+    )
+
+
+@pytest.fixture(autouse=True)
 def startup_dialog_log(monkeypatch: pytest.MonkeyPatch):
     """No test opens a real message box; what main() would have shown is recorded instead.
 

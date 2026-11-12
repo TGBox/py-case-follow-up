@@ -560,14 +560,18 @@ def test_calendar_cobra_and_p2p_dialogs_open_with_their_data(app, seeded_storage
 
 # --- Cockpit helpers formerly tested next to the dialogs ---
 
-def test_cockpit_copy_practice_email_only_when_present():
+def test_cockpit_copy_practice_email_only_when_present(root):
     from ui.views.cockpit_view import CockpitView
 
     cockpit = CockpitView.__new__(CockpitView)
     copied: list[str] = []
     setattr(cockpit, "clipboard_clear", copied.clear)
     setattr(cockpit, "clipboard_append", copied.append)
-    setattr(cockpit, "winfo_toplevel", lambda: None)
+    # The "copied" toast needs a real parent. With None, Tk silently creates a
+    # second, hidden root - and if this test is the first one of its process,
+    # that stray root becomes the default one: every CTkInputDialog of a later
+    # test is then born in it and fails with "another application has grab".
+    setattr(cockpit, "winfo_toplevel", lambda: root)
 
     for email, expected in (("praxis@test.de", ["praxis@test.de"]), ("", [])):
         copied.clear()

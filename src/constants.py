@@ -1527,6 +1527,10 @@ ATOMIC_REPLACE_RETRY_DELAY_SECONDS = 0.05
 TIMEOUT_STORAGE_WRITE_COND = 0.5
 #: Hoechstens so lange wartet flush_all (App-Ende) auf laufende Hintergrund-Saves.
 TIMEOUT_STORAGE_FLUSH_ALL = 2.0
+# Temp files of interrupted saves ("<name>.<pid>-<thread>.tmp.json") older than
+# this are removed at startup; a save that is still running is far younger.
+STALE_TEMP_FILE_MAX_AGE_SECONDS = 3600
+TEMP_JSON_GLOB = "*.tmp.json"
 DEFAULT_AUTO_ARCHIVE_THRESHOLD_DAYS = 30
 DAYS_PER_WEEK = 7
 DAYS_PER_MONTH = 30

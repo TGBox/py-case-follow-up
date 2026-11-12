@@ -290,12 +290,12 @@ def test_flush_all_returns_and_writes_when_background_save_is_stuck(tmp_path, mo
     entered = threading.Event()
     real_save = storage_service.atomic_save_json
 
-    def save(path, data, temp_tag=""):
+    def save(path, data, temp_tag="", **kwargs):
         if threading.current_thread() is not threading.main_thread():
             entered.set()
             release.wait(10)  # stands in for the blocked Tcl call
-            return
-        real_save(path, data, temp_tag=temp_tag)
+            return False
+        return real_save(path, data, temp_tag=temp_tag, **kwargs)
 
     monkeypatch.setattr(storage_service, "atomic_save_json", save)
     saver = DebouncedSaver()
@@ -318,6 +318,141 @@ def test_flush_all_waits_for_a_normal_background_save(tmp_path):
     saver.save_debounced(target, [1, 2, 3], delay_seconds=0)
     saver.flush_all()
     assert json.loads(target.read_text(encoding="utf-8")) == [1, 2, 3]
+
+
+def _blocked_producer(value, started: threading.Event, release: threading.Event):
+    """A save whose serialisation hangs until released - a background write caught in the act."""
+    def produce():
+        started.set()
+        release.wait(10)
+        return value
+    return produce
+
+
+def test_overlapping_background_save_and_flush_keep_the_newest_data(tmp_path):
+    """What broke test_case_lifecycle in CI: both writers shared one temp file and the older data could land last."""
+    target = tmp_path / "ablage" / "cases.json"
+    started, release = threading.Event(), threading.Event()
+    saver = DebouncedSaver()
+    saver.save_debounced(target, _blocked_producer(["old"], started, release), delay_seconds=0)
+    assert started.wait(2), "background save did not start"
+    saver.save_debounced(target, ["new"], delay_seconds=30)  # arrives while the old one is being written
+
+    saver.flush_all(timeout=0.2)  # writes "new" itself; the old write is still hanging
+    assert json.loads(target.read_text(encoding="utf-8")) == ["new"]
+
+    release.set()  # now the old write finishes - it must not land on top
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == ["new"]
+    assert not list(target.parent.glob("*.tmp.json"))
+
+
+def test_concurrent_writers_never_corrupt_the_target(tmp_path):
+    """Two threads saving the same file at once: each has its own temp file, so the target is always complete JSON."""
+    target = tmp_path / "ablage" / "cases.json"
+    payloads = [[{"writer": w, "filler": "x" * 2000, "n": n} for n in range(40)] for w in range(2)]
+    errors: list[BaseException] = []
+    go = threading.Event()
+
+    def hammer(payload):
+        go.wait(2)
+        try:
+            for _ in range(40):
+                atomic_save_json(target, payload)
+        except BaseException as e:  # noqa: BLE001 - collected for the assertion below
+            errors.append(e)
+
+    threads = [threading.Thread(target=hammer, args=(p,)) for p in payloads]
+    for t in threads:
+        t.start()
+    go.set()
+    seen = set()
+    while any(t.is_alive() for t in threads):
+        if target.exists():
+            try:
+                seen.add(json.loads(target.read_text(encoding="utf-8"))[0]["writer"])
+            except PermissionError:
+                pass  # Windows: the file is being swapped at this very moment
+    for t in threads:
+        t.join()
+
+    assert errors == []
+    assert json.loads(target.read_text(encoding="utf-8")) in payloads
+    assert seen <= {0, 1}
+    assert not list(target.parent.glob("*.tmp.json"))
+
+
+def test_save_now_makes_a_waiting_older_save_obsolete(tmp_path):
+    target = tmp_path / "ablage" / "cases.json"
+    saver = DebouncedSaver()
+    saver.save_debounced(target, ["old"], delay_seconds=0.05)
+    saver.save_now(target, ["new"])
+    time.sleep(0.2)
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == ["new"]
+
+
+def test_save_now_wins_over_an_older_save_that_is_still_being_written(tmp_path):
+    target = tmp_path / "ablage" / "cases.json"
+    started, release = threading.Event(), threading.Event()
+    saver = DebouncedSaver()
+    saver.save_debounced(target, _blocked_producer(["old"], started, release), delay_seconds=0)
+    assert started.wait(2)
+    saver.save_now(target, ["new"])
+    release.set()
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == ["new"]
+
+
+def test_discard_pending_also_stops_a_save_that_is_already_running(tmp_path):
+    """After a ZIP import nothing from before may reach the disk - not even a write caught half-way."""
+    target = tmp_path / "ablage" / "cases.json"
+    target.parent.mkdir()
+    target.write_text('["imported"]', encoding="utf-8")
+    started, release = threading.Event(), threading.Event()
+    saver = DebouncedSaver()
+    saver.save_debounced(target, _blocked_producer(["stale"], started, release), delay_seconds=0)
+    assert started.wait(2)
+
+    saver.discard_pending()
+    release.set()
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == ["imported"]
+    assert not list(target.parent.glob("*.tmp.json"))
+
+    saver.save_debounced(target, ["after"], delay_seconds=30)  # saves made after the discard are written as usual
+    saver.flush_all()
+    assert json.loads(target.read_text(encoding="utf-8")) == ["after"]
+
+
+def test_permanently_deleted_case_does_not_come_back_through_a_waiting_save(storage, config):
+    """The delete writes at once; the debounced save from the edit just before it still held the deleted case."""
+    keep, gone = _case("T-KEEP"), _case("T-GONE")
+    storage.save_cases([keep, gone])  # debounced, still waiting
+    assert storage.delete_case_permanently("T-GONE") is True
+    time.sleep(storage_service.DEBOUNCE_DELAY_STORAGE_SAVE * 3)
+    storage.flush_all_saves()
+    on_disk = json.loads(config.cases_path.read_text(encoding="utf-8"))
+    assert [c["case_id"] for c in on_disk] == ["T-KEEP"]
+
+
+def test_stale_temp_files_are_removed_at_startup_and_fresh_ones_kept(config):
+    import os
+
+    config.ensure_directories()
+    stale = config.data_dir / "cases.json.4711-1.tmp.json"
+    fresh = config.data_dir / "cases.json.4711-2.tmp.json"
+    unrelated = config.data_dir / "notes.json"
+    for f in (stale, fresh, unrelated):
+        f.write_text("[]", encoding="utf-8")
+    two_hours_ago = time.time() - 7200
+    os.utime(stale, (two_hours_ago, two_hours_ago))
+    os.utime(unrelated, (two_hours_ago, two_hours_ago))
+
+    StorageService(config)
+
+    assert not stale.exists()
+    assert fresh.exists() and unrelated.exists()
 
 
 # --- Duplicate case ids ------------------------------------------------------

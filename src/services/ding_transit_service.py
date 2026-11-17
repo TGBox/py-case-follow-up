@@ -53,6 +53,8 @@ class TransitDeparture:
     delay_seconds: int | None = None
     # Where real_time_str comes from: "swu" (SWU live), "efa" (EFA live) or "" (timetable only)
     realtime_source: str = ""
+    # SWU lists later buses of this line and direction but not this one: it will not run
+    missing_in_swu: bool = False
     alerts: list[TransitAlert] = field(default_factory=list)
 
 

@@ -190,15 +190,16 @@ class SwuRealtimeService:
         """
         line = cls._norm(dep.line)
         head = cls._norm(dep.destination)[:3]
-        if not line or not head or dep.raw_datetime is None or dep.raw_datetime <= now:
+        real = dep.raw_datetime
+        if not line or not head or real is None or real <= now:
             return False
         try:
             hour, minute = (int(part) for part in dep.planned_time_str.split(":"))
         except ValueError:
             return False
-        base = dep.raw_datetime.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        base = real.replace(hour=hour, minute=minute, second=0, microsecond=0)
         # The planned time lies on the day before or after the real one around midnight
-        planned = min((base + timedelta(days=d) for d in (-1, 0, 1)), key=lambda c: abs(c - dep.raw_datetime))
+        planned = min((base + timedelta(days=d) for d in (-1, 0, 1)), key=lambda c: abs(c - real))
         same_line = [p for p in passages if cls._norm(p.line) == line]
         if any(abs(p.scheduled - planned) <= _SAME_TRIP_TOLERANCE for p in same_line):
             return False

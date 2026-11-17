@@ -2239,6 +2239,8 @@
     "transit_source_swu": "⏱ SWU live: {delay} ({time})",
     "transit_source_efa": "⏱ DING live (rounded to minutes)",
     "transit_source_timetable": "🗓 Timetable time – no live data",
+    "transit_missing_in_swu": "Cancelled · not in SWU live data · planned {time}",
+    "transit_missing_in_swu_tooltip": "The SWU live monitor no longer lists this trip, DING still announces it for {time}.\nIt will probably not run and cannot be selected for reminders.",
     "transit_alerts_one": "⚠ 1 service notice: {title}",
     "transit_alerts_many": "⚠ {count} service notices",
     "transit_alert_valid": "valid {start} – {end}",

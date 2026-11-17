@@ -4,8 +4,10 @@ The bwegt EFA answer lags behind SWU's own vehicle tracking and truncates to
 whole minutes, so a delayed bus often shows up a minute or more too early.
 SWU publishes second-accurate departures per stop (updated every 15 s); this
 service matches them to EFA departures by line and scheduled time and swaps in
-the SWU time. Anything that cannot be matched keeps its EFA time, and when SWU
-is unreachable nothing changes at all.
+the SWU time. An upcoming EFA departure that SWU has dropped while it lists
+later buses of that line and direction is flagged as missing (it will not run).
+Anything else that cannot be matched keeps its EFA time, and when SWU is
+unreachable nothing changes at all.
 """
 
 from __future__ import annotations
@@ -38,6 +40,8 @@ _EFA_NUMERIC_ID = re.compile(rf"^{TRANSIT_SWU_EFA_STOP_ID_PREFIX}(\d{{4}})$")
 _DHID = re.compile(r"^de:\d{5}:(\d{4})(?::|$)")
 # An SWU match further away from the EFA time than this is a different trip
 _MAX_MATCH_GAP = timedelta(minutes=90)
+# EFA and SWU may round the scheduled time differently; within this they mean the same trip
+_SAME_TRIP_TOLERANCE = timedelta(minutes=2)
 
 
 @dataclass
@@ -174,9 +178,56 @@ class SwuRealtimeService:
             candidates = [p for p in candidates if head and cls._norm(p.direction).startswith(head)]
         return candidates[0] if len(candidates) == 1 else None
 
+    @classmethod
+    def is_missing(cls, dep: TransitDeparture, passages: list[SwuPassage], now: datetime) -> bool:
+        """Whether SWU has dropped this upcoming EFA departure.
+
+        SWU's monitor is the reference: a trip it does not list does not run,
+        even while EFA still announces it with a delay. Only said when SWU lists
+        a later bus of the same line and direction, so the trip is neither past
+        SWU's horizon nor on a line SWU does not serve; and never for a bus that
+        has already left according to EFA.
+        """
+        line = cls._norm(dep.line)
+        head = cls._norm(dep.destination)[:3]
+        if not line or not head or dep.raw_datetime is None or dep.raw_datetime <= now:
+            return False
+        try:
+            hour, minute = (int(part) for part in dep.planned_time_str.split(":"))
+        except ValueError:
+            return False
+        base = dep.raw_datetime.replace(hour=hour, minute=minute, second=0, microsecond=0)
+        # The planned time lies on the day before or after the real one around midnight
+        planned = min((base + timedelta(days=d) for d in (-1, 0, 1)), key=lambda c: abs(c - dep.raw_datetime))
+        same_line = [p for p in passages if cls._norm(p.line) == line]
+        if any(abs(p.scheduled - planned) <= _SAME_TRIP_TOLERANCE for p in same_line):
+            return False
+        return any(p.scheduled > planned and cls._norm(p.direction).startswith(head) for p in same_line)
+
+    @classmethod
+    def _apply(cls, dep: TransitDeparture, passages: list[SwuPassage], now: datetime) -> TransitDeparture:
+        """dep with the SWU forecast, flagged as missing, or unchanged."""
+        passage = cls.match(dep, passages)
+        if passage is not None:
+            return cls.corrected(dep, passage, now) if cls.has_forecast(passage) else dep
+        if cls.is_missing(dep, passages, now):
+            return dataclasses.replace(dep, missing_in_swu=True)
+        return dep
+
+    @staticmethod
+    def has_forecast(passage: SwuPassage) -> bool:
+        """Whether SWU forecasts this departure instead of repeating the timetable.
+
+        A bus that is still on its previous trip (towards the terminus, before it
+        turns around) has no vehicle number yet, but SWU already carries its delay
+        over to the return trip. Only an entry without vehicle and without
+        deviation is the bare timetable.
+        """
+        return passage.vehicle_number is not None or passage.deviation_seconds != 0
+
     @staticmethod
     def corrected(dep: TransitDeparture, passage: SwuPassage, now: datetime) -> TransitDeparture:
-        """A copy of dep with the SWU time. Only for tracked vehicles: an untracked SWU entry is just the timetable."""
+        """A copy of dep with the SWU time. Only for forecast entries, see has_forecast."""
         return dataclasses.replace(
             dep,
             real_time_str=passage.actual.strftime("%H:%M"),
@@ -204,15 +255,12 @@ class SwuRealtimeService:
 
     @classmethod
     def apply_to_departures(cls, deps: list[TransitDeparture], force_refresh: bool = False, now: datetime | None = None) -> list[TransitDeparture]:
-        """deps with SWU times where SWU knows the bus; order follows the corrected times."""
+        """deps with SWU times where SWU knows the bus, and a flag where SWU has dropped it; order follows the corrected times."""
         now = now or datetime.now()
         by_stop = cls._passages_for({d.stop_id for d in deps}, force_refresh, now)
         if not by_stop:
             return list(deps)
-        result: list[TransitDeparture] = []
-        for dep in deps:
-            passage = cls.match(dep, by_stop.get(dep.stop_id, []))
-            result.append(cls.corrected(dep, passage, now) if passage and passage.vehicle_number is not None else dep)
+        result = [cls._apply(dep, by_stop.get(dep.stop_id, []), now) for dep in deps]
         result.sort(key=lambda d: d.raw_datetime or now)
         return result
 
@@ -230,9 +278,11 @@ class SwuRealtimeService:
         result: list[TransitTrip] = []
         for trip in trips:
             dep = trip.departure
-            passage = cls.match(dep, by_stop.get(dep.stop_id, []))
-            if passage is None or passage.vehicle_number is None:
-                result.append(trip)
+            passages = by_stop.get(dep.stop_id, [])
+            passage = cls.match(dep, passages)
+            if passage is None or not cls.has_forecast(passage):
+                new_dep = cls._apply(dep, passages, now)
+                result.append(trip if new_dep is dep else dataclasses.replace(trip, departure=new_dep))
                 continue
             new_dep = cls.corrected(dep, passage, now)
             changes: dict[str, Any] = {"departure": new_dep}

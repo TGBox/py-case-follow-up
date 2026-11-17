@@ -1449,6 +1449,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
                 anchor="w",
             )
+            if dep.missing_in_swu:
+                dest_lbl.configure(text_color=COLOR_MUTED_LABEL)
             dest_lbl.pack(fill="x")
 
             plat_str = f"{dep.platform}" if dep.platform else ""
@@ -1475,6 +1477,13 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 time_str = f"{dep.real_time_str} ({tr('checkout_panel.transit_status_ontime', 'Pünktlich')}) {plat_str}".strip()
                 time_color = COLOR_TRANSIT_ONTIME
 
+            if dep.missing_in_swu:
+                # SWU does not list this bus: grey it out instead of promising EFA's time
+                time_str = tr(
+                    "checkout_panel.transit_missing_in_swu", "Fällt aus · nicht in SWU-Echtzeit · Plan {time}"
+                ).format(time=dep.planned_time_str)
+                time_color = COLOR_MUTED_LABEL
+
             sub_lbl = ctk.CTkLabel(
                 info_box,
                 text=time_str,
@@ -1494,11 +1503,24 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             )
             cd_lbl = ctk.CTkLabel(
                 row,
-                text=f"{dep.countdown_minutes} Min.",
+                text="–" if dep.missing_in_swu else f"{dep.countdown_minutes} Min.",
                 font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
-                text_color=cd_color,
+                text_color=COLOR_MUTED_LABEL if dep.missing_in_swu else cd_color,
             )
             cd_lbl.pack(side="right", padx=(PAD_XS, PAD_SM))
+
+            if dep.missing_in_swu:
+                CTkTooltip(
+                    row,
+                    tr(
+                        "checkout_panel.transit_missing_in_swu_tooltip",
+                        "Der SWU-Echtzeitmonitor führt diese Fahrt nicht mehr, DING meldet sie noch für {time} Uhr.\n"
+                        "Sie fällt voraussichtlich aus und kann nicht für Wecker gewählt werden.",
+                    ).format(time=dep.real_time_str),
+                )
+                if not is_selected:
+                    continue
+                # A selected trip stays clickable so the selection can be removed
 
             CTkTooltip(
                 row,

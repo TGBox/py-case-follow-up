@@ -156,10 +156,73 @@ def test_swu_time_replaces_lagging_efa_time(monkeypatch):
 
 
 def test_untracked_swu_entry_keeps_efa_time(monkeypatch):
-    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: [_passage(vehicle=None)]))
+    # No vehicle and no deviation: SWU only repeats the timetable
+    timetable_only = _passage(actual=(8, 4, 0), vehicle=None)
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: [timetable_only]))
     [dep] = SwuRealtimeService.apply_to_departures([_dep()], now=NOW)
     assert dep.real_time_str == "08:07"
     assert dep.realtime_source == "efa"
+
+
+def test_swu_forecast_without_vehicle_replaces_efa_time(monkeypatch):
+    # Wiley Sued, 17.11.2026: the bus was still heading to the terminus, so SWU had no vehicle
+    # for the return trip yet but already forecast it 22 min late, while EFA said +7.
+    forecast = _passage(line="5", scheduled=(16, 53), actual=(17, 14, 59), direction="Wissenschaftsstadt", vehicle=None)
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: [forecast]))
+    efa = _dep(line="5", planned="16:53", real=(17, 0), delay=7, destination="Wissenschaftsstadt", stop_id="9001727", line_id="87005")
+    [dep] = SwuRealtimeService.apply_to_departures([efa], now=datetime(2026, 11, 10, 16, 48, 32))
+    assert dep.real_time_str == "17:14"
+    assert dep.delay_minutes == 21
+    assert dep.countdown_minutes == 26
+    assert dep.realtime_source == "swu"
+
+
+def _wiley_passages() -> list[SwuPassage]:
+    # SWU at 16:48: the 16:33 bus to Wissenschaftsstadt is gone from the monitor, later ones are listed
+    return [
+        _passage(line="5", scheduled=(16, 48), actual=(17, 4, 40), direction="Ludwigsfeld", vehicle=174),
+        _passage(line="5", scheduled=(16, 53), actual=(17, 14, 59), direction="Wissenschaftsstadt", vehicle=None),
+        _passage(line="5", scheduled=(17, 13), actual=(17, 23, 47), direction="Wissenschaftsstadt", vehicle=None),
+    ]
+
+
+def _wiley_dep(planned: str, real: tuple[int, int], delay: int, destination: str = "Wissenschaftsstadt", line: str = "5") -> TransitDeparture:
+    return _dep(line=line, planned=planned, real=real, delay=delay, destination=destination, stop_id="9001727", line_id="87005")
+
+
+def test_efa_departure_dropped_by_swu_is_flagged_missing(monkeypatch):
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: _wiley_passages()))
+    now = datetime(2026, 11, 10, 16, 45)
+    deps = SwuRealtimeService.apply_to_departures(
+        [_wiley_dep("16:33", (16, 48), 15), _wiley_dep("16:53", (17, 0), 7)], now=now
+    )
+    dropped, forecast = deps
+    # EFA still says 16:48, SWU does not list the trip: kept in the list, but flagged
+    assert (dropped.planned_time_str, dropped.real_time_str, dropped.missing_in_swu) == ("16:33", "16:48", True)
+    assert dropped.realtime_source == "efa"
+    assert (forecast.real_time_str, forecast.missing_in_swu) == ("17:14", False)
+
+
+def test_unmatched_departures_are_not_flagged_without_evidence(monkeypatch):
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: _wiley_passages()))
+    now = datetime(2026, 11, 10, 16, 45)
+    unflagged = [
+        _wiley_dep("16:28", (16, 28), 0, destination="Ludwigsfeld"),  # already left according to EFA
+        _wiley_dep("19:33", (19, 33), 0),  # beyond what SWU lists
+        _wiley_dep("16:40", (16, 50), 10, line="73"),  # line SWU does not serve
+        _wiley_dep("16:40", (16, 50), 10, destination="Donaubad"),  # no later SWU bus in that direction
+        _wiley_dep("16:52", (16, 59), 7),  # same trip, scheduled time rounded differently
+    ]
+    assert not any(d.missing_in_swu for d in SwuRealtimeService.apply_to_departures(unflagged, now=now))
+
+
+def test_trip_starting_with_dropped_bus_is_flagged_missing(monkeypatch):
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: _wiley_passages()))
+    trip = _trip(_wiley_dep("16:33", (16, 48), 15), interchanges=0)
+    [flagged] = SwuRealtimeService.apply_to_trips([trip], now=datetime(2026, 11, 10, 16, 45))
+    assert flagged.departure.missing_in_swu
+    # Nothing else about the trip is touched
+    assert (flagged.arrival_real_str, flagged.duration_minutes) == (trip.arrival_real_str, trip.duration_minutes)
 
 
 def test_swu_unreachable_or_foreign_stop_changes_nothing(monkeypatch):

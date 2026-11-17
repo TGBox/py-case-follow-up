@@ -1454,10 +1454,14 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             dest_lbl.pack(fill="x")
 
             plat_str = f"{dep.platform}" if dep.platform else ""
+            # The shown time already includes the delay; name the timetable time so that is clear
+            delay_str = tr("checkout_panel.transit_delay_with_plan", "+{delay} Min. (Plan {time})").format(
+                delay=dep.delay_minutes, time=dep.planned_time_str
+            )
             if trip is not None:
                 # Times are in the line above; here: punctuality, changes, direction of the first bus
                 punctual = (
-                    f"+{dep.delay_minutes} Min."
+                    delay_str
                     if dep.delay_minutes > 0
                     else tr("checkout_panel.transit_status_ontime", "Pünktlich")
                 )
@@ -1471,7 +1475,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 time_str = " · ".join(parts)
                 time_color = COLOR_TRANSIT_DELAY if dep.delay_minutes > 0 else COLOR_TRANSIT_ONTIME
             elif dep.delay_minutes > 0:
-                time_str = f"{dep.real_time_str} (+{dep.delay_minutes} Min.) {plat_str}".strip()
+                time_str = f"{dep.real_time_str} · {delay_str} {plat_str}".strip()
                 time_color = COLOR_TRANSIT_DELAY
             else:
                 time_str = f"{dep.real_time_str} ({tr('checkout_panel.transit_status_ontime', 'Pünktlich')}) {plat_str}".strip()

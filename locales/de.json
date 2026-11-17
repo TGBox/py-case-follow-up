@@ -2239,6 +2239,7 @@
     "transit_source_swu": "⏱ Echtzeit SWU: {delay} ({time} Uhr)",
     "transit_source_efa": "⏱ Echtzeit DING (auf Minuten gerundet)",
     "transit_source_timetable": "🗓 Fahrplanzeit – keine Echtzeit verfügbar",
+    "transit_delay_with_plan": "+{delay} Min. (Plan {time})",
     "transit_missing_in_swu": "Fällt aus · nicht in SWU-Echtzeit · Plan {time}",
     "transit_missing_in_swu_tooltip": "Der SWU-Echtzeitmonitor führt diese Fahrt nicht mehr, DING meldet sie noch für {time} Uhr.\nSie fällt voraussichtlich aus und kann nicht für Wecker gewählt werden.",
     "transit_alerts_one": "⚠ 1 Verkehrsmeldung: {title}",

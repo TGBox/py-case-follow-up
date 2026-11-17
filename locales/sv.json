@@ -2239,6 +2239,7 @@
     "transit_source_swu": "⏱ SWU realtid: {delay} ({time})",
     "transit_source_efa": "⏱ DING realtid (avrundat till minuter)",
     "transit_source_timetable": "🗓 Tidtabellstid – ingen realtid",
+    "transit_delay_with_plan": "+{delay} min (planerad {time})",
     "transit_missing_in_swu": "Inställd · saknas i SWU realtid · planerad {time}",
     "transit_missing_in_swu_tooltip": "SWU:s realtidsmonitor visar inte längre denna tur, DING anger den fortfarande till {time}.\nDen är troligen inställd och kan inte väljas för påminnelser.",
     "transit_alerts_one": "⚠ 1 trafikmeddelande: {title}",

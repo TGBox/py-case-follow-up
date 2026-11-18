@@ -2274,7 +2274,11 @@
     "transit_no_trips": "Inga förbindelser till {dest} hittades. Stämmer målet?",
     "transit_selected_trip_desc": "Linje {lines} kl. {time} · {changes}",
     "transit_stage_arrival": "Ankomst {stop}: kl. {time}",
-    "transit_toast_arrival": "Ankomst {stop}: kl. {time}."
+    "transit_toast_arrival": "Ankomst {stop}: kl. {time}.",
+    "quit_warn_title": "Oavslutade uppgifter i avslutningspanelen",
+    "quit_warn_msg": "Det finns fortfarande {count} oavslutade uppgifter i avslutningspanelen:\n{tasks}\n\nVill du avsluta programmet ändå?",
+    "quit_warn_more": "… och {count} till",
+    "quit_warn_confirm_btn": "Avsluta ändå"
   },
   "settings_checkout": {
     "section_title": "Avslutnings- & Avreseguide",
@@ -2331,7 +2335,8 @@
     "destination_placeholder": "t.ex. Neu-Ulm Bahnhof",
     "destination_hint": "Med ett mål visar kollektivtrafikfliken bara förbindelser dit (även med byten) med ankomsttid. Tomt = alla avgångar.",
     "destination_picked": "Mål valt: {stop}",
-    "destination_pick_hint": "Välj målet i listan."
+    "destination_pick_hint": "Välj målet i listan.",
+    "warn_open_tasks_on_quit": "Påminn om oavslutade uppgifter i avslutningspanelen innan programmet avslutas"
   },
   "channel_picker": {
     "label_channel": "Kanal:",

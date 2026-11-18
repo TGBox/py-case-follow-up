@@ -709,7 +709,24 @@ class UiSettingsTabMixin:
             "settings_checkout.remember_visibility",
             "Nach dem Neustart wieder öffnen, wenn das Panel zuletzt offen war",
         )
-        self.checkout_remember_cb.pack(anchor="w", pady=(PAD_NONE, PAD_LG))
+        self.checkout_remember_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
+        self.checkout_warn_quit_var = ctk.BooleanVar(
+            value=bool(getattr(cs, "warn_open_tasks_on_quit", False))
+        )
+        self.checkout_warn_quit_cb = self.register_i18n(
+            ctk.CTkSwitch(  # type: ignore[attr-defined]
+                right_col,
+                text=tr(
+                    "settings_checkout.warn_open_tasks_on_quit",
+                    "Vor dem Beenden auf unerledigte Aufgaben im Feierabend-Panel hinweisen",
+                ),
+                variable=self.checkout_warn_quit_var,
+            ),
+            "settings_checkout.warn_open_tasks_on_quit",
+            "Vor dem Beenden auf unerledigte Aufgaben im Feierabend-Panel hinweisen",
+        )
+        self.checkout_warn_quit_cb.pack(anchor="w", pady=(PAD_NONE, PAD_LG))
 
         # Opening automatically at the end of the working day
         self.checkout_schedule_hdr = self.register_i18n(
@@ -1467,6 +1484,10 @@ class UiSettingsTabMixin:
         if hasattr(self, "widths_label"):
             widths = self.profile.ui_settings.column_widths
             self.widths_label.configure(text=self._build_widths_str(widths))
+        if hasattr(self, "checkout_warn_quit_var"):
+            self.checkout_warn_quit_var.set(
+                bool(getattr(self.profile.checkout_settings, "warn_open_tasks_on_quit", False))
+            )
 
     def save_ui_settings(self) -> bool:
         import re
@@ -1544,6 +1565,8 @@ class UiSettingsTabMixin:
             cs.auto_open = self.checkout_auto_open_var.get()
             cs.remember_visibility = self.checkout_remember_var.get()
             cs.always_show = self.checkout_always_var.get()
+            if hasattr(self, "checkout_warn_quit_var"):
+                cs.warn_open_tasks_on_quit = bool(self.checkout_warn_quit_var.get())
             idx = self.selected_choice_index(self.checkout_mode_combo)
             cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
                 min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)

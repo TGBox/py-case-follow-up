@@ -64,6 +64,7 @@ from constants import (
     CHECKOUT_DEFAULT_PACK_MINUTES,
     CHECKOUT_DEFAULT_UNIFORM_TIME,
     CHECKOUT_DEFAULT_WALK_MINUTES,
+    CHECKOUT_DEFAULT_WARN_OPEN_TASKS_ON_QUIT,
     CHECKOUT_DEFAULT_WIDTH,
     CHECKOUT_DEFAULT_WORK_START,
     CHECKOUT_DEFAULT_WORK_TARGET_HOURS,
@@ -470,6 +471,7 @@ class CheckoutSettings:
     # Reopen the panel on start if it was open when the app was last used
     remember_visibility: bool = False
     was_open: bool = False
+    warn_open_tasks_on_quit: bool = CHECKOUT_DEFAULT_WARN_OPEN_TASKS_ON_QUIT
     floating_geometry: str = ""
     # Sections folded away in the docked one-column layout
     collapsed_sections: list[str] = field(default_factory=list)
@@ -526,6 +528,7 @@ class CheckoutSettings:
             "always_show": self.always_show,
             "remember_visibility": self.remember_visibility,
             "was_open": self.was_open,
+            "warn_open_tasks_on_quit": self.warn_open_tasks_on_quit,
             "floating_geometry": self.floating_geometry,
             "collapsed_sections": list(self.collapsed_sections),
             "panel_width": self.panel_width,
@@ -607,6 +610,9 @@ class CheckoutSettings:
             always_show=bool(data.get("always_show", False)),
             remember_visibility=bool(data.get("remember_visibility", False)),
             was_open=bool(data.get("was_open", False)),
+            warn_open_tasks_on_quit=bool(
+                data.get("warn_open_tasks_on_quit", CHECKOUT_DEFAULT_WARN_OPEN_TASKS_ON_QUIT)
+            ),
             floating_geometry=str(data.get("floating_geometry", "")),
             collapsed_sections=[x for x in data.get("collapsed_sections", []) if isinstance(x, str)]
             if isinstance(data.get("collapsed_sections"), list)

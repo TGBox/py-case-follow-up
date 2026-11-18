@@ -56,6 +56,7 @@ from constants import (
     CHECKOUT_FLOATING_DEFAULT_WIDTH,
     CHECKOUT_MODE_WEEKDAYS,
     CHECKOUT_POLL_INTERVAL_MS,
+    CHECKOUT_QUIT_WARN_MAX_TASKS,
     CORNER_RADIUS_CARD,
     DEFAULT_BACKUP_ZIP_FILENAME,
     DEFAULT_FONT_SCALE,
@@ -2484,17 +2485,64 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
 
     def _on_quit_from_tray(self):
         """Fully quit the application from the system tray context menu."""
-        def _quit():
-            if self.is_view_built(LayoutMode.COCKPIT.value):
-                self.cockpit_view.save_sash_widths()
-            self.storage_service.save_profile(self.profile)
-            self.storage_service.flush_all_saves()
-            self.tray_service.stop()
-            self.destroy()
-        self.after(0, _quit)
+        self.after(0, self.on_quit_app)
+
+    def _confirm_quit_with_open_checkout_tasks(self) -> bool:
+        """Ask for confirmation before quitting if enabled and checkout tasks remain undone."""
+        if getattr(self, "_e2e_shutting_down", False):
+            return True
+        cs = getattr(getattr(self, "profile", None), "checkout_settings", None)
+        if cs is None or not getattr(cs, "warn_open_tasks_on_quit", False):
+            return True
+
+        from services.checkout_task_service import CheckoutTaskService
+
+        open_tasks = CheckoutTaskService.get_open_tasks_for_date(cs)
+        if not open_tasks:
+            return True
+
+        try:
+            if not self.winfo_viewable() or self.state() == WINDOW_STATE_ICONIC:
+                self.deiconify()
+                self._apply_remembered_window_state()
+        except Exception:
+            pass
+
+        task_lines = [f"• {t.get('text', '')}" for t in open_tasks[:CHECKOUT_QUIT_WARN_MAX_TASKS]]
+        if len(open_tasks) > CHECKOUT_QUIT_WARN_MAX_TASKS:
+            task_lines.append(
+                tr(
+                    "checkout_panel.quit_warn_more",
+                    "… und {count} weitere",
+                    count=len(open_tasks) - CHECKOUT_QUIT_WARN_MAX_TASKS,
+                )
+            )
+        tasks_text = "\n".join(task_lines)
+
+        from ui.dialogs.confirm_dialog import ask_confirmation
+
+        confirmed = ask_confirmation(
+            self,
+            message=tr(
+                "checkout_panel.quit_warn_msg",
+                "Im Feierabend-Panel sind noch {count} unerledigte Aufgaben offen:\n{tasks}\n\nMöchtest du die App trotzdem beenden?",
+                count=len(open_tasks),
+                tasks=tasks_text,
+            ),
+            title=tr("checkout_panel.quit_warn_title", "Unerledigte Aufgaben im Feierabend-Panel"),
+            confirm_text=tr("checkout_panel.quit_warn_confirm_btn", "Trotzdem beenden"),
+            cancel_text=tr("common.cancel", "Abbrechen"),
+        )
+        if not confirmed:
+            if not getattr(self, "_is_checkout_visible", False):
+                self.show_checkout_panel()
+            return False
+        return True
 
     def on_quit_app(self):
         """Fully quit the application via the in-app Beenden button."""
+        if not self._confirm_quit_with_open_checkout_tasks():
+            return
         logger.info("Quitting application...")
         if self.is_view_built(LayoutMode.COCKPIT.value):
             self.cockpit_view.save_sash_widths()

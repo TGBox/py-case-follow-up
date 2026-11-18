@@ -502,3 +502,28 @@ def test_same_first_bus_with_two_onward_connections_is_listed_once(monkeypatch):
     monkeypatch.setattr(DingTransitService, "_cached_trip_key", None)
     trips = DingTransitService.fetch_trips("Ehinger Tor", "Ulm", "Wiley Süd", force_refresh=True)
     assert [t.arrival_real_str for t in trips] == ["17:26"]
+
+
+def test_checkout_task_service_get_open_tasks_for_date():
+    settings = CheckoutSettings(last_tasks_date="2026-11-01")
+    settings.recurring_tasks[0]["done"] = True
+    CheckoutTaskService.add_dated_task(settings, "Heute erledigt", "2026-11-02")
+    settings.dated_tasks[-1]["done"] = True
+    CheckoutTaskService.add_dated_task(settings, "Heute noch offen", "2026-11-02")
+    CheckoutTaskService.add_dated_task(settings, "Morgen offen", "2026-11-03")
+
+    # Midnight rollover resets recurring tasks from 2026-11-01 on 2026-11-02,
+    # keeps today's undone dated tasks, and excludes done/other-day tasks.
+    open_tasks = CheckoutTaskService.get_open_tasks_for_date(settings, "2026-11-02")
+    texts = [t["text"] for t in open_tasks]
+    assert settings.last_tasks_date == "2026-11-02"
+    assert len(open_tasks) == 4  # 3 recurring (reset to undone) + 1 undone for 2026-11-02
+    assert "Heute noch offen" in texts
+    assert "Heute erledigt" not in texts
+    assert "Morgen offen" not in texts
+
+    # Marking all recurring tasks done leaves only today's undone dated task
+    for t in settings.recurring_tasks:
+        t["done"] = True
+    open_after = CheckoutTaskService.get_open_tasks_for_date(settings, "2026-11-02")
+    assert [t["text"] for t in open_after] == ["Heute noch offen"]

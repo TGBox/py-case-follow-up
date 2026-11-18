@@ -1566,7 +1566,7 @@ class UiSettingsTabMixin:
             cs.remember_visibility = self.checkout_remember_var.get()
             cs.always_show = self.checkout_always_var.get()
             if hasattr(self, "checkout_warn_quit_var"):
-                cs.warn_open_tasks_on_quit = bool(self.checkout_warn_quit_var.get())
+                cs.warn_open_tasks_on_quit = self.checkout_warn_quit_var.get()
             idx = self.selected_choice_index(self.checkout_mode_combo)
             cs.auto_open_mode = CHECKOUT_AUTO_OPEN_MODE_KEYS[
                 min(idx, len(CHECKOUT_AUTO_OPEN_MODE_KEYS) - 1)

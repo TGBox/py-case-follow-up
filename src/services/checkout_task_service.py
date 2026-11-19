@@ -121,3 +121,16 @@ class CheckoutTaskService:
         dated = [t for t in settings.dated_tasks if t.get("date") == target_date]
         return list(settings.recurring_tasks), dated
 
+    @classmethod
+    def get_open_tasks_for_date(
+        cls, settings: CheckoutSettings, date_str: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Return all undone recurring and today's dated tasks, after performing midnight rollover if needed."""
+        cls.check_and_perform_midnight_reset(settings, date_str)
+        recs, dated = cls.get_tasks_for_date(settings, date_str)
+        return [
+            t
+            for t in (*recs, *dated)
+            if not t.get("done", False) and str(t.get("text", "")).strip()
+        ]
+

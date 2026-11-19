@@ -2274,7 +2274,11 @@
     "transit_no_trips": "No connections to {dest} found. Is the destination right?",
     "transit_selected_trip_desc": "Line {lines} at {time} · {changes}",
     "transit_stage_arrival": "Arrival {stop}: {time}",
-    "transit_toast_arrival": "Arrival {stop}: {time}."
+    "transit_toast_arrival": "Arrival {stop}: {time}.",
+    "quit_warn_title": "Unfinished Tasks in Departure Panel",
+    "quit_warn_msg": "There are still {count} unfinished tasks in the departure panel:\n{tasks}\n\nDo you want to quit the application anyway?",
+    "quit_warn_more": "… and {count} more",
+    "quit_warn_confirm_btn": "Quit anyway"
   },
   "settings_checkout": {
     "section_title": "Departure & Checkout Companion",
@@ -2331,7 +2335,8 @@
     "destination_placeholder": "e.g. Neu-Ulm Bahnhof",
     "destination_hint": "With a destination the public transport tab lists only connections that get there (including changes) with their arrival time. Empty = all departures.",
     "destination_picked": "Destination set: {stop}",
-    "destination_pick_hint": "Pick the destination from the list."
+    "destination_pick_hint": "Pick the destination from the list.",
+    "warn_open_tasks_on_quit": "Remind about unfinished tasks in the departure panel before quitting"
   },
   "channel_picker": {
     "label_channel": "Channel:",

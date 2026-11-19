@@ -624,3 +624,76 @@ def test_transit_notices_show_badge_and_expandable_box(root, is_floating):
             assert not panel.transit_alerts_frame.winfo_manager()
         finally:
             panel.destroy()
+
+
+def test_warn_open_tasks_on_quit_round_trips_through_profile():
+    profile = UserProfile()
+    assert profile.checkout_settings.warn_open_tasks_on_quit is False
+    profile.checkout_settings.warn_open_tasks_on_quit = True
+    restored = UserProfile.from_dict(profile.to_dict())
+    assert restored.checkout_settings.warn_open_tasks_on_quit is True
+
+
+def test_quit_confirmation_for_open_checkout_tasks():
+    from datetime import date
+    from types import SimpleNamespace
+
+    from ui.app import SupportCockpitApp
+
+    def fake_app(warn_enabled: bool, all_done: bool, checkout_visible: bool = False):
+        profile = UserProfile()
+        profile.checkout_settings.last_tasks_date = date.today().isoformat()
+        profile.checkout_settings.warn_open_tasks_on_quit = warn_enabled
+        if all_done:
+            for t in profile.checkout_settings.recurring_tasks:
+                t["done"] = True
+        calls = []
+        app = SimpleNamespace(
+            profile=profile,
+            _is_checkout_visible=checkout_visible,
+            _e2e_shutting_down=False,
+            cockpit_view=SimpleNamespace(save_sash_widths=lambda: calls.append("sash")),
+            storage_service=SimpleNamespace(
+                save_profile=lambda p: calls.append("save_profile"),
+                flush_all_saves=lambda: calls.append("flush"),
+            ),
+            tray_service=SimpleNamespace(stop=lambda: calls.append("tray_stop")),
+            calls=calls,
+        )
+        app.is_view_built = lambda _v: False
+        app.winfo_viewable = lambda: True
+        app.state = lambda: "normal"
+        app.show_checkout_panel = lambda: calls.append("show_checkout")
+        app.destroy = lambda: calls.append("destroy")
+        app._confirm_quit_with_open_checkout_tasks = lambda: SupportCockpitApp._confirm_quit_with_open_checkout_tasks(app)  # type: ignore[arg-type]
+        return app
+
+    # 1. Setting disabled -> quits immediately without confirmation dialog
+    app_off = fake_app(warn_enabled=False, all_done=False)
+    with patch("ui.dialogs.confirm_dialog.ask_confirmation") as ask_mock:
+        SupportCockpitApp.on_quit_app(app_off)  # type: ignore[arg-type]
+        assert not ask_mock.called
+        assert "destroy" in app_off.calls
+
+    # 2. Setting enabled, all tasks done -> quits immediately without confirmation dialog
+    app_done = fake_app(warn_enabled=True, all_done=True)
+    with patch("ui.dialogs.confirm_dialog.ask_confirmation") as ask_mock:
+        SupportCockpitApp.on_quit_app(app_done)  # type: ignore[arg-type]
+        assert not ask_mock.called
+        assert "destroy" in app_done.calls
+
+    # 3. Setting enabled, open tasks remain, user cancels -> aborts quit and opens checkout panel
+    app_cancel = fake_app(warn_enabled=True, all_done=False, checkout_visible=False)
+    with patch("ui.dialogs.confirm_dialog.ask_confirmation", return_value=False) as ask_mock:
+        SupportCockpitApp.on_quit_app(app_cancel)  # type: ignore[arg-type]
+        assert ask_mock.called
+        assert "show_checkout" in app_cancel.calls
+        assert "destroy" not in app_cancel.calls
+
+    # 4. Setting enabled, open tasks remain, user confirms -> proceeds to quit
+    app_confirm = fake_app(warn_enabled=True, all_done=False, checkout_visible=False)
+    with patch("ui.dialogs.confirm_dialog.ask_confirmation", return_value=True) as ask_mock:
+        SupportCockpitApp.on_quit_app(app_confirm)  # type: ignore[arg-type]
+        assert ask_mock.called
+        assert "show_checkout" not in app_confirm.calls
+        assert "destroy" in app_confirm.calls

@@ -317,6 +317,7 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
         # Schedule hidden while the panel is off; reopen-on-start and commute stay reachable
         assert not d.checkout_schedule_frame.winfo_manager()
         assert d.checkout_remember_cb.winfo_manager() == "pack"
+        assert d.checkout_warn_quit_cb.winfo_manager() == "pack"
         assert d.checkout_transit_section.winfo_manager() == "pack"
         d.checkout_enable_var.set(True)
         d._update_checkout_enabled_visibility()
@@ -346,9 +347,11 @@ def test_checkout_page_schedule_visibility_and_lead_time_total(root, tmp_path):
         d.checkout_always_var.set(True)
         d._update_checkout_remember_state()
         assert d.checkout_remember_cb.cget("state") == "disabled"
+        assert d.checkout_warn_quit_var.get() is False
+        d.checkout_warn_quit_var.set(True)
         assert d.save_ui_settings()
         assert (cs.enabled, cs.auto_open_mode) == (True, CHECKOUT_MODE_WEEKDAYS)
-        assert (cs.remember_visibility, cs.always_show) == (True, True)
+        assert (cs.remember_visibility, cs.always_show, cs.warn_open_tasks_on_quit) == (True, True, True)
         assert (cs.logout_time_minutes, cs.pack_time_minutes, cs.walk_time_minutes, cs.buffer_time_minutes) == (3, 2, 10, 4)
     finally:
         d.destroy()

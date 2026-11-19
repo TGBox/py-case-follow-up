@@ -27,6 +27,7 @@ from constants import (
     TRANSIT_FOOTPATH_MOT_TYPES,
     TRANSIT_STOP_SUGGESTION_LIMIT,
     TRANSIT_REQUEST_TIMEOUT_SECONDS,
+    TRANSIT_TRIP_LOOKBACK_MINUTES,
 )
 from services.transit_alert_service import TransitAlert, parse_efa_infos
 
@@ -269,20 +270,16 @@ class DingTransitService:
             and (now - cls._last_trip_fetch_time).total_seconds() < cls._cache_ttl_seconds
             and cls._cached_trips
         ):
-            return cls._with_swu_trips(list(cls._cached_trips), force_refresh)
+            return cls._upcoming_trips(cls._with_swu_trips(list(cls._cached_trips), force_refresh), departure_time, now)
 
         try:
             data = cls._request_json(
                 TRANSIT_EFA_TRIP_ENDPOINT,
                 cls._trip_params(origin_name, origin_place, dest_name, dest_place, limit, departure_time),
             )
-            # Without a planned time EFA may start a little before now; drop what has already left.
-            earliest = departure_time or (now - timedelta(minutes=1))
-            parsed = [
-                t
-                for t in cls._parse_trip_response(data)
-                if t.departure.raw_datetime is None or t.departure.raw_datetime >= earliest
-            ]
+            parsed = cls._parse_trip_response(data)
+            if departure_time is None and cls._starts_at_swu_stop(parsed):
+                parsed += cls._late_trips(origin_name, origin_place, dest_name, dest_place, limit, now)
             parsed.sort(key=lambda t: (t.departure.raw_datetime or now, t.arrival_datetime or now))
             # The same first bus can come back with several onward connections: keep the earliest arrival,
             # so every row (and the selection key line_time_direction) stands for one bus.
@@ -297,10 +294,48 @@ class DingTransitService:
             cls._cached_trips = parsed
             cls._last_trip_fetch_time = now
             cls._cached_trip_key = key
-            return cls._with_swu_trips(list(parsed), force_refresh)
+            return cls._upcoming_trips(cls._with_swu_trips(list(parsed), force_refresh), departure_time, now)
         except Exception as e:
             logger.warning("Failed to fetch DING trips: %s", e)
-            return cls._with_swu_trips(list(cls._cached_trips), force_refresh)
+            return cls._upcoming_trips(cls._with_swu_trips(list(cls._cached_trips), force_refresh), departure_time, now)
+
+    @staticmethod
+    def _starts_at_swu_stop(trips: list[TransitTrip]) -> bool:
+        from services.swu_realtime_service import SwuRealtimeService
+
+        return any(SwuRealtimeService.stop_number_for_efa_id(t.departure.stop_id) is not None for t in trips)
+
+    @classmethod
+    def _late_trips(
+        cls, origin_name: str, origin_place: str, dest_name: str, dest_place: str, limit: int, now: datetime
+    ) -> list[TransitTrip]:
+        """Trips EFA believes have left within the last minutes.
+
+        EFA underestimates delays and no longer offers a bus once its own
+        estimate has passed, although SWU still expects it. They are asked for
+        separately; _upcoming_trips keeps those SWU still sees coming.
+        """
+        try:
+            data = cls._request_json(
+                TRANSIT_EFA_TRIP_ENDPOINT,
+                cls._trip_params(
+                    origin_name, origin_place, dest_name, dest_place, limit,
+                    now - timedelta(minutes=TRANSIT_TRIP_LOOKBACK_MINUTES),
+                ),
+            )
+        except Exception as e:
+            logger.info("Looking back for late trips failed: %s", e)
+            return []
+        return cls._parse_trip_response(data)
+
+    @staticmethod
+    def _upcoming_trips(trips: list[TransitTrip], departure_time: datetime | None, now: datetime) -> list[TransitTrip]:
+        """Drops what has already left, judged by the live (SWU-corrected) time, earliest first."""
+        # Without a planned time EFA may start a little before now.
+        earliest = departure_time or (now - timedelta(minutes=1))
+        upcoming = [t for t in trips if t.departure.raw_datetime is None or t.departure.raw_datetime >= earliest]
+        upcoming.sort(key=lambda t: (t.departure.raw_datetime or now, t.arrival_datetime or now))
+        return upcoming
 
     @staticmethod
     def _as_list(raw: Any, inner_key: str) -> list[Any]:

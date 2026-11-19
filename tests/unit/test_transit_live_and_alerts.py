@@ -292,6 +292,70 @@ def test_trip_with_change_keeps_planned_arrival(monkeypatch):
     assert trip.duration_minutes == 12
 
 
+def _efa_trip(planned: datetime, real: datetime) -> dict:
+    def point(usage: str, name: str, stop_id: str, plan: datetime, live: datetime) -> dict:
+        return {
+            "usage": usage,
+            "name": name,
+            "ref": {"id": stop_id},
+            "dateTime": {
+                "date": plan.strftime("%d.%m.%Y"),
+                "time": plan.strftime("%H:%M"),
+                "rtDate": live.strftime("%d.%m.%Y"),
+                "rtTime": live.strftime("%H:%M"),
+            },
+        }
+
+    ride = timedelta(minutes=11)
+    return {
+        "legs": [
+            {
+                "mode": {"number": "5", "destination": "Wissenschaftsstadt", "name": "Stadtbus", "type": "5", "realtime": "1"},
+                "points": [
+                    point("departure", "Neu-Ulm Wiley Süd", "de:09775:1727:0:1", planned, real),
+                    point("arrival", "Ulm Herdbruckerstraße", "de:08421:1011:0:1", planned + ride, real + ride),
+                ],
+            }
+        ]
+    }
+
+
+def test_late_bus_stays_listed_after_efa_thinks_it_has_left(monkeypatch):
+    # Wiley Sued, 17.11.2026: EFA expected the 16:53 bus at 17:00 and stopped offering it after that,
+    # while SWU still saw it coming (it left at 17:09).
+    now = datetime.now().replace(second=0, microsecond=0)
+    late_planned, next_planned = now - timedelta(minutes=12), now + timedelta(minutes=8)
+    asked = []
+
+    def efa(_endpoint, params):
+        asked.append(params["itdTime"])
+        if params["itdTime"] == now.strftime("%H%M"):
+            return {"trips": [_efa_trip(next_planned, next_planned)]}
+        # Asked from earlier on, EFA still knows the bus it believes left 5 minutes ago
+        return {"trips": [_efa_trip(late_planned, now - timedelta(minutes=5)), _efa_trip(next_planned, next_planned)]}
+
+    passages = [
+        SwuPassage(1727, "5", "Wissenschaftsstadt", "", late_planned, now + timedelta(minutes=4), 16 * 60, None),
+        SwuPassage(1727, "5", "Wissenschaftsstadt", "", next_planned, next_planned, 0, None),
+    ]
+    monkeypatch.setattr(DingTransitService, "_request_json", staticmethod(efa))
+    monkeypatch.setattr(DingTransitService, "_cached_trip_key", None)
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: passages))
+
+    trips = DingTransitService.fetch_trips("Wiley Süd", "Neu-Ulm", "Herdbruckerstraße", "Ulm", force_refresh=True)
+    assert len(asked) == 2
+    assert [t.departure.planned_time_str for t in trips] == [late_planned.strftime("%H:%M"), next_planned.strftime("%H:%M")]
+    late = trips[0]
+    assert late.departure.raw_datetime == now + timedelta(minutes=4)
+    assert late.departure.realtime_source == "swu"
+    assert late.arrival_datetime == now + timedelta(minutes=15)
+
+    # Without SWU's forecast the bus is gone, as EFA says
+    monkeypatch.setattr(SwuRealtimeService, "fetch_passages", classmethod(lambda cls, n, force_refresh=False, now=None: None))
+    trips = DingTransitService.fetch_trips("Wiley Süd", "Neu-Ulm", "Herdbruckerstraße", "Ulm", force_refresh=True)
+    assert [t.departure.planned_time_str for t in trips] == [next_planned.strftime("%H:%M")]
+
+
 def test_fetch_departures_survives_swu_failure(monkeypatch):
     efa = {
         "departureList": [

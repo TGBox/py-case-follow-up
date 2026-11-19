@@ -2039,6 +2039,9 @@ TRANSIT_STOP_SEARCH_MIN_CHARS = 3
 TRANSIT_STOP_SEARCH_DEBOUNCE_MS = 450
 # With a planned departure time the list starts this many minutes earlier, so it shows the buses around that time
 TRANSIT_PLANNED_WINDOW_BEFORE_MINUTES = 15
+# EFA underestimates delays and stops offering a late bus once its own estimate has passed. Trips are
+# therefore also asked from this many minutes ago; SWU's live time decides which of them are still to come.
+TRANSIT_TRIP_LOOKBACK_MINUTES = 30
 # SWU (Stadtwerke Ulm/Neu-Ulm) live data: second-accurate departures for SWU lines, updated every 15 s.
 # EFA lags behind and truncates to minutes, so SWU corrects the times of SWU buses and trams.
 TRANSIT_SWU_DEPARTURES_ENDPOINT = "https://api.swu.de/mobility/v1/stop/passage/Departures"

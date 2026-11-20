@@ -717,6 +717,8 @@ class DingTransitService:
             "pack_time_str": pack_dt.strftime("%H:%M"),
             "logout_time_str": logout_dt.strftime("%H:%M"),
             "walk_time_str": walk_dt.strftime("%H:%M"),
+            "walk_datetime": walk_dt,
+            "departure_datetime": dep_dt,
             "dep_time_str": dep_dt.strftime("%H:%M"),
             "minutes_until_pack": minutes_until_pack,
             "minutes_until_logout": minutes_until_logout,

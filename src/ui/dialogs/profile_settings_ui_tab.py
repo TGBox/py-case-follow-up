@@ -996,6 +996,21 @@ class UiSettingsTabMixin:
         )
         self.checkout_alarm_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
 
+        self.checkout_big_countdown_var = ctk.BooleanVar(value=cs.big_countdown_enabled)
+        self.checkout_big_countdown_cb = self.register_i18n(
+            ctk.CTkCheckBox(
+                commute,
+                text=tr(
+                    "settings_checkout.big_countdown_enable",
+                    "Großen Countdown bis zum Losgehen statt der Abfahrtsliste zeigen, solange eine Fahrt gewählt ist",
+                ),
+                variable=self.checkout_big_countdown_var,
+            ),
+            "settings_checkout.big_countdown_enable",
+            "Großen Countdown bis zum Losgehen statt der Abfahrtsliste zeigen, solange eine Fahrt gewählt ist",
+        )
+        self.checkout_big_countdown_cb.pack(anchor="w", pady=(PAD_NONE, PAD_SM))
+
         self._update_checkout_mode_visibility()
         self._update_checkout_enabled_visibility()
         self._update_checkout_remember_state()
@@ -1605,6 +1620,7 @@ class UiSettingsTabMixin:
             except ValueError:
                 pass
             cs.alarm_enabled = self.checkout_alarm_var.get()
+            cs.big_countdown_enabled = self.checkout_big_countdown_var.get()
 
         return True
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+import math
 import queue
 import re
 import sys
@@ -34,7 +35,12 @@ from constants import (
     BTN_WIDTH_CHECKOUT_ACTION,
     BTN_WIDTH_CHECKOUT_TINY,
     BTN_WIDTH_CHECKOUT_UNSELECT,
+    CHECKOUT_ALARM_URGENT_THRESHOLD_MINUTES,
+    CHECKOUT_ALARM_WARN_THRESHOLD_MINUTES,
     CHECKOUT_BACKGROUND_POLL_MS,
+    CHECKOUT_COUNTDOWN_HEIGHT_PER_FONT_PT,
+    CHECKOUT_COUNTDOWN_TICK_MS,
+    CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT,
     CHECKOUT_FLOATING_MIN_HEIGHT,
     CHECKOUT_FLOATING_MIN_WIDTH,
     CHECKOUT_FLOATING_RESIZE_BORDER,
@@ -65,6 +71,9 @@ from constants import (
     CORNER_RADIUS_MD,
     CORNER_RADIUS_SM,
     FONT_SIZE_BODY,
+    FONT_SIZE_CHECKOUT_COUNTDOWN_MAX,
+    FONT_SIZE_CHECKOUT_COUNTDOWN_MIN,
+    FONT_SIZE_CHECKOUT_COUNTDOWN_STEP,
     FONT_SIZE_H2,
     FONT_SIZE_SM,
     FONT_WEIGHT_BOLD,
@@ -327,6 +336,10 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         self._planned_departure: dt_time | None = None
         self._note_debounce_timer: Any = None
         self._transit_refresh_job: Any = None
+        # Big leave-now countdown shown in place of the departure list (optional)
+        self._countdown_shown = False
+        self._countdown_job: Any = None
+        self._countdown_font_size = FONT_SIZE_CHECKOUT_COUNTDOWN_MIN
         self._background_polls: set[str] = set()
 
         # Perform midnight reset check
@@ -367,6 +380,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             self.refresh_transit_data(force=True)
         elif self.settings.effective_destination() != self._applied_destination:
             self.refresh_transit_data(force=True)
+        # The countdown may have been switched on or off in the profile
+        self._sync_countdown_view()
 
     def _persist_settings(self) -> None:
         if self.on_persist_callback:
@@ -996,9 +1011,38 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             anchor="w",
         )
 
+        # The departure list and the big countdown take turns in this slot
+        self.transit_body = ctk.CTkFrame(tab, fg_color=COLOR_TRANSPARENT)
+        self.transit_body.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_XS))
+
         # Scrollable departures table
-        self.transit_scroll = self._list_container(tab)
-        self.transit_scroll.pack(fill="both", expand=True, padx=PAD_XS, pady=(PAD_XS, PAD_XS))
+        self.transit_scroll = self._list_container(self.transit_body)
+        self.transit_scroll.pack(fill="both", expand=True)
+
+        # Big countdown until it is time to walk (packed instead of the list while a trip is selected)
+        self.transit_countdown_frame = ctk.CTkFrame(
+            self.transit_body, fg_color=COLOR_CHECKOUT_CARD_BG, corner_radius=CORNER_RADIUS_CARD
+        )
+        self.transit_countdown_caption_lbl = ctk.CTkLabel(
+            self.transit_countdown_frame,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight=FONT_WEIGHT_BOLD),
+            text_color=COLOR_MUTED_LABEL,
+        )
+        self.transit_countdown_caption_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_MD, PAD_NONE))
+        self._countdown_font = ctk.CTkFont(size=self._countdown_font_size, weight=FONT_WEIGHT_BOLD)
+        self.transit_countdown_lbl = ctk.CTkLabel(
+            self.transit_countdown_frame, text="", font=self._countdown_font
+        )
+        self.transit_countdown_lbl.pack(fill="both", expand=True, padx=PAD_SM)
+        self.transit_countdown_sub_lbl = ctk.CTkLabel(
+            self.transit_countdown_frame,
+            text="",
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            text_color=COLOR_MUTED_LABEL,
+        )
+        self.transit_countdown_sub_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_MD))
+        self.transit_countdown_frame.bind("<Configure>", self._on_countdown_resized, add="+")
 
         # Traffic notices (packed above the list only while there are some)
         self.transit_alerts_frame = ctk.CTkFrame(tab, fg_color=COLOR_TRANSIT_ALERT_BG, corner_radius=CORNER_RADIUS_SM)
@@ -1354,6 +1398,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             self.transit_hint_lbl.pack_forget()
         if not self.selected_transit_card.winfo_manager():
             self.selected_transit_card.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), after=self.transit_card)
+        self._sync_countdown_view()
 
     def _show_transit_hint(self) -> None:
         """Hides the selection card and shows the double-click hint in its place."""
@@ -1363,6 +1408,106 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             self.selected_transit_card.pack_forget()
         if not self.transit_hint_lbl.winfo_manager():
             self.transit_hint_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_NONE), after=self.transit_card)
+        self._sync_countdown_view()
+
+    # -------------------------------------------------------------------------
+    # Big leave-now countdown (optional, replaces the departure list while a trip is selected)
+    # -------------------------------------------------------------------------
+    def _sync_countdown_view(self) -> None:
+        """Shows the countdown instead of the departure list while a trip is selected, if enabled."""
+        if not hasattr(self, "transit_countdown_frame"):
+            return
+        show = bool(self.settings.big_countdown_enabled and self._selected_departure)
+        if show != self._countdown_shown:
+            self._countdown_shown = show
+            if show:
+                self.transit_scroll.pack_forget()
+                self.transit_countdown_frame.pack(fill="both", expand=True)
+            else:
+                self.transit_countdown_frame.pack_forget()
+                self.transit_scroll.pack(fill="both", expand=True)
+        if show:
+            self._tick_countdown()
+        else:
+            self._cancel_countdown_tick()
+
+    def _cancel_countdown_tick(self) -> None:
+        if self._countdown_job is not None:
+            try:
+                self.after_cancel(self._countdown_job)
+            except Exception:
+                pass
+            self._countdown_job = None
+
+    def _tick_countdown(self) -> None:
+        self._cancel_countdown_tick()
+        if not self._countdown_shown or not self._selected_departure:
+            return
+        self._update_countdown_display()
+        self._countdown_job = self.after(CHECKOUT_COUNTDOWN_TICK_MS, self._tick_countdown)
+
+    @staticmethod
+    def _format_countdown(seconds: int) -> str:
+        hours, rest = divmod(max(0, seconds), 3600)
+        minutes, secs = divmod(rest, 60)
+        return f"{hours}:{minutes:02d}:{secs:02d}" if hours else f"{minutes:02d}:{secs:02d}"
+
+    def _update_countdown_display(self, now: datetime | None = None) -> None:
+        """Time left until the walk to the stop has to start, coloured by how close that is."""
+        dep = self._selected_departure
+        if dep is None:
+            return
+        now = now or datetime.now()
+        info = DingTransitService.calculate_leave_info(
+            dep,
+            walk_min=self.settings.walk_time_minutes,
+            logout_min=self.settings.logout_time_minutes,
+            pack_min=self.settings.pack_time_minutes,
+            buffer_min=self.settings.buffer_time_minutes,
+            now=now,
+        )
+        # Rounded up, so 00:00 appears exactly when it is time to go
+        remaining = math.ceil((info["walk_datetime"] - now).total_seconds())
+        departed = info["departure_datetime"] < now
+
+        caption_color: Any = COLOR_MUTED_LABEL
+        if departed:
+            caption = tr("checkout_panel.transit_countdown_departed", "Abfahrt war um {time} Uhr").format(
+                time=info["dep_time_str"]
+            )
+            color: Any = COLOR_MUTED_LABEL
+        elif remaining <= 0:
+            caption = tr("checkout_panel.transit_countdown_now", "🚶 Jetzt losgehen!")
+            color = caption_color = COLOR_TRANSIT_COUNTDOWN_URGENT
+        else:
+            caption = tr("checkout_panel.transit_countdown_caption", "🚶 Losgehen in")
+            if remaining <= CHECKOUT_ALARM_URGENT_THRESHOLD_MINUTES * 60:
+                color = COLOR_TRANSIT_COUNTDOWN_URGENT
+            elif remaining <= CHECKOUT_ALARM_WARN_THRESHOLD_MINUTES * 60:
+                color = COLOR_TRANSIT_COUNTDOWN_WARN
+            else:
+                color = COLOR_TRANSIT_COUNTDOWN_OK
+
+        self.transit_countdown_caption_lbl.configure(text=caption, text_color=caption_color)
+        self.transit_countdown_lbl.configure(text=self._format_countdown(remaining), text_color=color)
+        self.transit_countdown_sub_lbl.configure(
+            text=tr(
+                "checkout_panel.transit_countdown_sub", "Losgehen um {walk} Uhr · Abfahrt {dep} Uhr"
+            ).format(walk=info["walk_time_str"], dep=info["dep_time_str"])
+        )
+
+    def _on_countdown_resized(self, event: Any) -> None:
+        """Lets the digits grow with the panel, so the countdown fills the room the list had."""
+        scale = float(ctk.ScalingTracker.get_widget_scaling(self)) or 1.0
+        size = event.width / scale / CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT
+        if self.is_floating:
+            # Docked, the height follows the content, so only the width can lead there
+            size = min(size, event.height / scale / CHECKOUT_COUNTDOWN_HEIGHT_PER_FONT_PT)
+        size = int(size) // FONT_SIZE_CHECKOUT_COUNTDOWN_STEP * FONT_SIZE_CHECKOUT_COUNTDOWN_STEP
+        size = max(FONT_SIZE_CHECKOUT_COUNTDOWN_MIN, min(FONT_SIZE_CHECKOUT_COUNTDOWN_MAX, size))
+        if size != self._countdown_font_size:
+            self._countdown_font_size = size
+            self._countdown_font.configure(size=size)
 
     def _render_departures(self) -> None:
         from ui.widgets.ctk_tooltip import CTkTooltip
@@ -1564,9 +1709,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 self.transit_alerts_frame.pack_forget()
             return
         if not self.transit_alerts_frame.winfo_manager():
-            # In the floating window the list is a CTkScrollableFrame: what is packed is its wrapper
-            list_widget = getattr(self.transit_scroll, "_parent_frame", self.transit_scroll)
-            self.transit_alerts_frame.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), before=list_widget)
+            self.transit_alerts_frame.pack(fill="x", padx=PAD_XS, pady=(PAD_XS, PAD_NONE), before=self.transit_body)
 
         arrow = "▾" if self._transit_alerts_expanded else "▸"
         if len(alerts) == 1:
@@ -2013,6 +2156,8 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             except Exception:
                 pass
         self._background_polls = set()
+        if getattr(self, "_countdown_job", None) is not None:
+            self._cancel_countdown_tick()
         if self._transit_refresh_job is not None:
             try:
                 self.after_cancel(self._transit_refresh_job)

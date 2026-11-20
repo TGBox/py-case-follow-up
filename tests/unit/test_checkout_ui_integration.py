@@ -697,3 +697,104 @@ def test_quit_confirmation_for_open_checkout_tasks():
         assert ask_mock.called
         assert "show_checkout" not in app_confirm.calls
         assert "destroy" in app_confirm.calls
+
+
+def test_big_countdown_setting_is_off_by_default_and_survives_a_roundtrip():
+    profile = UserProfile()
+    assert profile.checkout_settings.big_countdown_enabled is False
+    profile.checkout_settings.big_countdown_enabled = True
+    restored = UserProfile.from_dict(profile.to_dict())
+    assert restored.checkout_settings.big_countdown_enabled is True
+
+
+def test_big_countdown_takes_the_place_of_the_departure_list_while_a_trip_is_selected(root):
+    from datetime import datetime, timedelta
+
+    from constants import (
+        COLOR_MUTED_LABEL,
+        COLOR_TRANSIT_COUNTDOWN_OK,
+        COLOR_TRANSIT_COUNTDOWN_URGENT,
+        COLOR_TRANSIT_COUNTDOWN_WARN,
+    )
+    from services.ding_transit_service import TransitDeparture
+
+    def make_profile(enabled: bool) -> UserProfile:
+        profile = UserProfile()
+        cs = profile.checkout_settings
+        cs.alarm_enabled = False
+        cs.big_countdown_enabled = enabled
+        cs.walk_time_minutes, cs.buffer_time_minutes = 4, 1  # walk starts 5 min before departure
+        cs.logout_time_minutes, cs.pack_time_minutes = 3, 2
+        return profile
+
+    dep_dt = datetime.now().replace(microsecond=0) + timedelta(minutes=45)
+    deps = [
+        TransitDeparture(
+            stop_id="1", stop_name="Stop", line="5", destination=f"Ziel {i}", mot_type="Bus",
+            planned_time_str=(dep_dt + timedelta(minutes=i)).strftime("%H:%M"),
+            real_time_str=(dep_dt + timedelta(minutes=i)).strftime("%H:%M"),
+            delay_minutes=0, platform="", countdown_minutes=45 + i, raw_datetime=dep_dt + timedelta(minutes=i),
+        )
+        for i in range(3)
+    ]
+    walk_dt = dep_dt - timedelta(minutes=5)
+
+    def packed(widget) -> bool:
+        # A CTkScrollableFrame is packed through its wrapper
+        return bool(getattr(widget, "_parent_frame", widget).winfo_manager())
+
+    with patch.object(CheckoutPanelWidget, "refresh_transit_data"), \
+         patch.object(CheckoutPanelWidget, "refresh_weather_data"), \
+         patch.object(CheckoutPanelWidget, "_schedule_next_transit_refresh"), \
+         patch("ui.widgets.checkout_panel.get_icon", return_value=None):
+        for floating in (False, True):
+            panel = _build_panel(root, make_profile(True), floating=floating)
+            try:
+                panel._on_transit_data_loaded(deps)
+                assert not panel._countdown_shown
+                assert packed(panel.transit_scroll) and not packed(panel.transit_countdown_frame)
+
+                panel._on_departure_double_clicked(deps[0])
+                assert panel._countdown_shown and panel._countdown_job is not None
+                assert packed(panel.transit_countdown_frame) and not packed(panel.transit_scroll)
+                # A refresh keeps the countdown in place
+                panel._on_transit_data_loaded(deps)
+                assert packed(panel.transit_countdown_frame) and not packed(panel.transit_scroll)
+
+                timer, caption = panel.transit_countdown_lbl, panel.transit_countdown_caption_lbl
+                panel._update_countdown_display(now=walk_dt - timedelta(hours=1, minutes=5))
+                assert timer.cget("text") == "1:05:00"
+                panel._update_countdown_display(now=walk_dt - timedelta(minutes=10, seconds=1))
+                assert timer.cget("text") == "10:01" and timer.cget("text_color") == COLOR_TRANSIT_COUNTDOWN_OK
+                panel._update_countdown_display(now=walk_dt - timedelta(minutes=10))
+                assert timer.cget("text") == "10:00" and timer.cget("text_color") == COLOR_TRANSIT_COUNTDOWN_WARN
+                panel._update_countdown_display(now=walk_dt - timedelta(minutes=3))
+                assert timer.cget("text") == "03:00" and timer.cget("text_color") == COLOR_TRANSIT_COUNTDOWN_URGENT
+                normal_caption = caption.cget("text")
+                panel._update_countdown_display(now=walk_dt + timedelta(seconds=20))
+                assert timer.cget("text") == "00:00" and timer.cget("text_color") == COLOR_TRANSIT_COUNTDOWN_URGENT
+                assert caption.cget("text") != normal_caption
+                panel._update_countdown_display(now=dep_dt + timedelta(seconds=1))
+                assert timer.cget("text_color") == COLOR_MUTED_LABEL
+                assert walk_dt.strftime("%H:%M") in panel.transit_countdown_sub_lbl.cget("text")
+
+                panel._clear_selected_departure()
+                assert not panel._countdown_shown and panel._countdown_job is None
+                assert packed(panel.transit_scroll) and not packed(panel.transit_countdown_frame)
+
+                # Switching the option off in the profile brings the list back at once
+                panel._on_departure_double_clicked(deps[1])
+                assert panel._countdown_shown
+                panel.rebind_profile(make_profile(False))
+                assert not panel._countdown_shown and packed(panel.transit_scroll)
+            finally:
+                panel.destroy()
+
+        panel = _build_panel(root, make_profile(False), floating=False)
+        try:
+            panel._on_transit_data_loaded(deps)
+            panel._on_departure_double_clicked(deps[0])
+            assert not panel._countdown_shown and panel._countdown_job is None
+            assert packed(panel.transit_scroll) and not packed(panel.transit_countdown_frame)
+        finally:
+            panel.destroy()

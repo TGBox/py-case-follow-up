@@ -59,6 +59,7 @@ from constants import (
     SUPPORTED_LANGUAGES,
     VALIDATION_MESSAGES,
     CHECKOUT_DEFAULT_BREAK_MINUTES,
+    CHECKOUT_DEFAULT_BIG_COUNTDOWN,
     CHECKOUT_DEFAULT_BUFFER_MINUTES,
     CHECKOUT_DEFAULT_LOGOUT_MINUTES,
     CHECKOUT_DEFAULT_PACK_MINUTES,
@@ -491,6 +492,8 @@ class CheckoutSettings:
     pack_time_minutes: int = CHECKOUT_DEFAULT_PACK_MINUTES
     buffer_time_minutes: int = CHECKOUT_DEFAULT_BUFFER_MINUTES
     alarm_enabled: bool = True
+    # Show a big leave-now countdown instead of the departure list while a trip is selected
+    big_countdown_enabled: bool = CHECKOUT_DEFAULT_BIG_COUNTDOWN
     daily_note_keep_overnight: bool = False
     daily_note_text: str = ""
     daily_note_date: str = ""
@@ -541,6 +544,7 @@ class CheckoutSettings:
             "pack_time_minutes": self.pack_time_minutes,
             "buffer_time_minutes": self.buffer_time_minutes,
             "alarm_enabled": self.alarm_enabled,
+            "big_countdown_enabled": self.big_countdown_enabled,
             "daily_note_keep_overnight": self.daily_note_keep_overnight,
             "daily_note_text": self.daily_note_text,
             "daily_note_date": self.daily_note_date,
@@ -627,6 +631,7 @@ class CheckoutSettings:
             pack_time_minutes=int(data.get("pack_time_minutes", CHECKOUT_DEFAULT_PACK_MINUTES)),
             buffer_time_minutes=int(data.get("buffer_time_minutes", CHECKOUT_DEFAULT_BUFFER_MINUTES)),
             alarm_enabled=bool(data.get("alarm_enabled", True)),
+            big_countdown_enabled=bool(data.get("big_countdown_enabled", CHECKOUT_DEFAULT_BIG_COUNTDOWN)),
             daily_note_keep_overnight=bool(data.get("daily_note_keep_overnight", False)),
             daily_note_text=str(data.get("daily_note_text", "")),
             daily_note_date=str(data.get("daily_note_date", "")),

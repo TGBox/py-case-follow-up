@@ -136,3 +136,13 @@ def test_case_handover_changes_actor_and_logs_timeline():
     assert restored.workflow_status.current_actor == Actor.DEVELOPMENT
     assert restored.timeline[-1].status_change == "ZUSTÄNDIGKEIT: Support -> Entwicklung"
     assert "Hr. Becker" in restored.timeline[-1].note
+
+
+def test_timeline_entry_drops_trailing_blank_lines():
+    entry = TimelineEntry(timestamp="2026-11-27T08:00:00", author="Daniel", note="Kunde zurückgerufen\n\n  \n")
+    assert entry.note == "Kunde zurückgerufen"
+
+    # Blank lines in the middle stay, older stored entries get cleaned on load.
+    loaded = TimelineEntry.from_dict({"timestamp": "2026-11-27T08:00:00", "author": "Daniel", "note": "Zeile 1\n\nZeile 2\n\n"})
+    assert loaded.note == "Zeile 1\n\nZeile 2"
+    assert loaded.to_dict()["note"] == "Zeile 1\n\nZeile 2"

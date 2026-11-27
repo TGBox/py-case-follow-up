@@ -21,6 +21,15 @@ class TimelineEntry:
     edited_at: str = ""
     edited_by: str = ""
 
+    def __post_init__(self) -> None:
+        # Blank lines typed after the last word (Enter pressed once too often)
+        # must not end up as empty space at the bottom of the timeline card.
+        # Done here so every source is covered: the sidebar, the dialogs
+        # (handover, follow-up, practice change), imports and older entries
+        # that were stored with trailing line breaks.
+        if isinstance(self.note, str):
+            self.note = self.note.rstrip()
+
     def validate(self) -> list[str]:
         errors = []
         if not self.timestamp:

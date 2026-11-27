@@ -2125,6 +2125,8 @@ CHECKOUT_COUNTDOWN_RESERVED_HEIGHT = 64
 # Compact lines of the selected-trip card and wrapping of task texts
 CHECKOUT_STAGE_LINE_HEIGHT = 18
 CHECKOUT_TASK_CHECKBOX_WIDTH = 24
+# Row width not available to the task text: checkbox, delete button and their paddings
+CHECKOUT_TASK_ROW_OVERHEAD = 72
 CHECKOUT_MIN_WRAPLENGTH = 80
 COLOR_TRANSIT_DELAY = ("#b91c1c", "#fca5a5")
 COLOR_TRANSIT_ONTIME = ("#047857", "#6ee7b7")

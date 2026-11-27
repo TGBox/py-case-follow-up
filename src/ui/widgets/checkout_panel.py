@@ -51,6 +51,7 @@ from constants import (
     CHECKOUT_MIN_WRAPLENGTH,
     CHECKOUT_STAGE_LINE_HEIGHT,
     CHECKOUT_TASK_CHECKBOX_WIDTH,
+    CHECKOUT_TASK_ROW_OVERHEAD,
     COLOR_CANCEL_FG,
     COLOR_CANCEL_HOVER,
     COLOR_CARD_BG,
@@ -739,21 +740,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
         cb.pack(side="left", anchor="n", padx=(PAD_SM, PAD_NONE), pady=PAD_SM)
 
-        # Separate label so long task texts wrap instead of being cut off
-        text_lbl = ctk.CTkLabel(
-            row,
-            text=task.get("text", ""),
-            font=ctk.CTkFont(size=FONT_SIZE_SM),
-            anchor="w",
-            justify="left",
-            wraplength=CHECKOUT_HINT_WRAPLENGTH,
-            cursor=CURSOR_HAND,
-        )
-        text_lbl.pack(side="left", fill="x", expand=True, padx=(PAD_XS, PAD_XS), pady=PAD_SM)
-        text_lbl.bind("<Button-1>", lambda _e: cb.toggle(), add="+")
-        text_lbl.bind("<Configure>", lambda e, lbl=text_lbl: self._fit_wraplength(lbl, e.width), add="+")
-
-        # Delete button for dated tasks
+        # Delete button (packed before the text so it keeps its place on the right)
         del_btn = ctk.CTkButton(
             row,
             text=ICON_DELETE_X,
@@ -764,12 +751,29 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             text_color=COLOR_MUTED_LABEL,
             hover_color=COLOR_CANCEL_HOVER,
         )
-        del_btn.pack(side="right", padx=PAD_XS)
+        del_btn.pack(side="right", anchor="n", padx=PAD_XS, pady=PAD_SM)
 
-    def _fit_wraplength(self, label: Any, width_px: int) -> None:
-        """Wraps a label's text at its current width (wraplength is given in unscaled units)."""
+        # Separate label so long task texts wrap instead of being cut off
+        text_lbl = ctk.CTkLabel(
+            row,
+            text=task.get("text", ""),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            anchor="w",
+            justify="left",
+            wraplength=CHECKOUT_HINT_WRAPLENGTH,
+            cursor=CURSOR_HAND,
+        )
+        text_lbl.pack(side="left", fill="x", expand=True, padx=PAD_XS, pady=PAD_SM)
+        text_lbl.bind("<Button-1>", lambda _e: cb.toggle(), add="+")
+        # Measure the row, not the label: the label's width follows its wraplength,
+        # so wrapping at the label's own width would shrink it step by step forever.
+        row.bind("<Configure>", lambda e, lbl=text_lbl: self._fit_wraplength(lbl, e.width), add="+")
+
+    def _fit_wraplength(self, label: Any, row_width_px: int) -> None:
+        """Wraps a task text at the room its row leaves next to checkbox and delete button."""
         scale = float(ctk.ScalingTracker.get_widget_scaling(self)) or 1.0
-        wrap = max(CHECKOUT_MIN_WRAPLENGTH, int(width_px / scale) - PAD_SM)
+        wrap = int(row_width_px / scale) - CHECKOUT_TASK_ROW_OVERHEAD
+        wrap = max(CHECKOUT_MIN_WRAPLENGTH, wrap)
         if getattr(label, "_fitted_wrap", None) != wrap:
             label._fitted_wrap = wrap
             label.configure(wraplength=wrap)

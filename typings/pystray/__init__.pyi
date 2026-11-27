@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 class MenuItem:
-    def __init__(self, text: str, action: Callable[..., Any], **kwargs: Any) -> None: ...
+    def __init__(self, text: str | Callable[..., str], action: Callable[..., Any], **kwargs: Any) -> None: ...
 
 class Menu:
     SEPARATOR: Any

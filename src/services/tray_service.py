@@ -96,6 +96,8 @@ class TrayService:
         self._on_toggle_on_call: Callable[[], None] | None = None
         self._on_quick_capture: Callable[[], None] | None = None
         self._is_on_call_active: Callable[[], bool] | None = None
+        self._on_toggle_checkout: Callable[[], None] | None = None
+        self._is_checkout_visible: Callable[[], bool] | None = None
         self._badge_count: int = 0
 
     def start(
@@ -105,6 +107,8 @@ class TrayService:
         on_toggle_on_call: Callable[[], None] | None = None,
         is_on_call_active: Callable[[], bool] | None = None,
         on_quick_capture: Callable[[], None] | None = None,
+        on_toggle_checkout: Callable[[], None] | None = None,
+        is_checkout_visible: Callable[[], bool] | None = None,
     ) -> None:
         """Start the system tray icon in a background thread.
 
@@ -114,12 +118,16 @@ class TrayService:
             on_toggle_on_call: Optional callback invoked when the user toggles on-call mode.
             is_on_call_active: Optional callable returning whether on-call mode is currently active.
             on_quick_capture: Optional callback for the 'Schnellerfassung' tray entry.
+            on_toggle_checkout: Optional callback that shows or hides the checkout companion panel.
+            is_checkout_visible: Optional callable returning whether the checkout companion is shown.
         """
         self._on_restore = on_restore
         self._on_quit = on_quit
         self._on_toggle_on_call = on_toggle_on_call
         self._is_on_call_active = is_on_call_active
         self._on_quick_capture = on_quick_capture
+        self._on_toggle_checkout = on_toggle_checkout
+        self._is_checkout_visible = is_checkout_visible
 
         if self._thread and self._thread.is_alive():
             logger.debug("System tray icon thread is already running.")
@@ -145,6 +153,8 @@ class TrayService:
         ]
         if self._on_quick_capture:
             items.append(pystray.MenuItem(tr("tray.quick_capture", "Schnellerfassung"), self._handle_quick_capture))
+        if self._on_toggle_checkout:
+            items.append(pystray.MenuItem(self._checkout_menu_text, self._handle_toggle_checkout))
         if self._on_toggle_on_call and self._is_on_call_active:
             items.extend([
                 pystray.Menu.SEPARATOR,
@@ -171,6 +181,16 @@ class TrayService:
                     update_fn()
             except Exception:
                 pass
+
+    def _checkout_menu_text(self, item: pystray.MenuItem | None = None) -> str:
+        visible = bool(self._is_checkout_visible()) if self._is_checkout_visible else False
+        if visible:
+            return tr("tray.checkout_hide", "Feierabend-Begleiter ausblenden")
+        return tr("tray.checkout_show", "Feierabend-Begleiter anzeigen")
+
+    def _handle_toggle_checkout(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
+        if self._on_toggle_checkout:
+            self._on_toggle_checkout()
 
     def _handle_toggle_on_call(self, icon: pystray.Icon | None = None, item: pystray.MenuItem | None = None) -> None:
         if self._on_toggle_on_call:

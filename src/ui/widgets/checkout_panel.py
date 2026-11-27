@@ -39,13 +39,18 @@ from constants import (
     CHECKOUT_ALARM_WARN_THRESHOLD_MINUTES,
     CHECKOUT_BACKGROUND_POLL_MS,
     CHECKOUT_COUNTDOWN_HEIGHT_PER_FONT_PT,
+    CHECKOUT_COUNTDOWN_RESERVED_HEIGHT,
     CHECKOUT_COUNTDOWN_TICK_MS,
     CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT,
+    CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT_HOURS,
     CHECKOUT_FLOATING_MIN_HEIGHT,
     CHECKOUT_FLOATING_MIN_WIDTH,
     CHECKOUT_FLOATING_RESIZE_BORDER,
     CHECKOUT_HEADER_BTN_SIZE,
     CHECKOUT_HINT_WRAPLENGTH,
+    CHECKOUT_MIN_WRAPLENGTH,
+    CHECKOUT_STAGE_LINE_HEIGHT,
+    CHECKOUT_TASK_CHECKBOX_WIDTH,
     COLOR_CANCEL_FG,
     COLOR_CANCEL_HOVER,
     COLOR_CARD_BG,
@@ -70,6 +75,7 @@ from constants import (
     CORNER_RADIUS_CARD,
     CORNER_RADIUS_MD,
     CORNER_RADIUS_SM,
+    CURSOR_HAND,
     FONT_SIZE_BODY,
     FONT_SIZE_CHECKOUT_COUNTDOWN_MAX,
     FONT_SIZE_CHECKOUT_COUNTDOWN_MIN,
@@ -726,12 +732,26 @@ class CheckoutPanelWidget(ctk.CTkFrame):
 
         cb = ctk.CTkCheckBox(
             row,
-            text=task.get("text", ""),
+            text="",
+            width=CHECKOUT_TASK_CHECKBOX_WIDTH,
             variable=var,
             command=on_toggle,
-            font=ctk.CTkFont(size=FONT_SIZE_SM),
         )
-        cb.pack(side="left", fill="x", expand=True, padx=PAD_SM, pady=PAD_SM)
+        cb.pack(side="left", anchor="n", padx=(PAD_SM, PAD_NONE), pady=PAD_SM)
+
+        # Separate label so long task texts wrap instead of being cut off
+        text_lbl = ctk.CTkLabel(
+            row,
+            text=task.get("text", ""),
+            font=ctk.CTkFont(size=FONT_SIZE_SM),
+            anchor="w",
+            justify="left",
+            wraplength=CHECKOUT_HINT_WRAPLENGTH,
+            cursor=CURSOR_HAND,
+        )
+        text_lbl.pack(side="left", fill="x", expand=True, padx=(PAD_XS, PAD_XS), pady=PAD_SM)
+        text_lbl.bind("<Button-1>", lambda _e: cb.toggle(), add="+")
+        text_lbl.bind("<Configure>", lambda e, lbl=text_lbl: self._fit_wraplength(lbl, e.width), add="+")
 
         # Delete button for dated tasks
         del_btn = ctk.CTkButton(
@@ -745,6 +765,14 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             hover_color=COLOR_CANCEL_HOVER,
         )
         del_btn.pack(side="right", padx=PAD_XS)
+
+    def _fit_wraplength(self, label: Any, width_px: int) -> None:
+        """Wraps a label's text at its current width (wraplength is given in unscaled units)."""
+        scale = float(ctk.ScalingTracker.get_widget_scaling(self)) or 1.0
+        wrap = max(CHECKOUT_MIN_WRAPLENGTH, int(width_px / scale) - PAD_SM)
+        if getattr(label, "_fitted_wrap", None) != wrap:
+            label._fitted_wrap = wrap
+            label.configure(wraplength=wrap)
 
     def _on_add_task(self) -> None:
         text = self.new_task_entry.get().strip()
@@ -937,7 +965,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
         )
 
         sel_top_row = ctk.CTkFrame(self.selected_transit_card, fg_color=COLOR_TRANSPARENT)
-        sel_top_row.pack(fill="x", padx=PAD_SM, pady=(PAD_SM, PAD_XS))
+        sel_top_row.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_NONE))
 
         self.selected_transit_title_lbl = ctk.CTkLabel(
             sel_top_row,
@@ -961,50 +989,56 @@ class CheckoutPanelWidget(ctk.CTkFrame):
 
         self.selected_transit_desc_lbl = ctk.CTkLabel(
             self.selected_transit_card,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
             anchor="w",
         )
-        self.selected_transit_desc_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
+        self.selected_transit_desc_lbl.pack(fill="x", padx=PAD_SM, pady=PAD_NONE)
 
         milestones_box = ctk.CTkFrame(self.selected_transit_card, fg_color=COLOR_TRANSPARENT)
-        milestones_box.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_SM))
+        milestones_box.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
 
         self.stage_pack_lbl = ctk.CTkLabel(
             milestones_box,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             anchor="w",
         )
-        self.stage_pack_lbl.pack(fill="x", pady=PAD_TINY)
+        self.stage_pack_lbl.pack(fill="x", pady=PAD_NONE)
 
         self.stage_logout_lbl = ctk.CTkLabel(
             milestones_box,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             anchor="w",
         )
-        self.stage_logout_lbl.pack(fill="x", pady=PAD_TINY)
+        self.stage_logout_lbl.pack(fill="x", pady=PAD_NONE)
 
         self.stage_walk_lbl = ctk.CTkLabel(
             milestones_box,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             anchor="w",
         )
-        self.stage_walk_lbl.pack(fill="x", pady=PAD_TINY)
+        self.stage_walk_lbl.pack(fill="x", pady=PAD_NONE)
 
         self.stage_dep_lbl = ctk.CTkLabel(
             milestones_box,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
             anchor="w",
         )
-        self.stage_dep_lbl.pack(fill="x", pady=PAD_TINY)
+        self.stage_dep_lbl.pack(fill="x", pady=PAD_NONE)
 
         # Shown only for a trip to a destination
         self.stage_arrival_lbl = ctk.CTkLabel(
             milestones_box,
+            height=CHECKOUT_STAGE_LINE_HEIGHT,
             text="",
             font=ctk.CTkFont(size=FONT_SIZE_SM, weight=FONT_WEIGHT_BOLD),
             text_color=COLOR_TRANSIT_SELECTED_TEXT,
@@ -1029,7 +1063,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             font=ctk.CTkFont(size=FONT_SIZE_TITLE, weight=FONT_WEIGHT_BOLD),
             text_color=COLOR_MUTED_LABEL,
         )
-        self.transit_countdown_caption_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_MD, PAD_NONE))
+        self.transit_countdown_caption_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_XS, PAD_NONE))
         self._countdown_font = ctk.CTkFont(size=self._countdown_font_size, weight=FONT_WEIGHT_BOLD)
         self.transit_countdown_lbl = ctk.CTkLabel(
             self.transit_countdown_frame, text="", font=self._countdown_font
@@ -1041,7 +1075,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
             font=ctk.CTkFont(size=FONT_SIZE_SM),
             text_color=COLOR_MUTED_LABEL,
         )
-        self.transit_countdown_sub_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_MD))
+        self.transit_countdown_sub_lbl.pack(fill="x", padx=PAD_SM, pady=(PAD_NONE, PAD_XS))
         self.transit_countdown_frame.bind("<Configure>", self._on_countdown_resized, add="+")
 
         # Traffic notices (packed above the list only while there are some)
@@ -1390,7 +1424,7 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 )
             )
             if not self.stage_arrival_lbl.winfo_manager():
-                self.stage_arrival_lbl.pack(fill="x", pady=PAD_TINY)
+                self.stage_arrival_lbl.pack(fill="x", pady=PAD_NONE)
         elif self.stage_arrival_lbl.winfo_manager():
             self.stage_arrival_lbl.pack_forget()
 
@@ -1489,7 +1523,11 @@ class CheckoutPanelWidget(ctk.CTkFrame):
                 color = COLOR_TRANSIT_COUNTDOWN_OK
 
         self.transit_countdown_caption_lbl.configure(text=caption, text_color=caption_color)
-        self.transit_countdown_lbl.configure(text=self._format_countdown(remaining), text_color=color)
+        text = self._format_countdown(remaining)
+        had_hours = str(self.transit_countdown_lbl.cget("text")).count(":") > 1
+        self.transit_countdown_lbl.configure(text=text, text_color=color)
+        if had_hours != (text.count(":") > 1):
+            self._fit_countdown_font()
         self.transit_countdown_sub_lbl.configure(
             text=tr(
                 "checkout_panel.transit_countdown_sub", "Losgehen um {walk} Uhr · Abfahrt {dep} Uhr"
@@ -1498,11 +1536,22 @@ class CheckoutPanelWidget(ctk.CTkFrame):
 
     def _on_countdown_resized(self, event: Any) -> None:
         """Lets the digits grow with the panel, so the countdown fills the room the list had."""
+        self._countdown_frame_size = (event.width, event.height)
+        self._fit_countdown_font()
+
+    def _fit_countdown_font(self) -> None:
+        size_px = getattr(self, "_countdown_frame_size", None)
+        if not size_px:
+            return
+        width, height = size_px
         scale = float(ctk.ScalingTracker.get_widget_scaling(self)) or 1.0
-        size = event.width / scale / CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT
+        has_hours = str(self.transit_countdown_lbl.cget("text")).count(":") > 1
+        per_pt = CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT_HOURS if has_hours else CHECKOUT_COUNTDOWN_WIDTH_PER_FONT_PT
+        size = width / scale / per_pt
         if self.is_floating:
             # Docked, the height follows the content, so only the width can lead there
-            size = min(size, event.height / scale / CHECKOUT_COUNTDOWN_HEIGHT_PER_FONT_PT)
+            room = height / scale - CHECKOUT_COUNTDOWN_RESERVED_HEIGHT
+            size = min(size, room / CHECKOUT_COUNTDOWN_HEIGHT_PER_FONT_PT)
         size = int(size) // FONT_SIZE_CHECKOUT_COUNTDOWN_STEP * FONT_SIZE_CHECKOUT_COUNTDOWN_STEP
         size = max(FONT_SIZE_CHECKOUT_COUNTDOWN_MIN, min(FONT_SIZE_CHECKOUT_COUNTDOWN_MAX, size))
         if size != self._countdown_font_size:

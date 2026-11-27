@@ -321,6 +321,8 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             on_toggle_on_call=self._on_toggle_on_call_from_tray,
             is_on_call_active=self.is_on_call_active,
             on_quick_capture=self._on_quick_capture_from_tray,
+            on_toggle_checkout=self._on_toggle_checkout_from_tray,
+            is_checkout_visible=lambda: bool(getattr(self, "_is_checkout_visible", False)),
         )
 
         # Register Shortcuts & Lifecycle
@@ -812,6 +814,9 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
             self.show_checkout_panel()
 
     def _remember_checkout_visibility(self, is_open: bool) -> None:
+        tray = getattr(self, "tray_service", None)
+        if tray is not None:
+            tray.update_menu()
         settings = self.profile.checkout_settings
         if settings.was_open == is_open:
             return
@@ -1085,6 +1090,21 @@ class SupportCockpitApp(DialogLaunchersMixin, ctk.CTk):
     def _on_quick_capture_from_tray(self) -> None:
         # pystray calls from its own thread; Tk widgets must be built on the Tk thread.
         self.after(0, self.open_quick_capture_dialog)
+
+    def _on_toggle_checkout_from_tray(self) -> None:
+        # pystray calls from its own thread; Tk widgets must be built on the Tk thread.
+        self.after(0, self._toggle_checkout_from_tray)
+
+    def _toggle_checkout_from_tray(self) -> None:
+        if self._is_checkout_visible:
+            self.hide_checkout_panel()
+        else:
+            self.show_checkout_panel()
+            # A docked panel lives in the main window, so bring that up too
+            if self.profile.checkout_settings.is_docked:
+                self.bring_to_foreground()
+            elif self.checkout_floating_window and self.checkout_floating_window.winfo_exists():
+                self.checkout_floating_window.lift()
 
     def is_on_call_active(self) -> bool:
         if not hasattr(self, "profile") or not hasattr(self.profile, "reminder_settings"):

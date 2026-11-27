@@ -1909,6 +1909,8 @@
     "reminder_title": "Reminder"
   },
   "tray": {
+    "checkout_hide": "Hide departure companion",
+    "checkout_show": "Show departure companion",
     "on_call": "On-Call / Standby Duty",
     "on_call_badge": "On-Call",
     "open": "Open",

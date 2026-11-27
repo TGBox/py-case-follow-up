@@ -1909,6 +1909,8 @@
     "reminder_title": "Erinnerung"
   },
   "tray": {
+    "checkout_hide": "Feierabend-Begleiter ausblenden",
+    "checkout_show": "Feierabend-Begleiter anzeigen",
     "on_call": "Notdienst / Rufbereitschaft",
     "on_call_badge": "Notdienst",
     "open": "Öffnen",
